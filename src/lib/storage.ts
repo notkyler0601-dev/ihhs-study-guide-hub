@@ -1,8 +1,14 @@
-// Per-user keyed storage. All progress, SRS state, quiz history, etc.
-// is namespaced under the active user id so multiple accounts on the
-// same browser stay isolated.
+// Per-user keyed storage.
+//
+// - Reads stay synchronous from localStorage (so components don't have to
+//   be rewritten as async).
+// - Writes go to localStorage first, then (in cloud mode) are pushed to
+//   the Supabase `user_data` table via a fire-and-forget queue.
+// - On login, auth.ts hydrates localStorage from the cloud before the
+//   first read. See `hydrateUserDataFromCloud` there.
 
-import { currentUser } from './auth';
+import { currentUser, isCloudMode } from './auth';
+import { supabase } from './supabase';
 
 const isClient = () => typeof window !== 'undefined';
 
@@ -26,24 +32,29 @@ export const userRead = <T>(suffix: string, fallback: T): T => {
 
 export const userWrite = (suffix: string, value: unknown): boolean => {
   if (!isClient()) return false;
-  const k = userKey(suffix);
-  if (!k) return false;
+  const me = currentUser();
+  if (!me) return false;
+  const k = `ihhs:u:${me.id}:${suffix}`;
   try {
     localStorage.setItem(k, JSON.stringify(value));
-    return true;
   } catch {
     return false;
   }
+
+  if (isCloudMode()) void pushToCloud(me.id, suffix, value);
+  return true;
 };
 
 export const userDelete = (suffix: string) => {
   if (!isClient()) return;
-  const k = userKey(suffix);
-  if (!k) return;
+  const me = currentUser();
+  if (!me) return;
+  const k = `ihhs:u:${me.id}:${suffix}`;
   try { localStorage.removeItem(k); } catch {}
+
+  if (isCloudMode()) void deleteFromCloud(me.id, suffix);
 };
 
-// Wipe all data for the current user (account stays).
 export const wipeUserData = () => {
   if (!isClient()) return;
   const me = currentUser();
@@ -55,4 +66,44 @@ export const wipeUserData = () => {
     if (k?.startsWith(prefix)) keys.push(k);
   }
   keys.forEach((k) => localStorage.removeItem(k));
+
+  if (isCloudMode()) void wipeCloud(me.id);
+};
+
+// ============================================================
+// Cloud sync (fire-and-forget, with simple debounce per key)
+// ============================================================
+
+const pendingWrites = new Map<string, number>();
+
+const pushToCloud = async (userId: string, key: string, value: unknown) => {
+  const sb = supabase();
+  if (!sb) return;
+
+  // Debounce: coalesce rapid successive writes on the same key.
+  const token = (pendingWrites.get(key) ?? 0) + 1;
+  pendingWrites.set(key, token);
+  await new Promise((r) => setTimeout(r, 200));
+  if (pendingWrites.get(key) !== token) return;
+
+  try {
+    await sb.from('user_data').upsert(
+      { user_id: userId, key, value, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,key' },
+    );
+  } catch {
+    // Silent failure. The localStorage write already succeeded; retry next change.
+  }
+};
+
+const deleteFromCloud = async (userId: string, key: string) => {
+  const sb = supabase();
+  if (!sb) return;
+  try { await sb.from('user_data').delete().eq('user_id', userId).eq('key', key); } catch {}
+};
+
+const wipeCloud = async (userId: string) => {
+  const sb = supabase();
+  if (!sb) return;
+  try { await sb.from('user_data').delete().eq('user_id', userId); } catch {}
 };
