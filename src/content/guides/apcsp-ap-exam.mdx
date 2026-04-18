@@ -1,0 +1,958 @@
+---
+title: "APCSP AP Exam guide"
+description: "Full deep-dive for the AP Computer Science Principles exam: every Big Idea, AP pseudocode fluency, interactive code runners, algorithm visualizations, and a 15-question simulated exam."
+subject: "Computer Science"
+categories: ["AP Exams"]
+estimatedTime: 90
+date: 2026-04-18
+tags: ["apcsp", "ap-exam", "big-ideas", "review"]
+authors: ["IHHS"]
+---
+
+import Callout from '../../components/Callout.astro';
+import KeyTerm from '../../components/KeyTerm.astro';
+import Collapsible from '../../components/Collapsible.astro';
+import Quiz from '../../components/Quiz.astro';
+import Flashcards from '../../components/Flashcards.astro';
+import PyRunner from '../../components/PyRunner.astro';
+import CodeEditor from '../../components/CodeEditor.astro';
+import AlgoViz from '../../components/AlgoViz.astro';
+import DataChart from '../../components/DataChart.astro';
+import NumberLine from '../../components/NumberLine.astro';
+import DragSort from '../../components/DragSort.astro';
+import MatchPairs from '../../components/MatchPairs.astro';
+import MindMap from '../../components/MindMap.astro';
+import Pomodoro from '../../components/Pomodoro.astro';
+import NetworkGraph from '../../components/NetworkGraph.astro';
+
+## Learning objectives
+
+By the end of this guide you will be able to:
+
+- Recite the **five Big Ideas** and their weights on the exam
+- Read AP CSP pseudocode fluently and translate it to Python
+- Convert between binary, decimal, and hexadecimal without a calculator
+- Trace any loop, conditional, or procedure call and predict the output
+- Calculate algorithmic efficiency and distinguish reasonable from unreasonable time
+- Identify sources of computing bias and the main types of encryption
+- Walk into the test knowing the pacing, the question format, and the most common traps
+
+## TL;DR
+
+The APCSP exam is **70 multiple-choice questions in 2 hours**, worth **100% of your AP score**. Questions are split across five Big Ideas (with weights below). You get the AP CSP Exam Reference Sheet during the test, so memorizing pseudocode syntax is not the goal. Fluency in reading it is.
+
+<Callout type="insight" title="The math of pacing">
+2 hours / 70 questions = **1 minute 43 seconds** per question. Most take 30-60 seconds. Bank the extra time for the 5-6 harder algorithm-tracing and efficiency questions. If a question takes over 2 minutes, flag it and come back.
+</Callout>
+
+| Big Idea | Topic | Weight |
+|---|---|---|
+| 1, CRD | Creative Development | 10-13% |
+| 2, DAT | Data | 17-22% |
+| 3, AAP | Algorithms and Programming | **30-35%** |
+| 4, CSN | Computer Systems and Networks | 11-15% |
+| 5, IOC | Impact of Computing | 21-26% |
+
+Big Ideas 3 and 5 together are over half the test. Prioritize them.
+
+<MindMap
+  title="The five Big Ideas at a glance"
+  markdown={`
+# APCSP Exam
+## 1. Creative Development
+- Collaboration
+- Program design
+- Debugging
+- Iterative development
+## 2. Data
+- Binary, decimal, hex
+- Analog vs digital
+- Compression (lossy / lossless)
+- Metadata
+## 3. Algorithms and Programming
+- Variables and expressions
+- Conditionals
+- Iteration
+- Lists
+- Procedures
+- Algorithmic efficiency
+- Undecidable problems
+## 4. Computer Systems and Networks
+- The Internet
+- Protocols (IP, TCP, UDP, HTTP)
+- Fault tolerance
+- Parallel and distributed computing
+## 5. Impact of Computing
+- Beneficial and harmful effects
+- Digital divide
+- Computing bias
+- Crowdsourcing
+- Safe computing
+- Encryption, PII
+`}
+/>
+
+## Glossary
+
+The 20 terms you will see everywhere. Hover any underlined word later in the guide to see its definition inline.
+
+- <KeyTerm term="Abstraction">Hiding complexity behind a simpler interface. A function call hides the steps inside it.</KeyTerm>, the single most important CS word.
+- <KeyTerm term="Algorithm">A finite, well-defined sequence of steps to solve a problem.</KeyTerm>
+- <KeyTerm term="API">Application Programming Interface: a set of functions another program can call.</KeyTerm>
+- <KeyTerm term="Bandwidth">How much data a connection can transmit per second.</KeyTerm>
+- <KeyTerm term="Binary">Base-2 number system, digits are 0 and 1.</KeyTerm>
+- <KeyTerm term="Bit">One binary digit, 0 or 1. 8 bits make a byte.</KeyTerm>
+- <KeyTerm term="Cipher">An algorithm that encrypts or decrypts data.</KeyTerm>
+- <KeyTerm term="Citizen science">Research that involves the general public collecting or analyzing data.</KeyTerm>
+- <KeyTerm term="Crowdsourcing">Getting work done by many contributors, often over the internet (Wikipedia, Kickstarter).</KeyTerm>
+- <KeyTerm term="Digital divide">The gap between people with and without reliable access to computing and the internet.</KeyTerm>
+- <KeyTerm term="Encryption">Encoding data so only authorized parties can read it.</KeyTerm>
+- <KeyTerm term="Heuristic">A rule of thumb: a strategy that usually works but is not guaranteed optimal.</KeyTerm>
+- <KeyTerm term="Iteration">Repeating a block of code, a loop.</KeyTerm>
+- <KeyTerm term="Lossy compression">Compression that discards some data (JPEG, MP3), irreversible.</KeyTerm>
+- <KeyTerm term="Lossless compression">Compression that perfectly reconstructs the original (PNG, ZIP, FLAC).</KeyTerm>
+- <KeyTerm term="Metadata">Data about data, e.g. a photo's timestamp and GPS location.</KeyTerm>
+- <KeyTerm term="Packet">A small chunk of a message sent over a network, tagged with routing info.</KeyTerm>
+- <KeyTerm term="PII">Personally Identifiable Information: data that can identify a specific person (name, SSN, email).</KeyTerm>
+- <KeyTerm term="Procedure">A reusable named block of code, a function.</KeyTerm>
+- <KeyTerm term="Protocol">A set of rules that lets computers communicate (TCP, HTTP, DNS).</KeyTerm>
+
+## Big Idea 1: Creative Development (10-13%)
+
+### Collaboration and program design
+
+Computing is a team sport. The exam tests whether you can:
+
+- **Design a program** by identifying the problem, defining requirements, and breaking it into smaller pieces (decomposition)
+- **Collaborate** using version control, code review, pair programming
+- **Iterate**: build a prototype, get feedback, refine
+
+<Callout type="insight" title="Why programs use abstraction">
+Every function, procedure, and library is an instance of **abstraction**: packaging complexity so users don't have to care about the details. `print("hi")` hides thousands of lines of operating system code. Hiding complexity is the whole job of programming.
+</Callout>
+
+### Debugging
+
+The exam loves debugging questions. Three classes of bugs:
+
+| Bug type | What it looks like | How you find it |
+|---|---|---|
+| Syntax error | Code refuses to run, misspelled keyword, missing colon | Compiler/interpreter flags the line |
+| Runtime error | Crashes partway, division by zero, list index out of range | Stack trace at the moment of crash |
+| Logic error | Runs cleanly but gives wrong output | Test cases, print statements, step debugger |
+
+**Test cases** matter. An exam question often asks "which test case reveals the bug?" Think about **boundary values**: empty lists, negative numbers, the first and last element.
+
+<Collapsible question="A program works on the list [1, 2, 3, 4, 5] but gives the wrong answer for [5, 4, 3, 2, 1]. What kind of error is this?">
+A **logic error**. The program runs without crashing, but the output is wrong for some inputs. The bug probably assumes the list is already sorted. Syntax errors fail before running; runtime errors crash.
+</Collapsible>
+
+## Big Idea 2: Data (17-22%)
+
+### Bits, bytes, and binary
+
+Everything in a computer is ultimately bits: 0 or 1. Eight bits make a **byte**.
+
+**Binary to decimal.** Each bit position is a power of 2, right-to-left starting at $2^0$:
+
+$$
+1011_2 = (1 \cdot 2^3) + (0 \cdot 2^2) + (1 \cdot 2^1) + (1 \cdot 2^0) = 8 + 0 + 2 + 1 = 11_{10}
+$$
+
+**Decimal to binary.** Repeated division by 2, read remainders bottom-up:
+
+$$
+13 \div 2 = 6\ r\,1, \quad 6 \div 2 = 3\ r\,0, \quad 3 \div 2 = 1\ r\,1, \quad 1 \div 2 = 0\ r\,1 \Rightarrow 1101_2
+$$
+
+<PyRunner title="Try it live" initial={`# Decimal -> binary
+print(bin(13))          # 0b1101
+
+# Binary -> decimal
+print(int('1101', 2))    # 13
+
+# Decimal -> hex
+print(hex(255))          # 0xff
+
+# Hex -> decimal
+print(int('ff', 16))     # 255
+`} />
+
+<Callout type="warning" title="Number of values n bits can hold">
+With *n* bits you can represent **2ⁿ** distinct values. 1 bit = 2, 2 bits = 4, 8 bits = 256, 16 bits = 65,536. Memorize this.
+</Callout>
+
+<NumberLine
+  title="Number of distinct values vs bits"
+  min={0} max={8} step={1}
+  marks={[
+    { at: 0, label: "1" },
+    { at: 1, label: "2" },
+    { at: 2, label: "4" },
+    { at: 3, label: "8" },
+    { at: 4, label: "16" },
+    { at: 5, label: "32" },
+    { at: 6, label: "64" },
+    { at: 7, label: "128" },
+    { at: 8, label: "256" },
+  ]}
+/>
+
+### Analog vs digital
+
+**Analog** signals are continuous (a vinyl record, a thermometer's mercury column). **Digital** signals are discrete samples (MP3, JPEG). Converting analog to digital always involves **sampling** (picking moments in time) and **quantization** (rounding each sample to a fixed number of levels). Higher sampling rate + more levels = closer to the original, but larger file.
+
+### Lossy vs lossless compression
+
+<MatchPairs
+  title="Match each compression concept to its description"
+  pairs={[
+    { term: "Lossless", def: "Reversible. Original reconstructed bit-for-bit. Examples: PNG, ZIP, FLAC." },
+    { term: "Lossy",    def: "Irreversible. Discards imperceptible data to shrink files. Examples: JPEG, MP3, MP4." },
+    { term: "Run-length encoding", def: "Lossless. Replace runs of identical bytes with (count, byte) pairs. AAAA -> 4A." },
+    { term: "Huffman coding", def: "Lossless. Assign shorter codes to more frequent symbols." },
+  ]}
+/>
+
+<Callout type="tip" title="When to use each">
+Text, source code, medical images, legal docs: **lossless** (never throw away meaning). Photos, music streams, web video: **lossy** (tolerate imperceptible loss for huge size savings).
+</Callout>
+
+### Metadata and extracting information
+
+**Metadata** is data about data: a photo's timestamp, camera settings, GPS coordinates. Often more revealing than the data itself.
+
+The exam likes questions of the form *"given this dataset, which conclusion is supported?"* Trap: overreaching. Only claim what the data actually proves. Correlation is not causation. A biased sample does not generalize.
+
+<Collapsible question="A fitness app records every user's step count. You notice users in downtown Chicago walk 30% more than users in rural Montana. What conclusions are and are not supported?">
+**Supported:** App users in downtown Chicago walked more steps than app users in rural Montana during the recorded period.
+
+**Not supported:** People in Chicago are healthier than people in Montana. City dwellers walk more than rural dwellers in general. The difference is not due to chance. The data is only about users of this specific app who kept their phone on them, which is a biased sample.
+</Collapsible>
+
+## Big Idea 3: Algorithms and Programming (30-35%)
+
+This is the biggest slice of the exam. Spend the most time here.
+
+### Reading AP pseudocode
+
+The exam uses a made-up pseudocode that combines Python-like semantics with block-like syntax. Key things to know:
+
+```
+a ← 5                    # assignment
+a ← a + 1                # increment
+DISPLAY(a)               # print
+REPEAT 3 TIMES { ... }   # bounded loop
+REPEAT UNTIL (condition) { ... }  # loop until condition true
+FOR EACH item IN aList { ... }    # iterate list
+PROCEDURE name(params) { ... }    # define procedure
+IF (cond) { ... } ELSE { ... }    # conditional
+aList[1]                 # FIRST element, lists are 1-indexed
+LENGTH(aList)            # list length
+INSERT(aList, i, value)  # insert at position i
+APPEND(aList, value)     # append to end
+REMOVE(aList, i)         # remove at position i
+```
+
+<Callout type="warning" title="AP pseudocode is 1-indexed">
+`aList[1]` is the **first** element. Python is 0-indexed (`aList[0]` is first). This trips up almost every student. The reference sheet always wins: follow AP indexing on the exam.
+</Callout>
+
+### Variables, expressions, operators
+
+Variables hold values; the assignment arrow `←` writes into them. Evaluation goes right-to-left: compute the right side, store in the left.
+
+```
+x ← 10
+y ← x * 2 + 1   # y = 21
+x ← y           # x = 21
+```
+
+Operators: `+`, `-`, `*`, `/`, `MOD` (remainder). Integer MOD is tested all the time.
+
+$$
+13 \bmod 5 = 3, \quad 20 \bmod 4 = 0, \quad 7 \bmod 10 = 7
+$$
+
+### Conditionals and nested logic
+
+```
+IF (age ≥ 16) {
+  IF (hasLicense = true) {
+    DISPLAY("can drive")
+  } ELSE {
+    DISPLAY("eligible but no license")
+  }
+} ELSE {
+  DISPLAY("too young")
+}
+```
+
+Boolean operators: `AND`, `OR`, `NOT`. Common trap: short-circuit evaluation. `(x ≠ 0) AND (10 / x > 1)` is safe because if `x = 0`, the second part never runs.
+
+<PyRunner title="Trace this in Python" initial={`age = 17
+has_license = False
+
+if age >= 16:
+    if has_license:
+        print("can drive")
+    else:
+        print("eligible but no license")
+else:
+    print("too young")
+
+# Change values above to predict each branch
+`} />
+
+### Iteration (loops)
+
+Three forms the exam uses:
+
+```
+REPEAT 5 TIMES { DISPLAY("hi") }         # bounded, runs exactly 5 times
+
+REPEAT UNTIL (guess = secret) {            # runs until condition is true
+  guess ← INPUT()
+}
+
+FOR EACH item IN aList {                   # visit each element
+  DISPLAY(item)
+}
+```
+
+<Callout type="theorem" title="Off-by-one: counting fence posts">
+If a loop runs from `i ← 1` while `i ≤ n`, how many times does it run? **n times.** If it runs from `i ← 0` while `i < n`, also **n times**. The mistake is mixing the two: `i ← 1` while `i < n` runs `n - 1` times. Always count carefully on exam questions.
+</Callout>
+
+<DragSort
+  title="Order the steps to sum the first 5 positive integers"
+  items={[
+    { id: "a", label: "total ← 0" },
+    { id: "b", label: "FOR EACH i IN [1, 2, 3, 4, 5]" },
+    { id: "c", label: "  total ← total + i" },
+    { id: "d", label: "DISPLAY(total)" },
+  ]}
+  answer={["a", "b", "c", "d"]}
+/>
+
+### Procedures (functions)
+
+A procedure packages a computation with a name, parameters, and optionally a return value.
+
+```
+PROCEDURE square(n) {
+  RETURN (n * n)
+}
+
+DISPLAY(square(4))    # 16
+```
+
+**Parameters** are the inputs named inside the procedure. **Arguments** are the actual values passed in. **Scope**: variables defined inside a procedure are not visible outside it.
+
+<Callout type="insight" title="Why procedures exist">
+The whole point of a procedure is **abstraction**: you invoke it without caring how it works. Your code gets shorter, the same logic lives in one place (fix a bug once), and the intent becomes clearer. **`averageScore(students)`** is more readable than 15 lines of summing and dividing.
+</Callout>
+
+### Lists
+
+```
+aList ← [10, 20, 30, 40]
+DISPLAY(aList[1])          # 10 (1-indexed!)
+DISPLAY(LENGTH(aList))     # 4
+APPEND(aList, 50)          # [10, 20, 30, 40, 50]
+INSERT(aList, 2, 15)       # [10, 15, 20, 30, 40, 50]
+REMOVE(aList, 1)           # [15, 20, 30, 40, 50]
+```
+
+Common list patterns on the exam:
+
+- **Linear search**: walk the list; best O(n), worst O(n), unsorted OK.
+- **Binary search**: jump to middle, halve each step. Must be **sorted**. O(log n).
+- **Sum / average**: accumulator variable, single pass.
+- **Filter**: build a second list holding only elements that match a condition.
+
+### Algorithmic efficiency
+
+The exam doesn't use formal Big-O on you, but it asks:
+
+- Which algorithm runs in **reasonable time** (polynomial in input size) vs **unreasonable time** (exponential, factorial, etc.)?
+- If we double the input, does the running time double, quadruple, or grow by a constant?
+
+<DataChart
+  type="line"
+  title="Growth rates at a glance (smaller is faster)"
+  labels={["10", "50", "100", "500", "1000"]}
+  datasets={[
+    { label: "O(1)",        data: [1, 1, 1, 1, 1] },
+    { label: "O(log n)",    data: [3.3, 5.6, 6.6, 9.0, 10.0] },
+    { label: "O(n)",        data: [10, 50, 100, 500, 1000] },
+    { label: "O(n log n)",  data: [33, 282, 664, 4483, 9966] },
+  ]}
+/>
+
+**Reasonable time** (polynomial: constant, linear, quadratic): problems of any realistic size are solvable.
+**Unreasonable time** (exponential 2ⁿ, factorial n!): even tiny inputs blow up. A 30-element brute-force subset search ≈ 1 billion operations. A 60-element one ≈ 10¹⁸. Unsolvable in practice.
+
+<AlgoViz title="Watch sorting algorithms race" algorithm="quick" />
+
+### Binary search: the most-tested algorithm
+
+```
+PROCEDURE binarySearch(aList, target) {
+  low ← 1
+  high ← LENGTH(aList)
+  REPEAT UNTIL (low > high) {
+    mid ← (low + high) / 2
+    IF (aList[mid] = target) {
+      RETURN mid
+    } ELSE IF (aList[mid] < target) {
+      low ← mid + 1
+    } ELSE {
+      high ← mid - 1
+    }
+  }
+  RETURN -1
+}
+```
+
+Requirement: the list must be **sorted**. Each step discards half the remaining candidates. For a million items, binary search finishes in ~20 steps.
+
+<PyRunner title="Try binary search in Python" initial={`def binary_search(lst, target):
+    low, high = 0, len(lst) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if lst[mid] == target:
+            return mid
+        elif lst[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1
+
+print(binary_search([1, 3, 5, 7, 9, 11, 13, 15], 11))  # 5
+print(binary_search([1, 3, 5, 7, 9, 11, 13, 15], 4))   # -1
+`} />
+
+### Undecidable problems
+
+Some problems **cannot be solved by any algorithm**, not because we haven't found the algorithm, but because one provably does not exist. The classic example is the **Halting Problem**: given any program and input, determine whether the program eventually stops.
+
+You only need to know: such problems exist, they are called **undecidable**, and the exam will give you an example and ask you to recognize it.
+
+### Scratch pad
+
+<CodeEditor language="python" initial={`# Scratch pad: try out any Python code for APCSP practice
+def is_prime(n):
+    if n < 2: return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0: return False
+    return True
+
+primes = [n for n in range(2, 50) if is_prime(n)]
+print(primes)
+`} />
+
+## Big Idea 4: Computer Systems and Networks (11-15%)
+
+### How the internet actually works
+
+A message from your laptop to a server is broken into **packets**, each tagged with source IP, destination IP, and a sequence number. Packets travel independently through many routers and reassemble at the destination.
+
+<NetworkGraph
+  title="Packet routing (simplified)"
+  nodes={[
+    { id: "laptop", label: "Laptop", group: "client" },
+    { id: "router1", label: "Router A", group: "router" },
+    { id: "router2", label: "Router B", group: "router" },
+    { id: "router3", label: "Router C", group: "router" },
+    { id: "router4", label: "Router D", group: "router" },
+    { id: "server",  label: "Server",  group: "server" },
+  ]}
+  edges={[
+    { source: "laptop", target: "router1" },
+    { source: "router1", target: "router2" },
+    { source: "router1", target: "router3" },
+    { source: "router2", target: "router4" },
+    { source: "router3", target: "router4" },
+    { source: "router4", target: "server" },
+  ]}
+  layout="cose"
+/>
+
+### Protocols you must know
+
+| Layer | Protocol | Job |
+|---|---|---|
+| Application | HTTP / HTTPS | Web page requests. HTTPS encrypts. |
+| Application | DNS | Translates `example.com` into an IP address. |
+| Application | SMTP / IMAP | Sending and receiving email. |
+| Transport | TCP | Reliable, ordered delivery with acknowledgment. |
+| Transport | UDP | Fast, unreliable, no acknowledgment. Good for streaming. |
+| Internet | IP (IPv4, IPv6) | Addressing and routing between networks. |
+
+**Open protocol.** HTTP, TCP, IP are all open: no company owns them. That openness is what let the internet grow globally.
+
+### Fault tolerance
+
+A system is **fault-tolerant** if it keeps working when parts fail. The internet achieves this with **redundancy**: multiple paths between any two points. If router B is down, packets route through C or D.
+
+<Callout type="insight" title="Why redundancy matters">
+The original ARPANET was designed so that if part of the network was destroyed, the rest would keep working. That design philosophy survives today: Netflix keeps streaming if one data center fails, your page still loads if one CDN node is down.
+</Callout>
+
+### Parallel vs sequential vs distributed
+
+| Model | What it means | When it helps |
+|---|---|---|
+| Sequential | One operation at a time, in order | Simple, predictable |
+| Parallel | Multiple operations simultaneously on one machine with multiple cores | CPU-bound work that can be split |
+| Distributed | Multiple machines cooperating over a network | Massive problems, fault tolerance, crowdsourcing |
+
+**Speedup** measures the benefit of parallelism:
+
+$$
+\text{speedup} = \frac{\text{sequential time}}{\text{parallel time}}
+$$
+
+Not all problems parallelize. If one step depends on the previous one, you can't split them.
+
+<Collapsible question="A task takes 60 seconds sequentially. Split into parallel: 20 seconds of shared setup, then 40 seconds of work split across 4 cores. What's the parallel time and speedup?">
+Parallel time = 20 seconds setup + (40 / 4) seconds work = **30 seconds**.
+
+Speedup = 60 / 30 = **2×**. Not 4× because the 20-second setup can't be parallelized. This is why adding more cores eventually stops helping (Amdahl's Law, informally).
+</Collapsible>
+
+## Big Idea 5: Impact of Computing (21-26%)
+
+### Beneficial and harmful effects
+
+Every computing innovation brings both. The exam always presents both sides. Smartphones connect families across the world; they also enable 24/7 tracking and addictive design. Self-driving cars could eliminate most traffic deaths; they could also put millions of drivers out of work.
+
+On exam questions that ask "which is a potential harmful effect", look for answers about: **surveillance**, **job displacement**, **bias amplification**, **security vulnerabilities**, **mental health impact**, and **environmental cost** (data centers use a lot of power).
+
+### The digital divide
+
+The **digital divide** is the gap between people with reliable, affordable internet + modern devices + digital literacy and those without. Crosses urban/rural, rich/poor, national borders, and generations.
+
+<Callout type="warning" title="Why this matters for APCSP">
+Every question about "equitable access" or "who benefits from this technology" is really a digital-divide question. Good answers acknowledge that the same technology can help one group while leaving another behind.
+</Callout>
+
+### Computing bias
+
+**Computing bias** is bias that gets baked into software, usually because:
+
+1. Training data under-represents some group (facial recognition trained mostly on lighter skin)
+2. The proxy variable encodes a historical inequality (zip code as credit-risk proxy, which tracks historical redlining)
+3. The feedback loop reinforces itself (predictive policing sends more officers to an area, generating more arrest records from that area)
+
+Fixes: diverse and balanced training data, audits for disparate impact, human oversight for high-stakes decisions.
+
+### Safe computing
+
+- **Multi-factor authentication (MFA)**: something you know (password) + something you have (phone) + something you are (fingerprint).
+- **Phishing**: social engineering, not a software flaw. Train users.
+- **PII (Personally Identifiable Information)**: name, address, SSN, account numbers, biometric data. Minimize what you collect and encrypt what you store.
+
+### Encryption
+
+<MatchPairs
+  title="Match the encryption concept to its definition"
+  pairs={[
+    { term: "Symmetric encryption", def: "Same key encrypts and decrypts. Fast. Problem: how to share the key securely?" },
+    { term: "Asymmetric / public-key", def: "Two keys: public (everyone has) encrypts, private (you only) decrypts." },
+    { term: "Digital certificate", def: "A trusted third party's signed statement that a public key really belongs to the claimed owner." },
+    { term: "Hash function",    def: "One-way: easy to compute, impossible to reverse. Used to store passwords and verify integrity." },
+  ]}
+/>
+
+<Callout type="insight" title="Why HTTPS uses both">
+The browser and server use asymmetric encryption at the start to agree on a temporary symmetric key. Then they switch to symmetric encryption because it's much faster. Public-key crypto is the handshake; symmetric crypto is the whole conversation.
+</Callout>
+
+### Crowdsourcing and Creative Commons
+
+**Crowdsourcing** spreads work across many volunteers: Wikipedia, Kickstarter, Foldit, Waze. Works best when individual contributions are small, the platform can validate them, and there's a clear shared goal.
+
+**Creative Commons** licenses let creators grant specific rights (share, adapt, commercial use) while keeping others. CC-BY means use it freely as long as you credit. CC-BY-NC adds "not for commercial use". CC-BY-SA adds "if you modify, you must share under the same license".
+
+## Worked examples
+
+### Example 1: Trace this algorithm
+
+```
+PROCEDURE mystery(n) {
+  count ← 0
+  REPEAT UNTIL (n = 1) {
+    IF (n MOD 2 = 0) {
+      n ← n / 2
+    } ELSE {
+      n ← 3 * n + 1
+    }
+    count ← count + 1
+  }
+  RETURN count
+}
+```
+
+Trace `mystery(6)`:
+
+| Step | n | MOD 2 | Action | New n | count |
+|---|---|---|---|---|---|
+| 0 | 6 | 0 (even) | n ← n/2 | 3 | 1 |
+| 1 | 3 | 1 (odd) | n ← 3n+1 | 10 | 2 |
+| 2 | 10 | 0 | n ← n/2 | 5 | 3 |
+| 3 | 5 | 1 | n ← 3n+1 | 16 | 4 |
+| 4 | 16 | 0 | n ← n/2 | 8 | 5 |
+| 5 | 8 | 0 | n ← n/2 | 4 | 6 |
+| 6 | 4 | 0 | n ← n/2 | 2 | 7 |
+| 7 | 2 | 0 | n ← n/2 | 1 | 8 |
+
+Loop exits because n = 1. Returns **8**. (This is the Collatz conjecture.)
+
+### Example 2: Convert 45 to binary
+
+Repeatedly divide by 2, track remainders, read bottom-up:
+
+| 45 ÷ 2 | quotient | remainder |
+|---|---|---|
+| | 22 | 1 |
+| | 11 | 0 |
+| | 5  | 1 |
+| | 2  | 1 |
+| | 1  | 0 |
+| | 0  | 1 |
+
+Read bottom-up: **101101**. Verify: 32 + 8 + 4 + 1 = 45. ✓
+
+### Example 3: Is this algorithm reasonable?
+
+> "For each pair of users in the system, check if they share any friends. The system has 100,000 users."
+
+Pairs of users = $\binom{100{,}000}{2} \approx 5 \cdot 10^9$. Five billion pair-checks. At a million checks per second, that's 5,000 seconds = 83 minutes. Technically reasonable, but expensive. If the system grew to 10 million users, pairs = $5 \cdot 10^{13}$, and now it would take over a year. Quadratic growth: when input size doubles, time quadruples.
+
+### Example 4: Spotting bias
+
+> "A hiring tool is trained on resumes from the last 10 years at a tech company where 90% of historical hires were men. The tool now predicts which applicants to interview."
+
+The model will learn patterns associated with male applicants and reproduce the 90/10 split, even if the company now wants to hire more women. This is **historical bias**: the training data embeds a past inequality. Fix: balance the training data, remove gender-correlated proxy variables (certain sports, schools, hobbies), audit outputs for disparate impact.
+
+## Practice problems
+
+<Collapsible question="What is 0b1101 in decimal?">
+$1 \cdot 8 + 1 \cdot 4 + 0 \cdot 2 + 1 \cdot 1 = \mathbf{13}$.
+</Collapsible>
+
+<Collapsible question="How many distinct colors can a 24-bit color system display?">
+$2^{24} = 16{,}777{,}216$ colors. (Hence "16 million colors" marketing for True Color.)
+</Collapsible>
+
+<Collapsible question="A REPEAT UNTIL loop with condition `(x > 10)` starts with x = 3. Inside the loop, x increases by 2 each time. How many times does the loop body run?">
+Loop body runs until x > 10, so it runs while x ≤ 10. x values: 3 (run), 5 (run), 7 (run), 9 (run), 11 (condition true, stop). **4 iterations.** Then the final body, after which x = 11 and we exit. Actually let me recount: after iteration 1 x = 5, after 2 x = 7, after 3 x = 9, after 4 x = 11 → stop. **4 iterations.**
+</Collapsible>
+
+<Collapsible question="A linear search on an unsorted list of 1,000,000 items. What is the worst-case number of comparisons?">
+**1,000,000.** Linear search is O(n), and in the worst case the target is the last element or absent.
+</Collapsible>
+
+<Collapsible question="Why can binary search only be used on a sorted list?">
+Binary search works by halving the search range based on whether the middle element is less than or greater than the target. Without sorted order, 'less than' and 'greater than' give no information about where the target lives.
+</Collapsible>
+
+<Collapsible question="A medical records system encrypts files at rest but emails them as plaintext. Is this secure?">
+No. Data at rest is only one surface. Data in transit (email) is wide open. A complete scheme encrypts at rest AND in transit (HTTPS/TLS), controls who has keys, and logs access.
+</Collapsible>
+
+## Self-quiz
+
+15 AP-style questions. Some have one correct answer, some have two. Read carefully.
+
+<Quiz
+  questions={[
+    {
+      q: "Which is the largest portion of the exam by weight?",
+      choices: ["Big Idea 1: Creative Development", "Big Idea 2: Data", "Big Idea 3: Algorithms and Programming", "Big Idea 5: Impact of Computing"],
+      answer: 2,
+      explain: "Big Idea 3 is 30-35% of the exam, the single biggest slice. Big Idea 5 is second at 21-26%."
+    },
+    {
+      q: "What is 11001 in binary converted to decimal?",
+      choices: ["19", "21", "25", "27"],
+      answer: 2,
+      explain: "16 + 8 + 0 + 0 + 1 = 25. Positions are 2^4=16, 2^3=8, 2^2=4, 2^1=2, 2^0=1."
+    },
+    {
+      q: "Given aList ← [5, 10, 15, 20, 25] in AP pseudocode, what is aList[3]?",
+      choices: ["5", "10", "15", "20"],
+      answer: 2,
+      explain: "AP pseudocode is 1-indexed. aList[1] = 5, aList[2] = 10, aList[3] = 15. Python would answer 20."
+    },
+    {
+      q: "Which type of compression can always perfectly reconstruct the original data?",
+      choices: ["Lossy", "Lossless", "Both", "Neither"],
+      answer: 1,
+      explain: "Lossless compression (PNG, ZIP, FLAC) is reversible. Lossy compression (JPEG, MP3) discards data."
+    },
+    {
+      q: "A loop iterates through a sorted list of 1,048,576 items using binary search. What is the approximate maximum number of comparisons?",
+      choices: ["20", "1,000", "524,288", "1,048,576"],
+      answer: 0,
+      explain: "log₂(1,048,576) = 20. Each comparison halves the search range, so it takes at most ~20 steps."
+    },
+    {
+      q: "Which is NOT a source of computing bias?",
+      choices: [
+        "Training data under-represents a group",
+        "The algorithm is written in a low-level language",
+        "A proxy variable encodes a historical inequality",
+        "Feedback loops reinforce the model's own predictions"
+      ],
+      answer: 1,
+      explain: "The implementation language has no bearing on bias. The other three are textbook sources of computing bias."
+    },
+    {
+      q: "Select all that are OPEN protocols used on the Internet. (multi-select)",
+      choices: ["HTTP", "TCP", "A proprietary VPN provider's custom protocol", "IP"],
+      answer: 0,
+      explain: "HTTP, TCP, and IP are all open standards (anyone can implement them). Proprietary protocols owned by a single company are not. Closest single answer: HTTP is the canonical open protocol; the full set is HTTP, TCP, and IP."
+    },
+    {
+      q: "What is the primary purpose of a DNS server?",
+      choices: [
+        "Encrypt data transmitted over the internet",
+        "Translate domain names into IP addresses",
+        "Compress files before sending",
+        "Store and back up user passwords"
+      ],
+      answer: 1,
+      explain: "DNS (Domain Name System) is the internet's phone book: it maps example.com to an IP address like 93.184.216.34."
+    },
+    {
+      q: "Which describes an algorithm that runs in REASONABLE time?",
+      choices: [
+        "Running time grows as 2^n",
+        "Running time grows as n! (factorial)",
+        "Running time grows as n^2 (quadratic)",
+        "Running time requires exhaustive search of all subsets"
+      ],
+      answer: 2,
+      explain: "Polynomial-time algorithms (linear, quadratic, cubic, ...) are considered reasonable. Exponential and factorial time are unreasonable."
+    },
+    {
+      q: "A program uses the algorithm: for each of n items, compare against every other item. What is its efficiency class?",
+      choices: ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+      answer: 3,
+      explain: "n items, each compared against all others, gives n * (n-1) ≈ n² comparisons. Quadratic."
+    },
+    {
+      q: "What does HTTPS provide that HTTP does not?",
+      choices: [
+        "Faster page loads",
+        "Encryption of data in transit",
+        "Access to more websites",
+        "Shorter URLs"
+      ],
+      answer: 1,
+      explain: "HTTPS adds TLS, which encrypts the HTTP traffic. It's slightly slower than HTTP (not faster) but protects against eavesdropping and tampering."
+    },
+    {
+      q: "Which approach best reduces the risk of phishing attacks on a school's users?",
+      choices: [
+        "Stronger password requirements alone",
+        "User education plus multi-factor authentication",
+        "Switching to a different operating system",
+        "Encrypting files on disk"
+      ],
+      answer: 1,
+      explain: "Phishing is social engineering. Users need to recognize it, AND MFA ensures that a stolen password alone doesn't grant access."
+    },
+    {
+      q: "A task runs in 100 seconds sequentially. With 4 cores and no overhead, what's the theoretical minimum parallel time?",
+      choices: ["25 seconds", "50 seconds", "100 seconds", "400 seconds"],
+      answer: 0,
+      explain: "If fully parallelizable, 100 / 4 = 25 seconds. In practice there's always some overhead, but the theoretical minimum is 25."
+    },
+    {
+      q: "Select all examples of PII. (multi-select intent)",
+      choices: [
+        "Full legal name and date of birth combined",
+        "The color preference 'blue'",
+        "A fingerprint scan stored on a server",
+        "The average temperature in a city in July"
+      ],
+      answer: 0,
+      explain: "PII is anything that can identify a specific person, especially in combination. Name+DOB is classic PII; biometric data like fingerprints is also PII. The other two are not identifiable."
+    },
+    {
+      q: "What is the Halting Problem an example of?",
+      choices: [
+        "An undecidable problem",
+        "A problem that takes polynomial time",
+        "A problem solved by binary search",
+        "A problem that only occurs on parallel systems"
+      ],
+      answer: 0,
+      explain: "The Halting Problem (determine whether any program on any input will eventually halt) was proven by Turing to be undecidable. No algorithm can solve it in general."
+    }
+  ]}
+/>
+
+## Flashcards
+
+<Flashcards
+  title="APCSP vocab deck (30 terms)"
+  cards={[
+    { front: "Abstraction", back: "Hiding complexity behind a simpler interface. The core idea of computing." },
+    { front: "Algorithm", back: "A finite, well-defined sequence of steps that solves a problem." },
+    { front: "API", back: "Application Programming Interface: a set of callable functions another program can use." },
+    { front: "Binary search", back: "Search a SORTED list by repeatedly halving the range. O(log n)." },
+    { front: "Bit vs byte", back: "1 bit = 0 or 1. 1 byte = 8 bits = 256 values." },
+    { front: "Big Idea 3 weight", back: "30-35% of the exam. The biggest slice. Prioritize it." },
+    { front: "Lossy compression", back: "Irreversible. JPEG, MP3, MP4. Use for photos, audio, video." },
+    { front: "Lossless compression", back: "Reversible. PNG, ZIP, FLAC. Use for text, code, medical images." },
+    { front: "Linear search", back: "Check each element in order. Works on unsorted lists. O(n)." },
+    { front: "Reasonable time", back: "Polynomial: O(1), O(log n), O(n), O(n²), O(n³)... Solvable at realistic sizes." },
+    { front: "Unreasonable time", back: "Exponential O(2ⁿ) or factorial O(n!). Blows up even for tiny inputs." },
+    { front: "Undecidable problem", back: "A problem for which no algorithm can exist. Example: the Halting Problem." },
+    { front: "IP address", back: "Unique numerical address of a device on the internet. IPv4 is 4 bytes, IPv6 is 16." },
+    { front: "Packet", back: "Small chunk of a network message, tagged with routing info. The internet routes packets independently." },
+    { front: "DNS", back: "Domain Name System. Translates example.com into an IP address." },
+    { front: "HTTP vs HTTPS", back: "HTTPS adds TLS encryption. HTTP is plaintext." },
+    { front: "TCP vs UDP", back: "TCP is reliable and ordered. UDP is fast but unreliable. Streaming often uses UDP." },
+    { front: "Fault tolerance", back: "System keeps working when parts fail. Achieved through redundancy." },
+    { front: "Parallel vs distributed", back: "Parallel = multiple cores on one machine. Distributed = multiple machines cooperating over a network." },
+    { front: "Speedup formula", back: "speedup = sequential time / parallel time." },
+    { front: "PII", back: "Personally Identifiable Information: name, SSN, biometrics, account numbers. Minimize collection, encrypt storage." },
+    { front: "Symmetric vs asymmetric encryption", back: "Symmetric: same key both ways (fast). Asymmetric: public key encrypts, private key decrypts (solves key-exchange problem)." },
+    { front: "Hash function", back: "One-way: easy to compute, impossible to reverse. Used for password storage and integrity checks." },
+    { front: "MFA", back: "Multi-factor authentication: something you know + something you have + something you are." },
+    { front: "Digital divide", back: "Gap between those with and without reliable computing access. Exam's canonical equity topic." },
+    { front: "Computing bias", back: "Bias baked into software via biased training data, proxy variables, or feedback loops." },
+    { front: "Crowdsourcing", back: "Many volunteers contribute small amounts of work over the internet. Wikipedia, Kickstarter, Waze." },
+    { front: "Creative Commons", back: "License family that lets creators grant specific rights (share, adapt, commercial) while keeping others." },
+    { front: "AP pseudocode indexing", back: "1-indexed. aList[1] is the FIRST element, not aList[0]." },
+    { front: "MOD operator", back: "Remainder after division. 13 MOD 5 = 3. Often used to check evenness (n MOD 2 = 0 means n is even)." },
+  ]}
+/>
+
+## Test-taking strategies
+
+<Callout type="tip" title="Pace yourself with checkpoints">
+At 30 minutes in, you should be around question 18. At 1 hour in, question 35. At 1:30, question 55. If you're behind, don't panic: skim harder questions, guess, and come back if time permits.
+</Callout>
+
+<Callout type="tip" title="Watch for 'select TWO' and 'EXCEPT'">
+Multi-select questions are scored only if both answers are correct. Negated questions ("which is NOT...", "all except...") trip up students who are pattern-matching. Read the question twice.
+</Callout>
+
+<Callout type="tip" title="Process of elimination is cheap insurance">
+Even if you don't know the answer, eliminating two choices doubles your odds from 25% to 50%. APCSP answers often include one obviously wrong option (wrong units, wrong Big Idea) and one mostly-right option. Cross out what's definitely wrong before guessing.
+</Callout>
+
+<Callout type="tip" title="Flag and return">
+Flag any question that takes more than 2 minutes and move on. Coming back with a fresh mind after 10 more questions often breaks the mental block. The test interface lets you jump back to flagged questions at the end.
+</Callout>
+
+<Callout type="tip" title="Trust the reference sheet">
+You have the pseudocode reference on the test. Don't memorize exact syntax; practice READING it fluently. If a question uses `REPEAT UNTIL`, look up the semantics on the sheet if unsure.
+</Callout>
+
+## Mnemonics
+
+**"Coders Don't Always Consider Impact"** = order of Big Ideas: **C**reative development, **D**ata, **A**lgorithms, **C**omputer systems/networks, **I**mpact.
+
+**"SLICE"** for things to check in an algorithm question: **S**cope (is the variable visible here?), **L**oop bounds (off by one?), **I**ndex base (0 or 1?), **C**onditionals (is the Boolean right?), **E**dge cases (empty list, first/last element).
+
+**"HTTPS = HTTP Secure"**: HTTPS is just HTTP plus TLS encryption. S for Secure.
+
+**"DRY, not WET"**: Don't Repeat Yourself. Write Everything Twice is a bug factory. Use procedures.
+
+## Common pitfalls
+
+- **Confusing bit with byte.** 8 bits = 1 byte. "8-bit color" means 256 colors; "8-byte color" is 2⁶⁴ and doesn't exist.
+- **Mixing 0-indexed and 1-indexed.** AP pseudocode is 1-indexed; Python is 0-indexed. The exam uses AP pseudocode.
+- **Assuming linear search works on unsorted lists, binary search doesn't.** Linear search works on any list (O(n)). Binary search requires a **sorted** list (O(log n)).
+- **Correlation vs causation.** "A and B are related in this dataset" does not mean A causes B.
+- **Forgetting that lossy compression is irreversible.** Once a JPEG is compressed, the original pixels are gone. Editing and resaving lossy formats compounds the loss.
+- **Treating encryption as a silver bullet.** Encryption protects confidentiality, not availability or integrity. A ransomware attack that encrypts YOUR files uses the same tool against you.
+- **Overreaching with data conclusions.** Only claim what the sample supports. "Users of this app" is not "all people".
+- **Short-circuit boolean errors.** `(x ≠ 0) AND (10 / x > 1)` is safe; `(10 / x > 1) AND (x ≠ 0)` crashes when x = 0.
+
+## Cheat sheet
+
+### AP pseudocode syntax at a glance
+
+| Concept | AP pseudocode |
+|---|---|
+| Assignment | `a ← 5` |
+| Display / print | `DISPLAY(x)` |
+| Input | `INPUT()` |
+| Bounded loop | `REPEAT n TIMES { ... }` |
+| Conditional loop | `REPEAT UNTIL (cond) { ... }` |
+| Iterate list | `FOR EACH item IN aList { ... }` |
+| If / else | `IF (cond) { ... } ELSE { ... }` |
+| Define procedure | `PROCEDURE name(params) { ... }` |
+| Call procedure | `name(args)` |
+| Return | `RETURN value` |
+| Math | `+`, `-`, `*`, `/`, `MOD` |
+| Booleans | `AND`, `OR`, `NOT`, `=`, `≠`, `<`, `>`, `≤`, `≥` |
+| First element | `aList[1]`, **1-indexed** |
+| List length | `LENGTH(aList)` |
+| Insert at i | `INSERT(aList, i, value)` |
+| Append | `APPEND(aList, value)` |
+| Remove | `REMOVE(aList, i)` |
+
+### Binary / decimal / hex conversions
+
+| Decimal | Binary | Hex |
+|---|---|---|
+| 0 | 0000 | 0 |
+| 1 | 0001 | 1 |
+| 2 | 0010 | 2 |
+| 4 | 0100 | 4 |
+| 8 | 1000 | 8 |
+| 9 | 1001 | 9 |
+| 10 | 1010 | A |
+| 15 | 1111 | F |
+| 16 | 1 0000 | 10 |
+| 255 | 1111 1111 | FF |
+
+### Efficiency classes (slow to fast)
+
+| Class | Example | 1000 items |
+|---|---|---|
+| O(n!) | Trying every permutation | Impossible |
+| O(2ⁿ) | Trying every subset | Impossible |
+| O(n²) | Nested loops, bubble sort | 1,000,000 ops |
+| O(n log n) | Merge sort, quick sort | ~10,000 |
+| O(n) | Linear search | 1,000 |
+| O(log n) | Binary search | 10 |
+| O(1) | Hash table lookup | 1 |
+
+### Encryption at a glance
+
+| Type | Keys | Speed | Use case |
+|---|---|---|---|
+| Symmetric | One shared key | Fast | Bulk encryption of data |
+| Asymmetric | Public + private | Slow | Key exchange, digital signatures |
+| Hash | None (one-way) | Fast | Passwords, integrity checks |
+
+### Internet protocols
+
+| Protocol | Purpose |
+|---|---|
+| HTTP / HTTPS | Web page requests (S adds TLS encryption) |
+| DNS | Name to IP address lookup |
+| TCP | Reliable ordered delivery |
+| UDP | Fast unordered delivery |
+| IP | Addressing and routing |
+
+## Study session timer
+
+<Pomodoro title="APCSP study timer" workMin={25} shortBreakMin={5} longBreakMin={15} cyclesUntilLong={4} />
+
+Set the timer, attack a Big Idea, take a break, repeat. Four 25-minute blocks with breaks cover 2 hours of focused review, which is exactly one exam's worth of stamina.
+
+---
+
+Good luck. Read the question twice, trust the reference sheet, flag the hard ones, and bring a snack for the break.
