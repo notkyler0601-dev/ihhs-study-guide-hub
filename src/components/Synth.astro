@@ -1,0 +1,85 @@
+---
+// Tiny synthesizer pad using Tone.js. Useful for music theory guides.
+// Click notes to play, or use a row of preset sequences (scales, chords).
+interface Props {
+  title?: string;
+  notes?: string[];
+  presets?: { label: string; sequence: string[]; tempo?: number }[];
+}
+const defaultNotes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+const defaultPresets = [
+  { label: 'C major scale', sequence: ['C4','D4','E4','F4','G4','A4','B4','C5'], tempo: 110 },
+  { label: 'C minor scale', sequence: ['C4','D4','Eb4','F4','G4','Ab4','Bb4','C5'], tempo: 110 },
+  { label: 'C major triad',  sequence: ['C4','E4','G4','C5'], tempo: 80 },
+  { label: 'I-IV-V-I',         sequence: ['C4','F4','G4','C4'], tempo: 70 },
+];
+const { title = 'Synth', notes = defaultNotes, presets = defaultPresets } = Astro.props;
+const id = 'synth-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ notes, presets });
+---
+
+<section class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-synth data-conf={conf}>
+  <header class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span data-synth-status class="text-[11px] text-ink-500">Click any note to enable audio</span>
+  </header>
+
+  <div data-synth-keys class="flex flex-wrap gap-1.5 mb-4"></div>
+
+  <div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1.5">Presets</div>
+  <div data-synth-presets class="flex flex-wrap gap-2"></div>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-synth]:not([data-synth-ready])');
+    if (roots.length === 0) return;
+
+    const Tone: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/tone@15.0.4/build/Tone.js',
+      'Tone'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.synthReady = '1';
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+      const keysHost = root.querySelector<HTMLElement>('[data-synth-keys]')!;
+      const presetsHost = root.querySelector<HTMLElement>('[data-synth-presets]')!;
+      const statusEl = root.querySelector<HTMLElement>('[data-synth-status]')!;
+
+      const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+      const ensureAudio = async () => {
+        if (Tone.context.state !== 'running') { await Tone.start(); statusEl.textContent = 'Audio ready'; }
+      };
+
+      (conf.notes ?? []).forEach((n: string) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = n;
+        b.className = 'h-12 min-w-12 px-3 rounded-md border border-ink-200 dark:border-ink-700 hover:border-accent-400 dark:hover:border-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/30 font-mono text-sm';
+        b.addEventListener('click', async () => { await ensureAudio(); synth.triggerAttackRelease(n, '8n'); });
+        keysHost.appendChild(b);
+      });
+
+      (conf.presets ?? []).forEach((p: any) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = '▶ ' + p.label;
+        b.className = 'px-3 py-1.5 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-xs font-medium';
+        b.addEventListener('click', async () => {
+          await ensureAudio();
+          const tempo = p.tempo ?? 100;
+          const interval = 60 / tempo;
+          p.sequence.forEach((n: string, i: number) => {
+            synth.triggerAttackRelease(n, '8n', Tone.now() + i * interval);
+          });
+        });
+        presetsHost.appendChild(b);
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

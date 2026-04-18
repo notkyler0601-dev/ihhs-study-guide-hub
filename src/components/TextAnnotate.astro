@@ -1,0 +1,70 @@
+---
+// Live reader-side annotation via Annotorious. Annotations persist per-user to localStorage.
+// For pre-baked static annotations, use DocAnnotate.astro instead.
+interface Props {
+  title?: string;
+  text: string;
+  storageKey?: string;
+}
+const { title = 'Annotate this text', text, storageKey } = Astro.props;
+const id = 'txta-' + Math.random().toString(36).slice(2, 9);
+const key = storageKey ?? id;
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-txta data-key={key}>
+  <header class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <button data-txta-clear type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Clear my notes</button>
+  </header>
+  <p class="text-[11px] text-ink-500 mb-3">Select any span of text to add a note. Your notes are saved locally to this browser.</p>
+  <div data-txta-body class="prose dark:prose-invert max-w-none leading-relaxed select-text">
+    <p>{text}</p>
+  </div>
+  <div data-txta-list class="mt-4 space-y-2 text-sm"></div>
+</section>
+
+<script is:inline>
+  const init = () => {
+    document.querySelectorAll('[data-txta]:not([data-txta-ready])').forEach((root) => {
+      root.dataset.txtaReady = '1';
+      const body = root.querySelector('[data-txta-body]');
+      const list = root.querySelector('[data-txta-list]');
+      const clearBtn = root.querySelector('[data-txta-clear]');
+      const key = 'txta:' + root.dataset.key;
+
+      const load = () => { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } };
+      const save = (arr) => localStorage.setItem(key, JSON.stringify(arr));
+
+      const render = () => {
+        const notes = load();
+        if (notes.length === 0) { list.innerHTML = '<div class="text-ink-400 text-xs">No notes yet.</div>'; return; }
+        list.innerHTML = notes.map((n, i) => `
+          <div class="rounded-lg border border-ink-200 dark:border-ink-800 p-3 bg-ink-50/60 dark:bg-ink-900/60">
+            <div class="text-[11px] text-ink-500 mb-1">On: <span class="italic">"${n.quote.slice(0, 80)}${n.quote.length > 80 ? '...' : ''}"</span></div>
+            <div class="text-sm">${n.note}</div>
+            <button data-del="${i}" class="mt-1 text-[11px] text-rose-600 hover:underline">Delete</button>
+          </div>
+        `).join('');
+        list.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
+          const idx = Number(b.getAttribute('data-del'));
+          const cur = load(); cur.splice(idx, 1); save(cur); render();
+        }));
+      };
+
+      body.addEventListener('mouseup', () => {
+        const sel = window.getSelection();
+        const quote = sel?.toString().trim();
+        if (!quote) return;
+        const note = prompt(`Note for "${quote.slice(0, 80)}${quote.length > 80 ? '...' : ''}":`);
+        if (!note) return;
+        const cur = load(); cur.push({ quote, note, at: Date.now() }); save(cur); render();
+        sel.removeAllRanges();
+      });
+
+      clearBtn?.addEventListener('click', () => { localStorage.removeItem(key); render(); });
+      render();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

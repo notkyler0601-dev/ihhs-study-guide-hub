@@ -1,0 +1,61 @@
+---
+// Render a chemical structure from a SMILES string using SmilesDrawer.
+// Example: <ChemStructure smiles="CC(=O)OC1=CC=CC=C1C(=O)O" name="Aspirin" />
+interface Props {
+  smiles: string;
+  name?: string;
+  width?: number;
+  height?: number;
+}
+const { smiles, name, width = 400, height = 280 } = Astro.props;
+const id = 'smiles-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft text-center" data-chem id={id} data-smiles={smiles}>
+  <canvas
+    data-chem-canvas
+    class="mx-auto max-w-full"
+    width={width}
+    height={height}
+    aria-label={name ?? `Chemical structure for ${smiles}`}
+  ></canvas>
+  {name && <figcaption class="mt-3 font-serif text-base font-semibold">{name}</figcaption>}
+  <div class="mt-1 text-[11px] font-mono text-ink-500 break-all">{smiles}</div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-chem]:not([data-chem-ready])');
+    if (roots.length === 0) return;
+
+    const SmilesDrawer: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/smiles-drawer@2.1.7/dist/smiles-drawer.min.js',
+      'SmilesDrawer'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.chemReady = '1';
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-chem-canvas]')!;
+      const smiles = root.dataset.smiles ?? '';
+      const isDark = document.documentElement.classList.contains('dark');
+      const drawer = new SmilesDrawer.Drawer({
+        width: canvas.width,
+        height: canvas.height,
+        bondThickness: 1.2,
+        themes: {
+          light: { C: '#27272a', BACKGROUND: '#ffffff' },
+          dark:  { C: '#fafafa', BACKGROUND: '#171717' },
+        },
+      });
+      SmilesDrawer.parse(smiles, (tree: any) => {
+        drawer.draw(tree, canvas, isDark ? 'dark' : 'light', false);
+      }, (err: unknown) => {
+        console.warn('SmilesDrawer parse failed', err);
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

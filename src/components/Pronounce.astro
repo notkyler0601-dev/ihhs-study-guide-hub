@@ -1,0 +1,61 @@
+---
+// Audio waveform with click-to-play using wavesurfer.js.
+interface Props {
+  src: string;
+  title?: string;
+  caption?: string;
+  height?: number;
+}
+const { src, title, caption, height = 96 } = Astro.props;
+const id = 'wav-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-wav data-src={src} data-height={height}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div class="flex items-center gap-3">
+    <button data-wav-play type="button" aria-label="Play" class="shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <div data-wav-canvas class="flex-1 min-w-0"></div>
+  </div>
+  {caption && <div class="mt-2 text-xs text-ink-500">{caption}</div>}
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-wav]:not([data-wav-ready])');
+    if (roots.length === 0) return;
+
+    const WaveSurfer: any = await importGlobal(
+      'https://unpkg.com/wavesurfer.js@7.8.6/dist/wavesurfer.min.js',
+      'WaveSurfer'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.wavReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-wav-canvas]')!;
+      const playBtn = root.querySelector<HTMLButtonElement>('[data-wav-play]')!;
+      const isDark = document.documentElement.classList.contains('dark');
+      const ws = WaveSurfer.create({
+        container: host,
+        waveColor: isDark ? '#3f3f46' : '#d4d4d8',
+        progressColor: '#b91c1c',
+        cursorColor: '#b91c1c',
+        height: Number(root.dataset.height || 96),
+        barWidth: 2, barRadius: 2, barGap: 1,
+        url: root.dataset.src,
+      });
+      ws.on('finish', () => { playBtn.innerHTML = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; });
+      playBtn.addEventListener('click', () => {
+        ws.playPause();
+        playBtn.innerHTML = ws.isPlaying()
+          ? '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>'
+          : '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

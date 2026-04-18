@@ -1,0 +1,61 @@
+---
+// 3D globe with markers via globe.gl (WebGL).
+interface Marker { lat: number; lng: number; label?: string; color?: string; size?: number; }
+interface Arc { startLat: number; startLng: number; endLat: number; endLng: number; color?: string; }
+interface Props {
+  title?: string;
+  markers?: Marker[];
+  arcs?: Arc[];
+  height?: number;
+}
+const { title = 'Interactive globe', markers = [], arcs = [], height = 480 } = Astro.props;
+const id = 'globe-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ markers, arcs });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-globe id={id} data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-globe-canvas class="w-full bg-black flex items-center justify-center" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-globe]:not([data-globe-ready])');
+    if (roots.length === 0) return;
+
+    const Globe: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/globe.gl@2.32.4/dist/globe.gl.min.js',
+      'Globe'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.globeReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-globe-canvas]')!;
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+
+      try {
+        const g = Globe()(host)
+          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+          .backgroundColor('#000')
+          .pointsData(conf.markers ?? [])
+          .pointLat('lat').pointLng('lng')
+          .pointColor((d: any) => d.color || '#b91c1c')
+          .pointAltitude(0.02)
+          .pointRadius((d: any) => d.size || 0.5)
+          .pointLabel((d: any) => d.label || '')
+          .arcsData(conf.arcs ?? [])
+          .arcColor((d: any) => d.color || '#b91c1c')
+          .arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(2000);
+        const { width, height } = host.getBoundingClientRect();
+        g.width(width).height(height);
+      } catch (e) {
+        console.warn('Globe3D failed', e);
+        host.innerHTML = `<div class="p-6 text-sm text-white">Globe render failed.</div>`;
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

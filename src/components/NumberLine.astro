@@ -1,0 +1,66 @@
+---
+// SVG number line. marks: [{ at: number, label?: string, color?: string, type?: 'point'|'open' }]
+// intervals: [{ from: number, to: number, leftOpen?: boolean, rightOpen?: boolean, color?: string, label?: string }]
+interface Mark { at: number; label?: string; color?: string; type?: 'point' | 'open'; }
+interface Interval { from: number; to: number; leftOpen?: boolean; rightOpen?: boolean; color?: string; label?: string; }
+interface Props {
+  min: number;
+  max: number;
+  step?: number;
+  marks?: Mark[];
+  intervals?: Interval[];
+  title?: string;
+  width?: number;
+}
+const { min, max, step = 1, marks = [], intervals = [], title, width = 720 } = Astro.props;
+
+const padding = 30;
+const innerW = width - padding * 2;
+const range = max - min;
+const xOf = (v: number) => padding + ((v - min) / range) * innerW;
+
+const ticks: number[] = [];
+for (let v = min; v <= max + 1e-9; v += step) ticks.push(Math.round(v * 1e6) / 1e6);
+
+const accent = '#b91c1c';
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft">
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <svg viewBox={`0 0 ${width} 110`} class="w-full h-auto block">
+    <line x1={padding} y1="55" x2={width - padding} y2="55" stroke="currentColor" stroke-width="1.5" class="text-ink-700 dark:text-ink-300" />
+    <polygon points={`${padding-6},55 ${padding+2},50 ${padding+2},60`} class="fill-current text-ink-700 dark:text-ink-300" />
+    <polygon points={`${width-padding+6},55 ${width-padding-2},50 ${width-padding-2},60`} class="fill-current text-ink-700 dark:text-ink-300" />
+
+    {ticks.map((t) => (
+      <g>
+        <line x1={xOf(t)} y1="50" x2={xOf(t)} y2="60" stroke="currentColor" stroke-width="1" class="text-ink-500 dark:text-ink-400" />
+        <text x={xOf(t)} y="76" text-anchor="middle" class="fill-current text-ink-500 dark:text-ink-400" font-size="11">{t}</text>
+      </g>
+    ))}
+
+    {intervals.map((iv) => {
+      const c = iv.color ?? accent;
+      const x1 = xOf(iv.from);
+      const x2 = xOf(iv.to);
+      return (
+        <g>
+          <line x1={x1} y1="55" x2={x2} y2="55" stroke={c} stroke-width="4" />
+          <circle cx={x1} cy="55" r="5" fill={iv.leftOpen ? 'white' : c} stroke={c} stroke-width="2" />
+          <circle cx={x2} cy="55" r="5" fill={iv.rightOpen ? 'white' : c} stroke={c} stroke-width="2" />
+          {iv.label && <text x={(x1 + x2) / 2} y="35" text-anchor="middle" fill={c} font-size="12" font-weight="600">{iv.label}</text>}
+        </g>
+      );
+    })}
+
+    {marks.map((m) => {
+      const c = m.color ?? accent;
+      return (
+        <g>
+          <circle cx={xOf(m.at)} cy="55" r="6" fill={m.type === 'open' ? 'white' : c} stroke={c} stroke-width="2" />
+          {m.label && <text x={xOf(m.at)} y="32" text-anchor="middle" fill={c} font-size="12" font-weight="600">{m.label}</text>}
+        </g>
+      );
+    })}
+  </svg>
+</figure>

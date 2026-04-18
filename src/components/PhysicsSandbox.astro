@@ -1,0 +1,80 @@
+---
+// 2D physics sandbox via Matter.js. Author passes a setup function as a string
+// that receives { Matter, world, render } and adds bodies to the world.
+interface Props {
+  title?: string;
+  height?: number;
+  setup: string;
+}
+const { title = 'Physics sandbox', height = 420, setup } = Astro.props;
+const id = 'phys-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft" data-physics id={id} data-setup={setup}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <button data-physics-reset type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Reset</button>
+  </figcaption>
+  <div data-physics-canvas class="relative w-full bg-ink-50 dark:bg-ink-950" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-physics]:not([data-physics-ready])');
+    if (roots.length === 0) return;
+
+    const Matter: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js',
+      'Matter'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.physicsReady = '1';
+      const canvasHost = root.querySelector<HTMLElement>('[data-physics-canvas]')!;
+      const setupSrc = root.dataset.setup ?? '';
+
+      let engine: any, render: any, runner: any;
+
+      const start = () => {
+        canvasHost.innerHTML = '';
+        engine = Matter.Engine.create();
+        const { width, height } = canvasHost.getBoundingClientRect();
+        const isDark = document.documentElement.classList.contains('dark');
+        render = Matter.Render.create({
+          element: canvasHost,
+          engine,
+          options: {
+            width: Math.floor(width),
+            height: Math.floor(height),
+            wireframes: false,
+            background: isDark ? '#09090b' : '#fafafa',
+          },
+        });
+        runner = Matter.Runner.create();
+
+        try {
+          // eslint-disable-next-line no-new-func
+          const fn = new Function('Matter', 'world', 'engine', 'render', setupSrc);
+          fn(Matter, engine.world, engine, render);
+        } catch (err) {
+          console.error('PhysicsSandbox setup error', err);
+        }
+
+        Matter.Render.run(render);
+        Matter.Runner.run(runner, engine);
+      };
+
+      const stop = () => {
+        if (render) Matter.Render.stop(render);
+        if (runner) Matter.Runner.stop(runner);
+      };
+
+      root.querySelector('[data-physics-reset]')?.addEventListener('click', () => { stop(); start(); });
+      start();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

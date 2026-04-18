@@ -1,0 +1,90 @@
+---
+// Run SQL against an in-browser SQLite database (sql.js).
+// The `schema` prop is an initial SQL script to seed tables and data.
+interface Props {
+  title?: string;
+  schema?: string;
+  initial?: string;
+}
+const { title = 'SQL playground', schema = '', initial = 'SELECT 1 + 1 AS result;' } = Astro.props;
+const id = 'sql-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-sql>
+  <header class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white text-xs font-mono">sql</span>
+      {title}
+    </span>
+    <span data-sql-status class="text-[11px] text-ink-500">Idle</span>
+  </header>
+
+  <script type="application/json" data-sql-schema set:html={JSON.stringify({ schema })} />
+
+  <textarea
+    data-sql-code
+    class="w-full px-5 py-4 bg-ink-50 dark:bg-ink-950 font-mono text-[13px] leading-6 text-ink-900 dark:text-ink-50 focus:outline-none resize-y min-h-[120px] border-0"
+    spellcheck="false"
+  >{initial}</textarea>
+
+  <div class="flex items-center justify-between px-5 py-2 border-y border-ink-200 dark:border-ink-800 bg-ink-50/60 dark:bg-ink-900/60">
+    <button data-sql-run type="button" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Run</button>
+    <button data-sql-reset type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Reset database</button>
+  </div>
+
+  <div data-sql-out class="px-5 py-4 overflow-x-auto text-sm"></div>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-sql]:not([data-sql-ready])');
+    if (roots.length === 0) return;
+
+    const initSqlJs: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/sql.js@1.11.0/dist/sql-wasm.js',
+      'initSqlJs'
+    );
+    const SQL = await initSqlJs({ locateFile: (f: string) => `https://cdn.jsdelivr.net/npm/sql.js@1.11.0/dist/${f}` });
+
+    roots.forEach((root) => {
+      root.dataset.sqlReady = '1';
+      const codeEl = root.querySelector<HTMLTextAreaElement>('[data-sql-code]')!;
+      const outEl = root.querySelector<HTMLElement>('[data-sql-out]')!;
+      const runBtn = root.querySelector<HTMLButtonElement>('[data-sql-run]')!;
+      const resetBtn = root.querySelector<HTMLButtonElement>('[data-sql-reset]')!;
+      const statusEl = root.querySelector<HTMLElement>('[data-sql-status]')!;
+      const schemaEl = root.querySelector<HTMLElement>('[data-sql-schema]');
+      const schema: string = JSON.parse(schemaEl?.textContent || '{}').schema ?? '';
+
+      let db: any;
+      const resetDb = () => {
+        db = new SQL.Database();
+        if (schema.trim()) { try { db.exec(schema); statusEl.textContent = 'Ready'; } catch (e) { statusEl.textContent = 'Schema error'; outEl.innerHTML = `<pre class="text-rose-600">${String(e)}</pre>`; } }
+        else statusEl.textContent = 'Ready';
+      };
+
+      const run = () => {
+        try {
+          const results = db.exec(codeEl.value);
+          if (results.length === 0) { outEl.innerHTML = `<div class="text-ink-500">Query executed. No rows returned.</div>`; return; }
+          outEl.innerHTML = results.map((r: any) => {
+            const head = r.columns.map((c: string) => `<th class="text-left px-3 py-1.5 border-b border-ink-200 dark:border-ink-800 font-semibold">${c}</th>`).join('');
+            const body = r.values.map((row: any[]) => `<tr>${row.map((v) => `<td class="px-3 py-1 border-b border-ink-100 dark:border-ink-900 font-mono">${v === null ? '<span class="text-ink-400">NULL</span>' : String(v)}</td>`).join('')}</tr>`).join('');
+            return `<table class="min-w-full text-sm">${head ? `<thead><tr>${head}</tr></thead>` : ''}<tbody>${body}</tbody></table>`;
+          }).join('<hr class="my-3 border-ink-200 dark:border-ink-800" />');
+        } catch (e) {
+          outEl.innerHTML = `<pre class="text-rose-600">${String(e)}</pre>`;
+        }
+      };
+
+      runBtn.addEventListener('click', run);
+      resetBtn.addEventListener('click', () => { resetDb(); outEl.innerHTML = ''; });
+      codeEl.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); run(); } });
+      resetDb();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

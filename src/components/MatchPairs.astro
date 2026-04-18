@@ -1,0 +1,100 @@
+---
+// Match-pairs game: click a term, then its matching definition.
+interface Pair { term: string; def: string; }
+interface Props {
+  title?: string;
+  pairs: Pair[];
+}
+const { title = 'Match each term to its definition', pairs } = Astro.props;
+const id = 'match-' + Math.random().toString(36).slice(2, 9);
+
+const terms = pairs.map((p, i) => ({ id: 'T' + i, label: p.term, partner: 'D' + i })).sort(() => Math.random() - 0.5);
+const defs = pairs.map((p, i) => ({ id: 'D' + i, label: p.def, partner: 'T' + i })).sort(() => Math.random() - 0.5);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-match>
+  <header class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span data-match-status class="text-xs text-ink-500">0 / {pairs.length} matched</span>
+  </header>
+
+  <div class="grid sm:grid-cols-2 gap-3">
+    <div class="space-y-2">
+      <div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500">Terms</div>
+      {terms.map((t) => (
+        <button
+          data-match-side="term" data-id={t.id} data-partner={t.partner}
+          type="button"
+          class="match-cell w-full text-left px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-700 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm font-medium"
+        >{t.label}</button>
+      ))}
+    </div>
+    <div class="space-y-2">
+      <div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500">Definitions</div>
+      {defs.map((d) => (
+        <button
+          data-match-side="def" data-id={d.id} data-partner={d.partner}
+          type="button"
+          class="match-cell w-full text-left px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-700 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm"
+        >{d.label}</button>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  const init = () => {
+    document.querySelectorAll('[data-match]:not([data-match-ready])').forEach((root) => {
+      root.dataset.matchReady = '1';
+      const status = root.querySelector('[data-match-status]');
+      const total = Number(status.textContent.split(' / ')[1].split(' ')[0]);
+      let selected = null;
+      let matched = 0;
+
+      root.querySelectorAll('.match-cell').forEach((cell) => {
+        cell.addEventListener('click', () => {
+          if (cell.classList.contains('opacity-40')) return;
+          if (!selected) {
+            cell.classList.add('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            selected = cell;
+            return;
+          }
+          if (selected === cell) {
+            cell.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            selected = null;
+            return;
+          }
+          if (selected.dataset.side === cell.dataset.side) {
+            selected.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            cell.classList.add('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            selected = cell;
+            return;
+          }
+          // Different sides — check match.
+          const ok = selected.dataset.partner === cell.dataset.id;
+          if (ok) {
+            [selected, cell].forEach((c) => {
+              c.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+              c.classList.add('opacity-40', 'border-emerald-400', 'bg-emerald-50', 'dark:bg-emerald-900/30');
+              c.disabled = true;
+            });
+            matched++;
+            status.textContent = `${matched} / ${total} matched`;
+          } else {
+            [selected, cell].forEach((c) => {
+              c.classList.add('border-rose-400', 'bg-rose-50', 'dark:bg-rose-900/30');
+            });
+            const wrong = [selected, cell];
+            setTimeout(() => wrong.forEach((c) => {
+              c.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30',
+                'border-rose-400', 'bg-rose-50', 'dark:bg-rose-900/30');
+            }), 600);
+          }
+          selected = null;
+        });
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

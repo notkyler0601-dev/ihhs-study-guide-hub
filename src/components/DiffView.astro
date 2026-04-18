@@ -1,0 +1,55 @@
+---
+// Side-by-side or line-by-line diff rendering using diff2html.
+interface Props {
+  title?: string;
+  before: string;
+  after: string;
+  mode?: 'side-by-side' | 'line-by-line';
+  fileName?: string;
+}
+const { title = 'Compare', before, after, mode = 'side-by-side', fileName = 'text' } = Astro.props;
+const id = 'diff-' + Math.random().toString(36).slice(2, 9);
+
+// Build a minimal unified-diff patch from before/after strings.
+function buildPatch(a: string, b: string, name: string): string {
+  return `--- a/${name}\n+++ b/${name}\n@@ -1,${a.split('\n').length} +1,${b.split('\n').length} @@\n` +
+    a.split('\n').map((l) => '-' + l).join('\n') + '\n' +
+    b.split('\n').map((l) => '+' + l).join('\n') + '\n';
+}
+const patch = buildPatch(before, after, fileName);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-diff data-mode={mode}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-diff-canvas class="overflow-x-auto text-sm" style="min-height: 120px;"></div>
+  <script type="application/x-diff" data-diff-src set:html={patch} />
+</figure>
+
+<script>
+  import { importGlobal, loadStyle } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-diff]:not([data-diff-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/diff2html@3.4.48/bundles/css/diff2html.min.css');
+    const Diff2Html: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/diff2html@3.4.48/bundles/js/diff2html.min.js',
+      'Diff2Html'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.diffReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-diff-canvas]')!;
+      const srcEl = root.querySelector<HTMLElement>('[data-diff-src]');
+      const patch = srcEl?.textContent ?? '';
+      host.innerHTML = Diff2Html.html(patch, {
+        drawFileList: false,
+        matching: 'words',
+        outputFormat: root.dataset.mode === 'line-by-line' ? 'line-by-line' : 'side-by-side',
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

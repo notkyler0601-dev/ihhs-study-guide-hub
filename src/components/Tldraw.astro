@@ -1,0 +1,20 @@
+---
+// Embed a Tldraw collaborative whiteboard via the public iframe.
+// For private/persistent boards, deploy your own tldraw instance.
+interface Props {
+  title?: string;
+  height?: number;
+  src?: string;
+}
+const { title = 'Whiteboard', height = 540, src = 'https://www.tldraw.com' } = Astro.props;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">tldraw</span>
+  </figcaption>
+  <div class="relative w-full" style={`height:${height}px`}>
+    <iframe src={src} title={title} class="absolute inset-0 w-full h-full border-0" loading="lazy" allowfullscreen></iframe>
+  </div>
+</figure>

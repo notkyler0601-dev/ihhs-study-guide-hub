@@ -1,0 +1,99 @@
+---
+// In-browser Python via Pyodide. First run downloads the Pyodide runtime (~10 MB).
+interface Props {
+  title?: string;
+  initial?: string;
+  packages?: string[];
+}
+const { title = 'Python', initial = 'print("hello, world")', packages = [] } = Astro.props;
+const id = 'py-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ packages });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-py id={id} data-conf={conf}>
+  <header class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white text-xs font-mono">py</span>
+      {title}
+    </span>
+    <span data-py-status class="text-[11px] text-ink-500">Idle</span>
+  </header>
+  <textarea
+    data-py-code
+    class="w-full px-5 py-4 bg-ink-50 dark:bg-ink-950 font-mono text-[13px] leading-6 text-ink-900 dark:text-ink-50 focus:outline-none resize-y min-h-[140px] border-0"
+    spellcheck="false"
+  >{initial}</textarea>
+  <div class="flex items-center justify-between px-5 py-2 border-y border-ink-200 dark:border-ink-800 bg-ink-50/60 dark:bg-ink-900/60">
+    <button data-py-run type="button" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">
+      Run
+    </button>
+    <button data-py-clear type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Clear output</button>
+  </div>
+  <pre data-py-out class="px-5 py-4 m-0 font-mono text-[13px] leading-6 text-ink-700 dark:text-ink-300 max-h-64 overflow-y-auto whitespace-pre-wrap min-h-[80px]"></pre>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  let pyodidePromise: Promise<any> | null = null;
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-py]:not([data-py-ready])');
+    if (roots.length === 0) return;
+
+    roots.forEach((root) => {
+      root.dataset.pyReady = '1';
+      const codeEl = root.querySelector<HTMLTextAreaElement>('[data-py-code]')!;
+      const outEl = root.querySelector<HTMLPreElement>('[data-py-out]')!;
+      const statusEl = root.querySelector<HTMLElement>('[data-py-status]')!;
+      const runBtn = root.querySelector<HTMLButtonElement>('[data-py-run]')!;
+      const clearBtn = root.querySelector<HTMLButtonElement>('[data-py-clear]')!;
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+
+      const setStatus = (s: string) => { statusEl.textContent = s; };
+      const append = (s: string) => { outEl.textContent += s; outEl.scrollTop = outEl.scrollHeight; };
+
+      const ensurePyodide = async () => {
+        if (pyodidePromise) return pyodidePromise;
+        setStatus('Loading Python runtime...');
+        pyodidePromise = (async () => {
+          await importGlobal(
+            'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js',
+            'loadPyodide'
+          );
+          const pyodide: any = await (window as any).loadPyodide({
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/',
+          });
+          if (conf.packages?.length) await pyodide.loadPackage(conf.packages);
+          return pyodide;
+        })();
+        return pyodidePromise;
+      };
+
+      runBtn.addEventListener('click', async () => {
+        runBtn.disabled = true;
+        try {
+          const pyodide = await ensurePyodide();
+          setStatus('Running...');
+          pyodide.setStdout({ batched: (s: string) => append(s + '\n') });
+          pyodide.setStderr({ batched: (s: string) => append(s + '\n') });
+          await pyodide.runPythonAsync(codeEl.value);
+          setStatus('Done');
+        } catch (e) {
+          append(String(e) + '\n');
+          setStatus('Error');
+        } finally {
+          runBtn.disabled = false;
+        }
+      });
+
+      clearBtn.addEventListener('click', () => { outEl.textContent = ''; });
+
+      codeEl.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runBtn.click(); }
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

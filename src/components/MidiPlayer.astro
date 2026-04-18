@@ -1,0 +1,25 @@
+---
+// Interactive MIDI player using Magenta's html-midi-player web components.
+interface Props {
+  src: string;
+  title?: string;
+  visualizerType?: 'piano-roll' | 'waterfall' | 'staff';
+}
+const { src, title, visualizerType = 'piano-roll' } = Astro.props;
+const id = 'midi-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-midi>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <midi-player src={src} sound-font visualizer={`#${id}-vis`} class="w-full" style="--midi-player-progress-bar:#b91c1c;"></midi-player>
+  <midi-visualizer type={visualizerType} src={src} id={`${id}-vis`} class="block w-full mt-2 overflow-x-auto" style="--midi-visualizer-active-note:#b91c1c;"></midi-visualizer>
+</figure>
+
+<script>
+  import { loadScript } from '../lib/loadScript';
+  const init = async () => {
+    await loadScript('https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0', { module: true });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -1,0 +1,96 @@
+---
+// Compute summary stats and show a histogram of a dataset.
+interface Props {
+  title?: string;
+  data: number[];
+  bins?: number;
+  unit?: string;
+}
+const { title = 'Distribution', data, bins = 12, unit = '' } = Astro.props;
+const id = 'stat-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ data, bins, unit });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" data-stat id={id} data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div class="grid sm:grid-cols-5 gap-3 text-center mb-4 text-sm">
+    {['n', 'mean', 'median', 'sd', 'range'].map((k) => (
+      <div class="rounded-lg bg-ink-50 dark:bg-ink-800/60 p-2">
+        <div class="text-[10px] uppercase tracking-[0.14em] font-semibold text-ink-500">{k}</div>
+        <div data-stat-val={k} class="font-serif text-base font-semibold text-ink-900 dark:text-ink-50">,</div>
+      </div>
+    ))}
+  </div>
+  <div style="position:relative; height: 240px;">
+    <canvas data-stat-canvas></canvas>
+  </div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const summarize = (data: number[]) => {
+    const n = data.length;
+    if (n === 0) return { n: 0, mean: 0, median: 0, sd: 0, min: 0, max: 0 };
+    const sorted = [...data].sort((a, b) => a - b);
+    const mean = data.reduce((s, v) => s + v, 0) / n;
+    const variance = data.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+    const median = n % 2 === 0 ? (sorted[n/2 - 1] + sorted[n/2]) / 2 : sorted[(n - 1)/2];
+    return { n, mean, median, sd: Math.sqrt(variance), min: sorted[0], max: sorted[n - 1] };
+  };
+
+  const histogram = (data: number[], bins: number) => {
+    if (data.length === 0) return { labels: [], counts: [] };
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const w = (max - min) / bins || 1;
+    const counts = new Array(bins).fill(0);
+    data.forEach((v) => {
+      let i = Math.floor((v - min) / w);
+      if (i >= bins) i = bins - 1;
+      counts[i]++;
+    });
+    const labels = counts.map((_, i) => (min + i * w).toFixed(1));
+    return { labels, counts };
+  };
+
+  const fmt = (v: number, unit: string) => Number.isFinite(v) ? v.toFixed(2).replace(/\.?0+$/, '') + (unit ? ' ' + unit : '') : '—';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-stat]:not([data-stat-ready])');
+    if (roots.length === 0) return;
+
+    const Chart: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js',
+      'Chart'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.statReady = '1';
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+      const data: number[] = conf.data ?? [];
+      const s = summarize(data);
+      const setVal = (k: string, v: string) => {
+        const el = root.querySelector(`[data-stat-val="${k}"]`);
+        if (el) el.textContent = v;
+      };
+      setVal('n', String(s.n));
+      setVal('mean', fmt(s.mean, conf.unit));
+      setVal('median', fmt(s.median, conf.unit));
+      setVal('sd', fmt(s.sd, conf.unit));
+      setVal('range', `${fmt(s.min, '')} – ${fmt(s.max, conf.unit)}`);
+
+      const { labels, counts } = histogram(data, conf.bins ?? 12);
+      const isDark = document.documentElement.classList.contains('dark');
+      Chart.defaults.color = isDark ? '#a1a1aa' : '#52525b';
+      Chart.defaults.borderColor = isDark ? '#27272a' : '#e4e4e7';
+      new Chart(root.querySelector<HTMLCanvasElement>('[data-stat-canvas]')!, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Frequency', data: counts, backgroundColor: '#b91c1ccc', borderColor: '#b91c1c', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

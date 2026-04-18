@@ -1,0 +1,84 @@
+---
+// Live regex tester with match highlighting. No external deps.
+interface Props {
+  pattern?: string;
+  flags?: string;
+  text?: string;
+  title?: string;
+}
+const { pattern = '\\b\\w+ing\\b', flags = 'g', text = 'Running, jumping, and swimming are all fun activities.', title = 'Regex tester' } = Astro.props;
+const id = 'rx-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-rx>
+  <header class="mb-3 font-serif text-base font-semibold">{title}</header>
+
+  <div class="flex items-center gap-2 font-mono text-sm mb-3">
+    <span class="text-accent-700 dark:text-accent-400">/</span>
+    <input data-rx-pattern type="text" value={pattern} class="flex-1 min-w-0 bg-transparent border-b border-ink-200 dark:border-ink-700 focus:border-accent-500 focus:outline-none py-1"/>
+    <span class="text-accent-700 dark:text-accent-400">/</span>
+    <input data-rx-flags type="text" value={flags} class="w-16 bg-transparent border-b border-ink-200 dark:border-ink-700 focus:border-accent-500 focus:outline-none py-1"/>
+  </div>
+
+  <textarea
+    data-rx-text
+    class="w-full rounded-lg bg-ink-50 dark:bg-ink-950 border border-ink-200 dark:border-ink-800 font-mono text-sm p-3 min-h-[120px] focus:outline-none focus:border-accent-500"
+    spellcheck="false"
+  >{text}</textarea>
+
+  <div class="mt-3 text-xs text-ink-500 flex gap-4">
+    <span>Matches: <span data-rx-count class="font-mono font-semibold text-ink-900 dark:text-ink-50">0</span></span>
+    <span data-rx-err class="text-rose-600 hidden"></span>
+  </div>
+
+  <div class="mt-3">
+    <div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1">Result</div>
+    <div data-rx-out class="rounded-lg bg-ink-50 dark:bg-ink-950 border border-ink-200 dark:border-ink-800 font-mono text-sm p-3 whitespace-pre-wrap break-all"></div>
+  </div>
+</section>
+
+<script is:inline>
+  const init = () => {
+    document.querySelectorAll('[data-rx]:not([data-rx-ready])').forEach((root) => {
+      root.dataset.rxReady = '1';
+      const patternEl = root.querySelector('[data-rx-pattern]');
+      const flagsEl = root.querySelector('[data-rx-flags]');
+      const textEl = root.querySelector('[data-rx-text]');
+      const outEl = root.querySelector('[data-rx-out]');
+      const countEl = root.querySelector('[data-rx-count]');
+      const errEl = root.querySelector('[data-rx-err]');
+
+      const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+      const update = () => {
+        const pat = patternEl.value;
+        const flags = flagsEl.value || '';
+        const text = textEl.value;
+        try {
+          const re = new RegExp(pat, flags.includes('g') ? flags : flags + 'g');
+          errEl.classList.add('hidden');
+          let last = 0; let html = ''; let count = 0;
+          const matches = [...text.matchAll(re)];
+          for (const m of matches) {
+            html += esc(text.slice(last, m.index));
+            html += `<mark class="bg-accent-200 dark:bg-accent-800/60 text-accent-900 dark:text-accent-100 rounded px-0.5">${esc(m[0]) || '∅'}</mark>`;
+            last = m.index + m[0].length;
+            count++;
+            if (m[0].length === 0) last++;
+          }
+          html += esc(text.slice(last));
+          outEl.innerHTML = html;
+          countEl.textContent = String(count);
+        } catch (e) {
+          errEl.textContent = e.message; errEl.classList.remove('hidden');
+          outEl.innerHTML = esc(text);
+        }
+      };
+
+      [patternEl, flagsEl, textEl].forEach((el) => el.addEventListener('input', update));
+      update();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -1,0 +1,192 @@
+---
+// Animated algorithm visualizations. Built-in algorithms: 'bubble', 'insertion', 'selection', 'merge', 'quick'.
+interface Props {
+  algorithm?: 'bubble' | 'insertion' | 'selection' | 'merge' | 'quick';
+  size?: number;
+  title?: string;
+}
+const { algorithm = 'bubble', size = 24, title } = Astro.props;
+const id = 'algo-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" data-algo id={id} data-algorithm={algorithm} data-size={size}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold">{title ?? `Sort visualizer: ${algorithm}`}</span>
+    <div class="flex items-center gap-2 text-xs">
+      <select data-algo-pick class="rounded-md border border-ink-200 dark:border-ink-700 bg-transparent px-2 py-1">
+        <option value="bubble">Bubble sort</option>
+        <option value="insertion">Insertion sort</option>
+        <option value="selection">Selection sort</option>
+        <option value="merge">Merge sort</option>
+        <option value="quick">Quick sort</option>
+      </select>
+      <input data-algo-speed type="range" min="1" max="100" value="40" class="w-24" />
+      <button data-algo-shuffle type="button" class="px-2 py-1 rounded-md bg-ink-100 dark:bg-ink-800 hover:bg-ink-200 dark:hover:bg-ink-700">Shuffle</button>
+      <button data-algo-run type="button" class="px-2 py-1 rounded-md bg-accent-700 hover:bg-accent-800 text-white dark:bg-accent-600 dark:hover:bg-accent-500">Run</button>
+    </div>
+  </figcaption>
+  <div data-algo-bars class="flex items-end gap-[2px] h-56 bg-ink-50 dark:bg-ink-950 rounded-lg p-2 overflow-hidden"></div>
+  <div class="mt-2 text-xs text-ink-500 flex gap-4">
+    <span>Comparisons: <span data-algo-cmp class="font-mono font-semibold text-ink-900 dark:text-ink-50">0</span></span>
+    <span>Swaps: <span data-algo-sw class="font-mono font-semibold text-ink-900 dark:text-ink-50">0</span></span>
+  </div>
+</figure>
+
+<script>
+  type Step = { type: 'cmp' | 'swap' | 'set' | 'done'; i?: number; j?: number; v?: number; range?: [number, number] };
+
+  const algos: Record<string, (a: number[]) => Step[]> = {
+    bubble: (arr) => {
+      const a = [...arr]; const steps: Step[] = [];
+      for (let i = 0; i < a.length; i++) {
+        for (let j = 0; j < a.length - i - 1; j++) {
+          steps.push({ type: 'cmp', i: j, j: j + 1 });
+          if (a[j] > a[j + 1]) {
+            [a[j], a[j + 1]] = [a[j + 1], a[j]];
+            steps.push({ type: 'swap', i: j, j: j + 1 });
+          }
+        }
+      }
+      steps.push({ type: 'done' }); return steps;
+    },
+    insertion: (arr) => {
+      const a = [...arr]; const steps: Step[] = [];
+      for (let i = 1; i < a.length; i++) {
+        let j = i;
+        while (j > 0) {
+          steps.push({ type: 'cmp', i: j - 1, j });
+          if (a[j - 1] > a[j]) {
+            [a[j - 1], a[j]] = [a[j], a[j - 1]];
+            steps.push({ type: 'swap', i: j - 1, j });
+            j--;
+          } else break;
+        }
+      }
+      steps.push({ type: 'done' }); return steps;
+    },
+    selection: (arr) => {
+      const a = [...arr]; const steps: Step[] = [];
+      for (let i = 0; i < a.length - 1; i++) {
+        let m = i;
+        for (let j = i + 1; j < a.length; j++) {
+          steps.push({ type: 'cmp', i: m, j });
+          if (a[j] < a[m]) m = j;
+        }
+        if (m !== i) { [a[i], a[m]] = [a[m], a[i]]; steps.push({ type: 'swap', i, j: m }); }
+      }
+      steps.push({ type: 'done' }); return steps;
+    },
+    merge: (arr) => {
+      const a = [...arr]; const steps: Step[] = [];
+      const sort = (lo: number, hi: number) => {
+        if (hi - lo < 2) return;
+        const mid = Math.floor((lo + hi) / 2);
+        sort(lo, mid); sort(mid, hi);
+        const merged: number[] = []; let i = lo, j = mid;
+        while (i < mid && j < hi) {
+          steps.push({ type: 'cmp', i, j });
+          if (a[i] <= a[j]) merged.push(a[i++]); else merged.push(a[j++]);
+        }
+        while (i < mid) merged.push(a[i++]);
+        while (j < hi) merged.push(a[j++]);
+        for (let k = 0; k < merged.length; k++) {
+          a[lo + k] = merged[k];
+          steps.push({ type: 'set', i: lo + k, v: merged[k] });
+        }
+      };
+      sort(0, a.length);
+      steps.push({ type: 'done' }); return steps;
+    },
+    quick: (arr) => {
+      const a = [...arr]; const steps: Step[] = [];
+      const sort = (lo: number, hi: number) => {
+        if (lo >= hi) return;
+        const pivot = a[hi]; let i = lo;
+        for (let j = lo; j < hi; j++) {
+          steps.push({ type: 'cmp', i: j, j: hi });
+          if (a[j] < pivot) {
+            [a[i], a[j]] = [a[j], a[i]];
+            steps.push({ type: 'swap', i, j });
+            i++;
+          }
+        }
+        [a[i], a[hi]] = [a[hi], a[i]];
+        steps.push({ type: 'swap', i, j: hi });
+        sort(lo, i - 1); sort(i + 1, hi);
+      };
+      sort(0, a.length - 1);
+      steps.push({ type: 'done' }); return steps;
+    },
+  };
+
+  const init = () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-algo]:not([data-algo-ready])');
+    roots.forEach((root) => {
+      root.dataset.algoReady = '1';
+      const size = Number(root.dataset.size || 24);
+      const barsEl = root.querySelector<HTMLElement>('[data-algo-bars]')!;
+      const cmpEl = root.querySelector<HTMLElement>('[data-algo-cmp]')!;
+      const swEl = root.querySelector<HTMLElement>('[data-algo-sw]')!;
+      const speedEl = root.querySelector<HTMLInputElement>('[data-algo-speed]')!;
+      const pickEl = root.querySelector<HTMLSelectElement>('[data-algo-pick]')!;
+      pickEl.value = root.dataset.algorithm || 'bubble';
+
+      let arr: number[] = [];
+      let bars: HTMLElement[] = [];
+      let running = false;
+
+      const reset = () => {
+        arr = Array.from({ length: size }, () => Math.floor(Math.random() * 90) + 10);
+        barsEl.innerHTML = '';
+        bars = arr.map((v) => {
+          const b = document.createElement('div');
+          b.style.width = `${100 / size}%`;
+          b.style.height = `${v}%`;
+          b.className = 'bg-accent-700 dark:bg-accent-500 transition-all duration-75';
+          barsEl.appendChild(b);
+          return b;
+        });
+        cmpEl.textContent = '0'; swEl.textContent = '0';
+      };
+
+      const setBar = (i: number, v: number) => {
+        bars[i].style.height = `${v}%`;
+        arr[i] = v;
+      };
+      const flash = (i: number, cls: string) => {
+        bars[i]?.classList.add(cls);
+        setTimeout(() => bars[i]?.classList.remove(cls), 80);
+      };
+
+      const run = async () => {
+        if (running) return; running = true;
+        const steps = algos[pickEl.value](arr);
+        let cmp = 0, sw = 0;
+        for (const s of steps) {
+          const delay = 110 - Number(speedEl.value);
+          if (s.type === 'cmp') {
+            cmp++; cmpEl.textContent = String(cmp);
+            flash(s.i!, 'bg-amber-500'); flash(s.j!, 'bg-amber-500');
+          } else if (s.type === 'swap') {
+            sw++; swEl.textContent = String(sw);
+            const tmp = arr[s.i!]; setBar(s.i!, arr[s.j!]); setBar(s.j!, tmp);
+            flash(s.i!, 'bg-rose-500'); flash(s.j!, 'bg-rose-500');
+          } else if (s.type === 'set') {
+            setBar(s.i!, s.v!); flash(s.i!, 'bg-rose-500');
+          } else if (s.type === 'done') {
+            bars.forEach((b) => b.classList.add('bg-emerald-500'));
+          }
+          await new Promise((r) => setTimeout(r, delay));
+        }
+        running = false;
+      };
+
+      root.querySelector('[data-algo-shuffle]')?.addEventListener('click', reset);
+      root.querySelector('[data-algo-run]')?.addEventListener('click', run);
+      pickEl.addEventListener('change', reset);
+      reset();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

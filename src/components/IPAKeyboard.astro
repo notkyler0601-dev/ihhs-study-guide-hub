@@ -1,0 +1,95 @@
+---
+// Clickable IPA symbol keyboard, grouped by category.
+interface Props {
+  title?: string;
+}
+const { title = 'IPA keyboard' } = Astro.props;
+
+const groups: { name: string; symbols: { s: string; name: string }[] }[] = [
+  { name: 'Vowels', symbols: [
+    { s: 'i', name: 'close front unrounded' }, { s: 'y', name: 'close front rounded' },
+    { s: 'e', name: 'close-mid front unrounded' }, { s: 'ø', name: 'close-mid front rounded' },
+    { s: 'ɛ', name: 'open-mid front unrounded' }, { s: 'æ', name: 'near-open front unrounded' },
+    { s: 'a', name: 'open front unrounded' }, { s: 'ɑ', name: 'open back unrounded' },
+    { s: 'ɔ', name: 'open-mid back rounded' }, { s: 'o', name: 'close-mid back rounded' },
+    { s: 'u', name: 'close back rounded' }, { s: 'ə', name: 'schwa' },
+    { s: 'ɪ', name: 'near-close near-front unrounded' }, { s: 'ʊ', name: 'near-close near-back rounded' },
+    { s: 'ʌ', name: 'open-mid back unrounded' }, { s: 'ɜ', name: 'open-mid central unrounded' },
+  ]},
+  { name: 'Plosives', symbols: [
+    { s: 'p', name: 'voiceless bilabial plosive' }, { s: 'b', name: 'voiced bilabial plosive' },
+    { s: 't', name: 'voiceless alveolar plosive' }, { s: 'd', name: 'voiced alveolar plosive' },
+    { s: 'k', name: 'voiceless velar plosive' }, { s: 'g', name: 'voiced velar plosive' },
+    { s: 'ʔ', name: 'glottal stop' },
+  ]},
+  { name: 'Fricatives', symbols: [
+    { s: 'f', name: 'voiceless labiodental' }, { s: 'v', name: 'voiced labiodental' },
+    { s: 'θ', name: 'voiceless dental' }, { s: 'ð', name: 'voiced dental' },
+    { s: 's', name: 'voiceless alveolar' }, { s: 'z', name: 'voiced alveolar' },
+    { s: 'ʃ', name: 'voiceless postalveolar' }, { s: 'ʒ', name: 'voiced postalveolar' },
+    { s: 'x', name: 'voiceless velar' }, { s: 'ɣ', name: 'voiced velar' },
+    { s: 'h', name: 'voiceless glottal' },
+  ]},
+  { name: 'Nasals & approximants', symbols: [
+    { s: 'm', name: 'bilabial nasal' }, { s: 'n', name: 'alveolar nasal' }, { s: 'ŋ', name: 'velar nasal' },
+    { s: 'l', name: 'alveolar lateral' }, { s: 'ɹ', name: 'alveolar approximant' },
+    { s: 'j', name: 'palatal approximant' }, { s: 'w', name: 'labiovelar approximant' }, { s: 'ɾ', name: 'alveolar tap' },
+  ]},
+  { name: 'Suprasegmentals', symbols: [
+    { s: 'ˈ', name: 'primary stress' }, { s: 'ˌ', name: 'secondary stress' },
+    { s: 'ː', name: 'long' }, { s: '.', name: 'syllable break' },
+  ]},
+];
+const id = 'ipa-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-ipa>
+  <header class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <button data-ipa-copy type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Copy</button>
+  </header>
+  <input
+    data-ipa-out type="text" readonly
+    placeholder="Click symbols to build..."
+    class="w-full mb-4 rounded-lg border border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-950 font-serif text-2xl px-4 py-3 focus:outline-none focus:border-accent-500"
+  />
+  <div class="space-y-3">
+    {groups.map((g) => (
+      <div>
+        <div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1.5">{g.name}</div>
+        <div class="flex flex-wrap gap-1.5">
+          {g.symbols.map((sym) => (
+            <button
+              data-ipa-sym={sym.s}
+              type="button"
+              title={sym.name}
+              class="h-9 min-w-9 px-2 rounded-md border border-ink-200 dark:border-ink-700 hover:border-accent-400 dark:hover:border-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/30 font-serif text-lg"
+            >{sym.s}</button>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script is:inline>
+  const init = () => {
+    document.querySelectorAll('[data-ipa]:not([data-ipa-ready])').forEach((root) => {
+      root.dataset.ipaReady = '1';
+      const out = root.querySelector('[data-ipa-out]');
+      root.querySelectorAll('[data-ipa-sym]').forEach((b) => b.addEventListener('click', () => {
+        out.value += b.getAttribute('data-ipa-sym');
+      }));
+      root.querySelector('[data-ipa-copy]')?.addEventListener('click', () => {
+        navigator.clipboard?.writeText(out.value).then(() => {
+          const btn = root.querySelector('[data-ipa-copy]');
+          const prev = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(() => (btn.textContent = prev), 1200);
+        });
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

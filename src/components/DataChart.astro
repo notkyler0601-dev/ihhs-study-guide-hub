@@ -1,0 +1,73 @@
+---
+// Quick chart from raw data using Chart.js. Supports bar, line, scatter, pie, doughnut, radar.
+// data: { labels: string[], datasets: [{ label, data: number[], color? }] }
+interface Dataset { label: string; data: number[]; color?: string; }
+interface Props {
+  type?: 'bar' | 'line' | 'scatter' | 'pie' | 'doughnut' | 'radar';
+  title?: string;
+  labels?: string[];
+  datasets: Dataset[];
+  height?: number;
+  stacked?: boolean;
+}
+const { type = 'bar', title, labels = [], datasets, height = 320, stacked = false } = Astro.props;
+const id = 'chart-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ type, labels, datasets, stacked });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" data-chart id={id} data-conf={conf}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div style={`position:relative; height:${height}px`}>
+    <canvas data-chart-canvas></canvas>
+  </div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-chart]:not([data-chart-ready])');
+    if (roots.length === 0) return;
+
+    const Chart: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js',
+      'Chart'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.chartReady = '1';
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-chart-canvas]')!;
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      const palette = ['#b91c1c', '#27272a', '#a1a1aa', '#dc2626', '#52525b', '#f87171'];
+
+      const datasets = (conf.datasets || []).map((d: any, i: number) => ({
+        label: d.label,
+        data: d.data,
+        backgroundColor: d.color ?? palette[i % palette.length] + 'cc',
+        borderColor: d.color ?? palette[i % palette.length],
+        borderWidth: 2,
+        tension: 0.25,
+      }));
+
+      Chart.defaults.color = isDark ? '#a1a1aa' : '#52525b';
+      Chart.defaults.borderColor = isDark ? '#27272a' : '#e4e4e7';
+
+      new Chart(canvas, {
+        type: conf.type ?? 'bar',
+        data: { labels: conf.labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: conf.type === 'pie' || conf.type === 'doughnut' || conf.type === 'radar' ? undefined : {
+            x: { stacked: !!conf.stacked },
+            y: { stacked: !!conf.stacked, beginAtZero: true },
+          },
+          plugins: { legend: { position: 'bottom' } },
+        },
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

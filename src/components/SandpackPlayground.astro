@@ -1,0 +1,39 @@
+---
+// Embed a CodeSandbox sandbox by id, with optional initial files.
+// For a quick playground, give the user a sandbox id like "react-new" or any sandbox URL.
+interface Props {
+  title?: string;
+  sandboxId?: string;
+  template?: 'react' | 'vue' | 'svelte' | 'vanilla' | 'static';
+  height?: number;
+}
+const { title = 'Code playground', sandboxId, template = 'react', height = 480 } = Astro.props;
+
+// Default to the embed URL pattern. If sandboxId not provided, use a starter template.
+const defaultIds: Record<string, string> = {
+  react: 'new',
+  vue: 'vue',
+  svelte: 'svelte',
+  vanilla: 'vanilla',
+  static: 'static',
+};
+const id = sandboxId ?? defaultIds[template];
+const url = `https://codesandbox.io/embed/${id}?fontsize=13&hidenavigation=1&theme=dark&view=split`;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">CodeSandbox</span>
+  </figcaption>
+  <div class="relative w-full bg-ink-100 dark:bg-ink-900" style={`height:${height}px`}>
+    <iframe
+      src={url}
+      title={title}
+      class="absolute inset-0 w-full h-full border-0"
+      loading="lazy"
+      sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"
+      allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+    ></iframe>
+  </div>
+</figure>

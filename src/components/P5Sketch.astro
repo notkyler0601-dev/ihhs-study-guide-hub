@@ -1,0 +1,55 @@
+---
+// Run a p5.js sketch. The `code` string is a function body that receives `p` (instance mode).
+// Example: code="p.setup = () => p.createCanvas(400, 300); p.draw = () => { p.background(220); p.ellipse(p.mouseX, p.mouseY, 50); };"
+interface Props {
+  title?: string;
+  code: string;
+  height?: number;
+}
+const { title = 'p5.js sketch', code, height = 360 } = Astro.props;
+const id = 'p5-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" data-p5 id={id} data-code={code}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <button data-p5-restart type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Restart</button>
+  </figcaption>
+  <div data-p5-host class="w-full flex justify-center" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-p5]:not([data-p5-ready])');
+    if (roots.length === 0) return;
+
+    const p5: any = await importGlobal('https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.min.js', 'p5');
+
+    roots.forEach((root) => {
+      root.dataset.p5Ready = '1';
+      const host = root.querySelector<HTMLElement>('[data-p5-host]')!;
+      const code = root.dataset.code ?? '';
+      let instance: any = null;
+
+      const start = () => {
+        if (instance) instance.remove();
+        host.innerHTML = '';
+        try {
+          // eslint-disable-next-line no-new-func
+          const sketch = new Function('p', code);
+          instance = new p5((p: any) => sketch(p), host);
+        } catch (e) {
+          console.error('p5 sketch error', e);
+          host.innerHTML = `<div class="p-4 text-sm text-rose-600">Sketch error: ${(e as Error).message}</div>`;
+        }
+      };
+
+      root.querySelector('[data-p5-restart]')?.addEventListener('click', start);
+      start();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

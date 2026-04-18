@@ -1,0 +1,67 @@
+---
+// Lightweight function plotter using function-plot (D3-based).
+// Each fn entry: { fn: "x^2", color?, range?: [min,max] }
+interface Fn { fn: string; color?: string; range?: [number, number]; }
+interface Props {
+  title?: string;
+  fns: Fn[];
+  xDomain?: [number, number];
+  yDomain?: [number, number];
+  height?: number;
+  grid?: boolean;
+}
+const { title, fns, xDomain = [-10, 10], yDomain, height = 360, grid = true } = Astro.props;
+const id = 'plot-' + Math.random().toString(36).slice(2, 9);
+const data = JSON.stringify({ fns, xDomain, yDomain, grid });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" data-plot id={id} data-conf={data}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div data-plot-canvas class="w-full overflow-x-auto" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-plot]:not([data-plot-ready])');
+    if (roots.length === 0) return;
+
+    await importGlobal('https://d3js.org/d3.v5.min.js', 'd3');
+    const functionPlot: any = await importGlobal(
+      'https://unpkg.com/function-plot@1.25.1/dist/function-plot.js',
+      'functionPlot'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.plotReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-plot-canvas]')!;
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      const palette = isDark
+        ? ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6']
+        : ['#b91c1c', '#b45309', '#047857', '#1d4ed8', '#6d28d9', '#be185d'];
+
+      try {
+        functionPlot({
+          target: host,
+          width: host.clientWidth || 720,
+          height: 360,
+          grid: conf.grid !== false,
+          xAxis: { domain: conf.xDomain ?? [-10, 10] },
+          yAxis: conf.yDomain ? { domain: conf.yDomain } : {},
+          data: (conf.fns ?? []).map((f: any, i: number) => ({
+            fn: f.fn,
+            color: f.color ?? palette[i % palette.length],
+            range: f.range,
+          })),
+        });
+      } catch (e) {
+        console.warn('Plotter render failed', e);
+        host.innerHTML = `<div class="p-4 text-sm text-rose-600">Plot error: ${(e as Error).message}</div>`;
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

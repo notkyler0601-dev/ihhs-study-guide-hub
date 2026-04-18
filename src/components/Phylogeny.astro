@@ -1,0 +1,62 @@
+---
+// Render an interactive phylogenetic tree from a Newick string using phylotree.js.
+// Example newick: "((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);"
+interface Props {
+  newick: string;
+  title?: string;
+  height?: number;
+}
+const { newick, title, height = 420 } = Astro.props;
+const id = 'tree-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-tree id={id} data-newick={newick}>
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 font-serif text-base font-semibold">
+      {title}
+    </figcaption>
+  )}
+  <div data-tree-canvas class="w-full overflow-x-auto bg-white dark:bg-ink-900" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-tree]:not([data-tree-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/phylotree@1.5.0/dist/phylotree.css');
+    await loadScript('https://d3js.org/d3.v7.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/underscore@1.13.6/underscore-umd-min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/phylotree@1.5.0/dist/phylotree.js');
+    const phylotree: any = await waitForGlobal('phylotree');
+
+    roots.forEach((root) => {
+      root.dataset.treeReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-tree-canvas]')!;
+      const newick = root.dataset.newick ?? '';
+      const isDark = document.documentElement.classList.contains('dark');
+      try {
+        const tree = new phylotree.phylotree(newick);
+        tree.render({
+          'container': host,
+          height: host.clientHeight,
+          width: host.clientWidth || 800,
+          'show-scale': true,
+          'is-radial': false,
+        });
+        const svg = host.querySelector('svg');
+        if (svg && isDark) {
+          svg.querySelectorAll('text').forEach((t) => (t as SVGTextElement).style.fill = '#fafafa');
+          svg.querySelectorAll('path,line').forEach((p) => (p as SVGPathElement).style.stroke = '#fafafa');
+        }
+      } catch (e) {
+        console.warn('Phylogeny render failed', e);
+        host.innerHTML = `<div class="p-6 text-sm text-ink-500">Could not render tree.</div>`;
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

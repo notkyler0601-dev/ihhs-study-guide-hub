@@ -1,0 +1,25 @@
+---
+// Embed a Knight Lab StoryMap by its StoryMap URL or ID (Google Sheet / hosted).
+interface Props {
+  url: string;
+  title?: string;
+  height?: number;
+}
+const { url, title = 'Story map', height = 640 } = Astro.props;
+const embed = url.startsWith('http') ? url : `https://uploads.knightlab.com/storymapjs/${url}/index.html`;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">StoryMapJS</span>
+  </figcaption>
+  <div class="relative w-full bg-ink-100 dark:bg-ink-800" style={`height:${height}px`}>
+    <iframe
+      src={embed}
+      title={title}
+      class="absolute inset-0 w-full h-full border-0"
+      loading="lazy"
+    ></iframe>
+  </div>
+</figure>

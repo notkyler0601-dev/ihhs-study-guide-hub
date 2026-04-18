@@ -1,0 +1,99 @@
+---
+// Built-in Pomodoro study timer with break tracking.
+interface Props {
+  workMin?: number;
+  shortBreakMin?: number;
+  longBreakMin?: number;
+  cyclesUntilLong?: number;
+  title?: string;
+}
+const { workMin = 25, shortBreakMin = 5, longBreakMin = 15, cyclesUntilLong = 4, title = 'Study timer' } = Astro.props;
+const id = 'pom-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilLong });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5 text-center" id={id} data-pom data-conf={conf}>
+  <header class="mb-3 font-serif text-base font-semibold flex items-center justify-center gap-2">
+    <svg class="h-4 w-4 text-accent-700 dark:text-accent-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>
+    </svg>
+    {title}
+  </header>
+  <div data-pom-mode class="text-[11px] uppercase tracking-[0.18em] text-ink-500 font-semibold mb-1">Work</div>
+  <div data-pom-time class="font-serif text-6xl font-semibold gradient-text tracking-tight mb-4 tabular-nums">25:00</div>
+  <div class="flex items-center justify-center gap-2 mb-3">
+    <button data-pom-toggle type="button" class="px-5 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm">Start</button>
+    <button data-pom-skip type="button" class="px-3 py-2 rounded-lg bg-ink-100 dark:bg-ink-800 hover:bg-ink-200 dark:hover:bg-ink-700 text-sm">Skip</button>
+    <button data-pom-reset type="button" class="px-3 py-2 rounded-lg bg-ink-100 dark:bg-ink-800 hover:bg-ink-200 dark:hover:bg-ink-700 text-sm">Reset</button>
+  </div>
+  <div class="text-xs text-ink-500">Cycle <span data-pom-cycle class="font-semibold text-ink-900 dark:text-ink-50">1</span></div>
+</section>
+
+<script is:inline>
+  const init = () => {
+    document.querySelectorAll('[data-pom]:not([data-pom-ready])').forEach((root) => {
+      root.dataset.pomReady = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const timeEl = root.querySelector('[data-pom-time]');
+      const modeEl = root.querySelector('[data-pom-mode]');
+      const cycleEl = root.querySelector('[data-pom-cycle]');
+      const toggleBtn = root.querySelector('[data-pom-toggle]');
+
+      let mode = 'Work';
+      let cycle = 1;
+      let secondsLeft = conf.workMin * 60;
+      let interval = null;
+
+      const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+      const setMode = (m) => {
+        mode = m; modeEl.textContent = m;
+        secondsLeft = m === 'Work' ? conf.workMin * 60
+          : m === 'Long break' ? conf.longBreakMin * 60
+          : conf.shortBreakMin * 60;
+        timeEl.textContent = fmt(secondsLeft);
+      };
+
+      const advance = () => {
+        if (mode === 'Work') {
+          if (cycle % conf.cyclesUntilLong === 0) setMode('Long break');
+          else setMode('Short break');
+        } else {
+          cycle++;
+          cycleEl.textContent = String(cycle);
+          setMode('Work');
+        }
+      };
+
+      const tick = () => {
+        secondsLeft--;
+        timeEl.textContent = fmt(secondsLeft);
+        if (secondsLeft <= 0) {
+          clearInterval(interval); interval = null;
+          toggleBtn.textContent = 'Start';
+          try { new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAA').play(); } catch (e) {}
+          advance();
+        }
+      };
+
+      toggleBtn.addEventListener('click', () => {
+        if (interval) {
+          clearInterval(interval); interval = null; toggleBtn.textContent = 'Resume';
+        } else {
+          interval = setInterval(tick, 1000); toggleBtn.textContent = 'Pause';
+        }
+      });
+      root.querySelector('[data-pom-skip]').addEventListener('click', () => {
+        if (interval) { clearInterval(interval); interval = null; toggleBtn.textContent = 'Start'; }
+        advance();
+      });
+      root.querySelector('[data-pom-reset]').addEventListener('click', () => {
+        if (interval) { clearInterval(interval); interval = null; toggleBtn.textContent = 'Start'; }
+        cycle = 1; cycleEl.textContent = '1'; setMode('Work');
+      });
+
+      setMode('Work');
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

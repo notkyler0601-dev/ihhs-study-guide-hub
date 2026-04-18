@@ -1,0 +1,77 @@
+---
+// Interactive color theory explorer using chroma.js. Pick a base color and
+// see complementary, analogous, triadic, and tetradic relationships.
+interface Props {
+  title?: string;
+  base?: string;
+}
+const { title = 'Color theory explorer', base = '#b91c1c' } = Astro.props;
+const id = 'color-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-color data-base={base}>
+  <header class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <input data-color-pick type="color" value={base} class="h-10 w-14 rounded border border-ink-200 dark:border-ink-700 bg-transparent" />
+  </header>
+
+  <div data-color-out class="space-y-4"></div>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-color]:not([data-color-ready])');
+    if (roots.length === 0) return;
+
+    const chroma: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/chroma-js@3.1.2/index.umd.min.js',
+      'chroma'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.colorReady = '1';
+      const out = root.querySelector<HTMLElement>('[data-color-out]')!;
+      const input = root.querySelector<HTMLInputElement>('[data-color-pick]')!;
+
+      const swatch = (hex: string) => `
+        <div class="flex flex-col items-center">
+          <div class="h-14 w-14 rounded-lg border border-ink-200 dark:border-ink-700 shadow-soft" style="background:${hex}"></div>
+          <div class="text-[10px] font-mono mt-1 text-ink-500">${hex}</div>
+        </div>
+      `;
+      const row = (label: string, colors: string[]) => `
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">${label}</div>
+          <div class="flex flex-wrap gap-3">${colors.map(swatch).join('')}</div>
+        </div>
+      `;
+
+      const render = (base: string) => {
+        const c = chroma(base);
+        const h = c.get('hsl.h') || 0;
+        const triad = [h, h + 120, h + 240].map((d) => chroma.hsl(d % 360, c.get('hsl.s'), c.get('hsl.l')).hex());
+        const tetrad = [h, h + 90, h + 180, h + 270].map((d) => chroma.hsl(d % 360, c.get('hsl.s'), c.get('hsl.l')).hex());
+        const analog = [-30, 0, 30].map((d) => chroma.hsl((h + d + 360) % 360, c.get('hsl.s'), c.get('hsl.l')).hex());
+        const comp = chroma.hsl((h + 180) % 360, c.get('hsl.s'), c.get('hsl.l')).hex();
+        const shades = chroma.scale([base, '#000']).colors(5);
+        const tints = chroma.scale([base, '#fff']).colors(5);
+        out.innerHTML = [
+          row('Base', [c.hex()]),
+          row('Complementary', [c.hex(), comp]),
+          row('Analogous', analog),
+          row('Triadic', triad),
+          row('Tetradic', tetrad),
+          row('Shades', shades),
+          row('Tints', tints),
+        ].join('');
+      };
+
+      input.addEventListener('input', (e) => render((e.target as HTMLInputElement).value));
+      render(root.dataset.base ?? '#b91c1c');
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

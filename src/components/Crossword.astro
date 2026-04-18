@@ -1,0 +1,110 @@
+---
+// Vocab crossword auto-generated from a list of words+clues using crossword-layout-generator.
+interface Word { answer: string; clue: string; }
+interface Props {
+  title?: string;
+  words: Word[];
+}
+const { title = 'Crossword', words } = Astro.props;
+const id = 'cw-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ words });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-cw data-conf={conf}>
+  <header class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <button data-cw-check type="button" class="px-3 py-1 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-xs font-medium">Check</button>
+  </header>
+  <div class="grid lg:grid-cols-[auto_1fr] gap-6">
+    <div data-cw-grid class="overflow-x-auto"></div>
+    <div data-cw-clues class="space-y-3 text-sm"></div>
+  </div>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-cw]:not([data-cw-ready])');
+    if (roots.length === 0) return;
+
+    const clg: any = await importGlobal(
+      'https://unpkg.com/crossword-layout-generator@1.0.7/dist/cwgen.umd.js',
+      'CrosswordLayout'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.cwReady = '1';
+      const conf = JSON.parse(root.dataset.conf ?? '{}');
+      const words = (conf.words ?? []).map((w: any) => ({ ...w, answer: w.answer.toUpperCase().replace(/\s+/g, '') }));
+      const layout = clg.generateLayout(words);
+      const grid = root.querySelector<HTMLElement>('[data-cw-grid]')!;
+      const cluesHost = root.querySelector<HTMLElement>('[data-cw-clues]')!;
+
+      // Build cell map.
+      const placed = layout.result;
+      const cells: Record<string, { letter: string; answers: string[]; numbers: number[] }> = {};
+      placed.forEach((p: any) => {
+        if (!p.startx) return;
+        const len = p.answer.length;
+        const horiz = p.orientation === 'across';
+        for (let i = 0; i < len; i++) {
+          const x = p.startx + (horiz ? i : 0);
+          const y = p.starty + (horiz ? 0 : i);
+          const k = `${x},${y}`;
+          cells[k] = cells[k] || { letter: p.answer[i], answers: [], numbers: [] };
+          cells[k].answers.push(p.answer);
+        }
+        const k0 = `${p.startx},${p.starty}`;
+        cells[k0].numbers.push(p.position);
+      });
+
+      const xs = Object.keys(cells).map((k) => Number(k.split(',')[0]));
+      const ys = Object.keys(cells).map((k) => Number(k.split(',')[1]));
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      const cell = 36;
+
+      let html = `<div style="display:grid; grid-template-columns: repeat(${maxX-minX+1}, ${cell}px); gap: 0;">`;
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          const c = cells[`${x},${y}`];
+          if (!c) {
+            html += `<div style="width:${cell}px; height:${cell}px; background:transparent;"></div>`;
+          } else {
+            html += `<div style="position:relative; width:${cell}px; height:${cell}px;">
+              ${c.numbers.length ? `<span style="position:absolute; top:1px; left:2px; font-size:9px; color:#71717a;">${c.numbers[0]}</span>` : ''}
+              <input data-cw-cell="${x},${y}" data-letter="${c.letter}" maxlength="1"
+                style="width:${cell}px; height:${cell}px; padding-top:8px; text-align:center; text-transform:uppercase; font-family:JetBrains Mono,monospace; font-weight:600;"
+                class="border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 text-ink-900 dark:text-ink-50 focus:outline-none focus:bg-accent-50 dark:focus:bg-accent-900/40"
+              />
+            </div>`;
+          }
+        }
+      }
+      html += '</div>';
+      grid.innerHTML = html;
+
+      const across: string[] = [], down: string[] = [];
+      placed.forEach((p: any) => {
+        if (!p.position) return;
+        const line = `<div><span class="font-mono text-xs text-accent-700 dark:text-accent-400 mr-2">${p.position}.</span>${p.clue}</div>`;
+        if (p.orientation === 'across') across.push(line);
+        else down.push(line);
+      });
+      cluesHost.innerHTML = `
+        <div><div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1">Across</div><div class="space-y-1">${across.join('')}</div></div>
+        <div><div class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1">Down</div><div class="space-y-1">${down.join('')}</div></div>
+      `;
+
+      root.querySelector('[data-cw-check]')?.addEventListener('click', () => {
+        root.querySelectorAll<HTMLInputElement>('[data-cw-cell]').forEach((el) => {
+          const ok = el.value.toUpperCase() === el.dataset.letter;
+          el.style.color = ok ? '#16a34a' : '#dc2626';
+        });
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

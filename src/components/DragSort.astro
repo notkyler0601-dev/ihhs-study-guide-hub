@@ -1,0 +1,80 @@
+---
+// Drag-to-order exercise. items are shuffled at render time;
+// answer is the correct ordering by item id.
+interface Item { id: string; label: string; }
+interface Props {
+  title?: string;
+  prompt?: string;
+  items: Item[];
+  answer: string[];
+}
+const { title = 'Order these', prompt, items, answer } = Astro.props;
+const id = 'sort-' + Math.random().toString(36).slice(2, 9);
+const shuffled = [...items].sort(() => Math.random() - 0.5);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-sort data-answer={JSON.stringify(answer)}>
+  <header class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <div class="flex items-center gap-2 text-xs">
+      <button data-sort-shuffle type="button" class="px-2 py-1 rounded-md text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Shuffle</button>
+      <button data-sort-check type="button" class="px-3 py-1 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium">Check</button>
+    </div>
+  </header>
+  {prompt && <p class="text-sm text-ink-600 dark:text-ink-300 mb-3">{prompt}</p>}
+  <ul data-sort-list class="space-y-2">
+    {shuffled.map((it) => (
+      <li
+        data-id={it.id}
+        class="cursor-grab active:cursor-grabbing surface rounded-lg px-4 py-3 flex items-center gap-3 hover:border-accent-400 dark:hover:border-accent-600"
+      >
+        <svg class="h-4 w-4 text-ink-400" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+          <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+          <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+        </svg>
+        <span>{it.label}</span>
+      </li>
+    ))}
+  </ul>
+  <div data-sort-result class="hidden mt-4 px-4 py-3 rounded-lg text-sm font-medium"></div>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-sort]:not([data-sort-ready])');
+    if (roots.length === 0) return;
+
+    const Sortable: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js',
+      'Sortable'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.sortReady = '1';
+      const list = root.querySelector<HTMLElement>('[data-sort-list]')!;
+      const result = root.querySelector<HTMLElement>('[data-sort-result]')!;
+      const answer: string[] = JSON.parse(root.dataset.answer ?? '[]');
+
+      Sortable.create(list, { animation: 150, ghostClass: 'opacity-50' });
+
+      root.querySelector('[data-sort-check]')?.addEventListener('click', () => {
+        const current = Array.from(list.children).map((li) => (li as HTMLElement).dataset.id);
+        const ok = current.length === answer.length && current.every((v, i) => v === answer[i]);
+        result.className = `mt-4 px-4 py-3 rounded-lg text-sm font-medium ${ok ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' : 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200'}`;
+        result.textContent = ok ? 'Correct order.' : 'Not quite. Try again.';
+        result.classList.remove('hidden');
+      });
+
+      root.querySelector('[data-sort-shuffle]')?.addEventListener('click', () => {
+        const items = Array.from(list.children).sort(() => Math.random() - 0.5);
+        items.forEach((el) => list.appendChild(el));
+        result.classList.add('hidden');
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

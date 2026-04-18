@@ -1,0 +1,65 @@
+---
+// Display a DNA/RNA/protein sequence with optional highlighted features.
+// features: [{ start, end, label, color? }]  (1-indexed, inclusive)
+interface Feature { start: number; end: number; label: string; color?: string; }
+interface Props {
+  sequence: string;
+  type?: 'dna' | 'rna' | 'protein';
+  features?: Feature[];
+  title?: string;
+  blockSize?: number;
+}
+const {
+  sequence,
+  type = 'dna',
+  features = [],
+  title,
+  blockSize = 10,
+} = Astro.props;
+
+// Pre-compute per-character feature membership for static rendering.
+const chars = sequence.replace(/\s+/g, '').toUpperCase().split('');
+const palette = ['#fee2e2','#fef3c7','#dcfce7','#dbeafe','#f3e8ff','#fce7f3'];
+const charFeature: (Feature & { color: string } | null)[] = chars.map(() => null);
+features.forEach((f, fi) => {
+  const color = f.color ?? palette[fi % palette.length];
+  for (let i = Math.max(0, f.start - 1); i < Math.min(chars.length, f.end); i++) {
+    charFeature[i] = { ...f, color };
+  }
+});
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft">
+  {title && (
+    <figcaption class="mb-3 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
+        {type === 'protein' ? 'Protein' : type.toUpperCase()} · {chars.length} {type === 'protein' ? 'aa' : 'bp'}
+      </span>
+    </figcaption>
+  )}
+
+  {features.length > 0 && (
+    <div class="mb-3 flex flex-wrap gap-2 text-xs">
+      {features.map((f, fi) => {
+        const color = f.color ?? palette[fi % palette.length];
+        return (
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-ink-200 dark:border-ink-700">
+            <span class="inline-block h-2.5 w-2.5 rounded" style={`background:${color}`}></span>
+            <span class="text-ink-700 dark:text-ink-200">{f.label}</span>
+            <span class="text-ink-400 font-mono">{f.start}-{f.end}</span>
+          </span>
+        );
+      })}
+    </div>
+  )}
+
+  <div class="font-mono text-[13px] leading-7 break-all whitespace-pre-wrap select-all">
+    {chars.map((c, i) => {
+      const f = charFeature[i];
+      const block = i > 0 && i % blockSize === 0 ? ' ' : '';
+      const style = f ? `background:${f.color}; color:#27272a; padding:0 1px; border-radius:2px;` : '';
+      return <>{block}<span style={style} title={f?.label}>{c}</span></>;
+    })}
+  </div>
+</figure>

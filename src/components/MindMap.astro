@@ -1,0 +1,57 @@
+---
+// Auto-build a mind map from indented markdown using markmap-autoloader.
+// Pass markdown bullets via the `markdown` prop.
+interface Props {
+  title?: string;
+  markdown: string;
+  height?: number;
+}
+const { title, markdown, height = 480 } = Astro.props;
+const id = 'mm-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-mm>
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 font-serif text-base font-semibold">{title}</figcaption>
+  )}
+  <div data-mm-host class="w-full bg-white dark:bg-ink-900" style={`height:${height}px`}>
+    <script type="text/template" data-mm-src set:html={markdown} />
+    <svg data-mm-svg class="w-full h-full"></svg>
+  </div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-mm]:not([data-mm-ready])');
+    if (roots.length === 0) return;
+
+    const d3: any = await importGlobal('https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js', 'd3');
+    const markmap: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/markmap-view@0.18.10/dist/browser/index.js',
+      'markmap'
+    );
+    const transformer: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.11/dist/browser/index.js',
+      'markmap'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.mmReady = '1';
+      const srcEl = root.querySelector<HTMLElement>('[data-mm-src]');
+      const svg = root.querySelector<SVGSVGElement>('[data-mm-svg]')!;
+      const md = srcEl?.textContent ?? '';
+      try {
+        const t = new transformer.Transformer();
+        const { root: tree } = t.transform(md);
+        const mm = markmap.Markmap.create(svg, undefined, tree);
+        setTimeout(() => mm.fit(), 100);
+      } catch (e) {
+        console.warn('MindMap render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

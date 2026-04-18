@@ -1,0 +1,47 @@
+---
+// Render a Vega-Lite spec. Pass an object spec or a URL to a .json spec.
+interface Props {
+  title?: string;
+  spec: object | string;
+  height?: number;
+}
+const { title, spec, height = 360 } = Astro.props;
+const id = 'vega-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify(spec);
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" data-vega id={id} data-spec={conf}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div data-vega-canvas style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-vega]:not([data-vega-ready])');
+    if (roots.length === 0) return;
+
+    await importGlobal('https://cdn.jsdelivr.net/npm/vega@5.30.0/build/vega.min.js', 'vega');
+    await importGlobal('https://cdn.jsdelivr.net/npm/vega-lite@5.21.0/build/vega-lite.min.js', 'vegaLite');
+    const vegaEmbed: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/vega-embed@6.26.0/build/vega-embed.min.js',
+      'vegaEmbed'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.vegaReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-vega-canvas]')!;
+      const isDark = document.documentElement.classList.contains('dark');
+      let spec: any;
+      try { spec = JSON.parse(root.dataset.spec ?? '{}'); } catch { spec = {}; }
+      vegaEmbed(host, spec, {
+        actions: false,
+        theme: isDark ? 'dark' : undefined,
+        renderer: 'svg',
+      }).catch((e: unknown) => console.warn('Vega render failed', e));
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

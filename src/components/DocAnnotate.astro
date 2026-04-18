@@ -1,0 +1,50 @@
+---
+// Annotate a primary source document (text block) with Recogito-js style highlights.
+// Pre-baked annotations are static; for live user annotations they persist to localStorage.
+interface Annotation { start: number; end: number; label: string; color?: string; note?: string; }
+interface Props {
+  title?: string;
+  text: string;
+  annotations?: Annotation[];
+}
+const { title = 'Annotated document', text, annotations = [] } = Astro.props;
+const id = 'anno-' + Math.random().toString(36).slice(2, 9);
+
+// Build character-level annotation map for static render.
+const chars = text.split('');
+const palette = ['#fee2e2','#fef3c7','#dcfce7','#dbeafe','#f3e8ff','#fce7f3'];
+const at: (Annotation & { color: string } | null)[] = chars.map(() => null);
+annotations.forEach((a, i) => {
+  const color = a.color ?? palette[i % palette.length];
+  for (let j = Math.max(0, a.start); j < Math.min(chars.length, a.end); j++) at[j] = { ...a, color };
+});
+---
+
+<figure class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Source text</span>
+  </figcaption>
+
+  {annotations.length > 0 && (
+    <div class="mb-4 flex flex-wrap gap-2 text-xs">
+      {annotations.map((a, i) => (
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-ink-200 dark:border-ink-700">
+          <span class="inline-block h-2.5 w-2.5 rounded" style={`background:${a.color ?? palette[i % palette.length]}`}></span>
+          <span class="text-ink-700 dark:text-ink-200">{a.label}</span>
+        </span>
+      ))}
+    </div>
+  )}
+
+  <div class="prose dark:prose-invert max-w-none text-base leading-relaxed">
+    <p>
+      {chars.map((c, i) => {
+        const a = at[i];
+        if (!a) return <>{c}</>;
+        const style = `background:${a.color}; color:#27272a; padding:0 1px; border-radius:2px;`;
+        return <span style={style} title={`${a.label}${a.note ? ': ' + a.note : ''}`}>{c}</span>;
+      })}
+    </p>
+  </div>
+</figure>
