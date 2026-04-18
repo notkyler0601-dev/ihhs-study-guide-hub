@@ -1,0 +1,67 @@
+---
+// Desmos graphing calculator embed.
+// Loads the official Desmos API on demand.
+//
+// Usage:
+//   <Desmos expressions={["y = x^2", "y = 2x + 1"]} />
+//   <Desmos expressions={[{ id: "p1", latex: "y=\\sin(x)", color: "#b91c1c" }]} />
+
+interface SimpleExpr { id?: string; latex: string; color?: string; }
+interface Props {
+  expressions: (string | SimpleExpr)[];
+  height?: string;
+  caption?: string;
+}
+
+const { expressions, height = '420px', caption } = Astro.props;
+const id = 'desmos-' + Math.random().toString(36).slice(2, 9);
+const normalized = expressions.map((e, i) =>
+  typeof e === 'string' ? { id: 'e' + i, latex: e } : { id: e.id ?? 'e' + i, latex: e.latex, color: e.color }
+);
+---
+
+<figure class="not-prose my-8">
+  <div
+    id={id}
+    class="w-full rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft bg-white"
+    style={`height: ${height};`}
+    data-expressions={JSON.stringify(normalized)}
+  >
+    <div class="flex items-center justify-center h-full text-ink-400 text-sm">Loading calculator...</div>
+  </div>
+  {caption && <figcaption class="text-xs text-ink-500 mt-2 text-center italic">{caption}</figcaption>}
+</figure>
+
+<script type="module" define:vars={{ id }}>
+  const ensureDesmos = () =>
+    new Promise((resolve, reject) => {
+      if (window.Desmos) return resolve();
+      const s = document.createElement('script');
+      // Public demo API key (Desmos provides for embedding)
+      s.src = 'https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load Desmos'));
+      document.head.appendChild(s);
+    });
+
+  const setup = async () => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.initialized === 'true') return;
+    el.dataset.initialized = 'true';
+    try {
+      await ensureDesmos();
+      el.innerHTML = '';
+      const calc = window.Desmos.GraphingCalculator(el, {
+        expressionsCollapsed: true,
+        zoomButtons: true,
+      });
+      const exprs = JSON.parse(el.dataset.expressions ?? '[]');
+      exprs.forEach((e) => calc.setExpression(e));
+    } catch (e) {
+      console.warn('Desmos failed to load', e);
+      el.innerHTML = '<div style="padding:2rem;text-align:center;color:#71717a;font-size:14px;">Calculator unavailable.</div>';
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

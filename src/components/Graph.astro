@@ -1,0 +1,64 @@
+---
+// Interactive geometry/physics simulations powered by JSXGraph.
+// Pass a `setup` string of JS that creates points, lines, sliders.
+//
+// Usage:
+//   <Graph setup={`
+//     const board = JXG.JSXGraph.initBoard('CONTAINER_ID', { boundingbox: [-5,5,5,-5], axis: true });
+//     const a = board.create('slider', [[-4,4],[2,4],[-3,1,3]], { name: 'a' });
+//     board.create('functiongraph', [(x) => a.Value() * x * x]);
+//   `} />
+
+interface Props {
+  setup: string;     // JS code with CONTAINER_ID placeholder
+  height?: string;
+  caption?: string;
+}
+
+const { setup, height = '420px', caption } = Astro.props;
+const id = 'graph-' + Math.random().toString(36).slice(2, 9);
+const setupCode = setup.replace(/CONTAINER_ID/g, id);
+---
+
+<figure class="not-prose my-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.10.1/distrib/jsxgraph.css" />
+  <div
+    id={id}
+    class="jxgbox w-full rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft bg-white"
+    style={`height: ${height};`}
+  >
+    <div class="flex items-center justify-center h-full text-ink-400 text-sm">Loading interactive graph...</div>
+  </div>
+  {caption && <figcaption class="text-xs text-ink-500 mt-2 text-center italic">{caption}</figcaption>}
+  <script type="application/javascript" id={`${id}-setup`} set:html={setupCode} is:inline />
+</figure>
+
+<script type="module" define:vars={{ id }}>
+  const ensureJSXGraph = () =>
+    new Promise((resolve, reject) => {
+      if (window.JXG) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/jsxgraph@1.10.1/distrib/jsxgraphcore.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load JSXGraph'));
+      document.head.appendChild(s);
+    });
+
+  const setup = async () => {
+    const el = document.getElementById(id);
+    const setupScript = document.getElementById(`${id}-setup`);
+    if (!el || !setupScript || el.dataset.initialized === 'true') return;
+    el.dataset.initialized = 'true';
+    try {
+      await ensureJSXGraph();
+      el.innerHTML = '';
+      // eslint-disable-next-line no-new-func
+      new Function('JXG', setupScript.textContent ?? '')(window.JXG);
+    } catch (e) {
+      console.warn('Graph setup failed', e);
+      el.innerHTML = '<div style="padding:2rem;text-align:center;color:#71717a;font-size:14px;">Interactive graph unavailable.</div>';
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

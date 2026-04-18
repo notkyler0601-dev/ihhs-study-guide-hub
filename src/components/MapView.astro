@@ -1,0 +1,113 @@
+---
+// Interactive map powered by Leaflet + free OpenStreetMap tiles.
+// Drop into any guide to plot historical sites, geographic concepts, etc.
+//
+// Usage:
+//   <MapView
+//     center={[50, 10]}
+//     zoom={4}
+//     markers={[
+//       { lat: 52.5, lng: 13.4, label: "Berlin", popup: "Capital of Germany" },
+//       { lat: 48.8, lng: 2.35, label: "Paris", popup: "Captured June 14, 1940", year: "1940" }
+//     ]}
+//   />
+
+interface Marker {
+  lat: number;
+  lng: number;
+  label: string;
+  popup?: string;
+  year?: string;
+  color?: string;
+}
+
+interface Props {
+  markers: Marker[];
+  center?: [number, number];
+  zoom?: number;
+  height?: string;
+  title?: string;
+}
+
+const { markers, center = [50, 10], zoom = 4, height = '420px', title } = Astro.props;
+const id = 'map-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8">
+  {title && <figcaption class="text-xs uppercase tracking-[0.16em] text-ink-500 font-semibold mb-2">{title}</figcaption>}
+  <div
+    id={id}
+    class="map-host w-full rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft"
+    style={`height: ${height};`}
+    data-markers={JSON.stringify(markers)}
+    data-center={JSON.stringify(center)}
+    data-zoom={zoom}
+  ></div>
+</figure>
+
+<style is:global>
+  /* Match Leaflet popups to the site theme. */
+  .leaflet-container { background: #fafafa; font-family: 'Inter', sans-serif; }
+  .dark .leaflet-container { background: #18181b; }
+  .leaflet-popup-content-wrapper {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .dark .leaflet-popup-content-wrapper {
+    background: #18181b;
+    color: #fafafa;
+  }
+  .dark .leaflet-popup-tip { background: #18181b; }
+  .leaflet-popup-content { margin: 10px 14px; font-size: 13px; line-height: 1.5; }
+  .leaflet-popup-content b { color: #b91c1c; }
+  .dark .leaflet-popup-content b { color: #f87171; }
+  .leaflet-control-attribution { font-size: 10px !important; }
+  .ihhs-marker {
+    background: #b91c1c;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    width: 14px !important;
+    height: 14px !important;
+    margin-left: -7px !important;
+    margin-top: -7px !important;
+  }
+  .dark .ihhs-marker { border-color: #18181b; }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  const setup = () => {
+    document.querySelectorAll('.map-host:not(.initialized)').forEach((node) => {
+      const el = node as HTMLElement;
+      el.classList.add('initialized');
+      const markers = JSON.parse(el.dataset.markers ?? '[]');
+      const center = JSON.parse(el.dataset.center ?? '[0,0]');
+      const zoom = parseInt(el.dataset.zoom ?? '3', 10);
+
+      const map = L.map(el, { scrollWheelZoom: false }).setView(center, zoom);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 18,
+      }).addTo(map);
+
+      markers.forEach((m: any) => {
+        const icon = L.divIcon({ className: 'ihhs-marker', iconSize: [14, 14] });
+        const marker = L.marker([m.lat, m.lng], { icon }).addTo(map);
+        const popupHtml = [
+          `<b>${m.label}</b>`,
+          m.year ? `<div style="font-size:11px;opacity:0.6;margin-top:2px;">${m.year}</div>` : '',
+          m.popup ? `<div style="margin-top:4px;">${m.popup}</div>` : '',
+        ].filter(Boolean).join('');
+        marker.bindPopup(popupHtml);
+      });
+
+      // Enable scroll-zoom only after click (better UX for long pages)
+      el.addEventListener('click', () => map.scrollWheelZoom.enable(), { once: true });
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

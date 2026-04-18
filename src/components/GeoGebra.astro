@@ -1,0 +1,70 @@
+---
+// GeoGebra interactive math/geometry embed.
+// Either embed an existing GeoGebra material by ID, or build inline.
+//
+// Usage:
+//   <GeoGebra materialId="abcd1234" />    // a published GeoGebra material
+//   <GeoGebra appName="graphing" />       // blank graphing calculator
+
+interface Props {
+  materialId?: string;
+  appName?: 'graphing' | 'geometry' | '3d' | 'classic' | 'suite' | 'cas';
+  height?: string;
+  caption?: string;
+}
+
+const { materialId, appName = 'graphing', height = '500px', caption } = Astro.props;
+const id = 'geogebra-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8">
+  <div
+    id={id}
+    class="w-full rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft bg-white"
+    style={`height: ${height};`}
+    data-material={materialId}
+    data-app={appName}
+  >
+    <div class="flex items-center justify-center h-full text-ink-400 text-sm">Loading GeoGebra...</div>
+  </div>
+  {caption && <figcaption class="text-xs text-ink-500 mt-2 text-center italic">{caption}</figcaption>}
+</figure>
+
+<script type="module" define:vars={{ id }}>
+  const ensureGeoGebra = () =>
+    new Promise((resolve, reject) => {
+      if (window.GGBApplet) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://www.geogebra.org/apps/deployggb.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load GeoGebra'));
+      document.head.appendChild(s);
+    });
+
+  const setup = async () => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.initialized === 'true') return;
+    el.dataset.initialized = 'true';
+    try {
+      await ensureGeoGebra();
+      el.innerHTML = '';
+      const params = {
+        appName: el.dataset.app || 'graphing',
+        ...(el.dataset.material ? { material_id: el.dataset.material } : {}),
+        width: el.clientWidth,
+        height: el.clientHeight,
+        showToolBar: true,
+        showAlgebraInput: true,
+        showMenuBar: false,
+        showZoomButtons: true,
+      };
+      const applet = new window.GGBApplet(params, true);
+      applet.inject(id);
+    } catch (e) {
+      console.warn('GeoGebra failed to load', e);
+      el.innerHTML = '<div style="padding:2rem;text-align:center;color:#71717a;font-size:14px;">GeoGebra unavailable.</div>';
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

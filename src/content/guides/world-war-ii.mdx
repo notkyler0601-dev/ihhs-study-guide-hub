@@ -13,6 +13,8 @@ import KeyTerm from '../../components/KeyTerm.astro';
 import Collapsible from '../../components/Collapsible.astro';
 import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
+import MapView from '../../components/MapView.astro';
+import Timeline from '../../components/Timeline.astro';
 
 ## Learning objectives
 
@@ -32,36 +34,64 @@ Hitler's Non-Aggression Pact with Stalin (Aug 1939) cleared the path to invade P
 
 ## Master timeline
 
-```mermaid
-timeline
-  title Major events of World War II
-  1939 : Sept 1, Germany invades Poland (war begins)
-       : Sept 3, Britain & France declare war on Germany
-  1940 : Apr, Germany invades Denmark & Norway
-       : May-June, Fall of France
-       : Aug-Oct, Battle of Britain
-  1941 : June 22, Operation Barbarossa (Germany invades USSR)
-       : Sep 8, Siege of Leningrad begins
-       : Dec 7, Japan attacks Pearl Harbor
-       : Dec 8, U.S. declares war on Japan
-  1942 : Apr, Doolittle Raid on Tokyo
-       : May, Battle of Coral Sea
-       : June, Battle of Midway (Pacific turning point)
-       : Aug, Battle of Guadalcanal begins
-       : Aug, Battle of Stalingrad begins
-  1943 : Jan, Wannsee Conference & Final Solution
-       : Feb, German surrender at Stalingrad
-       : July, Allies invade Sicily (Operation Husky)
-       : Sept, Italy surrenders
-  1944 : June 6, D-Day Normandy landings (Operation Overlord)
-       : Aug, Paris liberated
-       : Dec, Battle of the Bulge begins
-  1945 : Apr 30, Hitler commits suicide
-       : May 7-8, Germany surrenders (V-E Day)
-       : Aug 6, Hiroshima bombed
-       : Aug 9, Nagasaki bombed
-       : Aug 14, Japan surrenders (V-J Day)
-```
+Use the arrows or the bottom rail to scrub through the war.
+
+<Timeline
+  title={{ headline: "World War II", text: "1939 to 1945" }}
+  events={[
+    { date: "1939-08-23", headline: "Non-Aggression Pact signed", text: "Hitler and Stalin agree not to attack each other and secretly divide Poland." },
+    { date: "1939-09-01", headline: "Germany invades Poland", text: "Blitzkrieg crushes Poland in 3 weeks. World War II begins in Europe." },
+    { date: "1939-09-03", headline: "Britain and France declare war on Germany" },
+    { date: "1940-04-09", headline: "Germany invades Denmark and Norway", text: "The Phony War ends." },
+    { date: "1940-05-26", headline: "Dunkirk evacuation", text: "Over 300,000 Allied troops are rescued across the English Channel." },
+    { date: "1940-06-22", headline: "France surrenders", text: "Germany occupies the north; Vichy France set up in the south." },
+    { date: "1940-08-13", headline: "Battle of Britain begins", text: "RAF defends British skies against the Luftwaffe." },
+    { date: "1941-06-22", headline: "Operation Barbarossa", text: "Germany launches the largest land invasion in history into the USSR." },
+    { date: "1941-09-08", headline: "Siege of Leningrad begins", text: "City surrounded for nearly 900 days. About 1 million civilians die." },
+    { date: "1941-12-07", headline: "Pearl Harbor attacked", text: "Japan strikes Hawaii. The next day the U.S. declares war on Japan." },
+    { date: "1942-04-18", headline: "Doolittle Raid on Tokyo", text: "Limited damage, huge morale boost." },
+    { date: "1942-06-04", headline: "Battle of Midway", text: "U.S. destroys 4 Japanese carriers. The turning point of the Pacific War." },
+    { date: "1942-08-07", headline: "Battle of Guadalcanal begins", text: "First major Allied land offensive against Japan." },
+    { date: "1942-08-23", headline: "Battle of Stalingrad begins", text: "The most decisive battle of the European war." },
+    { date: "1943-01-20", headline: "Wannsee Conference", text: "Nazi leaders coordinate the Final Solution." },
+    { date: "1943-02-02", headline: "Germany surrenders at Stalingrad", text: "Permanent end of German offensive in the East." },
+    { date: "1943-07-10", headline: "Allies invade Sicily", text: "Operation Husky begins the Italian campaign." },
+    { date: "1944-06-06", headline: "D-Day", text: "Largest amphibious invasion in history. Second front opens in Western Europe." },
+    { date: "1944-08-25", headline: "Paris liberated" },
+    { date: "1944-12-16", headline: "Battle of the Bulge", text: "Hitler's last major offensive in the West." },
+    { date: "1945-04-30", headline: "Hitler commits suicide" },
+    { date: "1945-05-08", headline: "V-E Day", text: "Germany surrenders unconditionally." },
+    { date: "1945-08-06", headline: "Hiroshima bombed", text: "About 80,000 killed instantly." },
+    { date: "1945-08-09", headline: "Nagasaki bombed", text: "About 35,000-40,000 killed instantly." },
+    { date: "1945-08-14", headline: "V-J Day", text: "Japan surrenders. World War II ends." },
+  ]}
+/>
+
+### Map of the European theater
+
+Click any marker to see what happened there.
+
+<MapView
+  title="Major sites in Europe and North Africa"
+  center={[50, 10]}
+  zoom={4}
+  height="460px"
+  markers={[
+    { lat: 52.2297, lng: 21.0122, label: "Warsaw, Poland", year: "1939", popup: "Germany's invasion here started WWII." },
+    { lat: 51.0500, lng: 2.3700, label: "Dunkirk", year: "1940", popup: "Over 300,000 Allied troops evacuated to Britain." },
+    { lat: 48.8566, lng: 2.3522, label: "Paris", year: "1940 / 1944", popup: "Captured June 1940; liberated August 1944." },
+    { lat: 51.5074, lng: -0.1278, label: "London", year: "1940-41", popup: "Heart of British resistance during The Blitz." },
+    { lat: 49.4521, lng: 11.0767, label: "Nuremberg", year: "1935 / 1945-46", popup: "Site of the Nuremberg Laws (1935) and the postwar trials of Nazi leaders." },
+    { lat: 59.9343, lng: 30.3351, label: "Leningrad (St Petersburg)", year: "1941-44", popup: "900-day Nazi siege; about 1 million civilians died." },
+    { lat: 55.7558, lng: 37.6173, label: "Moscow", year: "1941", popup: "German advance stalled here in winter 1941." },
+    { lat: 48.7080, lng: 44.5133, label: "Stalingrad (Volgograd)", year: "1942-43", popup: "Turning point of the Eastern Front. Germany surrendered Feb 2, 1943." },
+    { lat: 50.0282, lng: 19.2026, label: "Auschwitz-Birkenau", year: "1940-45", popup: "Largest Nazi death camp. Over 1 million murdered here." },
+    { lat: 49.2480, lng: -0.6989, label: "Normandy", year: "June 6, 1944", popup: "D-Day. Largest amphibious invasion in history." },
+    { lat: 50.4501, lng: 5.8704, label: "Bastogne / Ardennes", year: "Dec 1944", popup: "Battle of the Bulge. Hitler's last major offensive in the West." },
+    { lat: 52.5200, lng: 13.4050, label: "Berlin", year: "1945", popup: "Hitler died here April 30, 1945. City fell to Soviet forces." },
+    { lat: 30.8025, lng: 28.9536, label: "El Alamein, Egypt", year: "1942", popup: "Allied victory turned the tide in North Africa." },
+  ]}
+/>
 
 ## Glossary
 
@@ -249,6 +279,27 @@ Each U.S. step away from neutrality wasn't dramatic on its own, but together the
 </Callout>
 
 ## 5. The Pacific War: expansion → turning point (16.2)
+
+### Map of the Pacific theater
+
+<MapView
+  title="Major sites in the Pacific War"
+  center={[15, 150]}
+  zoom={3}
+  height="460px"
+  markers={[
+    { lat: 21.3650, lng: -157.9500, label: "Pearl Harbor, Hawaii", year: "Dec 7, 1941", popup: "Japan's surprise air attack pulled the U.S. into WWII." },
+    { lat: 35.6762, lng: 139.6503, label: "Tokyo, Japan", year: "April 1942", popup: "Doolittle Raid: 16 B-25s bombed Tokyo. Limited damage, huge morale boost." },
+    { lat: 28.2074, lng: -177.3735, label: "Midway Atoll", year: "June 1942", popup: "U.S. destroyed 4 Japanese carriers. Turning point of the Pacific War." },
+    { lat: -9.4438, lng: 159.9729, label: "Guadalcanal", year: "Aug 1942 - Feb 1943", popup: "First major Allied land offensive against Japan. Brutal jungle warfare." },
+    { lat: -15.0000, lng: 155.0000, label: "Coral Sea", year: "May 1942", popup: "First naval battle fought entirely by aircraft carriers. Stopped Japanese expansion south." },
+    { lat: 14.5995, lng: 120.9842, label: "Manila / Bataan", year: "1942", popup: "Bataan Death March: 75,000 Allied POWs forced to march 55 miles; ~16,000 died." },
+    { lat: 24.7833, lng: 141.3167, label: "Iwo Jima", year: "Feb-Mar 1945", popup: "Iconic flag-raising battle. Cost: 26,000 U.S. casualties." },
+    { lat: 26.5, lng: 128.0, label: "Okinawa", year: "Apr-Jun 1945", popup: "Last major battle. Kamikaze attacks. Convinced Truman to use the atomic bomb." },
+    { lat: 34.3853, lng: 132.4553, label: "Hiroshima", year: "Aug 6, 1945", popup: "First atomic bomb dropped. About 80,000 killed instantly." },
+    { lat: 32.7503, lng: 129.8779, label: "Nagasaki", year: "Aug 9, 1945", popup: "Second atomic bomb. About 35-40,000 killed instantly. Japan surrendered five days later." },
+  ]}
+/>
 
 ### Why Japan attacked
 

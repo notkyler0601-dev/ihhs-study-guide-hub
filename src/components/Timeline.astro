@@ -1,0 +1,99 @@
+---
+// Interactive scrollable timeline powered by Knight Lab's TimelineJS.
+// Loaded from CDN on demand so it doesn't bloat guides that don't use it.
+//
+// Usage:
+//   <Timeline
+//     events={[
+//       { date: "1939-09-01", headline: "Germany invades Poland", text: "WWII begins in Europe." },
+//       { date: "1941-12-07", headline: "Pearl Harbor", text: "..." }
+//     ]}
+//   />
+
+interface Event {
+  date: string;     // YYYY-MM-DD or YYYY-MM or YYYY
+  headline: string;
+  text?: string;
+  group?: string;
+}
+
+interface Props {
+  events: Event[];
+  title?: { headline: string; text?: string };
+  height?: string;
+}
+
+const { events, title, height = '550px' } = Astro.props;
+const id = 'timeline-' + Math.random().toString(36).slice(2, 9);
+
+const parseDate = (d: string) => {
+  const parts = d.split('-').map(Number);
+  return {
+    year: parts[0],
+    month: parts[1],
+    day: parts[2],
+  };
+};
+
+const tlData = {
+  ...(title ? { title: { text: { headline: title.headline, text: title.text ?? '' } } } : {}),
+  events: events.map((e) => ({
+    start_date: parseDate(e.date),
+    text: { headline: e.headline, text: e.text ?? '' },
+    group: e.group,
+  })),
+};
+---
+
+<figure class="not-prose my-8">
+  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css" />
+  <div
+    id={id}
+    class="rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft bg-white dark:bg-ink-900"
+    style={`height: ${height};`}
+  ></div>
+  <script type="application/json" id={`${id}-data`} set:html={JSON.stringify(tlData)} />
+</figure>
+
+<style is:global>
+  /* Soften TimelineJS so it fits the design language better */
+  .tl-timeline { font-family: 'Inter', sans-serif !important; }
+  .tl-headline-date, .tl-timeaxis-tick, .tl-timeaxis-major .tl-timeaxis-tick-text {
+    color: #b91c1c !important;
+  }
+  .tl-text h2.tl-headline { font-family: 'Fraunces', Georgia, serif !important; }
+  .dark .tl-timeline,
+  .dark .tl-text,
+  .dark .tl-slidenav-icon,
+  .dark .tl-menubar { background: #18181b !important; color: #fafafa !important; }
+  .dark .tl-text p, .dark .tl-text h2 { color: #fafafa !important; }
+</style>
+
+<script type="module" define:vars={{ id }}>
+  const ensureTimelineJS = () =>
+    new Promise((resolve, reject) => {
+      if (window.TL) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load TimelineJS'));
+      document.head.appendChild(s);
+    });
+
+  const setup = async () => {
+    const container = document.getElementById(id);
+    const dataEl = document.getElementById(`${id}-data`);
+    if (!container || !dataEl || container.dataset.initialized === 'true') return;
+    container.dataset.initialized = 'true';
+    try {
+      await ensureTimelineJS();
+      const data = JSON.parse(dataEl.textContent ?? '{}');
+      new window.TL.Timeline(id, data);
+    } catch (e) {
+      console.warn('Timeline failed to load', e);
+      container.innerHTML = '<div style="padding:2rem;text-align:center;color:#71717a;font-size:14px;">Timeline unavailable. Check your internet connection.</div>';
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

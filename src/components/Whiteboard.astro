@@ -1,0 +1,180 @@
+---
+// Lightweight in-page drawing whiteboard. Pure HTML5 canvas, no dependencies.
+// Lets students sketch out problems, save as PNG, or clear.
+//
+// Usage: <Whiteboard />
+
+interface Props {
+  height?: string;
+  prompt?: string;
+}
+const { height = '380px', prompt = 'Work it out here. Your sketch saves locally until you clear it.' } = Astro.props;
+const id = 'wb-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8">
+  <div
+    id={id}
+    class="surface rounded-2xl shadow-soft overflow-hidden"
+    data-wb-root
+  >
+    <div class="flex items-center justify-between px-4 py-2.5 border-b border-ink-200 dark:border-ink-800 gap-3">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white font-serif text-sm">✎</span>
+        <span class="text-sm font-medium">Whiteboard</span>
+      </div>
+      <div class="flex items-center gap-2 text-xs">
+        <button data-wb-tool="pen" class="wb-tool wb-active px-2 py-1 rounded">Pen</button>
+        <button data-wb-tool="erase" class="wb-tool px-2 py-1 rounded">Erase</button>
+        <span class="hidden sm:inline-flex items-center gap-1 px-2">
+          <input type="color" data-wb-color value="#b91c1c" class="h-5 w-7 rounded cursor-pointer border-0" />
+          <input type="range" data-wb-size min="1" max="20" value="3" class="w-16 accent-accent-600" />
+        </span>
+        <button data-wb-clear class="px-2 py-1 rounded text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Clear</button>
+        <button data-wb-save class="px-2 py-1 rounded bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white">Save</button>
+      </div>
+    </div>
+    <canvas
+      data-wb-canvas
+      class="block w-full bg-white touch-none cursor-crosshair"
+      style={`height: ${height};`}
+    ></canvas>
+  </div>
+  <p class="text-[11px] text-ink-500 text-center mt-2 italic">{prompt}</p>
+</figure>
+
+<style>
+  .wb-tool {
+    color: rgb(82 82 91);
+  }
+  :global(.dark) .wb-tool { color: rgb(212 212 216); }
+  .wb-tool.wb-active {
+    background: rgb(254 226 226);
+    color: rgb(127 29 29);
+  }
+  :global(.dark) .wb-tool.wb-active {
+    background: rgba(127 29 29 / 0.4);
+    color: rgb(252 165 165);
+  }
+</style>
+
+<script>
+  const setupOne = (root: HTMLElement) => {
+    const canvas = root.querySelector('[data-wb-canvas]') as HTMLCanvasElement;
+    if (!canvas || canvas.dataset.initialized === 'true') return;
+    canvas.dataset.initialized = 'true';
+    const ctx = canvas.getContext('2d')!;
+    const colorInput = root.querySelector('[data-wb-color]') as HTMLInputElement;
+    const sizeInput = root.querySelector('[data-wb-size]') as HTMLInputElement;
+    const clearBtn = root.querySelector('[data-wb-clear]') as HTMLButtonElement;
+    const saveBtn = root.querySelector('[data-wb-save]') as HTMLButtonElement;
+    const toolBtns = root.querySelectorAll('[data-wb-tool]') as NodeListOf<HTMLButtonElement>;
+    const storageKey = 'ihhs:wb:' + (root.id || 'default');
+
+    let drawing = false;
+    let last: { x: number; y: number } | null = null;
+    let tool: 'pen' | 'erase' = 'pen';
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const wantW = Math.floor(rect.width * dpr);
+      const wantH = Math.floor(rect.height * dpr);
+      if (canvas.width === wantW && canvas.height === wantH) return;
+      const prev = canvas.toDataURL();
+      canvas.width = wantW;
+      canvas.height = wantH;
+      ctx.scale(dpr, dpr);
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+      img.src = prev;
+    };
+
+    const restore = () => {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) return;
+        const img = new Image();
+        img.onload = () => {
+          const rect = canvas.getBoundingClientRect();
+          ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        };
+        img.src = saved;
+      } catch {}
+    };
+
+    const persist = () => {
+      try { localStorage.setItem(storageKey, canvas.toDataURL()); } catch {}
+    };
+
+    const getPos = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      drawing = true;
+      last = getPos(e);
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drawing || !last) return;
+      const p = getPos(e);
+      ctx.beginPath();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (tool === 'erase') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = parseInt(sizeInput.value, 10) * 4;
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = colorInput.value;
+        ctx.lineWidth = parseInt(sizeInput.value, 10);
+      }
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      last = p;
+    });
+    canvas.addEventListener('pointerup', () => {
+      if (drawing) persist();
+      drawing = false;
+      last = null;
+    });
+    canvas.addEventListener('pointerleave', () => {
+      if (drawing) persist();
+      drawing = false;
+      last = null;
+    });
+
+    toolBtns.forEach((b) => {
+      b.addEventListener('click', () => {
+        tool = (b.dataset.wbTool as any) ?? 'pen';
+        toolBtns.forEach((x) => x.classList.toggle('wb-active', x === b));
+      });
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      if (!confirm('Clear the whiteboard?')) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      try { localStorage.removeItem(storageKey); } catch {}
+    });
+
+    saveBtn?.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.download = 'whiteboard.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+
+    requestAnimationFrame(() => { resize(); restore(); });
+    window.addEventListener('resize', resize);
+  };
+
+  const setup = () => {
+    document.querySelectorAll('[data-wb-root]').forEach((el) => setupOne(el as HTMLElement));
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

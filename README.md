@@ -163,6 +163,86 @@ flowchart LR
 \`\`\`
 ```
 
+## Subject-specific interactive components
+
+These load on demand only on guides that use them, so they don't slow down the rest of the site.
+
+### `<MapView markers={[...]}/>`  — Interactive maps (Leaflet)
+
+```mdx
+<MapView
+  title="Major sites in Europe"
+  center={[50, 10]}
+  zoom={4}
+  markers={[
+    { lat: 48.86, lng: 2.35, label: "Paris", year: "1940", popup: "Captured June 14, 1940." }
+  ]}
+/>
+```
+
+### `<Timeline events={[...]}/>` — Scrollable interactive timeline (TimelineJS)
+
+```mdx
+<Timeline
+  title={{ headline: "Causes of WWII", text: "1919-1939" }}
+  events={[
+    { date: "1919-06-28", headline: "Treaty of Versailles", text: "..." },
+    { date: "1933-01-30", headline: "Hitler becomes Chancellor" }
+  ]}
+/>
+```
+
+### `<Molecule pdb="..."/>` — 3D molecule viewer (3Dmol.js)
+
+```mdx
+<Molecule pdb="1UBQ" style="cartoon" />     {/* PDB protein */}
+<Molecule cid="2244" style="stick" />        {/* PubChem CID, e.g. aspirin */}
+```
+
+### `<Desmos expressions={[...]}/>`  — Graphing calculator
+
+```mdx
+<Desmos expressions={["y = x^2", "y = 2x + 1"]} />
+```
+
+### `<GeoGebra appName="graphing"/>`
+
+```mdx
+<GeoGebra appName="graphing" />               {/* blank graphing calculator */}
+<GeoGebra materialId="abcd1234" />            {/* embed a published GeoGebra material */}
+```
+
+### `<Graph setup={...}/>`  — DIY interactive math/physics (JSXGraph)
+
+```mdx
+<Graph setup={`
+  const board = JXG.JSXGraph.initBoard('CONTAINER_ID', { boundingbox: [-5,5,5,-5], axis: true });
+  const a = board.create('slider', [[-4,4],[2,4],[-3,1,3]], { name: 'a' });
+  board.create('functiongraph', [(x) => a.Value() * x * x]);
+`} />
+```
+
+### `<Whiteboard />` — In-page drawing canvas
+
+```mdx
+<Whiteboard prompt="Sketch the cross-section of a leaf." />
+```
+Saves to `localStorage` so the sketch persists across visits.
+
+### `<CodeEditor language="..."/>` — Monaco (VS Code) editor
+
+```mdx
+<CodeEditor language="python" initial={`def hello():\n    print("hi")`} />
+```
+
+### `<EquationEditor initial="..."/>`  — Visual equation editor (MathLive)
+
+```mdx
+<EquationEditor initial="\\frac{a}{b} + c" />
+```
+
+Type with the keyboard or use the on-screen keypad. Copy the result as LaTeX with one click.
+
 ## Project structure
 
 ```

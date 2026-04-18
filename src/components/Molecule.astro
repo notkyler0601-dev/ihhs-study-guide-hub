@@ -1,0 +1,106 @@
+---
+// 3D molecule viewer powered by 3Dmol.js (loaded from CDN on demand).
+// Drag to rotate, scroll to zoom.
+//
+// Usage:
+//   <Molecule pdb="1UBQ" style="cartoon" />        // load by PDB ID
+//   <Molecule data="...PDB text..." format="pdb" />  // inline structure
+//   <Molecule cid="2244" style="stick" />            // PubChem CID (e.g. aspirin)
+
+interface Props {
+  pdb?: string;          // RCSB PDB ID
+  cid?: string;          // PubChem CID
+  data?: string;         // raw molecule data (PDB / SDF / XYZ)
+  format?: 'pdb' | 'sdf' | 'xyz' | 'mol2';
+  style?: 'cartoon' | 'stick' | 'sphere' | 'line';
+  height?: string;
+  caption?: string;
+  spin?: boolean;
+}
+
+const {
+  pdb,
+  cid,
+  data,
+  format = 'pdb',
+  style = 'cartoon',
+  height = '400px',
+  caption,
+  spin = false,
+} = Astro.props;
+
+const id = 'mol-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8">
+  <div
+    id={id}
+    class="mol-host w-full rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft relative"
+    style={`height: ${height};`}
+    data-pdb={pdb}
+    data-cid={cid}
+    data-data={data}
+    data-format={format}
+    data-style={style}
+    data-spin={spin}
+  >
+    <div class="mol-loading absolute inset-0 flex items-center justify-center text-ink-400 text-sm">Loading molecule...</div>
+  </div>
+  {caption && <figcaption class="text-xs text-ink-500 mt-2 text-center italic">{caption}</figcaption>}
+  <p class="text-[11px] text-ink-400 text-center mt-1">Drag to rotate, scroll to zoom</p>
+</figure>
+
+<script type="module" define:vars={{ id }}>
+  const ensure3Dmol = () =>
+    new Promise((resolve, reject) => {
+      if (window.$3Dmol) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://3Dmol.org/build/3Dmol-min.js';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load 3Dmol.js'));
+      document.head.appendChild(s);
+    });
+
+  const setup = async () => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.initialized === 'true') return;
+    el.dataset.initialized = 'true';
+    try {
+      await ensure3Dmol();
+      const isDark = document.documentElement.classList.contains('dark');
+      const viewer = window.$3Dmol.createViewer(el, {
+        backgroundColor: isDark ? '#18181b' : '#fafafa',
+      });
+      const styleType = el.dataset.style || 'cartoon';
+      const styleMap = {
+        cartoon: { cartoon: { color: 'spectrum' } },
+        stick: { stick: { colorscheme: 'Jmol' } },
+        sphere: { sphere: { colorscheme: 'Jmol' } },
+        line: { line: {} },
+      };
+
+      const onLoaded = () => {
+        viewer.setStyle({}, styleMap[styleType] || styleMap.cartoon);
+        viewer.zoomTo();
+        viewer.render();
+        if (el.dataset.spin === 'true') viewer.spin('y');
+        el.querySelector('.mol-loading')?.remove();
+      };
+
+      if (el.dataset.pdb) {
+        window.$3Dmol.download(`pdb:${el.dataset.pdb}`, viewer, {}, onLoaded);
+      } else if (el.dataset.cid) {
+        window.$3Dmol.download(`cid:${el.dataset.cid}`, viewer, {}, onLoaded);
+      } else if (el.dataset.data) {
+        viewer.addModel(el.dataset.data, el.dataset.format || 'pdb');
+        onLoaded();
+      }
+    } catch (e) {
+      console.warn('Molecule viewer failed', e);
+      const loading = el.querySelector('.mol-loading');
+      if (loading) loading.textContent = 'Molecule viewer unavailable.';
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

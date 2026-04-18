@@ -1,0 +1,102 @@
+---
+// VS Code's editor (Monaco) embedded in the page. Loaded from CDN on demand.
+// Great for any computer-science guide.
+//
+// Usage:
+//   <CodeEditor language="python" initial={`def hello():\n    print("hi")`} />
+
+interface Props {
+  initial?: string;
+  language?: 'javascript' | 'typescript' | 'python' | 'java' | 'cpp' | 'csharp' | 'html' | 'css' | 'json' | 'markdown' | 'sql';
+  height?: string;
+  readOnly?: boolean;
+}
+
+const {
+  initial = '// Write code here',
+  language = 'javascript',
+  height = '320px',
+  readOnly = false,
+} = Astro.props;
+
+const id = 'code-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8">
+  <div class="surface rounded-2xl shadow-soft overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-2 border-b border-ink-200 dark:border-ink-800 text-xs">
+      <span class="inline-flex items-center gap-2 text-ink-500">
+        <span class="inline-flex items-center justify-center h-5 w-5 rounded bg-accent-700 dark:bg-accent-600 text-white text-[10px] font-mono">{`<>`}</span>
+        <span class="font-mono">{language}</span>
+      </span>
+      <div class="flex items-center gap-2">
+        <button data-code-copy={id} class="px-2 py-1 rounded text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Copy</button>
+      </div>
+    </div>
+    <div
+      id={id}
+      class="w-full"
+      style={`height: ${height};`}
+      data-language={language}
+      data-readonly={readOnly}
+    >
+      <div class="flex items-center justify-center h-full text-ink-400 text-sm">Loading editor...</div>
+    </div>
+    <pre id={`${id}-initial`} class="hidden" set:html={initial} />
+  </div>
+</figure>
+
+<script type="module" define:vars={{ id }}>
+  const ensureMonaco = () =>
+    new Promise((resolve, reject) => {
+      if (window.monaco) return resolve(window.monaco);
+      if (!window._monacoLoading) {
+        window._monacoLoading = new Promise((res, rej) => {
+          const loader = document.createElement('script');
+          loader.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js';
+          loader.onload = () => {
+            window.require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+            window.require(['vs/editor/editor.main'], () => res(window.monaco));
+          };
+          loader.onerror = () => rej(new Error('Failed to load Monaco'));
+          document.head.appendChild(loader);
+        });
+      }
+      window._monacoLoading.then(resolve).catch(reject);
+    });
+
+  const setup = async () => {
+    const el = document.getElementById(id);
+    const initialEl = document.getElementById(`${id}-initial`);
+    if (!el || !initialEl || el.dataset.initialized === 'true') return;
+    el.dataset.initialized = 'true';
+    try {
+      const monaco = await ensureMonaco();
+      el.innerHTML = '';
+      const isDark = document.documentElement.classList.contains('dark');
+      const editor = monaco.editor.create(el, {
+        value: initialEl.textContent ?? '',
+        language: el.dataset.language || 'javascript',
+        theme: isDark ? 'vs-dark' : 'vs',
+        readOnly: el.dataset.readonly === 'true',
+        minimap: { enabled: false },
+        fontSize: 13,
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        padding: { top: 12, bottom: 12 },
+      });
+      const copyBtn = document.querySelector(`[data-code-copy="${id}"]`);
+      copyBtn?.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(editor.getValue());
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200);
+      });
+    } catch (e) {
+      console.warn('Code editor failed', e);
+      el.innerHTML = '<div style="padding:2rem;text-align:center;color:#71717a;font-size:14px;">Editor unavailable.</div>';
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>
