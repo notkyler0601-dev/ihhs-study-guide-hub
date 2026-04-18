@@ -243,6 +243,84 @@ Saves to `localStorage` so the sketch persists across visits.
 
 Type with the keyboard or use the on-screen keypad. Copy the result as LaTeX with one click.
 
+## Tier 3 component catalog
+
+The full catalog with usage docs lives in [`LIBRARIES.md`](./LIBRARIES.md). Quick index of additional lazy-loaded components:
+
+**Science**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<PhETSim sim="..." />` | PhET (iframe) | Embed any PhET simulation by id |
+| `<PhysicsSandbox setup="..." />` | Matter.js | 2D rigid-body physics scene |
+| `<ChemStructure smiles="..." />` | SmilesDrawer | Render molecules from SMILES |
+| `<DNASequence sequence="..." features={[...]} />` | Custom | DNA/RNA/protein with feature highlights |
+| `<Phylogeny newick="..." />` | phylotree.js | Evolutionary tree |
+| `<CircuitSim starter="rc" />` | Falstad CircuitJS | Circuit simulator |
+
+**Math and stats**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Plotter fns={[{fn:"x^2"}]} />` | function-plot | Lightweight function graphs |
+| `<DataChart type="bar" labels={[...]} datasets={[...]} />` | Chart.js | Quick charts from raw data |
+| `<VegaChart spec={...} />` | Vega-Lite | Declarative grammar of graphics |
+| `<P5Sketch code="..." />` | p5.js | Creative coding sandbox |
+| `<Statistics data={[...]} />` | Chart.js | Histograms with summary stats |
+| `<NumberLine min={0} max={10} marks={[...]} />` | Custom SVG | Inequalities, intervals, integers |
+
+**Computer science**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<PyRunner initial="..." />` | Pyodide | Real Python in the browser (~10MB) |
+| `<SandpackPlayground sandboxId="..." />` | CodeSandbox embed | Multi-file React/JS playgrounds |
+| `<AlgoViz algorithm="quick" />` | Custom | Animated sorting algorithms |
+| `<RegexTester pattern="..." />` | Native | Live regex match highlighter |
+| `<SQLPlayground schema="..." />` | sql.js | SQLite in the browser |
+
+**History and geography**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<StoryMap url="..." />` | StoryMapJS (iframe) | Geographic scrollytelling |
+| `<Globe3D markers={[...]} arcs={[...]} />` | globe.gl | 3D Earth visualization |
+| `<DocAnnotate text="..." annotations={[...]} />` | Custom | Pre-baked source-text highlights |
+| `<CompareSlider before="..." after="..." />` | img-comparison-slider | Before/after photos |
+
+**Languages and literature**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<HanziWriter character="字" />` | hanzi-writer | Chinese stroke-order tutor |
+| `<Pronounce src="..." />` | wavesurfer.js | Audio waveform with click-to-play |
+| `<IPAKeyboard />` | Custom | Type IPA symbols |
+| `<TextAnnotate text="..." />` | Custom | Reader-side annotations (saved locally) |
+| `<DiffView before="..." after="..." />` | diff2html | Compare drafts or translations |
+
+**Music and arts**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Score abc="..." />` | abcjs | Render and play sheet music |
+| `<Synth />` | Tone.js | Play scales, chords, intervals |
+| `<MidiPlayer src="..." />` | html-midi-player | Interactive MIDI playback |
+| `<ColorWheel base="#b91c1c" />` | chroma.js | Color theory explorer |
+
+**Universal study aids**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<MindMap markdown="..." />` | markmap | Auto-generate concept maps |
+| `<DragSort items={[...]} answer={[...]} />` | SortableJS | Drag-to-order exercises |
+| `<MatchPairs pairs={[...]} />` | Custom | Match terms to definitions |
+| `<Crossword words={[...]} />` | crossword-layout-generator | Vocab crossword |
+| `<Hotspots image="..." spots={[...]} />` | Custom | Click parts of a diagram |
+| `<Tldraw />` | tldraw (iframe) | Collaborative whiteboard |
+| `<Pomodoro />` | Custom | Built-in study timer |
+
+> **For full prop docs and examples for each, see [`LIBRARIES.md`](./LIBRARIES.md).**
+
 ## Project structure
 
 ```

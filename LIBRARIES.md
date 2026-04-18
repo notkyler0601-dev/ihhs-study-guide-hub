@@ -1,0 +1,279 @@
+# Library Catalog
+
+Master reference for **every** library, CDN, and external service used in the IHHS Study Guide Hub. Read this **before** building a new component or recommending one to a guide author. If you're about to install or import something, check first that it's not already here.
+
+Conventions:
+
+- "npm" = installed via `package.json`. Bundled into the app.
+- "CDN" = loaded lazily at runtime. Only downloaded when a guide uses the component.
+- "iframe" = embedded as an iframe. Zero JS cost; the third party serves everything.
+- All Tier 2 and Tier 3 components live in `src/components/` and follow the red/white/black palette.
+
+---
+
+## 1. Build and framework (npm, always loaded)
+
+| Package | Version | Purpose |
+|---|---|---|
+| `astro` | ^5.1.1 | Meta-framework. Pages, layouts, content collections, View Transitions, MDX. |
+| `@astrojs/mdx` | ^4.0.3 | MDX support so guide authors can use `<Component />` inside markdown. |
+| `@astrojs/sitemap` | ^3.2.1 | Auto-generates `sitemap-index.xml` at build time. |
+| `@astrojs/tailwind` | ^5.1.4 | Tailwind v3 integration for Astro. |
+| `@astrojs/check` | ^0.9.4 (dev) | Astro type-checker (run via `astro check`). |
+| `tailwindcss` | ^3.4.17 | Utility-first CSS. Custom theme in `tailwind.config.mjs`. |
+| `@tailwindcss/typography` | ^0.5.15 (dev) | Adds `.prose` for nicely styled long-form guide bodies. |
+| `typescript` | ^5.7.2 (dev) | Static type checking across `.astro`, `.ts`, and `.tsx`. |
+| `pagefind` | ^1.3.0 (dev) | Static-site full-text search index. Built post-`astro build`; serves `dist/pagefind/`. |
+
+## 2. Content rendering pipeline (npm, always loaded)
+
+| Package | Version | Purpose |
+|---|---|---|
+| `katex` | ^0.16.11 | Math typesetting. CSS imported in `src/styles/global.css`. |
+| `rehype-katex` | ^7.0.1 | Rehype plugin: turn math AST into KaTeX HTML during MDX compile. |
+| `remark-math` | ^6.0.0 | Remark plugin: parse `$inline$` and `$$block$$` math syntax in MDX. |
+| `mermaid` | ^11.4.1 | Renders Mermaid diagrams from fenced code blocks in `GuideLayout.astro`. |
+
+Wired up in `astro.config.mjs` (`integrations` and `markdown` keys).
+
+## 3. Maps (npm)
+
+| Package | Version | Purpose |
+|---|---|---|
+| `leaflet` | ^1.9.4 | Used by `<MapView>`. CSS is imported inside the component, so it's tree-shaken from non-map pages. |
+
+Tile provider: **OpenStreetMap** (free, no key, attribution required by the component).
+
+## 4. Internal infrastructure (`src/lib/`)
+
+| Module | Purpose |
+|---|---|
+| `loadScript.ts` | Dedupe-safe lazy CDN loader. Exports `loadScript`, `loadStyle`, `waitForGlobal`, `importGlobal`. Used by every Tier 3 component. |
+| `auth.ts` | Local-first user accounts. `currentUser()`, sign-in/up. Username + display name stored in `localStorage`. |
+| `storage.ts` | Namespaced `localStorage` layer (`get`, `set`, `remove`) keyed per user-id. |
+| `progress.ts` | Per-user dashboard data: streaks, quiz history, guides opened. |
+| `srs.ts` | SM-2 spaced repetition scheduler. `registerCard`, `review`, `loadDeck`, `Rating`. Drives `<Flashcards>` review mode. |
+
+These are reused everywhere. Don't duplicate. If you need a new key in `localStorage`, namespace through `storage.ts`.
+
+## 5. External fonts (CDN, always loaded)
+
+| Family | Source | Used as |
+|---|---|---|
+| Fraunces (400, 500, 600, 700) | Google Fonts | Serif headings (`font-serif`) |
+| Inter (400, 500, 600, 700) | Google Fonts | Sans body (`font-sans`) |
+| JetBrains Mono (400, 500) | Google Fonts | Code/mono (`font-mono`) |
+
+Loaded once in `src/layouts/BaseLayout.astro` with `preconnect` hints for performance.
+
+---
+
+## 6. Tier 1 components (built-in, always loaded)
+
+In every guide author's toolbox by default.
+
+| Component | Subject | Brief |
+|---|---|---|
+| `<Callout type="..." title="...">` | Any | Highlighted insight/warning/tip/theorem/definition boxes. 6 styles. |
+| `<KeyTerm term="...">def</KeyTerm>` | Any | Inline tooltip definitions. Hover to reveal. |
+| `<Collapsible question="...">` | Any | Click-to-reveal practice answers. |
+| `<Quiz questions={[...]} />` | Any | Multiple-choice with instant feedback. Persists scores per user when signed in. |
+| `<Flashcards cards={[...]} />` | Any | Flippable deck with shuffle. Switches to SM-2 SRS mode when signed in. |
+
+Plus inline KaTeX math (`$x^2$`), block KaTeX (`$$...$$`), and Mermaid diagrams (` ```mermaid ` fenced blocks). All zero-import.
+
+---
+
+## 7. Tier 2 components (existing, lazy-loaded)
+
+Pre-existing subject-specific components. CDN script loads only when the component appears in a guide.
+
+| Component | Library / source | Subject | Brief |
+|---|---|---|---|
+| `<MapView markers={[...]} />` | `leaflet` (npm) + OpenStreetMap tiles | Geography, history | Custom markers and popups. |
+| `<Timeline events={[...]} />` | TimelineJS (`cdn.knightlab.com/libs/timeline3/latest`) | History | Scrollable horizontal timeline. |
+| `<Molecule pdb=".." cid=".." />` | 3Dmol.js (`3Dmol.org/build/3Dmol-min.js`) | Chem, bio | Loads from RCSB PDB or PubChem CID. |
+| `<Desmos expressions={[...]} />` | Desmos API v1.10 (`www.desmos.com/api/v1.10/calculator.js`) | Math | Graphing calculator. Free tier API key embedded. |
+| `<GeoGebra appName=".." />` | GeoGebra deployggb (`www.geogebra.org/apps/deployggb.js`) | Math | Geometry, algebra, calculus playground. |
+| `<Graph setup={...} />` | JSXGraph 1.10.1 (`cdn.jsdelivr.net/npm/jsxgraph`) | Math, physics | DIY interactive constructions. |
+| `<Whiteboard prompt=".." />` | Native canvas | Any | In-page sketching, persists to `localStorage`. |
+| `<CodeEditor language=".." />` | Monaco 0.45.0 (`cdn.jsdelivr.net/npm/monaco-editor`) | CS | Full VS Code editor. |
+| `<EquationEditor initial=".." />` | MathLive 0.101.0 (`unpkg.com/mathlive`) | Math | Visual equation editor with LaTeX export. |
+
+---
+
+## 8. Tier 3 components (catalog, lazy-loaded)
+
+### Science
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<PhETSim sim="..." />` | PhET sims | iframe `phet.colorado.edu/sims/html/...` | Hundreds of pre-built simulations. |
+| `<PhysicsSandbox setup="..." />` | Matter.js 0.20.0 | `cdn.jsdelivr.net/npm/matter-js` | 2D rigid body physics. |
+| `<ChemStructure smiles="..." />` | SmilesDrawer 2.1.7 | `cdn.jsdelivr.net/npm/smiles-drawer` | Render molecules from SMILES strings. |
+| `<DNASequence sequence="..." />` | none (custom SVG/HTML) | n/a | DNA/RNA/protein with feature highlights. |
+| `<Phylogeny newick="..." />` | phylotree.js 1.5.0 + d3 v7 + underscore 1.13.6 | `cdn.jsdelivr.net/npm/phylotree`, `d3js.org/d3.v7.min.js`, `cdn.jsdelivr.net/npm/underscore` | Evolutionary trees. |
+| `<CircuitSim starter="rc" />` | Falstad CircuitJS | iframe `www.falstad.com/circuit/circuitjs.html` | Drag-drop circuit simulator. |
+
+### Math and stats
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Plotter fns={[...]} />` | function-plot 1.25.1 + d3 v5 | `unpkg.com/function-plot`, `d3js.org/d3.v5.min.js` | Lightweight function graphs. |
+| `<DataChart type="..." />` | Chart.js 4.4.6 | `cdn.jsdelivr.net/npm/chart.js` | Bar/line/scatter/pie/doughnut/radar. |
+| `<VegaChart spec={...} />` | Vega 5.30.0 + Vega-Lite 5.21.0 + vega-embed 6.26.0 | `cdn.jsdelivr.net/npm/vega`, `vega-lite`, `vega-embed` | Declarative grammar of graphics. |
+| `<P5Sketch code="..." />` | p5.js 1.11.2 | `cdn.jsdelivr.net/npm/p5` | Creative coding sandbox. |
+| `<Statistics data={[...]} />` | Chart.js 4.4.6 (custom stats) | `cdn.jsdelivr.net/npm/chart.js` | Histograms with summary stats. |
+| `<NumberLine min=".." />` | none (custom SVG) | n/a | Inequalities, intervals, integers, fractions. |
+
+### Computer science
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<PyRunner initial="..." />` | Pyodide v0.26.4 (~10MB on first run) | `cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js` | Real Python in the browser. |
+| `<SandpackPlayground sandboxId="..." />` | CodeSandbox embed | iframe `codesandbox.io/embed/...` | Multi-file React/JS playgrounds. |
+| `<AlgoViz algorithm="..." />` | none (custom + Tailwind) | n/a | Bubble/insertion/selection/merge/quick sort animations. |
+| `<RegexTester pattern="..." />` | native `RegExp` | n/a | Live regex match highlighter. |
+| `<SQLPlayground schema="..." />` | sql.js 1.11.0 (SQLite WASM) | `cdn.jsdelivr.net/npm/sql.js` | Run real SQL against an in-browser database. |
+
+### History and geography
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<StoryMap url="..." />` | Knight Lab StoryMapJS | iframe `uploads.knightlab.com/storymapjs/...` | Geographic scrollytelling. |
+| `<Globe3D markers={[...]} />` | globe.gl 2.32.4 + three-globe earth texture | `cdn.jsdelivr.net/npm/globe.gl`, `unpkg.com/three-globe/example/img/earth-night.jpg` | 3D Earth with markers and arcs. |
+| `<DocAnnotate text="..." />` | none (custom) | n/a | Pre-baked highlight spans on a source text. |
+| `<CompareSlider before="..." />` | img-comparison-slider 8.0.6 (web component) | `unpkg.com/img-comparison-slider` | Before/after image slider. |
+
+### Languages and literature
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<HanziWriter character="字" />` | hanzi-writer 3.7.2 | `cdn.jsdelivr.net/npm/hanzi-writer` | Chinese stroke-order tutor. |
+| `<Pronounce src="..." />` | wavesurfer.js 7.8.6 | `unpkg.com/wavesurfer.js` | Audio waveform with click-to-play. |
+| `<IPAKeyboard />` | none (custom) | n/a | Type IPA symbols by category. |
+| `<TextAnnotate text="..." />` | none (custom + localStorage) | n/a | Reader-side annotations, saved per browser. |
+| `<DiffView before="..." after="..." />` | diff2html 3.4.48 | `cdn.jsdelivr.net/npm/diff2html` | Side-by-side or line-by-line diff. |
+
+### Music and arts
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Score abc="..." />` | abcjs 6.4.4 | `cdn.jsdelivr.net/npm/abcjs` | Render and play sheet music from ABC notation. |
+| `<Synth />` | Tone.js 15.0.4 | `cdn.jsdelivr.net/npm/tone` | Web Audio synthesis. |
+| `<MidiPlayer src="..." />` | html-midi-player 1.5.0 + Tone 14.7.58 + @magenta/music 1.23.1 + focus-visible 5 | `cdn.jsdelivr.net/combine/...` | Interactive MIDI playback. |
+| `<ColorWheel base="#b91c1c" />` | chroma.js 3.1.2 | `cdn.jsdelivr.net/npm/chroma-js` | Color theory explorer. |
+
+### Universal study aids
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<MindMap markdown="..." />` | markmap-view 0.18.10 + markmap-lib 0.18.11 + d3 v7 | `cdn.jsdelivr.net/npm/markmap-*` | Auto-generate mind map from indented markdown. |
+| `<DragSort items={[...]} />` | SortableJS 1.15.6 | `cdn.jsdelivr.net/npm/sortablejs` | Drag-to-order exercises. |
+| `<MatchPairs pairs={[...]} />` | none (custom) | n/a | Click-to-match terms and definitions. |
+| `<Crossword words={[...]} />` | crossword-layout-generator 1.0.7 | `unpkg.com/crossword-layout-generator` | Vocab crossword from word/clue pairs. |
+| `<Hotspots image="..." spots={[...]} />` | none (custom) | n/a | Click parts of an image. Reveal or quiz mode. |
+| `<Tldraw />` | tldraw | iframe `tldraw.com` | Collaborative whiteboard. |
+| `<Pomodoro />` | none (custom) | n/a | Built-in study timer with break tracking. |
+
+---
+
+## 9. External services and data sources
+
+These are accessed by the above components but worth listing separately.
+
+| Service | Used by | Notes |
+|---|---|---|
+| OpenStreetMap tiles | `<MapView>` | Free; attribution shown automatically. |
+| RCSB PDB | `<Molecule pdb="...">` | `pdb:` lookup served by 3Dmol. |
+| PubChem | `<Molecule cid="...">` | `cid:` lookup served by 3Dmol. |
+| Google Fonts | `BaseLayout` | Fraunces, Inter, JetBrains Mono. |
+| Knight Lab StoryMapJS host | `<StoryMap>` | User-published maps. |
+| Knight Lab TimelineJS CDN | `<Timeline>` | `cdn.knightlab.com/libs/timeline3/latest` |
+| Falstad CircuitJS | `<CircuitSim>` | `www.falstad.com/circuit/circuitjs.html` |
+| Desmos calculator API | `<Desmos>` | Free tier API key embedded in component. |
+| GeoGebra API | `<GeoGebra>` | Embeds `deployggb.js`. |
+| PhET HTML5 sims | `<PhETSim>` | `phet.colorado.edu/sims/html/...` |
+| CodeSandbox embed | `<SandpackPlayground>` | `codesandbox.io/embed/...` |
+| tldraw web app | `<Tldraw>` | `tldraw.com` |
+| Pyodide CDN | `<PyRunner>` | jsdelivr serves the Python WASM runtime + stdlib. |
+
+---
+
+## 10. Reserved / planned (not yet installed)
+
+Documented as future options but not active:
+
+| Package | Purpose | Status |
+|---|---|---|
+| `@supabase/supabase-js` | Cross-device sync for accounts/progress/SRS. | Documented in `README.md` § "Optional: enable cross-device accounts via Supabase". `src/lib/auth.ts` and `src/lib/storage.ts` are intentionally swap-compatible. |
+
+---
+
+## 11. Patterns and conventions
+
+### Lazy-loading external scripts
+
+Always use the shared helper `src/lib/loadScript.ts`:
+
+```ts
+import { loadScript, loadStyle, importGlobal, waitForGlobal } from '../lib/loadScript';
+
+// Plain script (no global expected)
+await loadScript('https://cdn.example.com/lib.js');
+
+// Stylesheet (deduped)
+loadStyle('https://cdn.example.com/lib.css');
+
+// Script that attaches `window.MyLib`, returned typed
+const MyLib: any = await importGlobal('https://cdn.example.com/mylib.js', 'MyLib');
+
+// Module script (`<script type="module">`)
+await loadScript('https://cdn.example.com/lib.mjs', { module: true });
+```
+
+The helper:
+
+- Dedupes by URL (no script downloads twice in a session).
+- Resolves only after the script's `load` event fires.
+- Times out at 8 s when waiting on a global.
+
+### Color palette
+
+- Accent (red): `accent-50` through `accent-950`. Use `accent-700` for solid red, `accent-600` in dark mode.
+- Ink (neutrals): `ink-50` (near-white) through `ink-950` (near-black).
+- For embedded SVG/canvas/WebGL libraries that accept colors, pass `#b91c1c` (light) or `#f87171` (dark).
+- Detect dark mode in JS: `document.documentElement.classList.contains('dark')`.
+
+### House rules
+
+- **No em dashes.** Replace with commas, periods, colons, or "and" depending on context.
+- **No "difficulty" field on guides.** It was removed from the schema.
+- **Logo is `/ihhs-logo.png`** (referenced in `Header.astro` and `BaseLayout.astro`).
+- **Authoring guides:** standard skeleton in `welcome.mdx`. Frontmatter schema in `src/content/config.ts`.
+
+### Bundle size budget
+
+- Tier 3 components must NOT be statically imported in `BaseLayout.astro` or `GuideLayout.astro`.
+- They load only when the MDX guide imports them.
+- Warn the author in the component description when a library is huge (Pyodide ~10MB, Monaco ~3MB).
+
+### Accessibility
+
+- `aria-label` on every interactive root.
+- Keyboard-operable controls (no click-only patterns).
+- Don't autoplay audio.
+- Provide a textual fallback or summary near visualizations.
+
+---
+
+## 12. How to add a new library
+
+1. Check this catalog. The library may already be loaded by another component.
+2. If genuinely new:
+   - **CDN preferred** for component-specific libs (use `loadScript` helper).
+   - **npm install** only if it must run during build (e.g., remark/rehype plugin) or is universally needed (e.g., framework integration).
+3. Build the Astro component in `src/components/YourComponent.astro`. Follow the lazy-load pattern.
+4. Add a row to the appropriate Tier 3 section above with: component name, library + version, CDN URL, brief.
+5. Add an entry to `README.md` under "Tier 3 component catalog".
+6. Optional: extend `welcome.mdx` to demo the new component.
