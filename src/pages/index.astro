@@ -7,7 +7,12 @@ const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 const recentGuides = allGuides.slice(0, 6);
-const subjects = [...new Set(allGuides.map((g) => g.data.subject))];
+const subjectSet = new Set<string>();
+for (const g of allGuides) {
+  subjectSet.add(g.data.subject);
+  for (const c of g.data.categories ?? []) subjectSet.add(c);
+}
+const subjects = [...subjectSet];
 
 const stats = {
   guides: allGuides.length,
@@ -112,6 +117,7 @@ const stats = {
             title={g.data.title}
             description={g.data.description}
             subject={g.data.subject}
+            categories={g.data.categories}
             estimatedTime={g.data.estimatedTime}
             tags={g.data.tags}
             date={g.data.date}

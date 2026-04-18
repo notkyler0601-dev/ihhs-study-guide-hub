@@ -4,11 +4,12 @@ interface Props {
   title: string;
   description: string;
   subject: string;
+  categories?: string[];
   estimatedTime: number;
   tags?: string[];
   date?: Date;
 }
-const { href, title, description, subject, estimatedTime, tags = [], date } = Astro.props;
+const { href, title, description, subject, categories = [], estimatedTime, tags = [], date } = Astro.props;
 ---
 
 <a
@@ -17,8 +18,11 @@ const { href, title, description, subject, estimatedTime, tags = [], date } = As
 >
   <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-  <div class="flex items-start justify-between gap-3 mb-3">
-    <span class="badge badge-accent">{subject}</span>
+  <div class="flex items-start justify-between gap-3 mb-3 flex-wrap">
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <span class="badge badge-accent">{subject}</span>
+      {categories.slice(0, 2).map((c) => <span class="badge">{c}</span>)}
+    </div>
     {tags.length > 0 && <span class="badge">#{tags[0]}</span>}
   </div>
 

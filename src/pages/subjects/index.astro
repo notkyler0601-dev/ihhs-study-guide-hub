@@ -3,11 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const allGuides = await getCollection('guides', ({ data }) => !data.draft);
+// A guide can appear in its primary subject plus any extra categories.
 const grouped = new Map<string, typeof allGuides>();
 for (const g of allGuides) {
-  const list = grouped.get(g.data.subject) ?? [];
-  list.push(g);
-  grouped.set(g.data.subject, list);
+  const labels = [g.data.subject, ...(g.data.categories ?? [])];
+  for (const label of labels) {
+    const list = grouped.get(label) ?? [];
+    if (!list.includes(g)) list.push(g);
+    grouped.set(label, list);
+  }
 }
 const subjects = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
 ---

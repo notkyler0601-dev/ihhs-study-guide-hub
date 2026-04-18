@@ -5,10 +5,17 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const all = await getCollection('guides', ({ data }) => !data.draft);
-  const subjects = [...new Set(all.map((g) => g.data.subject))];
-  return subjects.map((s) => ({
+  const subjects = new Set<string>();
+  for (const g of all) {
+    subjects.add(g.data.subject);
+    for (const c of g.data.categories ?? []) subjects.add(c);
+  }
+  return [...subjects].map((s) => ({
     params: { subject: s.toLowerCase() },
-    props: { subject: s, guides: all.filter((g) => g.data.subject === s) },
+    props: {
+      subject: s,
+      guides: all.filter((g) => g.data.subject === s || (g.data.categories ?? []).includes(s)),
+    },
   }));
 }
 
@@ -37,7 +44,7 @@ const sorted = [...guides].sort((a, b) => b.data.date.valueOf() - a.data.date.va
           title={g.data.title}
           description={g.data.description}
           subject={g.data.subject}
-          difficulty={g.data.difficulty}
+          categories={g.data.categories}
           estimatedTime={g.data.estimatedTime}
           tags={g.data.tags}
           date={g.data.date}

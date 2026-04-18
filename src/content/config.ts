@@ -6,7 +6,8 @@ const guides = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    subject: z.string(),
+    subject: z.string().describe('Primary subject used for breadcrumbs and the main badge'),
+    categories: z.array(z.string()).default([]).describe('Additional subjects the guide cross-lists under (e.g. ["AP Exams"])'),
     estimatedTime: z.number().describe('Estimated read/study time in minutes'),
     date: z.coerce.date(),
     updated: z.coerce.date().optional(),
