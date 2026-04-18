@@ -1,0 +1,79 @@
+---
+// Image gallery / lightbox using PhotoSwipe. Pass an array of images and they render
+// as a clickable thumbnail grid; clicking opens a fullscreen viewer with pan/zoom.
+interface Img { src: string; thumb?: string; alt?: string; w: number; h: number; caption?: string; }
+interface Props {
+  title?: string;
+  images: Img[];
+  cols?: 2 | 3 | 4;
+}
+const { title, images, cols = 3 } = Astro.props;
+const id = 'lb-' + Math.random().toString(36).slice(2, 9);
+const colClass = { 2: 'grid-cols-2', 3: 'grid-cols-2 sm:grid-cols-3', 4: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' }[cols];
+---
+
+<figure class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-lb>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div class:list={['grid gap-3', colClass]}>
+    {images.map((img) => (
+      <a
+        href={img.src}
+        data-pswp-width={img.w}
+        data-pswp-height={img.h}
+        data-pswp-caption={img.caption ?? img.alt ?? ''}
+        class="block rounded-lg overflow-hidden border border-ink-200 dark:border-ink-800 hover:opacity-90 transition-opacity"
+        target="_blank"
+        rel="noopener"
+      >
+        <img src={img.thumb ?? img.src} alt={img.alt ?? ''} class="w-full h-32 object-cover" loading="lazy" />
+      </a>
+    ))}
+  </div>
+</figure>
+
+<script>
+  import { loadStyle } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-lb]:not([data-lb-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.css');
+    let PhotoSwipeLightbox: any;
+    try {
+      const mod: any = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js');
+      PhotoSwipeLightbox = mod.default ?? mod;
+    } catch (e) {
+      console.warn('PhotoSwipe failed to load', e);
+      return;
+    }
+
+    roots.forEach((root) => {
+      root.dataset.lbReady = '1';
+      const lightbox = new PhotoSwipeLightbox({
+        gallery: root,
+        children: 'a',
+        pswpModule: () => import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.esm.min.js'),
+      });
+      lightbox.on('uiRegister', () => {
+        lightbox.pswp.ui.registerElement({
+          name: 'caption',
+          order: 9,
+          isButton: false,
+          appendTo: 'root',
+          html: '',
+          onInit: (el: HTMLElement, pswp: any) => {
+            el.style.cssText = 'position:absolute; bottom:20px; left:0; right:0; text-align:center; color:#fff; padding:0 20px; pointer-events:none;';
+            pswp.on('change', () => {
+              const cap = pswp.currSlide?.data?.element?.dataset?.pswpCaption ?? '';
+              el.textContent = cap;
+            });
+          },
+        });
+      });
+      lightbox.init();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

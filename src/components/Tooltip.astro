@@ -1,0 +1,43 @@
+---
+// Rich tooltip on inline content via Tippy.js. Use anywhere a hover hint
+// would help (alternative to <KeyTerm> for non-vocabulary tooltips).
+interface Props {
+  content: string;
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+  trigger?: 'mouseenter focus' | 'click' | 'manual';
+}
+const { content, placement = 'top', trigger = 'mouseenter focus' } = Astro.props;
+const conf = JSON.stringify({ content, placement, trigger });
+---
+
+<span data-tippy data-conf={conf} class="border-b border-dotted border-ink-400 dark:border-ink-500 cursor-help"><slot /></span>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-tippy]:not([data-tippy-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/tippy.js@6.3.7/dist/tippy.css');
+    loadStyle('https://cdn.jsdelivr.net/npm/tippy.js@6.3.7/themes/light.css');
+    await loadScript('https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/tippy.js@6.6.2/dist/tippy-bundle.umd.min.js');
+    const tippy: any = await waitForGlobal('tippy');
+
+    roots.forEach((root) => {
+      root.dataset.tippyReady = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      tippy(root, {
+        content: conf.content,
+        placement: conf.placement,
+        trigger: conf.trigger,
+        animation: 'shift-away',
+        theme: document.documentElement.classList.contains('dark') ? '' : 'light',
+        maxWidth: 280,
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

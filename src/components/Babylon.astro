@@ -1,0 +1,68 @@
+---
+// Babylon.js scene viewer. Author passes a `setup` function body that
+// receives { BABYLON, scene, engine, camera } and adds objects to scene.
+// Or pass a `gltf` URL to auto-load a model.
+interface Props {
+  title?: string;
+  setup?: string;
+  gltf?: string;
+  height?: number;
+}
+const { title = 'Babylon scene', setup, gltf, height = 480 } = Astro.props;
+const id = 'bab-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ setup, gltf });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-bab data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Babylon.js</span>
+  </figcaption>
+  <canvas data-bab-canvas class="w-full block bg-black" style={`height:${height}px`}></canvas>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-bab]:not([data-bab-ready])');
+    if (roots.length === 0) return;
+
+    await loadScript('https://cdn.jsdelivr.net/npm/babylonjs@7.39.1/babylon.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.39.1/babylonjs.loaders.min.js');
+    const BABYLON: any = await waitForGlobal('BABYLON');
+
+    roots.forEach((root) => {
+      root.dataset.babReady = '1';
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-bab-canvas]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      try {
+        const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+        const scene = new BABYLON.Scene(engine);
+        scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.04, 1);
+        const camera = new BABYLON.ArcRotateCamera('cam', Math.PI / 4, Math.PI / 3, 6, BABYLON.Vector3.Zero(), scene);
+        camera.attachControl(canvas, true);
+        new BABYLON.HemisphericLight('h', new BABYLON.Vector3(0, 1, 0), scene);
+
+        if (conf.gltf) {
+          BABYLON.SceneLoader.AppendAsync('', conf.gltf, scene);
+        } else if (conf.setup) {
+          // eslint-disable-next-line no-new-func
+          const fn = new Function('BABYLON', 'scene', 'engine', 'camera', conf.setup);
+          fn(BABYLON, scene, engine, camera);
+        } else {
+          const box = BABYLON.MeshBuilder.CreateBox('box', { size: 1.5 }, scene);
+          const mat = new BABYLON.StandardMaterial('m', scene);
+          mat.diffuseColor = new BABYLON.Color3(0.73, 0.11, 0.11);
+          box.material = mat;
+        }
+        engine.runRenderLoop(() => scene.render());
+        window.addEventListener('resize', () => engine.resize());
+      } catch (e) {
+        console.warn('Babylon failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

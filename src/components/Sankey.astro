@@ -1,0 +1,78 @@
+---
+// Sankey flow diagram via d3-sankey. nodes: [{ id }], links: [{ source, target, value }]
+interface Node { id: string; label?: string; }
+interface Link { source: string; target: string; value: number; label?: string; }
+interface Props {
+  title?: string;
+  nodes: Node[];
+  links: Link[];
+  height?: number;
+}
+const { title = 'Flow', nodes, links, height = 420 } = Astro.props;
+const id = 'sky-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ nodes, links });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-sky data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-sky-host class="w-full overflow-x-auto" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-sky]:not([data-sky-ready])');
+    if (roots.length === 0) return;
+
+    let d3: any, sankey: any;
+    try {
+      d3 = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3@7/+esm');
+      sankey = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/+esm');
+    } catch (e) {
+      console.warn('Sankey load failed', e);
+      return;
+    }
+
+    roots.forEach((root) => {
+      root.dataset.skyReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-sky-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      const palette = ['#b91c1c', '#dc2626', '#27272a', '#52525b', '#a1a1aa', '#7f1d1d'];
+
+      const w = host.clientWidth || 720;
+      const h = 420;
+      const svg = d3.select(host).append('svg').attr('width', w).attr('height', h);
+
+      const nodeMap = new Map<string, number>();
+      conf.nodes.forEach((n: any, i: number) => nodeMap.set(n.id, i));
+      const data = {
+        nodes: conf.nodes.map((n: any) => ({ ...n, name: n.label ?? n.id })),
+        links: conf.links.map((l: any) => ({ source: nodeMap.get(l.source), target: nodeMap.get(l.target), value: l.value })),
+      };
+
+      const sk = sankey.sankey().nodeWidth(20).nodePadding(12).extent([[10, 10], [w - 120, h - 10]]);
+      const graph = sk(data);
+
+      svg.append('g').selectAll('path').data(graph.links).join('path')
+        .attr('d', sankey.sankeyLinkHorizontal())
+        .attr('fill', 'none')
+        .attr('stroke', (_d: any, i: number) => palette[i % palette.length])
+        .attr('stroke-opacity', 0.3)
+        .attr('stroke-width', (d: any) => Math.max(1, d.width));
+
+      const nodeG = svg.append('g').selectAll('g').data(graph.nodes).join('g');
+      nodeG.append('rect')
+        .attr('x', (d: any) => d.x0).attr('y', (d: any) => d.y0)
+        .attr('height', (d: any) => d.y1 - d.y0).attr('width', (d: any) => d.x1 - d.x0)
+        .attr('fill', (_d: any, i: number) => palette[i % palette.length]);
+      nodeG.append('text')
+        .attr('x', (d: any) => d.x1 + 6).attr('y', (d: any) => (d.y0 + d.y1) / 2)
+        .attr('dy', '0.35em')
+        .attr('font-size', 12).attr('font-family', 'Inter, sans-serif')
+        .attr('fill', isDark ? '#fafafa' : '#18181b')
+        .text((d: any) => d.name);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

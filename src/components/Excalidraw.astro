@@ -1,0 +1,21 @@
+---
+// Embed an Excalidraw whiteboard. Pass a URL to a public Excalidraw scene
+// (excalidraw.com/#json=... share link) or leave blank for a fresh canvas.
+interface Props {
+  title?: string;
+  scene?: string;
+  height?: number;
+}
+const { title = 'Whiteboard', scene, height = 540 } = Astro.props;
+const url = scene ?? 'https://excalidraw.com/';
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Excalidraw</span>
+  </figcaption>
+  <div class="relative w-full bg-ink-50 dark:bg-ink-900" style={`height:${height}px`}>
+    <iframe src={url} title={title} class="absolute inset-0 w-full h-full border-0" loading="lazy" allowfullscreen></iframe>
+  </div>
+</figure>

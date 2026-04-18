@@ -1,0 +1,62 @@
+---
+// Chord diagram showing relationships between groups via a square matrix.
+// matrix[i][j] = strength of relationship from group i to group j.
+interface Props {
+  title?: string;
+  labels: string[];
+  matrix: number[][];
+  size?: number;
+}
+const { title = 'Relationships', labels, matrix, size = 460 } = Astro.props;
+const id = 'cd-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ labels, matrix });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-cd data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-cd-host class="w-full flex justify-center" style={`min-height:${size}px`}></div>
+</figure>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-cd]:not([data-cd-ready])');
+    if (roots.length === 0) return;
+    let d3: any;
+    try { d3 = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3@7/+esm'); } catch (e) { console.warn(e); return; }
+
+    roots.forEach((root) => {
+      root.dataset.cdReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-cd-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const labels = conf.labels as string[];
+      const matrix = conf.matrix as number[][];
+      const size = 460;
+      const outer = size / 2 - 30;
+      const inner = outer - 14;
+      const isDark = document.documentElement.classList.contains('dark');
+
+      const palette = ['#b91c1c','#dc2626','#7f1d1d','#27272a','#52525b','#a1a1aa','#f87171','#fca5a5'];
+      const chord = d3.chord().padAngle(0.04).sortSubgroups(d3.descending);
+      const arc = d3.arc().innerRadius(inner).outerRadius(outer);
+      const ribbon = d3.ribbon().radius(inner);
+      const chords = chord(matrix);
+      const svg = d3.select(host).append('svg').attr('viewBox', `${-size/2} ${-size/2} ${size} ${size}`).attr('width', size).attr('height', size);
+
+      const group = svg.append('g').selectAll('g').data(chords.groups).join('g');
+      group.append('path').attr('fill', (d: any) => palette[d.index % palette.length]).attr('d', arc as any);
+      group.append('text').each((d: any) => { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr('dy', '.35em')
+        .attr('transform', (d: any) => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outer + 6}) ${d.angle > Math.PI ? 'rotate(180)' : ''}`)
+        .attr('text-anchor', (d: any) => d.angle > Math.PI ? 'end' : null)
+        .attr('font-size', 11).attr('font-family', 'Inter, sans-serif').attr('fill', isDark ? '#fafafa' : '#18181b')
+        .text((d: any) => labels[d.index] ?? '');
+
+      svg.append('g').attr('fill-opacity', 0.6).selectAll('path').data(chords).join('path')
+        .attr('d', ribbon as any)
+        .attr('fill', (d: any) => palette[d.target.index % palette.length])
+        .append('title').text((d: any) => `${labels[d.source.index]} → ${labels[d.target.index]}: ${d.source.value}`);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

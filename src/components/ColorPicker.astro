@@ -1,0 +1,63 @@
+---
+// Color picker via Pickr. Author can preset the swatches; output is shown
+// in HEX, RGB, and HSL. Useful for color-theory and design lessons.
+interface Props {
+  title?: string;
+  initial?: string;
+  swatches?: string[];
+}
+const { title = 'Color picker', initial = '#b91c1c', swatches } = Astro.props;
+const id = 'pkr-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ initial, swatches });
+---
+
+<section class="not-prose my-6 surface rounded-2xl shadow-soft p-5" id={id} data-pkr data-conf={conf}>
+  <header class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+  </header>
+  <div class="flex items-center gap-4 flex-wrap">
+    <div data-pkr-host></div>
+    <div data-pkr-info class="text-sm font-mono space-y-1 text-ink-700 dark:text-ink-300"></div>
+  </div>
+</section>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-pkr]:not([data-pkr-ready])');
+    if (roots.length === 0) return;
+    loadStyle('https://cdn.jsdelivr.net/npm/@simonwep/pickr@1.9.1/dist/themes/classic.min.css');
+    await loadScript('https://cdn.jsdelivr.net/npm/@simonwep/pickr@1.9.1/dist/pickr.min.js');
+    const Pickr: any = await waitForGlobal('Pickr');
+
+    roots.forEach((root) => {
+      root.dataset.pkrReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-pkr-host]')!;
+      const info = root.querySelector<HTMLElement>('[data-pkr-info]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const pickr = Pickr.create({
+        el: host,
+        theme: 'classic',
+        default: conf.initial,
+        swatches: conf.swatches,
+        components: {
+          preview: true, opacity: false, hue: true,
+          interaction: { hex: true, rgba: true, hsla: true, input: true, save: false },
+        },
+      });
+      const update = (color: any) => {
+        const c = color || pickr.getColor();
+        info.innerHTML = `
+          <div>HEX: <strong>${c.toHEXA().toString().slice(0, 7)}</strong></div>
+          <div>RGB: <strong>${c.toRGBA().slice(0, 3).map((v: number) => Math.round(v)).join(', ')}</strong></div>
+          <div>HSL: <strong>${c.toHSLA().slice(0, 3).map((v: number, i: number) => i === 0 ? Math.round(v) + '°' : Math.round(v) + '%').join(', ')}</strong></div>
+        `;
+      };
+      pickr.on('change', update);
+      pickr.on('init', () => update(null));
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

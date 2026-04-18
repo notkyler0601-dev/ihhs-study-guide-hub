@@ -104,6 +104,7 @@ const id = 'cards-' + Math.random().toString(36).slice(2, 9);
 <script>
   import { currentUser } from '../lib/auth';
   import { registerCard, review, loadDeck, type Rating } from '../lib/srs';
+  import { fireConfetti } from '../lib/confetti';
 
   const fmtInterval = (days: number) => {
     if (days < 1) return '<1d';
@@ -203,11 +204,18 @@ const id = 'cards-' + Math.random().toString(36).slice(2, 9);
     });
 
     if (mode === 'srs') {
+      const sessionGoodEasy = new Set<number>();
+      let celebrated = false;
       root.querySelectorAll('[data-rate]').forEach((b) => {
         b.addEventListener('click', () => {
           if (!flipped) return;
           const rating = b.getAttribute('data-rate') as Rating;
           review(`${guideSlug}::${order[pos]}`, rating);
+          if ((rating === 'good' || rating === 'easy')) sessionGoodEasy.add(order[pos]);
+          if (!celebrated && sessionGoodEasy.size === cards.length) {
+            celebrated = true;
+            void fireConfetti('fireworks');
+          }
           next();
         });
       });

@@ -1,0 +1,64 @@
+---
+// Hierarchical sunburst (radial treemap). data: { name, value?, children?: [...] }
+interface Node { name: string; value?: number; children?: Node[]; }
+interface Props {
+  title?: string;
+  data: Node;
+  size?: number;
+}
+const { title = 'Sunburst', data, size = 460 } = Astro.props;
+const id = 'sb-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify(data);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-sb data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-sb-host class="w-full flex justify-center" style={`min-height:${size}px`}></div>
+</figure>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-sb]:not([data-sb-ready])');
+    if (roots.length === 0) return;
+
+    let d3: any;
+    try {
+      d3 = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3@7/+esm');
+    } catch (e) { console.warn(e); return; }
+
+    roots.forEach((root) => {
+      root.dataset.sbReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-sb-host]')!;
+      const data = JSON.parse(root.dataset.conf || '{}');
+      const size = 460;
+      const radius = size / 2;
+      const isDark = document.documentElement.classList.contains('dark');
+
+      const root2 = d3.hierarchy(data).sum((d: any) => d.value || 0).sort((a: any, b: any) => b.value - a.value);
+      d3.partition().size([2 * Math.PI, radius])(root2);
+      const arc = d3.arc()
+        .startAngle((d: any) => d.x0).endAngle((d: any) => d.x1)
+        .padAngle(0.005).padRadius(radius / 2)
+        .innerRadius((d: any) => d.y0).outerRadius((d: any) => d.y1 - 1);
+      const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRgb('#fee2e2', '#7f1d1d'), Math.max(2, root2.children?.length || 2)));
+
+      const svg = d3.select(host).append('svg').attr('viewBox', `${-radius} ${-radius} ${size} ${size}`).attr('width', size).attr('height', size);
+      svg.append('g').selectAll('path').data(root2.descendants().filter((d: any) => d.depth)).join('path')
+        .attr('fill', (d: any) => { while (d.depth > 1) d = d.parent; return color(d.data.name); })
+        .attr('fill-opacity', (d: any) => (d.children ? 0.7 : 0.95))
+        .attr('d', arc as any)
+        .append('title').text((d: any) => d.ancestors().map((a: any) => a.data.name).reverse().join(' / ') + ': ' + d.value);
+      svg.append('g').attr('pointer-events', 'none').attr('text-anchor', 'middle').attr('font-size', 10).attr('font-family', 'Inter, sans-serif').attr('fill', isDark ? '#fafafa' : '#18181b')
+        .selectAll('text').data(root2.descendants().filter((d: any) => d.depth && (d.y1 - d.y0) > 14 && ((d.x1 - d.x0) * (d.y0 + d.y1) / 2) > 30)).join('text')
+        .attr('transform', (d: any) => {
+          const x = ((d.x0 + d.x1) / 2) * 180 / Math.PI;
+          const y = (d.y0 + d.y1) / 2;
+          return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+        })
+        .attr('dy', '0.35em')
+        .text((d: any) => d.data.name);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

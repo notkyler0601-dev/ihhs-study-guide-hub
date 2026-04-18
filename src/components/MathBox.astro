@@ -1,0 +1,56 @@
+---
+// MathBox 3D math visualization (gradient fields, parametric surfaces, vector calculus).
+// Pass a `setup` JS function body that receives { mathbox, three, MathBox }.
+// Heavy library (~600KB) so use only when 3D math viz is the focus.
+interface Props {
+  title?: string;
+  setup: string;
+  height?: number;
+}
+const { title = '3D math', setup, height = 480 } = Astro.props;
+const id = 'mb-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-mb data-setup={setup}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">MathBox</span>
+  </figcaption>
+  <div data-mb-host class="w-full bg-black" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-mb]:not([data-mb-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/gh/unconed/mathbox-bundle@latest/build/mathbox.css');
+    await loadScript('https://cdn.jsdelivr.net/gh/unconed/mathbox-bundle@latest/build/mathbox-bundle.js');
+    const MathBox: any = await waitForGlobal('MathBox');
+
+    roots.forEach((root) => {
+      root.dataset.mbReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-mb-host]')!;
+      const setup = root.dataset.setup ?? '';
+      try {
+        const mathbox = MathBox.mathBox({
+          element: host,
+          plugins: ['core', 'controls', 'cursor'],
+          controls: { klass: (window as any).THREE?.OrbitControls },
+        });
+        const three = mathbox.three;
+        three.renderer.setClearColor(new (window as any).THREE.Color(0x000000), 1);
+        // eslint-disable-next-line no-new-func
+        const fn = new Function('mathbox', 'three', 'MathBox', setup);
+        fn(mathbox, three, MathBox);
+      } catch (e) {
+        console.warn('MathBox failed', e);
+        host.innerHTML = '<div class="p-4 text-sm text-rose-400">MathBox setup failed: ' + (e as Error).message + '</div>';
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

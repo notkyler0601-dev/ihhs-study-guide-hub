@@ -62,6 +62,7 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
 <script>
   import { currentUser } from '../lib/auth';
   import { recordQuiz } from '../lib/progress';
+  import { fireConfetti } from '../lib/confetti';
 
   const setupOne = (root: HTMLElement) => {
     const total = Number(root.dataset.quizTotal || '0');
@@ -88,6 +89,9 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
         : pct >= 50 ? 'Solid foundation, revisit the missed concepts.'
         : 'Re-read the section and try again. You have got this.';
       resultEl!.classList.remove('hidden');
+
+      // Celebrate a perfect score with confetti.
+      if (pct === 100) void fireConfetti('cannons');
 
       // Persist score to user progress (only when signed in)
       if (currentUser()) {

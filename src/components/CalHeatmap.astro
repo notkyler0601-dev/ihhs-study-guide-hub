@@ -1,0 +1,65 @@
+---
+// GitHub-style calendar heatmap. data: { 'YYYY-MM-DD': value }
+interface Props {
+  title?: string;
+  data: Record<string, number>;
+  startDate?: string;
+  weeks?: number;
+}
+const { title = 'Activity', data, startDate, weeks = 26 } = Astro.props;
+const id = 'ch-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ data, startDate, weeks });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl shadow-soft p-5" id={id} data-ch data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-ch-host class="w-full overflow-x-auto"></div>
+</figure>
+
+<script>
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-ch]:not([data-ch-ready])').forEach((root) => {
+      root.dataset.chReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-ch-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const data: Record<string, number> = conf.data ?? {};
+      const weeks = conf.weeks ?? 26;
+      const end = conf.startDate ? new Date(conf.startDate) : new Date();
+      end.setHours(0, 0, 0, 0);
+      const start = new Date(end);
+      start.setDate(end.getDate() - (weeks * 7) + 1);
+
+      // Color scale (5 buckets) using accent palette
+      const all = Object.values(data);
+      const max = Math.max(1, ...all);
+      const buckets = ['#27272a', '#7f1d1d', '#b91c1c', '#dc2626', '#f87171'];
+      const bucketFor = (v: number) => v <= 0 ? '#1f1f22' : buckets[Math.min(buckets.length - 1, Math.floor((v / max) * buckets.length))];
+
+      const cell = 13;
+      const gap = 2;
+      const w = weeks * (cell + gap) + 30;
+      const h = 7 * (cell + gap) + 30;
+      let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+      ['M','W','F'].forEach((label, i) => {
+        svg += `<text x="0" y="${20 + (i * 2 + 1) * (cell + gap)}" font-size="9" font-family="Inter,sans-serif" fill="currentColor" opacity="0.6">${label}</text>`;
+      });
+      const d = new Date(start);
+      let weekIdx = 0;
+      while (d <= end) {
+        const dayOfWeek = d.getDay();
+        const x = 22 + weekIdx * (cell + gap);
+        const y = 12 + dayOfWeek * (cell + gap);
+        const key = d.toISOString().slice(0, 10);
+        const v = data[key] ?? 0;
+        const color = bucketFor(v);
+        svg += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" fill="${color}"><title>${key}: ${v}</title></rect>`;
+        if (dayOfWeek === 6) weekIdx++;
+        d.setDate(d.getDate() + 1);
+      }
+      svg += '</svg>';
+      host.innerHTML = svg;
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

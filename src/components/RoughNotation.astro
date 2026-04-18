@@ -1,0 +1,50 @@
+---
+// Hand-drawn-style annotations on inline content using rough-notation.
+// Wrap any text with <RoughNotation type="underline" color="#b91c1c">important</RoughNotation>
+// Types: underline, box, circle, highlight, strike-through, crossed-off, bracket
+interface Props {
+  type?: 'underline' | 'box' | 'circle' | 'highlight' | 'strike-through' | 'crossed-off' | 'bracket';
+  color?: string;
+  strokeWidth?: number;
+  padding?: number;
+  iterations?: number;
+  delay?: number;
+}
+const { type = 'underline', color = '#b91c1c', strokeWidth = 2, padding = 4, iterations = 2, delay = 0 } = Astro.props;
+const conf = JSON.stringify({ type, color, strokeWidth, padding, iterations, delay });
+---
+
+<span data-rn data-conf={conf}><slot /></span>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-rn]:not([data-rn-ready])');
+    if (roots.length === 0) return;
+
+    let RN: any;
+    try {
+      RN = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/rough-notation@0.5.1/lib/rough-notation.esm.js');
+    } catch (e) {
+      console.warn('RoughNotation failed to load', e);
+      return;
+    }
+
+    roots.forEach((root) => {
+      root.dataset.rnReady = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const annotation = RN.annotate(root, conf);
+      // Show when scrolled into view, not immediately
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            annotation.show();
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      obs.observe(root);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

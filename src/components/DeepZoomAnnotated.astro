@@ -1,0 +1,75 @@
+---
+// Deep-zoom with clickable annotations overlaid at specific image coordinates.
+// markers: [{ x, y, label, description? }] in image coordinates (0..1 fractional)
+interface Marker { x: number; y: number; label: string; description?: string; }
+interface Props {
+  src: string;
+  markers?: Marker[];
+  title?: string;
+  height?: number;
+}
+const { src, markers = [], title, height = 520 } = Astro.props;
+const id = 'osda-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ src, markers });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-osda data-conf={conf}>
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Click any marker</span>
+    </figcaption>
+  )}
+  <div class="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+    <div data-osda-host class="w-full bg-ink-950" style={`height:${height}px`}></div>
+    <div data-osda-info class="p-4 text-sm border-t lg:border-t-0 lg:border-l border-ink-200 dark:border-ink-800 min-h-[80px] text-ink-700 dark:text-ink-300">
+      Click a marker to see details.
+    </div>
+  </div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-osda]:not([data-osda-ready])');
+    if (roots.length === 0) return;
+
+    const OpenSeadragon: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js',
+      'OpenSeadragon'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.osdaReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-osda-host]')!;
+      const info = root.querySelector<HTMLElement>('[data-osda-info]')!;
+      host.id = 'osda-host-' + Math.random().toString(36).slice(2, 9);
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      try {
+        const viewer = OpenSeadragon({
+          id: host.id,
+          tileSources: { type: 'image', url: conf.src },
+          prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/images/',
+          showNavigator: true,
+        });
+        viewer.addHandler('open', () => {
+          (conf.markers || []).forEach((m: any, i: number) => {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.style.cssText = 'background:#b91c1c; border:2px solid white; border-radius:50%; width:20px; height:20px; cursor:pointer; box-shadow:0 0 0 2px rgba(0,0,0,0.3);';
+            dot.title = m.label;
+            dot.addEventListener('click', () => {
+              info.innerHTML = `<strong>${m.label}</strong>${m.description ? '<div class="text-xs text-ink-500 mt-1">' + m.description + '</div>' : ''}`;
+            });
+            viewer.addOverlay({ element: dot, location: new OpenSeadragon.Point(m.x, m.y), placement: OpenSeadragon.Placement.CENTER });
+          });
+        });
+      } catch (e) {
+        console.warn('DeepZoomAnnotated failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

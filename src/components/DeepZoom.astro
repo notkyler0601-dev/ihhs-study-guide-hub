@@ -1,0 +1,63 @@
+---
+// Deep-zoom into a high-resolution image via OpenSeadragon. Supports
+// regular images (JPG/PNG) or DZI / IIIF tile sources for huge images
+// (microscopy slides, satellite imagery, fine art).
+interface Props {
+  src: string | string[];   // single image URL or array of tile sources
+  title?: string;
+  height?: number;
+  type?: 'image' | 'dzi' | 'iiif';
+}
+const { src, title, height = 480, type = 'image' } = Astro.props;
+const id = 'osd-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ src, type });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-osd data-conf={conf}>
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Drag to pan, scroll to zoom</span>
+    </figcaption>
+  )}
+  <div data-osd-host class="w-full bg-ink-950" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-osd]:not([data-osd-ready])');
+    if (roots.length === 0) return;
+
+    const OpenSeadragon: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js',
+      'OpenSeadragon'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.osdReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-osd-host]')!;
+      host.id = 'osd-host-' + Math.random().toString(36).slice(2, 9);
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      try {
+        const tileSources =
+          conf.type === 'image'
+            ? { type: 'image', url: conf.src }
+            : Array.isArray(conf.src) ? conf.src : conf.src;
+        OpenSeadragon({
+          id: host.id,
+          tileSources,
+          prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/images/',
+          showNavigator: true,
+          showRotationControl: true,
+          gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true, scrollToZoom: true },
+        });
+      } catch (e) {
+        console.warn('DeepZoom failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

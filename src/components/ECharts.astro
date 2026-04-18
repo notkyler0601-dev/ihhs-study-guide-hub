@@ -1,0 +1,51 @@
+---
+// Apache ECharts: render any chart from an option spec. Includes funnels,
+// gauges, parallel coordinates, polar charts, sankey, treemap, etc.
+interface Props {
+  title?: string;
+  option: any;
+  height?: number;
+}
+const { title, option, height = 380 } = Astro.props;
+const id = 'ec-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify(option);
+---
+
+<figure class="not-prose my-6 surface rounded-2xl shadow-soft p-5" id={id} data-ec data-conf={conf}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div data-ec-host class="w-full" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-ec]:not([data-ec-ready])');
+    if (roots.length === 0) return;
+    const echarts: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js',
+      'echarts'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.ecReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-ec-host]')!;
+      const option = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      try {
+        const inst = echarts.init(host, isDark ? 'dark' : null, { renderer: 'svg' });
+        inst.setOption({
+          color: ['#b91c1c', '#27272a', '#a1a1aa', '#dc2626', '#52525b', '#7f1d1d', '#f87171'],
+          textStyle: { fontFamily: 'Inter, sans-serif' },
+          backgroundColor: 'transparent',
+          ...option,
+        });
+        new ResizeObserver(() => inst.resize()).observe(host);
+      } catch (e) {
+        console.warn('ECharts failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

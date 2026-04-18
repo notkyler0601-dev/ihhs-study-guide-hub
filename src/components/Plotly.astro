@@ -1,0 +1,53 @@
+---
+// Render any Plotly figure spec. Supports 3D scatter, contour, surface,
+// statistical traces, parallel coords, and everything else Plotly does.
+interface Props {
+  title?: string;
+  data: any[];
+  layout?: any;
+  height?: number;
+}
+const { title, data, layout = {}, height = 420 } = Astro.props;
+const id = 'plt-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ data, layout });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl shadow-soft p-5" id={id} data-plt data-conf={conf}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div data-plt-host class="w-full" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-plt]:not([data-plt-ready])');
+    if (roots.length === 0) return;
+    const Plotly: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
+      'Plotly'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.pltReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-plt-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      const baseLayout = {
+        autosize: true,
+        margin: { l: 50, r: 30, t: 30, b: 50 },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { family: 'Inter, sans-serif', color: isDark ? '#fafafa' : '#18181b' },
+        colorway: ['#b91c1c', '#27272a', '#a1a1aa', '#dc2626', '#52525b', '#7f1d1d'],
+      };
+      try {
+        Plotly.newPlot(host, conf.data, { ...baseLayout, ...conf.layout }, { responsive: true, displayModeBar: 'hover' });
+      } catch (e) {
+        console.warn('Plotly failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

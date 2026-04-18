@@ -1,0 +1,32 @@
+---
+// Embed any Sketchfab 3D model. Find the UID in the model's URL:
+// sketchfab.com/3d-models/<slug>-<UID>
+interface Props {
+  uid: string;
+  title?: string;
+  height?: number;
+  autostart?: boolean;
+  ui?: 'minimal' | 'default';
+}
+const { uid, title, height = 480, autostart = true, ui = 'default' } = Astro.props;
+const params = new URLSearchParams({
+  autostart: autostart ? '1' : '0',
+  ui_infos: ui === 'minimal' ? '0' : '1',
+  ui_controls: ui === 'minimal' ? '0' : '1',
+  ui_watermark: '0',
+  ui_help: '0',
+});
+const src = `https://sketchfab.com/models/${uid}/embed?${params}`;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Sketchfab</span>
+    </figcaption>
+  )}
+  <div class="relative w-full bg-black" style={`height:${height}px`}>
+    <iframe src={src} title={title ?? `Sketchfab model ${uid}`} class="absolute inset-0 w-full h-full border-0" allow="autoplay; fullscreen; xr-spatial-tracking" loading="lazy" allowfullscreen></iframe>
+  </div>
+</figure>

@@ -1,0 +1,42 @@
+---
+// Renders a button that fires a confetti burst on click. Or set `auto`
+// so it fires automatically when scrolled into view.
+interface Props {
+  label?: string;
+  preset?: 'burst' | 'cannons' | 'fireworks';
+  auto?: boolean;
+}
+const { label = 'Celebrate', preset = 'burst', auto = false } = Astro.props;
+const id = 'cf-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-4 inline-block" id={id} data-cf data-preset={preset} data-auto={auto ? '1' : '0'}>
+  <button data-cf-fire type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">
+    <span>🎉</span>{label}
+  </button>
+</div>
+
+<script>
+  import { fireConfetti } from '../lib/confetti';
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-cf]:not([data-cf-ready])').forEach((root) => {
+      root.dataset.cfReady = '1';
+      const preset = (root.dataset.preset || 'burst') as any;
+      const btn = root.querySelector<HTMLButtonElement>('[data-cf-fire]');
+      btn?.addEventListener('click', () => void fireConfetti(preset));
+      if (root.dataset.auto === '1') {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              void fireConfetti(preset);
+              obs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.4 });
+        obs.observe(root);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

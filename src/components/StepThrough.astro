@@ -1,0 +1,81 @@
+---
+// Click-to-advance step visualizer. Each step is a slide of HTML with
+// optional caption. Use for chemical mechanisms, derivations, algorithm
+// traces, anatomy walkthroughs, anything that benefits from "next/back".
+interface Step {
+  html: string;       // inline HTML for the visual (SVG, text, KaTeX-ready)
+  caption?: string;
+}
+interface Props {
+  title?: string;
+  steps: Step[];
+  height?: number;
+}
+const { title = 'Walk through', steps, height = 320 } = Astro.props;
+const id = 'step-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify(steps);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-step data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-xs text-ink-500"><span data-step-pos>1</span> / {steps.length}</span>
+  </figcaption>
+  <div data-step-stage class="relative w-full bg-ink-50 dark:bg-ink-950 overflow-hidden" style={`min-height:${height}px`}>
+    <div data-step-content class="absolute inset-0 flex items-center justify-center p-6 transition-opacity duration-300"></div>
+  </div>
+  <div data-step-caption class="px-5 py-3 border-t border-ink-200 dark:border-ink-800 text-sm text-ink-700 dark:text-ink-300 min-h-[2.5rem]"></div>
+  <div class="flex items-center justify-between gap-3 px-5 py-3 border-t border-ink-200 dark:border-ink-800">
+    <button data-step-prev type="button" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-ink-200 dark:border-ink-800 text-sm hover:border-accent-400 dark:hover:border-accent-600 transition-colors disabled:opacity-40">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+      Back
+    </button>
+    <div data-step-progress class="flex-1 mx-4 h-1 bg-ink-200 dark:bg-ink-800 rounded-full overflow-hidden">
+      <div data-step-bar class="h-full bg-accent-600 dark:bg-accent-500 transition-all duration-300" style="width:0%"></div>
+    </div>
+    <button data-step-next type="button" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">
+      Next
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</figure>
+
+<script>
+  interface Step { html: string; caption?: string; }
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-step]:not([data-step-ready])').forEach((root) => {
+      root.dataset.stepReady = '1';
+      const steps: Step[] = JSON.parse(root.dataset.conf || '[]');
+      if (steps.length === 0) return;
+      const content = root.querySelector<HTMLElement>('[data-step-content]')!;
+      const caption = root.querySelector<HTMLElement>('[data-step-caption]')!;
+      const posEl = root.querySelector<HTMLElement>('[data-step-pos]')!;
+      const bar = root.querySelector<HTMLElement>('[data-step-bar]')!;
+      const prev = root.querySelector<HTMLButtonElement>('[data-step-prev]')!;
+      const next = root.querySelector<HTMLButtonElement>('[data-step-next]')!;
+
+      let i = 0;
+      const render = () => {
+        content.style.opacity = '0';
+        setTimeout(() => {
+          content.innerHTML = steps[i].html;
+          caption.textContent = steps[i].caption ?? '';
+          posEl.textContent = String(i + 1);
+          bar.style.width = `${((i + 1) / steps.length) * 100}%`;
+          prev.disabled = i === 0;
+          next.textContent = i === steps.length - 1 ? 'Restart' : 'Next';
+          content.style.opacity = '1';
+        }, 150);
+      };
+      prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+      next.addEventListener('click', () => {
+        if (i < steps.length - 1) i++;
+        else i = 0;
+        render();
+      });
+      render();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

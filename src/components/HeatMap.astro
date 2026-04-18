@@ -1,0 +1,62 @@
+---
+// 2D heatmap: rows × columns colored by value. Use for correlation matrices,
+// schedules, attention maps, periodic tables of features, etc.
+interface Props {
+  title?: string;
+  rows: string[];
+  cols: string[];
+  values: number[][];     // values[row][col]
+  height?: number;
+  legendLabel?: string;
+}
+const { title = 'Heatmap', rows, cols, values, height = 400, legendLabel = 'Value' } = Astro.props;
+const id = 'hm-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ rows, cols, values, legendLabel });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-hm data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-hm-host class="w-full overflow-x-auto" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-hm]:not([data-hm-ready])');
+    if (roots.length === 0) return;
+    let d3: any;
+    try { d3 = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3@7/+esm'); } catch (e) { console.warn(e); return; }
+
+    roots.forEach((root) => {
+      root.dataset.hmReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-hm-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const { rows, cols, values, legendLabel } = conf;
+      const isDark = document.documentElement.classList.contains('dark');
+
+      const margin = { top: 24, right: 12, bottom: 60, left: 100 };
+      const cellSize = 32;
+      const w = margin.left + cols.length * cellSize + margin.right;
+      const h = margin.top + rows.length * cellSize + margin.bottom;
+      const flat = values.flat() as number[];
+      const min = Math.min(...flat, 0);
+      const max = Math.max(...flat, 1);
+      const color = d3.scaleSequential([min, max], d3.interpolate('#fee2e2', '#7f1d1d'));
+
+      const svg = d3.select(host).append('svg').attr('width', w).attr('height', h);
+      const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+      rows.forEach((rowLabel: string, ri: number) => {
+        cols.forEach((colLabel: string, ci: number) => {
+          const v = values[ri][ci] ?? 0;
+          g.append('rect').attr('x', ci * cellSize).attr('y', ri * cellSize).attr('width', cellSize - 1).attr('height', cellSize - 1).attr('fill', color(v)).attr('rx', 2).append('title').text(`${rowLabel} × ${colLabel}: ${v}`);
+          g.append('text').attr('x', ci * cellSize + cellSize / 2).attr('y', ri * cellSize + cellSize / 2 + 3).attr('text-anchor', 'middle').attr('font-size', 9).attr('font-family', 'JetBrains Mono, monospace').attr('fill', v > (min + max) / 2 ? '#fff' : '#18181b').text(v.toString().slice(0, 4));
+        });
+      });
+
+      g.selectAll('.row-label').data(rows).join('text').attr('x', -8).attr('y', (_d: any, i: number) => i * cellSize + cellSize / 2 + 3).attr('text-anchor', 'end').attr('font-size', 11).attr('font-family', 'Inter, sans-serif').attr('fill', isDark ? '#fafafa' : '#18181b').text((d: any) => d);
+      g.selectAll('.col-label').data(cols).join('text').attr('x', (_d: any, i: number) => i * cellSize + cellSize / 2).attr('y', -8).attr('text-anchor', 'middle').attr('font-size', 11).attr('font-family', 'Inter, sans-serif').attr('fill', isDark ? '#fafafa' : '#18181b').text((d: any) => d);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

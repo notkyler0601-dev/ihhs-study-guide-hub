@@ -1,0 +1,52 @@
+---
+// Interactive 2D canvas via Konva.js. Author writes a `setup` body that
+// receives { Konva, stage, layer, width, height } and adds shapes.
+interface Props {
+  title?: string;
+  setup: string;
+  width?: number;
+  height?: number;
+}
+const { title = 'Interactive canvas', setup, width = 600, height = 400 } = Astro.props;
+const id = 'kv-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-kv data-setup={setup} data-w={width} data-h={height}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-kv-host class="mx-auto bg-white dark:bg-ink-50 rounded-md overflow-hidden border border-ink-200 dark:border-ink-800" style={`width:${width}px; max-width:100%; height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-kv]:not([data-kv-ready])');
+    if (roots.length === 0) return;
+    const Konva: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/konva@9.3.16/konva.min.js',
+      'Konva'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.kvReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-kv-host]')!;
+      host.id = 'kv-host-' + Math.random().toString(36).slice(2, 9);
+      const setup = root.dataset.setup ?? '';
+      const w = Number(root.dataset.w || 600);
+      const h = Number(root.dataset.h || 400);
+      try {
+        const stage = new Konva.Stage({ container: host.id, width: w, height: h });
+        const layer = new Konva.Layer();
+        stage.add(layer);
+        // eslint-disable-next-line no-new-func
+        const fn = new Function('Konva', 'stage', 'layer', 'width', 'height', setup);
+        fn(Konva, stage, layer, w, h);
+        layer.draw();
+      } catch (e) {
+        console.warn('Konva setup failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

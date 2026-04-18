@@ -389,6 +389,86 @@ Added on top of Tier 3 for chem, bio, astronomy, extended CS, extended data viz,
 | `<Slides slides={[...]} />` | reveal.js | Inline slide decks or embed an external deck |
 | `<Poll src="..." />` | Particify / ClassQuiz / StrawPoll | Live classroom polls (iframe an instance) |
 
+## Tier 5 component catalog (visual / data-viz)
+
+Built specifically to make learning more visual.
+
+**Animations and motion**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Lottie src="..." />` | lottie-web | Embed After-Effects animations from .json |
+| `<Rive src="..." stateMachine="..." />` | Rive | Interactive state-machine animations |
+| `<RevealOnScroll>` | IntersectionObserver | Wrap children to fade/slide in as they scroll into view |
+| `<StepThrough steps={[...]} />` | Custom | Click-next walkthrough for derivations and mechanisms |
+
+**Sketch / hand-drawn**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Excalidraw scene="..." />` | Excalidraw | Hand-drawn whiteboard |
+| `<RoughNotation type="underline">` | rough-notation | Hand-drawn highlights / underlines / boxes on inline content |
+
+**Deep-zoom + image gallery**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<DeepZoom src="..." />` | OpenSeadragon | Infinite zoom on a high-res image |
+| `<DeepZoomAnnotated markers={[...]} />` | OpenSeadragon | Clickable annotations on top of deep-zoom |
+| `<Lightbox images={[...]} />` | PhotoSwipe | Click thumbnails for fullscreen pan/zoom viewer |
+
+**3D models**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Sketchfab uid="..." />` | Sketchfab embed | Embed any 3D model from Sketchfab's library |
+| `<ModelViewer src="..." />` | Google `<model-viewer>` | glTF embed with rotate, zoom, AR mode |
+| `<Babylon setup="..." />` | Babylon.js | 3D scene engine with physics |
+
+**Hierarchy and flow**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Sankey nodes={[...]} links={[...]} />` | d3-sankey | Flows with magnitude (energy, blood, money) |
+| `<TreeMap data={...} />` | d3-hierarchy | Nested rectangles sized by value |
+| `<SunburstChart data={...} />` | d3-hierarchy | Radial hierarchical viz |
+| `<Chord labels={[...]} matrix={...} />` | d3-chord | Relationships between groups |
+| `<Dendrogram data={...} layout="radial" />` | d3-hierarchy | Tree diagrams (evolution, taxonomy) |
+
+**Geographic data**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Choropleth data={...} />` | d3-geo + topojson | Color regions by data value |
+| `<Cartogram data={...} />` | d3-force | Dorling cartogram (regions as sized circles) |
+| `<HeatMap rows={...} cols={...} values={...} />` | d3 | 2D color grid |
+| `<CalHeatmap data={...} />` | Custom SVG | GitHub-style 90-day calendar heatmap |
+
+**Scientific charts**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Plotly data={[...]} layout={...} />` | Plotly.js | 3D scatter, contour, surface, parallel coords |
+| `<ECharts option={...} />` | Apache ECharts | Funnels, gauges, polar, sankey, treemap |
+| `<MathBox setup="..." />` | MathBox | Vector calculus, parametric surfaces (3Blue1Brown style) |
+
+**Interactive 2D canvases**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Konva setup="..." />` | Konva.js | Drag shapes, animate, event listeners |
+| `<Fabric setup="..." />` | Fabric.js | Same idea (used inside Canva) |
+| `<RoughViz type="bar" />` | rough-viz | Hand-drawn-aesthetic bar/line/pie charts |
+
+**UX widgets**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Confetti preset="cannons" />` | canvas-confetti | Burst on click or scroll. Auto-fires from Quiz on 100% and Flashcards on full deck rated good/easy. |
+| `<Tooltip content="..." />` | Tippy.js | Animated hover tooltips |
+| `<ColorPicker />` | Pickr | Color theory exercises with HEX/RGB/HSL output |
+| `<ProgressRing value={75} />` | Custom SVG | Animated ring for scores, progress |
+
 ## Project structure
 
 ```

@@ -260,6 +260,92 @@ Added on top of Tier 3 to close gaps in chemistry, biology, astronomy, CS, data 
 
 ---
 
+## 8c. Tier 5 components (visual / data-viz, lazy-loaded)
+
+Built specifically to make learning more visual: animations, hand-drawn aesthetics, deep-zoom, 3D models, hierarchical and flow charts, geographic data, scientific plots, interactive 2D canvases, and small UX wins.
+
+### Animations and motion
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Lottie src="..." />` | lottie-web 5.12 | `cdn.jsdelivr.net/npm/lottie-web` | Embed After Effects animations from .json. |
+| `<Rive src="..." stateMachine="..." />` | @rive-app/canvas 2.21 | `cdn.jsdelivr.net/npm/@rive-app/canvas/+esm` | Interactive state-machine animations. |
+| `<RevealOnScroll>` | Native + IntersectionObserver | none | Stagger fade/slide each child in as it enters the viewport. |
+| `<StepThrough steps={[...]} />` | Custom | none | Click "next" to advance through a multi-step diagram. |
+
+### Sketch / hand-drawn aesthetic
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Excalidraw scene="..." />` | Excalidraw (iframe) | iframe `excalidraw.com` | Whiteboard with a hand-drawn aesthetic. |
+| `<RoughNotation type="underline">` | rough-notation 0.5 | `cdn.jsdelivr.net/npm/rough-notation/+esm` | Hand-drawn underlines, boxes, circles, highlights on inline content. |
+
+### Deep-zoom + image gallery
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<DeepZoom src="..." />` | OpenSeadragon 5.0 | `cdn.jsdelivr.net/npm/openseadragon` | Zoom infinitely into a high-res image. |
+| `<DeepZoomAnnotated markers={[...]}>` | OpenSeadragon | same | Add clickable annotation markers on top of the deep-zoom. |
+| `<Lightbox images={[...]}>` | PhotoSwipe 5.4 | `cdn.jsdelivr.net/npm/photoswipe/+esm` | Click any thumbnail to expand fullscreen with pan/zoom. |
+
+### 3D models and scenes
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Sketchfab uid="..." />` | Sketchfab embed | iframe | Embed any 3D model from Sketchfab's library of millions. |
+| `<ModelViewer src="..." />` | `<model-viewer>` 4.0 (Google) | `cdn.jsdelivr.net/npm/@google/model-viewer` | glTF embed with rotate/zoom + AR mode on phones. |
+| `<Babylon setup="..." />` | Babylon.js 7.39 | `cdn.jsdelivr.net/npm/babylonjs` + loaders | 3D scene engine with built-in physics, WebGL renderer. |
+
+### Hierarchy and flow
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Sankey nodes={[...]} links={[...]}>` | d3 + d3-sankey | `cdn.jsdelivr.net/npm/d3-sankey/+esm` | Flow magnitudes between nodes (energy, blood, money, voters). |
+| `<TreeMap data={...} />` | d3-hierarchy | `cdn.jsdelivr.net/npm/d3/+esm` | Nested rectangles sized by value. |
+| `<SunburstChart data={...} />` | d3-hierarchy partition | same | Radial hierarchical viz. |
+| `<Chord labels={[...]} matrix={...} />` | d3-chord | same | Relationships between groups (trade, friendships, gene interactions). |
+| `<Dendrogram data={...} layout="..." />` | d3-hierarchy tree/cluster | same | Tree diagrams (evolution, taxonomy, decision trees). |
+
+### Geographic data
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Choropleth data={...} />` | d3-geo + topojson-client | `cdn.jsdelivr.net/npm/topojson-client/+esm` | Color regions by data value (states, countries, counties). |
+| `<Cartogram data={...} />` | d3 force + topojson | same | Dorling cartogram (regions as circles sized by data). |
+| `<HeatMap rows={...} cols={...} values={...} />` | d3 | d3 ESM | 2D color grid for correlation matrices, schedules, attention maps. |
+| `<CalHeatmap data={...} />` | Custom SVG | none | GitHub-style 90-day calendar heatmap. |
+
+### Scientific charts
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Plotly data={[...]} layout={...} />` | Plotly.js 2.35 | `cdn.jsdelivr.net/npm/plotly.js-dist-min` | 3D scatter, contour, surface, statistical, parallel coordinates. |
+| `<ECharts option={...} />` | Apache ECharts 5.5 | `cdn.jsdelivr.net/npm/echarts` | Funnels, gauges, polar charts, sankey, treemap, parallel coords. |
+| `<MathBox setup="..." />` | MathBox bundle | `cdn.jsdelivr.net/gh/unconed/mathbox-bundle` | The library 3Blue1Brown's web demos use. Vector calculus, parametric surfaces. |
+
+### Interactive 2D canvases
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Konva setup="..." />` | Konva.js 9.3 | `cdn.jsdelivr.net/npm/konva` | High-level 2D canvas: drag shapes, animate, listen to events. |
+| `<Fabric setup="..." />` | Fabric.js 5.3 | `cdn.jsdelivr.net/npm/fabric` | Same idea as Konva, used inside Canva. |
+| `<RoughViz type="bar" labels={[...]} values={[...]} />` | rough-viz 2.0 | `unpkg.com/rough-viz` | Hand-drawn-aesthetic charts. |
+
+### UX widgets
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Confetti preset="cannons" />` | canvas-confetti 1.9 | `cdn.jsdelivr.net/npm/canvas-confetti` | Burst confetti on click or scroll-into-view. Auto-fires from Quiz on 100% score and Flashcards when full deck rated good/easy. |
+| `<Tooltip content="..." />` | Tippy.js 6.6 | `cdn.jsdelivr.net/npm/tippy.js` | Rich animated hover tooltips on inline content. |
+| `<ColorPicker />` | Pickr 1.9 | `cdn.jsdelivr.net/npm/@simonwep/pickr` | Color picker with HEX/RGB/HSL output. |
+| `<ProgressRing value={75} />` | Custom SVG | none | Animated SVG ring for scores, progress, stats. |
+
+### Helper module
+
+`src/lib/confetti.ts` exports `fireConfetti(preset)` which any component can import. Three presets: `'burst'`, `'cannons'`, `'fireworks'`. Quiz uses `cannons`, Flashcards uses `fireworks`.
+
+---
+
 ## 9. External services and data sources
 
 These are accessed by the above components but worth listing separately.

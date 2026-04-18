@@ -1,0 +1,57 @@
+---
+// Embed a Rive interactive animation (state-machine driven).
+// Pass a `.riv` file URL plus an optional state machine name.
+interface Props {
+  src: string;
+  title?: string;
+  stateMachine?: string;
+  artboard?: string;
+  width?: number;
+  height?: number;
+}
+const { src, title, stateMachine, artboard, width = 480, height = 360 } = Astro.props;
+const id = 'rive-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ src, stateMachine, artboard });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-rive data-conf={conf}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <canvas data-rive-canvas class="mx-auto block" width={width} height={height} style={`max-width:100%; height:auto`}></canvas>
+</figure>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-rive]:not([data-rive-ready])');
+    if (roots.length === 0) return;
+
+    let rive: any;
+    try {
+      const mod: any = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.21.5/+esm');
+      rive = mod;
+    } catch (e) {
+      console.warn('Rive failed to load', e);
+      return;
+    }
+
+    roots.forEach((root) => {
+      root.dataset.riveReady = '1';
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-rive-canvas]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      try {
+        new rive.Rive({
+          src: conf.src,
+          canvas,
+          autoplay: true,
+          stateMachines: conf.stateMachine,
+          artboard: conf.artboard,
+          fit: rive.Fit?.contain,
+          alignment: rive.Alignment?.center,
+        });
+      } catch (e) {
+        console.warn('Rive instance failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

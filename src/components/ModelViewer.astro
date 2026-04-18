@@ -1,0 +1,43 @@
+---
+// Embed a glTF/GLB 3D model with rotation, zoom, and AR support on phones.
+// Powered by Google's <model-viewer> web component.
+interface Props {
+  src: string;
+  title?: string;
+  poster?: string;
+  alt?: string;
+  ar?: boolean;
+  autoRotate?: boolean;
+  height?: number;
+}
+const { src, title, poster, alt = '3D model', ar = true, autoRotate = true, height = 420 } = Astro.props;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden">
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">3D model</span>
+    </figcaption>
+  )}
+  <model-viewer
+    src={src}
+    poster={poster}
+    alt={alt}
+    camera-controls
+    touch-action="pan-y"
+    auto-rotate={autoRotate ? '' : undefined}
+    ar={ar ? '' : undefined}
+    ar-modes="webxr scene-viewer quick-look"
+    style={`width:100%; height:${height}px; background:#0a0a0a;`}
+  ></model-viewer>
+</figure>
+
+<script>
+  import { loadScript } from '../lib/loadScript';
+  const init = async () => {
+    await loadScript('https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js', { module: true });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

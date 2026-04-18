@@ -1,0 +1,70 @@
+---
+// Animated SVG progress ring. Use to show quiz scores, time spent, etc.
+interface Props {
+  value: number;          // 0-100
+  size?: number;
+  stroke?: number;
+  label?: string;
+  color?: string;
+}
+const { value, size = 120, stroke = 10, label, color = '#b91c1c' } = Astro.props;
+const radius = (size - stroke) / 2;
+const circumference = 2 * Math.PI * radius;
+const id = 'pr-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ value, circumference });
+---
+
+<div class="not-prose inline-flex flex-col items-center gap-2" id={id} data-pr data-conf={conf}>
+  <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="currentColor" stroke-opacity="0.15" stroke-width={stroke} />
+    <circle
+      data-pr-arc
+      cx={size / 2} cy={size / 2} r={radius}
+      fill="none" stroke={color} stroke-width={stroke} stroke-linecap="round"
+      stroke-dasharray={circumference}
+      stroke-dashoffset={circumference}
+      transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      style="transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);"
+    />
+    <text data-pr-text x={size / 2} y={size / 2} text-anchor="middle" dy="0.35em" font-family="Fraunces, serif" font-weight="700" font-size={size * 0.28} fill="currentColor">0%</text>
+  </svg>
+  {label && <div class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500">{label}</div>}
+</div>
+
+<script>
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-pr]:not([data-pr-ready])').forEach((root) => {
+      root.dataset.prReady = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const arc = root.querySelector<SVGCircleElement>('[data-pr-arc]');
+      const text = root.querySelector<SVGTextElement>('[data-pr-text]');
+      if (!arc || !text) return;
+      const target = Math.max(0, Math.min(100, conf.value));
+      const targetOffset = conf.circumference - (target / 100) * conf.circumference;
+      const animate = () => {
+        arc.setAttribute('stroke-dashoffset', String(targetOffset));
+        let cur = 0;
+        const start = Date.now();
+        const duration = 1000;
+        const tick = () => {
+          const t = Math.min(1, (Date.now() - start) / duration);
+          cur = Math.round(t * target);
+          text.textContent = cur + '%';
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      };
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            animate();
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      obs.observe(root);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

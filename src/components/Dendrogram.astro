@@ -1,0 +1,67 @@
+---
+// Tree diagram (vertical or radial). For evolution, family trees, taxonomies,
+// decision trees, file systems.
+interface Node { name: string; children?: Node[]; }
+interface Props {
+  title?: string;
+  data: Node;
+  layout?: 'tree' | 'cluster' | 'radial';
+  height?: number;
+}
+const { title = 'Tree', data, layout = 'tree', height = 460 } = Astro.props;
+const id = 'dn-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ data, layout });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-dn data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-dn-host class="w-full overflow-x-auto" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-dn]:not([data-dn-ready])');
+    if (roots.length === 0) return;
+    let d3: any;
+    try { d3 = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3@7/+esm'); } catch (e) { console.warn(e); return; }
+
+    roots.forEach((root) => {
+      root.dataset.dnReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-dn-host]')!;
+      const { data, layout } = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      const w = host.clientWidth || 720;
+      const h = 460;
+
+      const root2 = d3.hierarchy(data);
+      const stroke = isDark ? '#a1a1aa' : '#52525b';
+      const fill = '#b91c1c';
+      const text = isDark ? '#fafafa' : '#18181b';
+
+      let svg: any;
+      if (layout === 'radial') {
+        const radius = Math.min(w, h) / 2 - 60;
+        d3.tree().size([2 * Math.PI, radius]).separation((a: any, b: any) => (a.parent == b.parent ? 1 : 2) / a.depth)(root2);
+        svg = d3.select(host).append('svg').attr('viewBox', `${-radius - 30} ${-radius - 30} ${(radius + 30) * 2} ${(radius + 30) * 2}`).attr('width', w).attr('height', h);
+        svg.append('g').attr('fill', 'none').attr('stroke', stroke).selectAll('path').data(root2.links()).join('path')
+          .attr('d', d3.linkRadial().angle((d: any) => d.x).radius((d: any) => d.y));
+        const node = svg.append('g').selectAll('g').data(root2.descendants()).join('g')
+          .attr('transform', (d: any) => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`);
+        node.append('circle').attr('fill', fill).attr('r', 4);
+        node.append('text').attr('dy', '0.31em').attr('x', (d: any) => d.x < Math.PI === !d.children ? 8 : -8).attr('text-anchor', (d: any) => d.x < Math.PI === !d.children ? 'start' : 'end').attr('transform', (d: any) => d.x >= Math.PI ? 'rotate(180)' : null).attr('font-family', 'Inter, sans-serif').attr('font-size', 11).attr('fill', text).text((d: any) => d.data.name);
+      } else {
+        const fn = layout === 'cluster' ? d3.cluster() : d3.tree();
+        fn.size([h - 40, w - 200])(root2);
+        svg = d3.select(host).append('svg').attr('viewBox', `0 0 ${w} ${h}`).attr('width', w).attr('height', h);
+        svg.append('g').attr('fill', 'none').attr('stroke', stroke).attr('transform', `translate(120,20)`).selectAll('path').data(root2.links()).join('path')
+          .attr('d', d3.linkHorizontal().x((d: any) => d.y).y((d: any) => d.x));
+        const node = svg.append('g').attr('transform', `translate(120,20)`).selectAll('g').data(root2.descendants()).join('g')
+          .attr('transform', (d: any) => `translate(${d.y},${d.x})`);
+        node.append('circle').attr('fill', fill).attr('r', 4);
+        node.append('text').attr('dy', '0.31em').attr('x', (d: any) => d.children ? -8 : 8).attr('text-anchor', (d: any) => d.children ? 'end' : 'start').attr('font-family', 'Inter, sans-serif').attr('font-size', 11).attr('fill', text).text((d: any) => d.data.name);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

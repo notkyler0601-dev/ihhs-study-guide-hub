@@ -1,0 +1,50 @@
+---
+// Interactive 2D canvas via Fabric.js (used inside Canva). Author writes a
+// `setup` body that receives { fabric, canvas, width, height }.
+interface Props {
+  title?: string;
+  setup: string;
+  width?: number;
+  height?: number;
+}
+const { title = 'Interactive canvas', setup, width = 600, height = 400 } = Astro.props;
+const id = 'fb-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-fb data-setup={setup} data-w={width} data-h={height}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div class="mx-auto bg-white rounded-md overflow-hidden border border-ink-200 dark:border-ink-800" style={`width:${width}px; max-width:100%`}>
+    <canvas data-fb-canvas width={width} height={height}></canvas>
+  </div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-fb]:not([data-fb-ready])');
+    if (roots.length === 0) return;
+    await loadScript('https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js');
+    const fabric: any = await waitForGlobal('fabric');
+
+    roots.forEach((root) => {
+      root.dataset.fbReady = '1';
+      const canvasEl = root.querySelector<HTMLCanvasElement>('[data-fb-canvas]')!;
+      const setup = root.dataset.setup ?? '';
+      const w = Number(root.dataset.w || 600);
+      const h = Number(root.dataset.h || 400);
+      try {
+        const canvas = new fabric.Canvas(canvasEl, { backgroundColor: '#ffffff' });
+        canvas.setWidth(w); canvas.setHeight(h);
+        // eslint-disable-next-line no-new-func
+        const fn = new Function('fabric', 'canvas', 'width', 'height', setup);
+        fn(fabric, canvas, w, h);
+        canvas.requestRenderAll();
+      } catch (e) {
+        console.warn('Fabric setup failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

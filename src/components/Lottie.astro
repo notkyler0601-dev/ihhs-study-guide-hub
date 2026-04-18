@@ -1,0 +1,53 @@
+---
+// Embed a Lottie animation (After Effects / Bodymovin export).
+// Pass a URL to a .json or .lottie file.
+interface Props {
+  src: string;
+  title?: string;
+  width?: number | string;
+  height?: number;
+  loop?: boolean;
+  autoplay?: boolean;
+}
+const { src, title, width = '100%', height = 300, loop = true, autoplay = true } = Astro.props;
+const id = 'lot-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ src, loop, autoplay });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-lottie data-conf={conf}>
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
+  <div data-lottie-host class="mx-auto" style={`width:${typeof width === 'number' ? width + 'px' : width}; height:${height}px;`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-lottie]:not([data-lottie-ready])');
+    if (roots.length === 0) return;
+
+    const lottie: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js',
+      'lottie'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.lottieReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-lottie-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      try {
+        lottie.loadAnimation({
+          container: host,
+          renderer: 'svg',
+          loop: conf.loop ?? true,
+          autoplay: conf.autoplay ?? true,
+          path: conf.src,
+        });
+      } catch (e) {
+        console.warn('Lottie failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
