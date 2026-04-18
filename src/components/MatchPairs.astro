@@ -70,7 +70,7 @@ const defs = pairs.map((p, i) => ({ id: 'D' + i, label: p.def, partner: 'T' + i 
             selected = null;
             return;
           }
-          if (selected.dataset.side === cell.dataset.side) {
+          if (selected.dataset.matchSide === cell.dataset.matchSide) {
             selected.classList.remove(...HL);
             cell.classList.add(...HL);
             selected = cell;
