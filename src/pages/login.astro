@@ -16,16 +16,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <form id="login-form" class="surface rounded-2xl p-6 sm:p-8 space-y-5">
         <label class="block">
           <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
-            Username
+            <span data-local-label>Username</span>
+            <span data-cloud-label class="hidden">Email</span>
           </span>
           <input
             type="text"
-            name="username"
+            name="identifier"
             required
-            minlength="3"
-            maxlength="20"
-            placeholder="Your username"
+            placeholder="kyler.z"
             autocomplete="username"
+            class="form-input mt-2"
+          />
+        </label>
+
+        <label data-cloud class="hidden block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Password
+          </span>
+          <input
+            type="password"
+            name="password"
+            autocomplete="current-password"
             class="form-input mt-2"
           />
         </label>
@@ -41,6 +52,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <button
           type="submit"
+          id="login-submit"
           class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all"
         >
           Log in
@@ -65,7 +77,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <script>
-  import { login, listAccounts, currentUser } from '../lib/auth';
+  import { login, listAccounts, currentUser, isCloudMode } from '../lib/auth';
 
   const setup = () => {
     if (currentUser()) {
@@ -74,31 +86,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
     const form = document.getElementById('login-form') as HTMLFormElement | null;
     const err = document.getElementById('login-error');
+    const submitBtn = document.getElementById('login-submit') as HTMLButtonElement | null;
     const known = document.getElementById('known-accounts');
     const list = document.getElementById('known-accounts-list');
-    if (!form || !err || !known || !list) return;
+    if (!form || !err || !known || !list || !submitBtn) return;
 
-    const accounts = listAccounts();
-    if (accounts.length > 0) {
-      known.classList.remove('hidden');
-      list.innerHTML = accounts.map((a) =>
-        `<button type="button" data-username="${a.username}" class="px-3 py-1.5 rounded-lg surface text-xs hover:border-accent-400 dark:hover:border-accent-600 transition-colors"><span class="font-medium">${a.displayName}</span> <span class="text-ink-400">@${a.username}</span></button>`
-      ).join('');
-      list.querySelectorAll('[data-username]').forEach((b) => {
-        b.addEventListener('click', () => {
-          const u = b.getAttribute('data-username') ?? '';
-          (form.elements.namedItem('username') as HTMLInputElement).value = u;
-          form.requestSubmit();
-        });
+    const cloud = isCloudMode();
+    if (cloud) {
+      document.querySelectorAll<HTMLElement>('[data-cloud]').forEach((el) => {
+        el.classList.remove('hidden');
+        el.querySelectorAll('input').forEach((i) => (i.required = true));
       });
+      document.querySelector<HTMLElement>('[data-local-label]')?.classList.add('hidden');
+      document.querySelector<HTMLElement>('[data-cloud-label]')?.classList.remove('hidden');
+      const idInput = form.elements.namedItem('identifier') as HTMLInputElement;
+      idInput.type = 'email';
+      idInput.placeholder = 'you@school.edu';
+      idInput.autocomplete = 'email';
+    } else {
+      const accounts = listAccounts();
+      if (accounts.length > 0) {
+        known.classList.remove('hidden');
+        list.innerHTML = accounts.map((a) =>
+          `<button type="button" data-username="${a.username}" class="px-3 py-1.5 rounded-lg surface text-xs hover:border-accent-400 dark:hover:border-accent-600 transition-colors"><span class="font-medium">${a.displayName}</span> <span class="text-ink-400">@${a.username}</span></button>`
+        ).join('');
+        list.querySelectorAll('[data-username]').forEach((b) => {
+          b.addEventListener('click', () => {
+            const u = b.getAttribute('data-username') ?? '';
+            (form.elements.namedItem('identifier') as HTMLInputElement).value = u;
+            form.requestSubmit();
+          });
+        });
+      }
     }
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       err.classList.add('hidden');
+      submitBtn.disabled = true;
       const data = new FormData(form);
-      const username = String(data.get('username') ?? '');
-      const result = login(username);
+      const identifier = String(data.get('identifier') ?? '');
+      const password = String(data.get('password') ?? '');
+
+      const result = await login(identifier, password);
+      submitBtn.disabled = false;
       if (!result.ok) {
         err.textContent = result.error;
         err.classList.remove('hidden');

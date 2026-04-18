@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Request inbox" description="Admin: review incoming guide requests.">
+  <section class="container-wide py-10 lg:py-14">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-center justify-between gap-4 mb-8">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-2">Admin</div>
+          <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">Request inbox</h1>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button data-filter="open"   class="req-filter active">Open</button>
+          <button data-filter="claimed" class="req-filter">Claimed</button>
+          <button data-filter="done"    class="req-filter">Done</button>
+          <button data-filter="all"     class="req-filter">All</button>
+        </div>
+      </div>
+
+      <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Admins only</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          You need an admin account to view incoming requests.
+          <a href="/login" class="text-accent-700 dark:text-accent-400 hover:underline">Log in</a> or ask the site maintainer to promote your account.
+        </p>
+      </div>
+
+      <div id="admin-offline" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Supabase not configured</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          This page needs a Supabase backend. See <code class="text-accent-700 dark:text-accent-400">SUPABASE_SETUP.md</code> in the repo root.
+        </p>
+      </div>
+
+      <div id="req-loading" class="text-sm text-ink-500">Loading...</div>
+
+      <div id="req-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
+        No requests in this view.
+      </div>
+
+      <ul id="req-list" class="hidden space-y-3"></ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .req-filter {
+    @apply px-3 py-1 rounded-full text-xs font-medium bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
+    @apply hover:bg-ink-200 dark:hover:bg-ink-700 transition-colors;
+  }
+  .req-filter.active {
+    @apply bg-accent-700 text-white dark:bg-accent-600;
+  }
+  .req-chip {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.14em] font-semibold;
+  }
+</style>
+
+<script>
+  import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
+  import { supabase } from '../../lib/supabase';
+
+  type Row = {
+    id: string;
+    created_at: string;
+    subject: string;
+    topic: string;
+    urgency: string | null;
+    goal: string;
+    sources: string | null;
+    name: string | null;
+    email: string | null;
+    status: 'open' | 'claimed' | 'done' | 'wontdo';
+    notes: string | null;
+    user_id: string | null;
+  };
+
+  const STATUS_COLORS: Record<string, string> = {
+    open:    'bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-200',
+    claimed: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+    done:    'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+    wontdo:  'bg-ink-200 text-ink-700 dark:bg-ink-800 dark:text-ink-200',
+  };
+
+  const fmt = (d: string) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c as any] as string));
+
+  const setup = () => {
+    const gate = document.getElementById('admin-gate')!;
+    const offline = document.getElementById('admin-offline')!;
+    const loading = document.getElementById('req-loading')!;
+    const empty = document.getElementById('req-empty')!;
+    const list = document.getElementById('req-list')!;
+
+    if (!isCloudMode()) {
+      loading.classList.add('hidden');
+      offline.classList.remove('hidden');
+      return;
+    }
+
+    const me = currentUser();
+    if (!me?.isAdmin) {
+      loading.classList.add('hidden');
+      gate.classList.remove('hidden');
+      return;
+    }
+    gate.classList.add('hidden');
+
+    let current: Row[] = [];
+    let filter: string = 'open';
+
+    const render = () => {
+      const items = filter === 'all' ? current : current.filter((r) => r.status === filter);
+      if (items.length === 0) {
+        list.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.classList.remove('hidden');
+      list.innerHTML = items.map((r) => `
+        <li class="surface rounded-xl p-5" data-req-id="${r.id}">
+          <div class="flex items-start justify-between gap-3 mb-2 flex-wrap">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="req-chip ${STATUS_COLORS[r.status] ?? ''}">${r.status}</span>
+                <span class="req-chip bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300">${esc(r.subject)}</span>
+                ${r.urgency ? `<span class="req-chip bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300">${esc(r.urgency)}</span>` : ''}
+              </div>
+              <h3 class="font-serif text-lg font-semibold mt-2">${esc(r.topic)}</h3>
+            </div>
+            <div class="text-[11px] text-ink-500 whitespace-nowrap">${fmt(r.created_at)}</div>
+          </div>
+          <p class="text-sm text-ink-700 dark:text-ink-300 whitespace-pre-wrap leading-relaxed mb-3">${esc(r.goal)}</p>
+          ${r.sources ? `<details class="mb-3"><summary class="text-xs text-ink-500 cursor-pointer select-none">Source material</summary><pre class="mt-2 text-xs whitespace-pre-wrap text-ink-600 dark:text-ink-400">${esc(r.sources)}</pre></details>` : ''}
+          <div class="text-xs text-ink-500 mb-3 flex flex-wrap gap-x-4 gap-y-1">
+            ${r.name  ? `<span>From: ${esc(r.name)}</span>`  : ''}
+            ${r.email ? `<span>Reply: <a class="text-accent-700 dark:text-accent-400 hover:underline" href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ''}
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-ink-200 dark:border-ink-800 text-xs">
+            <button data-set-status="claimed" class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-900/60">Claim</button>
+            <button data-set-status="done"    class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-900/60">Mark done</button>
+            <button data-set-status="wontdo"  class="px-2.5 py-1 rounded-md bg-ink-100 text-ink-700 dark:bg-ink-800 dark:text-ink-200 hover:bg-ink-200 dark:hover:bg-ink-700">Won't do</button>
+            <button data-set-status="open"    class="px-2.5 py-1 rounded-md text-ink-500 hover:text-ink-900 dark:hover:text-ink-50">Reopen</button>
+          </div>
+        </li>
+      `).join('');
+
+      list.querySelectorAll<HTMLButtonElement>('[data-set-status]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest('[data-req-id]') as HTMLElement | null;
+          if (!li) return;
+          const id = li.dataset.reqId!;
+          const status = btn.dataset.setStatus!;
+          btn.disabled = true;
+          const sb = supabase();
+          const { error } = await sb!.from('requests').update({ status }).eq('id', id);
+          btn.disabled = false;
+          if (error) { alert(error.message); return; }
+          current = current.map((r) => r.id === id ? { ...r, status: status as Row['status'] } : r);
+          render();
+        });
+      });
+    };
+
+    const load = async () => {
+      loading.classList.remove('hidden');
+      const sb = supabase();
+      const { data, error } = await sb!.from('requests').select('*').order('created_at', { ascending: false });
+      loading.classList.add('hidden');
+      if (error) {
+        empty.textContent = 'Error loading requests: ' + error.message;
+        empty.classList.remove('hidden');
+        return;
+      }
+      current = (data ?? []) as Row[];
+      render();
+    };
+    load();
+
+    document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.req-filter').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        filter = btn.dataset.filter!;
+        render();
+      });
+    });
+
+    onAuthChange((u) => {
+      if (!u?.isAdmin) window.location.href = '/';
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

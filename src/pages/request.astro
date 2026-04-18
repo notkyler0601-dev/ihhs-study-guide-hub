@@ -129,7 +129,7 @@ const suggestedSubjects = [
 
       <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-ink-200 dark:border-ink-800">
         <p class="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
-          Submitting opens your email app with the request pre-filled. Just hit send.
+          We'll review every request and start on the most popular ones first.
         </p>
         <button
           type="submit"
@@ -147,9 +147,9 @@ const suggestedSubjects = [
       <div class="inline-flex items-center justify-center h-14 w-14 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-2xl mb-5">
         ✓
       </div>
-      <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Request opened in your email</h2>
+      <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Request received</h2>
       <p class="text-ink-600 dark:text-ink-300 max-w-md mx-auto mb-6">
-        Hit send in your email app and it lands in our inbox. We'll start on it soon.
+        Thanks! We'll review it and start on the guide soon.
       </p>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a href="/library" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">
@@ -177,29 +177,25 @@ const suggestedSubjects = [
   }
 </style>
 
-<script is:inline>
-  // ─── Submission config ─────────────────────────────────────────────
-  // Default: mailto (opens user's email app, free, no setup)
-  // Upgrade: drop in a Formspree or Web3Forms endpoint to get real form submissions
-  //   - Formspree: 'https://formspree.io/f/YOUR_FORM_ID'
-  //   - Web3Forms: set FORM_ENDPOINT to '' and add a hidden access_key input
-  const FORM_ENDPOINT = ''; // empty = use mailto fallback
-  // Email is split + reassembled to make it slightly harder for scrapers
+<script>
+  import { supabase, isCloudMode } from '../lib/supabase';
+  import { currentUser } from '../lib/auth';
+
+  // Split + reassembled to make it slightly harder for scrapers.
   const TO_EMAIL = ['notkyler0601', 'gmail.com'].join('@');
-  // ───────────────────────────────────────────────────────────────────
 
   const setup = () => {
-    const form = document.getElementById('request-form');
+    const form = document.getElementById('request-form') as HTMLFormElement | null;
     const success = document.getElementById('request-success');
     const again = document.getElementById('request-another');
-    if (!form) return;
+    if (!form || !success) return;
 
-    // Live char counter for goal textarea
+    // Live char counter for goal textarea.
     document.querySelectorAll('[data-counter]').forEach((el) => {
       const name = el.getAttribute('data-counter');
-      const field = form.querySelector(`[name="${name}"]`);
+      const field = form.querySelector<HTMLTextAreaElement>(`[name="${name}"]`);
       if (!field) return;
-      const update = () => { el.textContent = field.value.length; };
+      const update = () => { (el as HTMLElement).textContent = String(field.value.length); };
       field.addEventListener('input', update);
       update();
     });
@@ -209,14 +205,41 @@ const suggestedSubjects = [
       form.classList.remove('hidden');
       success.classList.add('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      document.querySelectorAll('[data-counter]').forEach((el) => { el.textContent = '0'; });
+      document.querySelectorAll('[data-counter]').forEach((el) => { (el as HTMLElement).textContent = '0'; });
     };
     again?.addEventListener('click', reset);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
+      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
 
+      // Cloud mode: insert into Supabase.
+      if (isCloudMode()) {
+        const sb = supabase();
+        if (sb) {
+          const me = currentUser();
+          const { error } = await sb.from('requests').insert({
+            subject: data.subject,
+            topic: data.topic,
+            urgency: data.urgency || null,
+            goal: data.goal,
+            sources: data.sources || null,
+            name: data.name || null,
+            email: data.email || null,
+            user_id: me?.id ?? null,
+          });
+          if (!error) {
+            form.classList.add('hidden');
+            success.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          console.warn('Supabase request insert failed:', error.message);
+          // fall through to mailto fallback
+        }
+      }
+
+      // Fallback (local mode or Supabase failure): mailto.
       const subject = `Study guide request: ${data.topic}`;
       const body = [
         `Subject: ${data.subject}`,
@@ -230,24 +253,7 @@ const suggestedSubjects = [
         data.name ? `From: ${data.name}` : '',
         data.email ? `Reply to: ${data.email}` : '',
       ].filter(Boolean).join('\n');
-
-      if (FORM_ENDPOINT) {
-        // Real backend submission
-        try {
-          const res = await fetch(FORM_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ ...data, subject, body }),
-          });
-          if (!res.ok) throw new Error('submit failed');
-        } catch (err) {
-          alert('Submission failed. Falling back to email.');
-          window.location.href = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        }
-      } else {
-        // mailto fallback
-        window.location.href = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      }
+      window.location.href = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
       form.classList.add('hidden');
       success.classList.remove('hidden');
