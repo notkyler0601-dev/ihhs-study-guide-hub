@@ -1,0 +1,87 @@
+---
+// Word cloud via d3-cloud. Pass `words` as [{ text, weight }] or a string
+// (automatic tokenization + stopword removal).
+interface Word { text: string; weight: number; }
+interface Props {
+  title?: string;
+  words?: Word[];
+  text?: string;
+  height?: number;
+}
+const { title = 'Word cloud', words, text, height = 420 } = Astro.props;
+const id = 'wc-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ words, text });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-wc data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-wc-host class="w-full flex justify-center" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const STOPWORDS = new Set(('a about above after again against all am an and any are as at be because been before being below between both but by could did do does doing down during each few for from further had has have having he her here hers herself him himself his how i if in into is it its itself just let me more most my myself nor not of off on once only or other our ours ourselves out over own same she should so some such than that the their theirs them themselves then there these they this those through to too under until up very was we were what when where which while who whom why will with would you your yours yourself yourselves').split(' '));
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-wc]:not([data-wc-ready])');
+    if (roots.length === 0) return;
+
+    await loadScript('https://d3js.org/d3.v5.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/d3-cloud@1.2.7/build/d3.layout.cloud.min.js');
+    const d3: any = await waitForGlobal('d3');
+
+    roots.forEach((root) => {
+      root.dataset.wcReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-wc-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+
+      let words: { text: string; size: number }[] = [];
+      if (conf.words?.length) {
+        const max = Math.max(...conf.words.map((w: any) => w.weight));
+        words = conf.words.map((w: any) => ({ text: w.text, size: 14 + (w.weight / max) * 48 }));
+      } else if (conf.text) {
+        const counts = new Map<string, number>();
+        for (const raw of String(conf.text).toLowerCase().split(/[^a-z']+/)) {
+          if (raw.length < 3 || STOPWORDS.has(raw)) continue;
+          counts.set(raw, (counts.get(raw) ?? 0) + 1);
+        }
+        const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 80);
+        const max = entries[0]?.[1] ?? 1;
+        words = entries.map(([text, c]) => ({ text, size: 14 + (c / max) * 48 }));
+      }
+
+      const w = host.clientWidth || 720;
+      const h = host.clientHeight || 420;
+      const palette = ['#b91c1c', '#dc2626', '#991b1b', '#27272a', '#52525b', '#a1a1aa'];
+
+      (d3 as any).layout.cloud()
+        .size([w, h])
+        .words(words)
+        .padding(3)
+        .rotate(() => (Math.random() < 0.5 ? 0 : 90))
+        .font('Fraunces, serif')
+        .fontSize((d: any) => d.size)
+        .on('end', (ws: any[]) => {
+          d3.select(host).select('svg').remove();
+          d3.select(host).append('svg')
+            .attr('width', w).attr('height', h)
+            .append('g')
+            .attr('transform', `translate(${w / 2},${h / 2})`)
+            .selectAll('text').data(ws).enter().append('text')
+              .style('font-size', (d: any) => d.size + 'px')
+              .style('font-family', 'Fraunces, serif')
+              .style('font-weight', '600')
+              .style('fill', (_d: any, i: number) => palette[i % palette.length])
+              .style('opacity', isDark ? 0.95 : 1)
+              .attr('text-anchor', 'middle')
+              .attr('transform', (d: any) => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+              .text((d: any) => d.text);
+        })
+        .start();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

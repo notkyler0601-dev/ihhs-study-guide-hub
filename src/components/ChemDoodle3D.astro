@@ -1,0 +1,73 @@
+---
+// 2D chemical reaction / mechanism sketcher powered by ChemDoodle Web Components.
+// Use `smiles` or `mol` (MOL file text) to seed an initial structure.
+// For 3D molecules prefer the existing <Molecule> component (3Dmol.js).
+interface Props {
+  title?: string;
+  smiles?: string;
+  mol?: string;
+  width?: number;
+  height?: number;
+  editable?: boolean;
+}
+const { title = 'Chemical sketcher', smiles, mol, width = 520, height = 360, editable = false } = Astro.props;
+const id = 'cd-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ smiles, mol, editable, width, height });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-cd data-conf={conf}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">ChemDoodle</span>
+  </figcaption>
+  <div data-cd-canvas class="mx-auto bg-white dark:bg-ink-50 rounded-md overflow-hidden" style={`width:${width}px; max-width:100%; height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-cd]:not([data-cd-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://hub.chemdoodle.com/cwc/10.4.1/ChemDoodleWeb.css');
+    await loadScript('https://hub.chemdoodle.com/cwc/10.4.1/ChemDoodleWeb.js');
+    const CD: any = await waitForGlobal('ChemDoodle');
+
+    roots.forEach((root) => {
+      root.dataset.cdReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-cd-canvas]')!;
+      const canvasId = 'cdw-' + Math.random().toString(36).slice(2, 9);
+      const canvas = document.createElement('canvas');
+      canvas.id = canvasId;
+      host.appendChild(canvas);
+      const conf = JSON.parse(root.dataset.conf || '{}');
+
+      try {
+        const viewer = conf.editable
+          ? new CD.SketcherCanvas(canvasId, conf.width, conf.height, { useServices: false, oneMolecule: true })
+          : new CD.ViewerCanvas(canvasId, conf.width, conf.height);
+        let mol: any = null;
+        if (conf.mol) {
+          mol = CD.readMOL(conf.mol);
+        } else if (conf.smiles) {
+          // SMILES parsing requires chemdoodle structures/smiles not shipped in the free viewer;
+          // author should prefer MOL text when possible. Fallback: draw simple scaffold text.
+          const label = document.createElement('div');
+          label.className = 'flex items-center justify-center h-full text-sm text-ink-500 font-mono p-3';
+          label.textContent = 'SMILES: ' + conf.smiles;
+          host.replaceChildren(label);
+          return;
+        }
+        if (mol) {
+          CD.informatics.addImplicitHydrogens?.(mol);
+          viewer.loadMolecule(mol);
+        }
+      } catch (e) {
+        console.warn('ChemDoodle render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

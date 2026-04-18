@@ -1,0 +1,11 @@
+---
+// Pre-wired wrapper around PhET's Neuron simulation.
+// For other PhET sims, use <PhETSim sim="..." /> directly.
+import PhETSim from './PhETSim.astro';
+interface Props {
+  title?: string;
+  height?: number;
+}
+const { title = 'Neuron action potential', height = 600 } = Astro.props;
+---
+<PhETSim sim="neuron" title={title} height={height} />

@@ -1,0 +1,29 @@
+---
+// 3D brain atlas viewer. Embeds the MNI Brain Browser Surface Viewer,
+// which loads free MRI-derived brain meshes in WebGL.
+interface Props {
+  title?: string;
+  atlas?: 'mni' | 'cortical-thickness' | 'realistic';
+  height?: number;
+}
+const { title = '3D brain atlas', atlas = 'mni', height = 560 } = Astro.props;
+const demos: Record<string, string> = {
+  'mni':                 'https://brainbrowser.cbrain.mcgill.ca/surface-viewer-demo',
+  'cortical-thickness':  'https://brainbrowser.cbrain.mcgill.ca/surface-viewer?config=cortical-thickness',
+  'realistic':           'https://brainbrowser.cbrain.mcgill.ca/surface-viewer?config=realistic',
+};
+const url = demos[atlas] ?? demos.mni;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Brain Browser</span>
+  </figcaption>
+  <div class="relative w-full bg-black" style={`height:${height}px`}>
+    <iframe src={url} title={title} class="absolute inset-0 w-full h-full" loading="lazy" allowfullscreen></iframe>
+  </div>
+  <div class="px-5 py-2 text-[11px] text-ink-500 dark:text-ink-400 border-t border-ink-200 dark:border-ink-800">
+    Viewer by McGill Centre for Integrative Neuroscience
+  </div>
+</figure>

@@ -1,0 +1,70 @@
+---
+// Ultra-light time-series chart powered by uPlot (~50KB, fast for large datasets).
+// `data` is a 2D array: first row is unix timestamps (seconds), subsequent rows
+// are parallel y-series. `series` labels each y-row.
+interface SeriesDef { label: string; color?: string; width?: number; }
+interface Props {
+  title?: string;
+  data: number[][];
+  series: SeriesDef[];
+  height?: number;
+}
+const { title = 'Time series', data, series, height = 320 } = Astro.props;
+const id = 'upl-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ data, series });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-upl data-conf={conf}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">uPlot</span>
+  </figcaption>
+  <div data-upl-host class="w-full" style={`min-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-upl]:not([data-upl-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.min.css');
+    await loadScript('https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.iife.min.js');
+    const uPlot: any = await waitForGlobal('uPlot');
+
+    roots.forEach((root) => {
+      root.dataset.uplReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-upl-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+      const palette = isDark
+        ? ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa']
+        : ['#b91c1c', '#b45309', '#047857', '#1d4ed8', '#6d28d9'];
+
+      try {
+        const opts = {
+          width: host.clientWidth || 720,
+          height: host.clientHeight || 320,
+          series: [
+            { label: 'Time' },
+            ...(conf.series ?? []).map((s: any, i: number) => ({
+              label: s.label,
+              stroke: s.color ?? palette[i % palette.length],
+              width: s.width ?? 2,
+            })),
+          ],
+          axes: [
+            { stroke: isDark ? '#a1a1aa' : '#52525b', grid: { stroke: isDark ? '#27272a' : '#e4e4e7' } },
+            { stroke: isDark ? '#a1a1aa' : '#52525b', grid: { stroke: isDark ? '#27272a' : '#e4e4e7' } },
+          ],
+        };
+        new uPlot(opts, conf.data ?? [[]], host);
+      } catch (e) {
+        console.warn('TimeSeries render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

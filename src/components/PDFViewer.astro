@@ -1,0 +1,29 @@
+---
+// Embed a PDF file (textbook chapter, worksheet, handout) with built-in
+// zoom, pagination, and text selection. Uses Mozilla's pdf.js viewer.
+interface Props {
+  src: string;
+  title?: string;
+  height?: number;
+  page?: number;
+}
+const { src, title, height = 600, page } = Astro.props;
+const viewer = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(src)}${page ? '#page=' + page : ''}`;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  {title && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <a href={src} download class="text-xs text-accent-700 dark:text-accent-400 hover:underline">Download PDF</a>
+    </figcaption>
+  )}
+  <div class="relative w-full bg-ink-100 dark:bg-ink-800" style={`height:${height}px`}>
+    <iframe
+      src={viewer}
+      title={title ?? 'PDF document'}
+      class="absolute inset-0 w-full h-full border-0"
+      loading="lazy"
+    ></iframe>
+  </div>
+</figure>

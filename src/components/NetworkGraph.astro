@@ -1,0 +1,91 @@
+---
+// Network / concept graph visualization via Cytoscape.js.
+// nodes: [{ id, label?, group? }]
+// edges: [{ source, target, label? }]
+interface Node { id: string; label?: string; group?: string; }
+interface Edge { source: string; target: string; label?: string; }
+interface Props {
+  title?: string;
+  nodes: Node[];
+  edges: Edge[];
+  layout?: 'cose' | 'circle' | 'grid' | 'concentric' | 'breadthfirst';
+  height?: number;
+}
+const { title = 'Concept graph', nodes, edges, layout = 'cose', height = 480 } = Astro.props;
+const id = 'net-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ nodes, edges, layout });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-net data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-net-host class="w-full bg-white dark:bg-ink-900" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-net]:not([data-net-ready])');
+    if (roots.length === 0) return;
+
+    const cytoscape: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js',
+      'cytoscape'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.netReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-net-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+
+      const palette = ['#b91c1c', '#27272a', '#a1a1aa', '#dc2626', '#52525b'];
+      const groupColor = new Map<string, string>();
+      const colorFor = (g?: string) => {
+        if (!g) return palette[0];
+        if (!groupColor.has(g)) groupColor.set(g, palette[groupColor.size % palette.length]);
+        return groupColor.get(g)!;
+      };
+
+      try {
+        cytoscape({
+          container: host,
+          elements: [
+            ...(conf.nodes ?? []).map((n: any) => ({ data: { id: n.id, label: n.label ?? n.id, color: colorFor(n.group) } })),
+            ...(conf.edges ?? []).map((e: any, i: number) => ({ data: { id: 'e' + i, source: e.source, target: e.target, label: e.label ?? '' } })),
+          ],
+          style: [
+            { selector: 'node', style: {
+                'background-color': 'data(color)',
+                'label': 'data(label)',
+                'color': isDark ? '#fafafa' : '#18181b',
+                'font-family': 'Inter, sans-serif',
+                'font-size': '12px',
+                'text-valign': 'center',
+                'text-halign': 'center',
+                'text-outline-width': 2,
+                'text-outline-color': isDark ? '#18181b' : '#ffffff',
+                'width': 40, 'height': 40,
+            }},
+            { selector: 'edge', style: {
+                'width': 2,
+                'line-color': isDark ? '#52525b' : '#d4d4d8',
+                'target-arrow-color': isDark ? '#52525b' : '#d4d4d8',
+                'target-arrow-shape': 'triangle',
+                'curve-style': 'bezier',
+                'label': 'data(label)',
+                'font-size': '10px',
+                'color': isDark ? '#a1a1aa' : '#52525b',
+            }},
+          ],
+          layout: { name: conf.layout ?? 'cose', animate: true, padding: 20 },
+          wheelSensitivity: 0.3,
+        });
+      } catch (e) {
+        console.warn('NetworkGraph render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

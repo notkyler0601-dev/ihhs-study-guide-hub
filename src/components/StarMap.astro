@@ -1,0 +1,69 @@
+---
+// Interactive celestial map powered by d3-celestial.
+// Shows stars, constellations, deep-sky objects, and Milky Way band.
+interface Props {
+  title?: string;
+  projection?: 'aitoff' | 'mercator' | 'orthographic' | 'stereographic' | 'equirectangular';
+  height?: number;
+  magLimit?: number;
+}
+const { title = 'Star map', projection = 'aitoff', height = 480, magLimit = 5 } = Astro.props;
+const id = 'sky-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ projection, magLimit });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-sky data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-sky-host class="mx-auto w-full bg-black rounded-md overflow-hidden" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-sky]:not([data-sky-ready])');
+    if (roots.length === 0) return;
+
+    await loadScript('https://d3js.org/d3.v3.min.js');
+    await loadScript('https://ofrohn.github.io/celestial/celestial.min.js');
+    const Celestial: any = await waitForGlobal('Celestial');
+
+    roots.forEach((root) => {
+      root.dataset.skyReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-sky-host]')!;
+      host.id = 'celestial-' + Math.random().toString(36).slice(2, 9);
+      const conf = JSON.parse(root.dataset.conf || '{}');
+
+      try {
+        Celestial.display({
+          container: host.id,
+          width: 0, // auto-fit
+          projection: conf.projection ?? 'aitoff',
+          background: { fill: '#000', stroke: '#444', opacity: 1 },
+          stars: {
+            show: true, limit: conf.magLimit ?? 5,
+            colors: true, style: { fill: '#ffffff', opacity: 1 },
+            names: true, proper: false, desig: false, namelimit: 2.5,
+          },
+          dsos: { show: true, limit: 6, names: true, namelimit: 4 },
+          constellations: {
+            show: true, names: true,
+            namestyle: { fill: '#f87171', font: '12px Inter, sans-serif', opacity: 0.8 },
+            lines: true, linestyle: { stroke: '#b91c1c', width: 1, opacity: 0.8 },
+          },
+          mw: { show: true, style: { fill: '#ffffff', opacity: 0.08 } },
+          lines: {
+            graticule: { show: true, stroke: '#444', width: 0.6, opacity: 0.6 },
+            equatorial: { show: false },
+            ecliptic: { show: true, stroke: '#fbbf24', width: 1, opacity: 0.6 },
+            galactic: { show: false },
+          },
+        });
+      } catch (e) {
+        console.warn('StarMap render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

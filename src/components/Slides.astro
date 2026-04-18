@@ -1,0 +1,79 @@
+---
+// Embed a Reveal.js or Slidev presentation by URL.
+// Or provide an array of slide markdown strings and we render inline Reveal.js.
+interface Props {
+  title?: string;
+  src?: string;
+  slides?: string[];
+  height?: number;
+}
+const { title = 'Slides', src, slides, height = 520 } = Astro.props;
+const id = 'rv-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ slides });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-rv data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">reveal.js</span>
+  </figcaption>
+  {src ? (
+    <div class="relative w-full" style={`height:${height}px`}>
+      <iframe src={src} title={title} class="absolute inset-0 w-full h-full border-0" loading="lazy" allowfullscreen></iframe>
+    </div>
+  ) : (
+    <div data-rv-host style={`height:${height}px`}></div>
+  )}
+</figure>
+
+{!src && (
+  <script>
+    import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+    const init = async () => {
+      const roots = document.querySelectorAll<HTMLElement>('[data-rv]:not([data-rv-ready])');
+      if (roots.length === 0) return;
+
+      loadStyle('https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.css');
+      loadStyle('https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/theme/white.css');
+      await loadScript('https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.js');
+      await loadScript('https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/plugin/markdown/markdown.js');
+      const Reveal: any = await waitForGlobal('Reveal');
+      const RevealMarkdown: any = await waitForGlobal('RevealMarkdown');
+
+      roots.forEach((root) => {
+        const host = root.querySelector<HTMLElement>('[data-rv-host]');
+        if (!host) return; // iframe mode
+        root.dataset.rvReady = '1';
+        const conf = JSON.parse(root.dataset.conf || '{}');
+        const slideMd: string[] = conf.slides ?? [];
+
+        const deck = document.createElement('div');
+        deck.className = 'reveal';
+        const slidesEl = document.createElement('div');
+        slidesEl.className = 'slides';
+        slideMd.forEach((md) => {
+          const s = document.createElement('section');
+          s.setAttribute('data-markdown', '');
+          const script = document.createElement('script');
+          script.type = 'text/template';
+          script.textContent = md;
+          s.appendChild(script);
+          slidesEl.appendChild(s);
+        });
+        deck.appendChild(slidesEl);
+        host.appendChild(deck);
+
+        new Reveal(deck, {
+          embedded: true,
+          hash: false,
+          controls: true,
+          progress: true,
+          plugins: [RevealMarkdown],
+        }).initialize();
+      });
+    };
+    init();
+    document.addEventListener('astro:after-swap', init);
+  </script>
+)}

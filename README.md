@@ -321,6 +321,74 @@ The full catalog with usage docs lives in [`LIBRARIES.md`](./LIBRARIES.md). Quic
 
 > **For full prop docs and examples for each, see [`LIBRARIES.md`](./LIBRARIES.md).**
 
+## Tier 4 component catalog (subject gap-fillers)
+
+Added on top of Tier 3 for chem, bio, astronomy, extended CS, extended data viz, multimedia, music, presentations, and engagement.
+
+**Chemistry**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<PeriodicTable element="..." />` | Ptable | Full interactive periodic table, optional deep-link to a specific element |
+| `<ChemDoodle3D mol="..." editable />` | ChemDoodle Web | 2D reaction/mechanism sketcher |
+
+**Biology / health**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<AnatomyViewer atlas="brain" />` | Open Anatomy Project | WebGL atlases for brain, knee, ear, head-and-neck, abdomen, larynx |
+| `<BrainBrowser atlas="mni" />` | Brain Browser | MNI/CBrain surface viewer |
+| `<CellSim setup="..." />` | Artistoo | Cellular Potts simulations (morphogenesis, chemotaxis) |
+| `<NeuronSim />` | PhET | Action-potential sim, a preset wrapper |
+
+**Astronomy**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<StarMap magLimit={5} />` | d3-celestial | Constellations, Milky Way, DSOs |
+| `<VirtualSky latitude={40} />` | VirtualSky | Planetarium for a given lat/long/time |
+| `<Aladin target="M31" />` | Aladin Lite 3 | Real astronomy imagery from CDS surveys |
+
+**Computer science (extended)**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<LogicGate />` | CircuitVerse | Digital logic circuits, flip-flops, memory |
+| `<ChessBoard fen="..." />` | Chessground (lichess) | Chess diagrams for game theory and AI |
+| `<Sudoku difficulty="medium" />` | sudoku.js | Generate + solve puzzles interactively |
+| `<Spreadsheet data={[...]} />` | Jspreadsheet CE | Excel-like data manipulation |
+
+**Data viz (extended)**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<NetworkGraph nodes={[...]} edges={[...]} />` | Cytoscape.js | Concept graphs, food webs, alliances |
+| `<WordCloud text="..." />` | d3-cloud | Vocabulary frequency, theme analysis |
+| `<GanttChart tasks={[...]} />` | Frappe Gantt | Project or historical-event timelines |
+| `<TimeSeries data={...} series={[...]} />` | uPlot | Large time-series datasets (~50KB, fast) |
+
+**Multimedia**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<VideoAnnotate src="..." annotations={[...]} />` | Native video + custom | Click-to-jump timestamped notes |
+| `<PDFViewer src="..." page={3} />` | Mozilla PDF.js | Embed textbook chapters |
+| `<ThreeScene gltf="..." />` | three.js | Generic 3D model viewer |
+
+**Music (extended)**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<MusicTheory mode="scale" />` | Tonal.js | Scale/chord explorer with keyboard highlight |
+| `<EarTraining exercise="intervals" />` | ToneDear (iframe) | Intervals, chords, scales, progressions |
+
+**Presentations and engagement**
+
+| Component | Library | Use case |
+|---|---|---|
+| `<Slides slides={[...]} />` | reveal.js | Inline slide decks or embed an external deck |
+| `<Poll src="..." />` | Particify / ClassQuiz / StrawPoll | Live classroom polls (iframe an instance) |
+
 ## Project structure
 
 ```

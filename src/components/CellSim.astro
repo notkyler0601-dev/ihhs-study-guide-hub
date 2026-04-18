@@ -1,0 +1,79 @@
+---
+// Cellular Potts model simulations via Artistoo. Use for tissue
+// morphogenesis, cell sorting, chemotaxis, and other cell biology demos.
+// The `setup` prop is a JS function body receiving { CPM, sim } that
+// configures the simulation.
+interface Props {
+  title?: string;
+  setup?: string;
+  width?: number;
+  height?: number;
+}
+const { title = 'Cell simulation', width = 420, height = 320, setup } = Astro.props;
+const id = 'cell-' + Math.random().toString(36).slice(2, 9);
+const defaultSetup = `
+  const config = {
+    field_size: [${width / 4}, ${height / 4}],
+    conf: {
+      T: 20,
+      J: [[0, 20], [20, 100]],
+      LAMBDA_V: [0, 50],
+      V: [0, 500],
+      LAMBDA_P: [0, 2],
+      P: [0, 340],
+    },
+    simsettings: {
+      NRCELLS: [1],
+      BURNIN: 50,
+      RUNTIME: 500,
+      CANVASCOLOR: 'eaecef',
+      CELLCOLOR: ['b91c1c'],
+      zoom: 4,
+      STATSOUT: { browser: false },
+    },
+  };
+  const custommethods = {
+    initializeGrid: function() {
+      if (!this.helpClasses.gm) this.addGridManipulator();
+      this.gm.seedCellsInCircle(1, 1, [Math.floor(config.field_size[0]/2*4), Math.floor(config.field_size[1]/2*4)], 30);
+    },
+  };
+  const sim = new CPM.Simulation(config, custommethods);
+  sim.run = () => { sim.step(); requestAnimationFrame(sim.run); };
+  sim.run();
+`;
+const setupCode = setup ?? defaultSetup;
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-cell data-setup={setupCode}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-cell-host class="flex justify-center bg-[#eaecef] rounded-md overflow-hidden" style={`width:${width}px; height:${height}px; max-width:100%; margin:0 auto`}></div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-cell]:not([data-cell-ready])');
+    if (roots.length === 0) return;
+
+    await loadScript('https://cdn.jsdelivr.net/npm/artistoo@2.2.6/build/artistoo.min.js');
+    const CPM: any = await waitForGlobal('CPM');
+
+    roots.forEach((root) => {
+      root.dataset.cellReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-cell-host]')!;
+      host.id = 'cpm-' + Math.random().toString(36).slice(2, 9);
+      const setup = root.dataset.setup ?? '';
+      try {
+        // eslint-disable-next-line no-new-func
+        const fn = new Function('CPM', 'container', setup);
+        fn(CPM, host);
+      } catch (e) {
+        console.warn('CellSim setup failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

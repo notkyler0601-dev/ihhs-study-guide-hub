@@ -1,0 +1,124 @@
+---
+// Live music theory explorer powered by Tonal.js. Type a scale or chord
+// name and see notes, intervals, and the pattern on a keyboard.
+interface Props {
+  title?: string;
+  initial?: string;
+  mode?: 'scale' | 'chord';
+}
+const { title = 'Music theory', initial = 'C major', mode = 'scale' } = Astro.props;
+const id = 'mt-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ initial, mode });
+---
+
+<section class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-mt data-conf={conf}>
+  <header class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <div class="flex items-center gap-2 text-xs">
+      <label class="inline-flex items-center gap-1">
+        <input data-mt-mode-scale type="radio" name={`mt-mode-${id}`} value="scale" /> Scale
+      </label>
+      <label class="inline-flex items-center gap-1">
+        <input data-mt-mode-chord type="radio" name={`mt-mode-${id}`} value="chord" /> Chord
+      </label>
+    </div>
+  </header>
+  <input
+    data-mt-input type="text"
+    value={initial}
+    placeholder="e.g. C major, D dorian, Am7, Bbmaj7"
+    class="w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-3 py-2 text-sm font-mono mb-3 focus:outline-none focus:border-accent-500"
+  />
+  <div data-mt-keyboard class="w-full mb-3"></div>
+  <div data-mt-info class="text-sm space-y-1 font-mono text-ink-700 dark:text-ink-300"></div>
+</section>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-mt]:not([data-mt-ready])');
+    if (roots.length === 0) return;
+
+    const Tonal: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/@tonaljs/tonal@6.2.0/browser/tonal.min.js',
+      'Tonal'
+    );
+
+    roots.forEach((root) => {
+      root.dataset.mtReady = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const input = root.querySelector<HTMLInputElement>('[data-mt-input]')!;
+      const kb = root.querySelector<HTMLElement>('[data-mt-keyboard]')!;
+      const info = root.querySelector<HTMLElement>('[data-mt-info]')!;
+      const modeScale = root.querySelector<HTMLInputElement>('[data-mt-mode-scale]')!;
+      const modeChord = root.querySelector<HTMLInputElement>('[data-mt-mode-chord]')!;
+      if (conf.mode === 'chord') modeChord.checked = true; else modeScale.checked = true;
+
+      const drawKeyboard = (highlightNotes: string[]) => {
+        const WHITE = ['C','D','E','F','G','A','B'];
+        const BLACK: Record<string, string> = { 'C': 'C#', 'D': 'D#', 'F': 'F#', 'G': 'G#', 'A': 'A#' };
+        const octaves = 2;
+        const lit = new Set(highlightNotes.map((n) => Tonal.Note.pitchClass(n)));
+        let html = '<div style="display:flex; position:relative; width:100%; max-width:560px; margin:0 auto; height:110px;">';
+        let whiteIdx = 0;
+        for (let o = 0; o < octaves; o++) {
+          for (const n of WHITE) {
+            const wlit = lit.has(n);
+            html += `<div style="flex:1; background:${wlit ? '#b91c1c' : '#fff'}; color:${wlit ? '#fff' : '#18181b'}; border:1px solid #52525b; position:relative; font-size:10px; padding-bottom:4px; display:flex; align-items:flex-end; justify-content:center; font-family:monospace;">${n}</div>`;
+            if (BLACK[n]) {
+              const bn = BLACK[n];
+              const blit = lit.has(bn);
+              html += `<div style="position:absolute; left:${(whiteIdx + 1) * (100/(WHITE.length*octaves)) - 2}%; top:0; width:5%; height:65%; background:${blit ? '#7f1d1d' : '#18181b'}; color:#fff; font-size:8px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:2px; font-family:monospace; z-index:1; border:1px solid #000;">${bn}</div>`;
+            }
+            whiteIdx++;
+          }
+        }
+        html += '</div>';
+        kb.innerHTML = html;
+      };
+
+      const update = () => {
+        const q = input.value.trim();
+        const isChord = modeChord.checked;
+        let notes: string[] = [];
+        let lines: string[] = [];
+        if (isChord) {
+          const c = Tonal.Chord.get(q);
+          if (c.empty) { lines = [`Unknown chord: ${q}`]; }
+          else {
+            notes = c.notes;
+            lines = [
+              `Chord:     ${c.symbol || c.name}`,
+              `Root:      ${c.tonic}`,
+              `Quality:   ${c.quality}`,
+              `Notes:     ${c.notes.join('  ')}`,
+              `Intervals: ${c.intervals.join('  ')}`,
+            ];
+          }
+        } else {
+          const s = Tonal.Scale.get(q);
+          if (s.empty) { lines = [`Unknown scale: ${q}`]; }
+          else {
+            notes = s.notes;
+            lines = [
+              `Scale:     ${s.name}`,
+              `Tonic:     ${s.tonic}`,
+              `Notes:     ${s.notes.join('  ')}`,
+              `Intervals: ${s.intervals.join('  ')}`,
+            ];
+          }
+        }
+        drawKeyboard(notes);
+        info.innerHTML = lines.map((l) => `<div>${l.replace(/ /g, '&nbsp;')}</div>`).join('');
+      };
+
+      input.addEventListener('input', update);
+      modeScale.addEventListener('change', update);
+      modeChord.addEventListener('change', update);
+      update();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -1,0 +1,23 @@
+---
+// Live polls/quizzes via an external open-source instance (Particify or
+// ClassQuiz). Provide a room/session URL from your instance.
+// For quick single-question polls with no self-hosting, you can also embed
+// a StrawPoll or similar service via the `src` prop.
+interface Props {
+  title?: string;
+  src: string;
+  provider?: 'particify' | 'classquiz' | 'strawpoll' | 'custom';
+  height?: number;
+}
+const { title = 'Live poll', src, provider = 'custom', height = 540 } = Astro.props;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold capitalize">{provider}</span>
+  </figcaption>
+  <div class="relative w-full bg-ink-100 dark:bg-ink-800" style={`height:${height}px`}>
+    <iframe src={src} title={title} class="absolute inset-0 w-full h-full border-0" loading="lazy"></iframe>
+  </div>
+</figure>

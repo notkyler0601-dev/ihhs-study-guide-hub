@@ -1,0 +1,61 @@
+---
+// Interactive chess board via lichess's Chessground library.
+// Pass a FEN string to set the position. Use viewOnly for diagrams.
+interface Props {
+  title?: string;
+  fen?: string;
+  orientation?: 'white' | 'black';
+  viewOnly?: boolean;
+  size?: number;
+}
+const {
+  title = 'Chess board',
+  fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+  orientation = 'white',
+  viewOnly = false,
+  size = 400,
+} = Astro.props;
+const id = 'chess-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ fen, orientation, viewOnly });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-chess data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-chess-host class="mx-auto" style={`width:${size}px; height:${size}px; max-width:100%`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-chess]:not([data-chess-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/chessground@9.2.1/assets/chessground.base.css');
+    loadStyle('https://cdn.jsdelivr.net/npm/chessground@9.2.1/assets/chessground.brown.css');
+    loadStyle('https://cdn.jsdelivr.net/npm/chessground@9.2.1/assets/chessground.cburnett.css');
+    await loadScript('https://cdn.jsdelivr.net/npm/chessground@9.2.1/dist/chessground.min.js');
+    const Chessground: any = await waitForGlobal('Chessground');
+
+    roots.forEach((root) => {
+      root.dataset.chessReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-chess-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+
+      try {
+        Chessground(host, {
+          fen: conf.fen,
+          orientation: conf.orientation ?? 'white',
+          viewOnly: conf.viewOnly ?? false,
+          coordinates: true,
+          drawable: { enabled: true },
+          movable: { free: conf.viewOnly ? false : true, color: 'both' },
+        });
+      } catch (e) {
+        console.warn('ChessBoard render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

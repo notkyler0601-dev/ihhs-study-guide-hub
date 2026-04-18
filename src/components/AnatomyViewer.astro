@@ -1,0 +1,35 @@
+---
+// Embed an anatomy atlas from the Open Anatomy Project.
+// Available atlases: 'brain', 'knee', 'ear', 'head-and-neck', 'abdomen', 'larynx'
+// Or pass a full `src` URL to another WebGL anatomy viewer.
+interface Props {
+  atlas?: 'brain' | 'knee' | 'ear' | 'head-and-neck' | 'abdomen' | 'larynx';
+  src?: string;
+  title?: string;
+  height?: number;
+}
+const { atlas = 'brain', src, title, height = 600 } = Astro.props;
+const atlasUrls: Record<string, string> = {
+  'brain':         'https://www.openanatomy.org/atlas-viewer/?atlas=brain',
+  'knee':          'https://www.openanatomy.org/atlas-viewer/?atlas=knee',
+  'ear':           'https://www.openanatomy.org/atlas-viewer/?atlas=ear',
+  'head-and-neck': 'https://www.openanatomy.org/atlas-viewer/?atlas=head-and-neck',
+  'abdomen':       'https://www.openanatomy.org/atlas-viewer/?atlas=abdomen',
+  'larynx':        'https://www.openanatomy.org/atlas-viewer/?atlas=larynx',
+};
+const url = src ?? atlasUrls[atlas] ?? atlasUrls.brain;
+const displayTitle = title ?? `Anatomy: ${atlas.replace('-', ' ')}`;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold capitalize">{displayTitle}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Open Anatomy Project</span>
+  </figcaption>
+  <div class="relative w-full bg-ink-100 dark:bg-ink-800" style={`height:${height}px`}>
+    <iframe src={url} title={displayTitle} class="absolute inset-0 w-full h-full" loading="lazy" allowfullscreen></iframe>
+  </div>
+  <div class="px-5 py-2 text-[11px] text-ink-500 dark:text-ink-400 border-t border-ink-200 dark:border-ink-800">
+    Atlases by <a href="https://www.openanatomy.org/" class="text-accent-700 dark:text-accent-400 hover:underline" target="_blank" rel="noopener">The Open Anatomy Project</a>
+  </div>
+</figure>

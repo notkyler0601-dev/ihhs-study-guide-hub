@@ -1,0 +1,65 @@
+---
+// Excel-like spreadsheet for data-science and analysis lessons.
+// Powered by Jspreadsheet CE (MIT, free for commercial use).
+interface Props {
+  title?: string;
+  data?: (string | number)[][];
+  columns?: { title: string; width?: number; type?: string }[];
+  height?: number;
+  minDimensions?: [number, number];
+}
+const {
+  title = 'Spreadsheet',
+  data = [],
+  columns,
+  height = 360,
+  minDimensions = [6, 10],
+} = Astro.props;
+const id = 'sheet-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ data, columns, minDimensions });
+---
+
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" id={id} data-sheet data-conf={conf}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Jspreadsheet</span>
+  </figcaption>
+  <div data-sheet-host class="w-full overflow-auto bg-white rounded-md" style={`max-height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-sheet]:not([data-sheet-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.1/dist/jspreadsheet.min.css');
+    loadStyle('https://cdn.jsdelivr.net/npm/jsuites@5.0.3/dist/jsuites.min.css');
+    await loadScript('https://cdn.jsdelivr.net/npm/jsuites@5.0.3/dist/jsuites.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.1/dist/jspreadsheet.min.js');
+    const jspreadsheet: any = await waitForGlobal('jspreadsheet');
+
+    roots.forEach((root) => {
+      root.dataset.sheetReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-sheet-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      try {
+        jspreadsheet(host, {
+          data: conf.data ?? [],
+          columns: conf.columns,
+          minDimensions: conf.minDimensions ?? [6, 10],
+          allowInsertRow: true,
+          allowInsertColumn: true,
+          allowDeleteRow: true,
+          allowDeleteColumn: true,
+          csvHeaders: true,
+        });
+      } catch (e) {
+        console.warn('Spreadsheet render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

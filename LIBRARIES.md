@@ -185,6 +185,81 @@ Pre-existing subject-specific components. CDN script loads only when the compone
 
 ---
 
+## 8b. Tier 4 components (subject gaps, lazy-loaded)
+
+Added on top of Tier 3 to close gaps in chemistry, biology, astronomy, CS, data viz, multimedia, music, presentations, and engagement.
+
+### Chemistry
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<PeriodicTable element="..." />` | Ptable | iframe `ptable.com` | Full interactive periodic table, optional deep-link to a specific element. |
+| `<ChemDoodle3D mol="..." editable />` | ChemDoodle Web Components 10.4 | `hub.chemdoodle.com/cwc/10.4.1` | 2D reaction/mechanism sketcher (complements the existing 3D `<Molecule>`). |
+
+### Biology / health
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<AnatomyViewer atlas="brain" />` | Open Anatomy Project | iframe `openanatomy.org` | Free WebGL atlases: brain, knee, ear, head-and-neck, abdomen, larynx. |
+| `<BrainBrowser atlas="mni" />` | McGill Brain Browser | iframe `brainbrowser.cbrain.mcgill.ca` | MNI/CBrain surface viewer for neuro guides. |
+| `<CellSim setup="..." />` | Artistoo 2.2 | `cdn.jsdelivr.net/npm/artistoo` | Cellular Potts model simulations (tissue, chemotaxis, cell sorting). |
+| `<NeuronSim />` | PhET (thin wrapper) | iframe to PhET | Convenience wrapper over `<PhETSim sim="neuron" />`. |
+
+### Astronomy
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<StarMap magLimit={5} />` | d3-celestial | `ofrohn.github.io/celestial` + d3 v3 | Interactive celestial map with constellations, Milky Way, DSOs. |
+| `<VirtualSky latitude={40} />` | VirtualSky | `slowe.github.io/VirtualSky` + jQuery | Planetarium-style sky for a given lat/long/time. |
+| `<Aladin target="M31" />` | Aladin Lite 3 | `aladin.cds.unistra.fr/AladinLite/api/v3/latest` | Real astronomy data surveys from CDS, deep-sky target lookup. |
+
+### Computer science
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<LogicGate />` | CircuitVerse | iframe `circuitverse.org` | Digital logic (AND/OR/NAND/XOR, flip-flops, memory). |
+| `<ChessBoard fen="..." />` | Chessground 9.2 | `cdn.jsdelivr.net/npm/chessground` | Lichess's chess board UI for game theory and strategy. |
+| `<Sudoku difficulty="medium" />` | sudoku 0.1.3 | `cdn.jsdelivr.net/npm/sudoku` | Sudoku generator/solver with interactive grid. |
+| `<Spreadsheet data={[...]} />` | Jspreadsheet CE 5.0 | `cdn.jsdelivr.net/npm/jspreadsheet-ce` | Excel-like sheet with formulas, pivot, sort (MIT license). |
+
+### Data viz (extended)
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<NetworkGraph nodes={[...]} edges={[...]} />` | Cytoscape.js 3.30 | `cdn.jsdelivr.net/npm/cytoscape` | Force-directed / tree / circle concept graphs. Different from `<MindMap>` (hierarchical). |
+| `<WordCloud text="..." />` | d3-cloud 1.2 | `cdn.jsdelivr.net/npm/d3-cloud` + d3 v5 | Weighted word cloud with automatic stopword filtering. |
+| `<GanttChart tasks={[...]} />` | Frappe Gantt 0.9 | `cdn.jsdelivr.net/npm/frappe-gantt` | Project / historical-event timelines with dependencies. |
+| `<TimeSeries data={[...]} series={[...]} />` | uPlot 1.6 | `cdn.jsdelivr.net/npm/uplot` | ~50 KB canvas chart, plots 166k points in 25ms. |
+
+### Multimedia
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<VideoAnnotate src="..." annotations={[...]} />` | Native `<video>` + custom UI | none | Lecture video with click-to-jump timestamped markers and notes. |
+| `<PDFViewer src="..." page={3} />` | PDF.js viewer | iframe `mozilla.github.io/pdf.js/web/viewer.html` | Embed textbook PDFs with zoom, pagination, selection. |
+| `<ThreeScene gltf="..." />` | three.js 0.169 | `cdn.jsdelivr.net/npm/three` | Generic 3D scene viewer; supports glTF model loading or custom setup code. |
+
+### Music
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<MusicTheory mode="scale" />` | Tonal.js 6.2 | `cdn.jsdelivr.net/npm/@tonaljs/tonal` | Live scale/chord explorer with keyboard highlight. |
+| `<EarTraining exercise="intervals" />` | ToneDear | iframe `tonedear.com/ear-training/...` | Intervals, chords, scales, progressions. |
+
+### Presentations
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<Slides slides={[...]} />` | reveal.js 5.2 | `cdn.jsdelivr.net/npm/reveal.js` | Inline slide decks from markdown, or embed an external deck by URL. |
+
+### Engagement
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<Poll src="..." provider="particify" />` | Particify / ClassQuiz / StrawPoll (iframe) | external | Live polls/quizzes via a self-hosted or third-party instance. |
+
+---
+
 ## 9. External services and data sources
 
 These are accessed by the above components but worth listing separately.

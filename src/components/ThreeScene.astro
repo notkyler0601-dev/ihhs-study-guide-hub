@@ -1,0 +1,108 @@
+---
+// Generic 3D scene viewer via Three.js. Pass a `setup` function body that
+// receives { THREE, scene, camera, renderer, controls } and adds objects.
+// For structured model files (.glb/.gltf), set `gltf` to a URL and the
+// component will load and auto-center it.
+interface Props {
+  title?: string;
+  setup?: string;
+  gltf?: string;
+  height?: number;
+  background?: string;
+}
+const {
+  title = '3D scene',
+  setup,
+  gltf,
+  height = 420,
+  background = '#09090b',
+} = Astro.props;
+const id = 'three-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ setup, gltf, background });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-three data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">three.js</span>
+  </figcaption>
+  <div data-three-host class="w-full relative" style={`height:${height}px; background:${background};`}></div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-three]:not([data-three-ready])');
+    if (roots.length === 0) return;
+
+    await loadScript('https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.min.js');
+    const THREE: any = await waitForGlobal('THREE');
+    await loadScript('https://cdn.jsdelivr.net/npm/three@0.169.0/examples/js/controls/OrbitControls.js');
+    // GLTF loader only when needed (ESM loader for 0.169 is in `examples/jsm/loaders/GLTFLoader.js`,
+    // but we use the UMD-style examples/js path bundled with the CDN for compatibility).
+    await loadScript('https://cdn.jsdelivr.net/npm/three@0.169.0/examples/js/loaders/GLTFLoader.js');
+
+    roots.forEach((root) => {
+      root.dataset.threeReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-three-host]')!;
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const { width, height } = host.getBoundingClientRect();
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, width / height, 0.01, 5000);
+      camera.position.set(2, 2, 4);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(width, height);
+      host.appendChild(renderer.domElement);
+
+      const controls = new (THREE as any).OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const dir = new THREE.DirectionalLight(0xffffff, 1);
+      dir.position.set(3, 5, 4);
+      scene.add(dir);
+
+      if (conf.gltf) {
+        const loader = new (THREE as any).GLTFLoader();
+        loader.load(conf.gltf, (g: any) => {
+          const box = new THREE.Box3().setFromObject(g.scene);
+          const size = box.getSize(new THREE.Vector3()).length();
+          const center = box.getCenter(new THREE.Vector3());
+          g.scene.position.sub(center);
+          camera.position.copy(center); camera.position.x += size * 0.6; camera.position.y += size * 0.4; camera.position.z += size * 1.2;
+          camera.near = size / 100; camera.far = size * 100; camera.updateProjectionMatrix();
+          controls.target.copy(new THREE.Vector3(0, 0, 0));
+          scene.add(g.scene);
+        });
+      } else if (conf.setup) {
+        try {
+          // eslint-disable-next-line no-new-func
+          const fn = new Function('THREE', 'scene', 'camera', 'renderer', 'controls', conf.setup);
+          fn(THREE, scene, camera, renderer, controls);
+        } catch (e) {
+          console.warn('ThreeScene setup failed', e);
+        }
+      } else {
+        // Default: a rotating cube so the component is not empty when no props are given.
+        const geo = new THREE.BoxGeometry(1, 1, 1);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xb91c1c });
+        const mesh = new THREE.Mesh(geo, mat);
+        scene.add(mesh);
+        (scene as any).userData.autoRotate = mesh;
+      }
+
+      const animate = () => {
+        requestAnimationFrame(animate);
+        const mesh = (scene as any).userData.autoRotate;
+        if (mesh) { mesh.rotation.x += 0.01; mesh.rotation.y += 0.01; }
+        controls.update();
+        renderer.render(scene, camera);
+      };
+      animate();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

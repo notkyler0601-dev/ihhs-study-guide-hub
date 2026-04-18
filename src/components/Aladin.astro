@@ -1,0 +1,68 @@
+---
+// Real astronomy-data sky atlas (Aladin Lite). Loads imagery surveys from
+// CDS, supports deep-sky target lookup (e.g. "M31", "NGC 224").
+interface Props {
+  title?: string;
+  target?: string;
+  fov?: number;
+  survey?: string;
+  height?: number;
+}
+const {
+  title = 'Sky atlas',
+  target = 'M31',
+  fov = 1.5,
+  survey = 'P/DSS2/color',
+  height = 520,
+} = Astro.props;
+const id = 'aladin-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ target, fov, survey });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-aladin data-conf={conf}>
+  <figcaption class="mb-3 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Aladin Lite</span>
+  </figcaption>
+  <div data-aladin-host class="w-full rounded-md overflow-hidden bg-black" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-aladin]:not([data-aladin-ready])');
+    if (roots.length === 0) return;
+
+    loadStyle('https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.css');
+    await loadScript('https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js');
+    const A: any = await waitForGlobal('A');
+    await A.init;
+
+    roots.forEach((root) => {
+      root.dataset.aladinReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-aladin-host]')!;
+      host.id = 'aladin-host-' + Math.random().toString(36).slice(2, 9);
+      const conf = JSON.parse(root.dataset.conf || '{}');
+
+      try {
+        A.aladin('#' + host.id, {
+          survey: conf.survey ?? 'P/DSS2/color',
+          target: conf.target ?? 'M31',
+          fov: conf.fov ?? 1.5,
+          cooFrame: 'J2000',
+          showFrame: true,
+          showCoordinates: true,
+          showFullscreenControl: true,
+          showZoomControl: true,
+          showLayersControl: true,
+          showGotoControl: true,
+        });
+      } catch (e) {
+        console.warn('Aladin render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

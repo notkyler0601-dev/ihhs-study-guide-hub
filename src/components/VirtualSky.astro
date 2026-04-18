@@ -1,0 +1,67 @@
+---
+// Planetarium-style night sky viewer powered by VirtualSky.
+// Shows the sky from a given latitude/longitude at a given time.
+interface Props {
+  title?: string;
+  latitude?: number;
+  longitude?: number;
+  height?: number;
+  projection?: 'stereo' | 'lambert' | 'polar' | 'gnomic' | 'equirectangular';
+}
+const {
+  title = 'Night sky',
+  latitude = 40,
+  longitude = -74,
+  height = 480,
+  projection = 'stereo',
+} = Astro.props;
+const id = 'vsky-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ latitude, longitude, projection });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl p-5 shadow-soft" id={id} data-vsky data-conf={conf}>
+  <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>
+  <div data-vsky-host class="mx-auto w-full bg-black rounded-md overflow-hidden" style={`height:${height}px`}></div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-vsky]:not([data-vsky-ready])');
+    if (roots.length === 0) return;
+
+    await loadScript('https://code.jquery.com/jquery-3.7.1.min.js');
+    await loadScript('https://slowe.github.io/VirtualSky/stuquery.min.js');
+    await loadScript('https://slowe.github.io/VirtualSky/virtualsky.min.js');
+    const VS: any = await waitForGlobal('S');
+
+    roots.forEach((root) => {
+      root.dataset.vskyReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-vsky-host]')!;
+      host.id = 'vs-' + Math.random().toString(36).slice(2, 9);
+      const conf = JSON.parse(root.dataset.conf || '{}');
+
+      try {
+        VS(host).virtualsky({
+          projection: conf.projection ?? 'stereo',
+          latitude: conf.latitude ?? 40,
+          longitude: conf.longitude ?? -74,
+          showstarlabels: true,
+          constellations: true,
+          constellationlabels: true,
+          showplanets: true,
+          showgalaxy: true,
+          gridlines_az: false,
+          background: '#000',
+          color: '#fff',
+          az: 180,
+        });
+      } catch (e) {
+        console.warn('VirtualSky render failed', e);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
