@@ -37,18 +37,19 @@ const id = 'rx-' + Math.random().toString(36).slice(2, 9);
   </div>
 </section>
 
-<script is:inline>
+<script>
   const init = () => {
-    document.querySelectorAll('[data-rx]:not([data-rx-ready])').forEach((root) => {
+    document.querySelectorAll<HTMLElement>('[data-rx]:not([data-rx-ready])').forEach((root) => {
       root.dataset.rxReady = '1';
-      const patternEl = root.querySelector('[data-rx-pattern]');
-      const flagsEl = root.querySelector('[data-rx-flags]');
-      const textEl = root.querySelector('[data-rx-text]');
-      const outEl = root.querySelector('[data-rx-out]');
-      const countEl = root.querySelector('[data-rx-count]');
-      const errEl = root.querySelector('[data-rx-err]');
+      const patternEl = root.querySelector<HTMLInputElement>('[data-rx-pattern]');
+      const flagsEl = root.querySelector<HTMLInputElement>('[data-rx-flags]');
+      const textEl = root.querySelector<HTMLTextAreaElement>('[data-rx-text]');
+      const outEl = root.querySelector<HTMLElement>('[data-rx-out]');
+      const countEl = root.querySelector<HTMLElement>('[data-rx-count]');
+      const errEl = root.querySelector<HTMLElement>('[data-rx-err]');
+      if (!patternEl || !flagsEl || !textEl || !outEl || !countEl || !errEl) return;
 
-      const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+      const esc = (s: string) => s.replace(/[&<>]/g, (c) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } as Record<string, string>)[c]));
 
       const update = () => {
         const pat = patternEl.value;
@@ -60,9 +61,10 @@ const id = 'rx-' + Math.random().toString(36).slice(2, 9);
           let last = 0; let html = ''; let count = 0;
           const matches = [...text.matchAll(re)];
           for (const m of matches) {
-            html += esc(text.slice(last, m.index));
+            const idx = m.index ?? 0;
+            html += esc(text.slice(last, idx));
             html += `<mark class="bg-accent-200 dark:bg-accent-800/60 text-accent-900 dark:text-accent-100 rounded px-0.5">${esc(m[0]) || '∅'}</mark>`;
-            last = m.index + m[0].length;
+            last = idx + m[0].length;
             count++;
             if (m[0].length === 0) last++;
           }
@@ -70,7 +72,8 @@ const id = 'rx-' + Math.random().toString(36).slice(2, 9);
           outEl.innerHTML = html;
           countEl.textContent = String(count);
         } catch (e) {
-          errEl.textContent = e.message; errEl.classList.remove('hidden');
+          errEl.textContent = (e as Error).message;
+          errEl.classList.remove('hidden');
           outEl.innerHTML = esc(text);
         }
       };

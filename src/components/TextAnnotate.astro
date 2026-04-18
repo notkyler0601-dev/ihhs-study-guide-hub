@@ -23,21 +23,29 @@ const key = storageKey ?? id;
   <div data-txta-list class="mt-4 space-y-2 text-sm"></div>
 </section>
 
-<script is:inline>
-  const init = () => {
-    document.querySelectorAll('[data-txta]:not([data-txta-ready])').forEach((root) => {
-      root.dataset.txtaReady = '1';
-      const body = root.querySelector('[data-txta-body]');
-      const list = root.querySelector('[data-txta-list]');
-      const clearBtn = root.querySelector('[data-txta-clear]');
-      const key = 'txta:' + root.dataset.key;
+<script>
+  interface Note { quote: string; note: string; at: number; }
 
-      const load = () => { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } };
-      const save = (arr) => localStorage.setItem(key, JSON.stringify(arr));
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-txta]:not([data-txta-ready])').forEach((root) => {
+      root.dataset.txtaReady = '1';
+      const body = root.querySelector<HTMLElement>('[data-txta-body]');
+      const list = root.querySelector<HTMLElement>('[data-txta-list]');
+      const clearBtn = root.querySelector<HTMLButtonElement>('[data-txta-clear]');
+      if (!body || !list) return;
+      const key = 'txta:' + (root.dataset.key ?? '');
+
+      const load = (): Note[] => {
+        try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+      };
+      const save = (arr: Note[]) => localStorage.setItem(key, JSON.stringify(arr));
 
       const render = () => {
         const notes = load();
-        if (notes.length === 0) { list.innerHTML = '<div class="text-ink-400 text-xs">No notes yet.</div>'; return; }
+        if (notes.length === 0) {
+          list.innerHTML = '<div class="text-ink-400 text-xs">No notes yet.</div>';
+          return;
+        }
         list.innerHTML = notes.map((n, i) => `
           <div class="rounded-lg border border-ink-200 dark:border-ink-800 p-3 bg-ink-50/60 dark:bg-ink-900/60">
             <div class="text-[11px] text-ink-500 mb-1">On: <span class="italic">"${n.quote.slice(0, 80)}${n.quote.length > 80 ? '...' : ''}"</span></div>
@@ -45,9 +53,12 @@ const key = storageKey ?? id;
             <button data-del="${i}" class="mt-1 text-[11px] text-rose-600 hover:underline">Delete</button>
           </div>
         `).join('');
-        list.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
+        list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach((b) => b.addEventListener('click', () => {
           const idx = Number(b.getAttribute('data-del'));
-          const cur = load(); cur.splice(idx, 1); save(cur); render();
+          const cur = load();
+          cur.splice(idx, 1);
+          save(cur);
+          render();
         }));
       };
 
@@ -57,8 +68,11 @@ const key = storageKey ?? id;
         if (!quote) return;
         const note = prompt(`Note for "${quote.slice(0, 80)}${quote.length > 80 ? '...' : ''}":`);
         if (!note) return;
-        const cur = load(); cur.push({ quote, note, at: Date.now() }); save(cur); render();
-        sel.removeAllRanges();
+        const cur = load();
+        cur.push({ quote, note, at: Date.now() });
+        save(cur);
+        render();
+        sel?.removeAllRanges();
       });
 
       clearBtn?.addEventListener('click', () => { localStorage.removeItem(key); render(); });

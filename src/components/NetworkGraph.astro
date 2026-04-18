@@ -22,16 +22,20 @@ const conf = JSON.stringify({ nodes, edges, layout });
 </figure>
 
 <script>
-  import { importGlobal } from '../lib/loadScript';
-
   const init = async () => {
     const roots = document.querySelectorAll<HTMLElement>('[data-net]:not([data-net-ready])');
     if (roots.length === 0) return;
 
-    const cytoscape: any = await importGlobal(
-      'https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js',
-      'cytoscape'
-    );
+    // ESM import, bypasses UMD vs AMD conflict when Monaco / RequireJS is
+    // on the same page (their global AMD loader steals window.cytoscape).
+    let cytoscape: any;
+    try {
+      const mod: any = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/+esm');
+      cytoscape = mod.default ?? mod;
+    } catch (e) {
+      console.warn('NetworkGraph: cytoscape failed to load', e);
+      return;
+    }
 
     roots.forEach((root) => {
       root.dataset.netReady = '1';

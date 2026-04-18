@@ -42,53 +42,54 @@ const defs = pairs.map((p, i) => ({ id: 'D' + i, label: p.def, partner: 'T' + i 
   </div>
 </section>
 
-<script is:inline>
+<script>
+  const HL = ['ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30'] as const;
+  const WRONG = ['border-rose-400', 'bg-rose-50', 'dark:bg-rose-900/30'] as const;
+  const CORRECT = ['opacity-40', 'border-emerald-400', 'bg-emerald-50', 'dark:bg-emerald-900/30'] as const;
+
   const init = () => {
-    document.querySelectorAll('[data-match]:not([data-match-ready])').forEach((root) => {
+    document.querySelectorAll<HTMLElement>('[data-match]:not([data-match-ready])').forEach((root) => {
       root.dataset.matchReady = '1';
-      const status = root.querySelector('[data-match-status]');
-      const total = Number(status.textContent.split(' / ')[1].split(' ')[0]);
-      let selected = null;
+      const status = root.querySelector<HTMLElement>('[data-match-status]');
+      if (!status) return;
+      const totalMatch = status.textContent?.match(/\/\s*(\d+)/);
+      const total = totalMatch ? Number(totalMatch[1]) : 0;
+      let selected: HTMLButtonElement | null = null;
       let matched = 0;
 
-      root.querySelectorAll('.match-cell').forEach((cell) => {
+      root.querySelectorAll<HTMLButtonElement>('.match-cell').forEach((cell) => {
         cell.addEventListener('click', () => {
           if (cell.classList.contains('opacity-40')) return;
           if (!selected) {
-            cell.classList.add('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            cell.classList.add(...HL);
             selected = cell;
             return;
           }
           if (selected === cell) {
-            cell.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            cell.classList.remove(...HL);
             selected = null;
             return;
           }
           if (selected.dataset.side === cell.dataset.side) {
-            selected.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
-            cell.classList.add('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
+            selected.classList.remove(...HL);
+            cell.classList.add(...HL);
             selected = cell;
             return;
           }
-          // Different sides — check match.
+          // Different sides: check match.
           const ok = selected.dataset.partner === cell.dataset.id;
+          const pair: HTMLButtonElement[] = [selected, cell];
           if (ok) {
-            [selected, cell].forEach((c) => {
-              c.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30');
-              c.classList.add('opacity-40', 'border-emerald-400', 'bg-emerald-50', 'dark:bg-emerald-900/30');
+            pair.forEach((c) => {
+              c.classList.remove(...HL);
+              c.classList.add(...CORRECT);
               c.disabled = true;
             });
             matched++;
             status.textContent = `${matched} / ${total} matched`;
           } else {
-            [selected, cell].forEach((c) => {
-              c.classList.add('border-rose-400', 'bg-rose-50', 'dark:bg-rose-900/30');
-            });
-            const wrong = [selected, cell];
-            setTimeout(() => wrong.forEach((c) => {
-              c.classList.remove('ring-2', 'ring-accent-500', 'bg-accent-50', 'dark:bg-accent-900/30',
-                'border-rose-400', 'bg-rose-50', 'dark:bg-rose-900/30');
-            }), 600);
+            pair.forEach((c) => c.classList.add(...WRONG));
+            setTimeout(() => pair.forEach((c) => c.classList.remove(...HL, ...WRONG)), 600);
           }
           selected = null;
         });

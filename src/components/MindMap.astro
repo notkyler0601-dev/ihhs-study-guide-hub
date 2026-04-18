@@ -21,21 +21,25 @@ const id = 'mm-' + Math.random().toString(36).slice(2, 9);
 </figure>
 
 <script>
-  import { importGlobal } from '../lib/loadScript';
-
+  // Dynamic ESM imports: avoids the window.markmap global collision between
+  // markmap-view and markmap-lib (both register to the same global, so the
+  // second load silently clobbers the first).
   const init = async () => {
     const roots = document.querySelectorAll<HTMLElement>('[data-mm]:not([data-mm-ready])');
     if (roots.length === 0) return;
 
-    const d3: any = await importGlobal('https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js', 'd3');
-    const markmap: any = await importGlobal(
-      'https://cdn.jsdelivr.net/npm/markmap-view@0.18.10/dist/browser/index.js',
-      'markmap'
-    );
-    const transformer: any = await importGlobal(
-      'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.11/dist/browser/index.js',
-      'markmap'
-    );
+    let Transformer: any, Markmap: any;
+    try {
+      const [libMod, viewMod]: [any, any] = await Promise.all([
+        import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.11/+esm'),
+        import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/markmap-view@0.18.10/+esm'),
+      ]);
+      Transformer = libMod.Transformer;
+      Markmap = viewMod.Markmap;
+    } catch (e) {
+      console.warn('MindMap modules failed to load', e);
+      return;
+    }
 
     roots.forEach((root) => {
       root.dataset.mmReady = '1';
@@ -43,9 +47,9 @@ const id = 'mm-' + Math.random().toString(36).slice(2, 9);
       const svg = root.querySelector<SVGSVGElement>('[data-mm-svg]')!;
       const md = srcEl?.textContent ?? '';
       try {
-        const t = new transformer.Transformer();
+        const t = new Transformer();
         const { root: tree } = t.transform(md);
-        const mm = markmap.Markmap.create(svg, undefined, tree);
+        const mm = Markmap.create(svg, undefined, tree);
         setTimeout(() => mm.fit(), 100);
       } catch (e) {
         console.warn('MindMap render failed', e);

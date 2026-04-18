@@ -72,20 +72,23 @@ const id = 'ipa-' + Math.random().toString(36).slice(2, 9);
   </div>
 </section>
 
-<script is:inline>
+<script>
   const init = () => {
-    document.querySelectorAll('[data-ipa]:not([data-ipa-ready])').forEach((root) => {
+    document.querySelectorAll<HTMLElement>('[data-ipa]:not([data-ipa-ready])').forEach((root) => {
       root.dataset.ipaReady = '1';
-      const out = root.querySelector('[data-ipa-out]');
-      root.querySelectorAll('[data-ipa-sym]').forEach((b) => b.addEventListener('click', () => {
-        out.value += b.getAttribute('data-ipa-sym');
-      }));
-      root.querySelector('[data-ipa-copy]')?.addEventListener('click', () => {
+      const out = root.querySelector<HTMLInputElement>('[data-ipa-out]');
+      if (!out) return;
+      root.querySelectorAll<HTMLButtonElement>('[data-ipa-sym]').forEach((b) =>
+        b.addEventListener('click', () => {
+          out.value += b.getAttribute('data-ipa-sym') ?? '';
+        }),
+      );
+      const copyBtn = root.querySelector<HTMLButtonElement>('[data-ipa-copy]');
+      copyBtn?.addEventListener('click', () => {
         navigator.clipboard?.writeText(out.value).then(() => {
-          const btn = root.querySelector('[data-ipa-copy]');
-          const prev = btn.textContent;
-          btn.textContent = 'Copied';
-          setTimeout(() => (btn.textContent = prev), 1200);
+          const prev = copyBtn.textContent;
+          copyBtn.textContent = 'Copied';
+          setTimeout(() => { copyBtn.textContent = prev; }, 1200);
         });
       });
     });

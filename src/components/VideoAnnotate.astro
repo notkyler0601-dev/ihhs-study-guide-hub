@@ -51,19 +51,19 @@ const fmtTime = (s: number) => {
   </div>
 </figure>
 
-<script is:inline>
+<script>
   const init = () => {
-    document.querySelectorAll('[data-vid]:not([data-vid-ready])').forEach((root) => {
+    document.querySelectorAll<HTMLElement>('[data-vid]:not([data-vid-ready])').forEach((root) => {
       root.dataset.vidReady = '1';
-      const player = root.querySelector('[data-vid-player]');
-      const track = root.querySelector('[data-vid-track]');
+      const player = root.querySelector<HTMLVideoElement>('[data-vid-player]');
+      const track = root.querySelector<HTMLElement>('[data-vid-track]');
       if (!player) return;
 
-      root.querySelectorAll('[data-vid-jump]').forEach((btn) => {
+      root.querySelectorAll<HTMLButtonElement>('[data-vid-jump]').forEach((btn) => {
         btn.addEventListener('click', () => {
           const t = Number(btn.getAttribute('data-vid-jump'));
           player.currentTime = t;
-          player.play();
+          void player.play();
         });
       });
 
@@ -73,7 +73,7 @@ const fmtTime = (s: number) => {
         const dur = player.duration || 0;
         if (!dur) return;
         track.innerHTML = '';
-        root.querySelectorAll('[data-vid-jump]').forEach((btn) => {
+        root.querySelectorAll<HTMLButtonElement>('[data-vid-jump]').forEach((btn) => {
           const t = Number(btn.getAttribute('data-vid-jump'));
           const mark = document.createElement('div');
           mark.style.cssText = `position:absolute; left:${(t/dur)*100}%; top:-2px; width:4px; height:8px; background:#b91c1c; border-radius:1px;`;
