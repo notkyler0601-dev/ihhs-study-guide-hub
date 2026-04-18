@@ -155,23 +155,37 @@ export const signupCloud = async (
     return { ok: false, error: 'Username must be 3-20 chars: lowercase letters, numbers, _ . -' };
   }
 
-  // Pre-check username availability.
+  // Pre-check username availability (profiles.select is public).
   const { data: existing } = await sb.from('profiles').select('id').eq('username', u).maybeSingle();
   if (existing) return { ok: false, error: 'That username is already taken.' };
 
-  const { data: authData, error: authErr } = await sb.auth.signUp({ email, password });
+  // Pass username + display_name via user metadata. A database trigger
+  // (handle_new_user in schema.sql) creates the matching profile row with
+  // elevated privileges, bypassing the RLS that would block a direct insert
+  // when no session exists yet (email-confirmation-on case).
+  const { data: authData, error: authErr } = await sb.auth.signUp({
+    email,
+    password,
+    options: { data: { username: u, display_name: d } },
+  });
   if (authErr || !authData.user) {
     return { ok: false, error: authErr?.message ?? 'Could not create account.' };
   }
 
-  const { data: profile, error: profileErr } = await sb
-    .from('profiles')
-    .insert({ id: authData.user.id, username: u, display_name: d })
-    .select('id, username, display_name, is_admin, created_at')
-    .single();
-
-  if (profileErr || !profile) {
-    return { ok: false, error: profileErr?.message ?? 'Could not save profile.' };
+  // Fetch the profile the trigger just created. Retry briefly in case of
+  // replication lag on self-hosted projects.
+  let profile: { id: string; username: string; display_name: string; is_admin: boolean; created_at: string } | null = null;
+  for (let i = 0; i < 4 && !profile; i++) {
+    const { data } = await sb
+      .from('profiles')
+      .select('id, username, display_name, is_admin, created_at')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+    profile = data ?? null;
+    if (!profile) await new Promise((r) => setTimeout(r, 150));
+  }
+  if (!profile) {
+    return { ok: false, error: 'Account created but profile not found. Refresh and try logging in.' };
   }
 
   const account = profileToAccount(profile, email);
