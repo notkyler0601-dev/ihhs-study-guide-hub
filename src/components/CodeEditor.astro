@@ -35,14 +35,17 @@ const id = 'code-' + Math.random().toString(36).slice(2, 9);
     </div>
     <div
       id={id}
-      class="w-full"
+      class="w-full relative bg-ink-50 dark:bg-ink-950"
       style={`height: ${height};`}
       data-language={language}
       data-readonly={readOnly}
     >
-      <div class="flex items-center justify-center h-full text-ink-400 text-sm">Loading editor...</div>
+      <div class="absolute inset-0 flex items-center justify-center text-ink-400 text-sm">Loading editor...</div>
     </div>
-    <pre id={`${id}-initial`} class="hidden" set:html={initial} />
+    <!-- Initial code held in an inert <script type="text/plain"> tag.
+         Browsers never render content of non-JS script tags, so this is
+         100% guaranteed invisible regardless of any CSS. -->
+    <script id={`${id}-initial`} type="text/plain" set:html={initial}></script>
   </div>
 </figure>
 
