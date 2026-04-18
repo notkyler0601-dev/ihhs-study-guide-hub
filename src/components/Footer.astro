@@ -1,0 +1,18 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-ink-200 dark:border-ink-800">
+  <div class="container-wide py-10 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3 text-sm text-ink-500 dark:text-ink-400">
+      <span class="font-serif font-semibold text-ink-700 dark:text-ink-200">IHHS Study Guide Hub</span>
+      <span class="opacity-50">·</span>
+      <span>Built by students, for students</span>
+    </div>
+    <div class="flex items-center gap-4 text-xs text-ink-500 dark:text-ink-400">
+      <span>© {year}</span>
+      <a href="/about" class="hover:text-accent-700 dark:hover:text-accent-300 transition-colors">About</a>
+      <a href="https://github.com" class="hover:text-accent-700 dark:hover:text-accent-300 transition-colors">Source</a>
+    </div>
+  </div>
+</footer>

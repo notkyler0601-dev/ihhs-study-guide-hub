@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GuideCard from '../../components/GuideCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const all = await getCollection('guides', ({ data }) => !data.draft);
+  const subjects = [...new Set(all.map((g) => g.data.subject))];
+  return subjects.map((s) => ({
+    params: { subject: s.toLowerCase() },
+    props: { subject: s, guides: all.filter((g) => g.data.subject === s) },
+  }));
+}
+
+const { subject, guides } = Astro.props;
+const sorted = [...guides].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout title={subject} description={`Study guides for ${subject}.`}>
+  <section class="container-wide py-12 lg:py-16">
+    <div class="max-w-3xl mb-10 stagger-fade">
+      <div class="flex items-center gap-2 text-xs text-ink-500 mb-3">
+        <a href="/subjects" class="hover:text-accent-700 dark:hover:text-accent-400 transition-colors">Subjects</a>
+        <span class="opacity-40">/</span>
+        <span>{subject}</span>
+      </div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight">
+        <span class="gradient-text">{subject}</span>
+      </h1>
+      <p class="mt-4 text-lg text-ink-600 dark:text-ink-300">{sorted.length} guide{sorted.length === 1 ? '' : 's'}</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {sorted.map((g) => (
+        <GuideCard
+          href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
+          title={g.data.title}
+          description={g.data.description}
+          subject={g.data.subject}
+          difficulty={g.data.difficulty}
+          estimatedTime={g.data.estimatedTime}
+          tags={g.data.tags}
+          date={g.data.date}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

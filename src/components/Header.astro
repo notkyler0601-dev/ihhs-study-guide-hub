@@ -1,0 +1,56 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import UserMenu from './UserMenu.astro';
+const path = Astro.url.pathname;
+const isActive = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+---
+
+<header class="sticky top-0 z-40 glass">
+  <div class="container-wide flex h-16 items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-3 group">
+      <span class="relative inline-flex h-12 w-12 shrink-0 items-center justify-center">
+        <img src="/ihhs-logo.png" alt="IHHS" class="h-full w-full object-contain" />
+      </span>
+      <div class="flex flex-col leading-none">
+        <span class="font-serif text-base font-semibold tracking-tight">IHHS</span>
+        <span class="text-[10px] uppercase tracking-[0.18em] text-ink-500 dark:text-ink-400">Study Guide Hub</span>
+      </div>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-1">
+      <a href="/library" class:list={['px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+        isActive('/library') ? 'text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30' : 'text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50']}>
+        Library
+      </a>
+      <a href="/subjects" class:list={['px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+        isActive('/subjects') ? 'text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30' : 'text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50']}>
+        Subjects
+      </a>
+      <a href="/request" class:list={['px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+        isActive('/request') ? 'text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30' : 'text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50']}>
+        Request
+      </a>
+      <a href="/about" class:list={['px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+        isActive('/about') ? 'text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30' : 'text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50']}>
+        About
+      </a>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <button
+        id="search-trigger"
+        type="button"
+        class="group inline-flex items-center gap-2 rounded-lg border border-ink-200 bg-white/60 px-3 py-1.5 text-sm text-ink-500 transition-all hover:border-accent-400 hover:text-ink-900 dark:border-ink-800 dark:bg-ink-900/60 dark:text-ink-400 dark:hover:border-accent-600 dark:hover:text-ink-50 min-w-[180px]"
+        aria-label="Search guides"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span class="flex-1 text-left">Search guides...</span>
+        <span class="kbd">⌘K</span>
+      </button>
+      <ThemeToggle />
+      <UserMenu />
+    </div>
+  </div>
+</header>

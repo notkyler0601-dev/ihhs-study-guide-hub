@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Create your account" description="Sign up to track your progress, save flashcard reviews, and build streaks.">
+  <section class="container-prose py-16 lg:py-20">
+    <div class="max-w-md mx-auto stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3 text-center">Create account</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight text-balance text-center mb-3">
+        Start your <span class="gradient-text">streak</span>
+      </h1>
+      <p class="text-ink-600 dark:text-ink-300 text-center mb-8">
+        An account saves your flashcard reviews, quiz scores, and reading progress.
+      </p>
+
+      <form id="signup-form" class="surface rounded-2xl p-6 sm:p-8 space-y-5">
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Username <span class="text-accent-700">*</span>
+          </span>
+          <input
+            type="text"
+            name="username"
+            required
+            minlength="3"
+            maxlength="20"
+            pattern="[a-z0-9_.\-]{3,20}"
+            placeholder="kyler.z"
+            autocomplete="username"
+            class="form-input mt-2"
+          />
+          <span class="text-[11px] text-ink-400 mt-1 block">3-20 chars: lowercase letters, numbers, _ . -</span>
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Display name
+          </span>
+          <input
+            type="text"
+            name="displayName"
+            maxlength="40"
+            placeholder="What classmates see (defaults to username)"
+            class="form-input mt-2"
+          />
+        </label>
+
+        <div id="signup-error" class="hidden text-sm text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30 rounded-lg px-4 py-3"></div>
+
+        <button
+          type="submit"
+          class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all"
+        >
+          Create account
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <p class="text-xs text-ink-500 dark:text-ink-400 text-center pt-2">
+          Already have an account on this device? <a href="/login" class="text-accent-700 dark:text-accent-400 hover:underline">Log in</a>
+        </p>
+      </form>
+
+      <div class="mt-6 text-xs text-ink-500 dark:text-ink-400 text-center leading-relaxed">
+        Your account lives on this device only (no servers, no email needed).
+        Cross-device sync coming soon.
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-input {
+    @apply block w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900;
+    @apply px-3 py-2.5 text-sm text-ink-900 dark:text-ink-50;
+    @apply placeholder-ink-400 dark:placeholder-ink-500;
+    @apply focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20;
+    @apply transition-colors;
+  }
+</style>
+
+<script>
+  import { signup, currentUser } from '../lib/auth';
+
+  const setup = () => {
+    if (currentUser()) {
+      window.location.href = '/dashboard';
+      return;
+    }
+    const form = document.getElementById('signup-form') as HTMLFormElement | null;
+    const err = document.getElementById('signup-error');
+    if (!form || !err) return;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      err.classList.add('hidden');
+      const data = new FormData(form);
+      const username = String(data.get('username') ?? '');
+      const displayName = String(data.get('displayName') ?? '');
+      const result = signup(username, displayName);
+      if (!result.ok) {
+        err.textContent = result.error;
+        err.classList.remove('hidden');
+        return;
+      }
+      const redirect = new URLSearchParams(window.location.search).get('next') || '/dashboard';
+      window.location.href = redirect;
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

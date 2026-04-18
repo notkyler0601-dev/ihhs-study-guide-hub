@@ -1,0 +1,155 @@
+---
+interface Question {
+  q: string;
+  choices: string[];
+  answer: number;
+  explain?: string;
+}
+interface Props {
+  title?: string;
+  questions: Question[];
+}
+const { title = 'Self-quiz', questions } = Astro.props;
+const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class:list={['not-prose my-8 surface rounded-2xl p-6 shadow-soft']} data-quiz-root id={id} data-quiz-total={questions.length}>
+  <header class="flex items-center justify-between gap-3 mb-5">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">Q</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+        <p class="text-xs text-ink-500 mt-1"><span data-quiz-progress>0</span> of {questions.length} answered</p>
+      </div>
+    </div>
+    <button data-quiz-reset type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Reset</button>
+  </header>
+
+  <ol class="space-y-6">
+    {questions.map((q, i) => (
+      <li data-question-idx={i} data-answer={q.answer}>
+        <div class="flex items-start gap-3 mb-3">
+          <span class="text-xs font-mono text-ink-400 mt-1">{String(i + 1).padStart(2, '0')}</span>
+          <p class="font-medium text-ink-900 dark:text-ink-100 text-pretty">{q.q}</p>
+        </div>
+        <div class="space-y-2 ml-7">
+          {q.choices.map((c, ci) => (
+            <button
+              type="button"
+              data-choice={ci}
+              class="quiz-choice w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm"
+            >
+              <span class="quiz-marker mt-0.5 inline-flex items-center justify-center h-5 w-5 rounded-full border border-ink-300 dark:border-ink-700 text-[10px] font-mono">{String.fromCharCode(65 + ci)}</span>
+              <span class="flex-1">{c}</span>
+            </button>
+          ))}
+        </div>
+        {q.explain && (
+          <div class="quiz-explain hidden ml-7 mt-3 px-4 py-3 rounded-lg bg-ink-50 dark:bg-ink-900/60 border border-ink-200 dark:border-ink-800 text-sm text-ink-700 dark:text-ink-300">
+            <span class="font-semibold text-accent-700 dark:text-accent-300">Why: </span>{q.explain}
+          </div>
+        )}
+      </li>
+    ))}
+  </ol>
+
+  <div data-quiz-result class="hidden mt-6 p-4 rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-900/40 dark:to-ink-900 border border-accent-200 dark:border-accent-800 text-center">
+    <div class="font-serif text-2xl font-semibold gradient-text" data-quiz-score></div>
+    <div class="text-sm text-ink-600 dark:text-ink-300 mt-1" data-quiz-message></div>
+  </div>
+</section>
+
+<script>
+  import { currentUser } from '../lib/auth';
+  import { recordQuiz } from '../lib/progress';
+
+  const setupOne = (root: HTMLElement) => {
+    const total = Number(root.dataset.quizTotal || '0');
+    const questions = root.querySelectorAll('[data-question-idx]');
+    const progressEl = root.querySelector('[data-quiz-progress]');
+    const resultEl = root.querySelector('[data-quiz-result]');
+    const scoreEl = root.querySelector('[data-quiz-score]');
+    const msgEl = root.querySelector('[data-quiz-message]');
+    const resetBtn = root.querySelector('[data-quiz-reset]');
+    const state = new Map<number, number>();
+
+    const updateResult = () => {
+      progressEl!.textContent = String(state.size);
+      if (state.size !== total) { resultEl!.classList.add('hidden'); return; }
+      let correct = 0;
+      state.forEach((picked, i) => {
+        const q = questions[i] as HTMLElement;
+        if (picked === Number(q.dataset.answer)) correct++;
+      });
+      const pct = Math.round((correct / total) * 100);
+      scoreEl!.textContent = `${correct} / ${total} · ${pct}%`;
+      msgEl!.textContent = pct === 100 ? 'Flawless. You own this material.'
+        : pct >= 80 ? 'Strong grasp, review the misses and you are set.'
+        : pct >= 50 ? 'Solid foundation, revisit the missed concepts.'
+        : 'Re-read the section and try again. You have got this.';
+      resultEl!.classList.remove('hidden');
+
+      // Persist score to user progress (only when signed in)
+      if (currentUser()) {
+        const slugMatch = window.location.pathname.match(/^\/guides\/(.+)$/);
+        const slug = slugMatch ? slugMatch[1] : 'unknown';
+        const title = document.querySelector('h1')?.textContent?.trim() ?? slug;
+        recordQuiz(slug, title, correct, total);
+      }
+    };
+
+    questions.forEach((qElNode, qi) => {
+      const qEl = qElNode as HTMLElement;
+      const correctIdx = Number(qEl.dataset.answer);
+      const choices = qEl.querySelectorAll('.quiz-choice');
+      const explain = qEl.querySelector('.quiz-explain');
+      choices.forEach((btnNode, ci) => {
+        const btn = btnNode as HTMLButtonElement;
+        btn.addEventListener('click', () => {
+          if (state.has(qi)) return;
+          state.set(qi, ci);
+          choices.forEach((bNode, bi) => {
+            const b = bNode as HTMLButtonElement;
+            const marker = b.querySelector('.quiz-marker')!;
+            b.disabled = true;
+            if (bi === correctIdx) {
+              b.classList.add('border-emerald-400', 'bg-emerald-50', 'dark:bg-emerald-900/30');
+              marker.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+            } else if (bi === ci) {
+              b.classList.add('border-rose-400', 'bg-rose-50', 'dark:bg-rose-900/30');
+              marker.classList.add('bg-rose-500', 'text-white', 'border-rose-500');
+            } else {
+              b.classList.add('opacity-50');
+            }
+          });
+          explain?.classList.remove('hidden');
+          updateResult();
+        });
+      });
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      state.clear();
+      questions.forEach((qElNode) => {
+        const qEl = qElNode as HTMLElement;
+        const choices = qEl.querySelectorAll('.quiz-choice');
+        choices.forEach((bNode) => {
+          const b = bNode as HTMLButtonElement;
+          b.disabled = false;
+          b.className = 'quiz-choice w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm';
+          const marker = b.querySelector('.quiz-marker')!;
+          marker.className = 'quiz-marker mt-0.5 inline-flex items-center justify-center h-5 w-5 rounded-full border border-ink-300 dark:border-ink-700 text-[10px] font-mono';
+        });
+        qEl.querySelector('.quiz-explain')?.classList.add('hidden');
+      });
+      progressEl!.textContent = '0';
+      resultEl!.classList.add('hidden');
+    });
+  };
+
+  const setup = () => {
+    document.querySelectorAll('[data-quiz-root]').forEach((el) => setupOne(el as HTMLElement));
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

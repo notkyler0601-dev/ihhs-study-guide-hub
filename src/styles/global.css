@@ -1,0 +1,194 @@
+@import 'katex/dist/katex.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html {
+    @apply scroll-smooth antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-900 dark:bg-ink-950 dark:text-ink-50;
+    @apply font-sans;
+    background-image: radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.018) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .dark body {
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.025) 1px, transparent 0);
+  }
+
+  ::selection {
+    @apply bg-accent-200 text-accent-900 dark:bg-accent-800 dark:text-accent-50;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-accent-500 ring-offset-2 ring-offset-ink-50 dark:ring-offset-ink-950 rounded-sm;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply backdrop-blur-xl bg-white/75 dark:bg-ink-950/75;
+    @apply border-b border-ink-200/60 dark:border-ink-800/60;
+  }
+
+  .surface {
+    @apply bg-white dark:bg-ink-900;
+    @apply border border-ink-200 dark:border-ink-800;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, theme('colors.accent.700'), theme('colors.accent.500') 50%, theme('colors.ink.900'));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .dark .gradient-text {
+    background: linear-gradient(135deg, theme('colors.accent.400'), theme('colors.accent.500') 50%, theme('colors.ink.50'));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .container-prose {
+    @apply mx-auto max-w-3xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-wide {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:-translate-y-0.5 hover:shadow-lift;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+    @apply bg-ink-100 text-ink-700 dark:bg-ink-800 dark:text-ink-200;
+  }
+
+  .badge-accent {
+    @apply bg-accent-100 text-accent-800 dark:bg-accent-900/50 dark:text-accent-200;
+  }
+
+  .kbd {
+    @apply inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-md;
+    @apply text-xs font-mono font-medium;
+    @apply bg-ink-100 text-ink-700 border border-ink-200;
+    @apply dark:bg-ink-800 dark:text-ink-200 dark:border-ink-700;
+  }
+
+  .stagger-fade > * {
+    opacity: 0;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .stagger-fade > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-fade > *:nth-child(2) { animation-delay: 0.12s; }
+  .stagger-fade > *:nth-child(3) { animation-delay: 0.19s; }
+  .stagger-fade > *:nth-child(4) { animation-delay: 0.26s; }
+  .stagger-fade > *:nth-child(5) { animation-delay: 0.33s; }
+  .stagger-fade > *:nth-child(6) { animation-delay: 0.40s; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(161 161 170 / 0.4) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(161 161 170 / 0.4);
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgb(161 161 170 / 0.7);
+  }
+}
+
+/* Prose tweaks for guide content */
+.prose :where(h2):not(:where([class~="not-prose"] *))::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  background: theme('colors.accent.600');
+  border-radius: 2px;
+  margin-bottom: 0.75rem;
+}
+.dark .prose :where(h2):not(:where([class~="not-prose"] *))::before {
+  background: theme('colors.accent.500');
+}
+
+.prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  font-style: normal;
+  border-left-width: 3px;
+  background: theme('colors.accent.50');
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.dark .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  background: rgba(127, 29, 29, 0.25);
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)):not(pre code) {
+  background: theme('colors.accent.100');
+  color: theme('colors.accent.900');
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.875em;
+}
+.prose :where(code):not(:where([class~="not-prose"] *)):not(pre code)::before,
+.prose :where(code):not(:where([class~="not-prose"] *)):not(pre code)::after {
+  content: '';
+}
+.dark .prose :where(code):not(:where([class~="not-prose"] *)):not(pre code) {
+  background: rgba(127, 29, 29, 0.45);
+  color: theme('colors.accent.200');
+}
+
+.prose pre {
+  border: 1px solid theme('colors.ink.200');
+  border-radius: 0.75rem;
+}
+.dark .prose pre {
+  border-color: theme('colors.ink.800');
+}
+
+/* Reading progress bar */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, theme('colors.accent.600'), theme('colors.accent.400'));
+  width: 0%;
+  z-index: 100;
+  transition: width 100ms linear;
+  box-shadow: 0 0 8px theme('colors.accent.500');
+}
+
+/* View transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
+/* Print */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+}

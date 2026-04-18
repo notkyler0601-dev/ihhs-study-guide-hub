@@ -1,0 +1,29 @@
+---
+import { getCollection, render } from 'astro:content';
+import GuideLayout from '../../layouts/GuideLayout.astro';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides', ({ data }) => !data.draft);
+  const sorted = [...guides].sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+  return sorted.map((g, i) => {
+    const slug = g.id.replace(/\.(md|mdx)$/, '');
+    const prev = i > 0 ? sorted[i - 1] : null;
+    const next = i < sorted.length - 1 ? sorted[i + 1] : null;
+    return {
+      params: { slug },
+      props: {
+        guide: g,
+        prev: prev ? { slug: prev.id.replace(/\.(md|mdx)$/, ''), title: prev.data.title } : null,
+        next: next ? { slug: next.id.replace(/\.(md|mdx)$/, ''), title: next.data.title } : null,
+      },
+    };
+  });
+}
+
+const { guide, prev, next } = Astro.props;
+const { Content, headings } = await render(guide);
+---
+
+<GuideLayout guide={guide} headings={headings} prev={prev} next={next}>
+  <Content />
+</GuideLayout>

@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const allGuides = await getCollection('guides', ({ data }) => !data.draft);
+const grouped = new Map<string, typeof allGuides>();
+for (const g of allGuides) {
+  const list = grouped.get(g.data.subject) ?? [];
+  list.push(g);
+  grouped.set(g.data.subject, list);
+}
+const subjects = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b));
+---
+
+<BaseLayout title="Subjects" description="Browse study guides by subject.">
+  <section class="container-wide py-12 lg:py-16">
+    <div class="max-w-3xl mb-10 stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Subjects</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight">
+        By <span class="gradient-text">subject</span>
+      </h1>
+      <p class="mt-4 text-lg text-ink-600 dark:text-ink-300">Pick a topic and dive into every guide we’ve built for it.</p>
+    </div>
+
+    {subjects.length === 0 ? (
+      <div class="surface rounded-2xl p-12 text-center">
+        <div class="font-serif text-xl mb-2">No subjects yet</div>
+        <p class="text-sm text-ink-500">Add your first guide to populate this page.</p>
+      </div>
+    ) : (
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {subjects.map(([subject, guides]) => (
+          <a href={`/subjects/${encodeURIComponent(subject.toLowerCase())}`}
+            class="group surface rounded-2xl p-6 card-hover relative overflow-hidden">
+            <div class="absolute top-0 right-0 h-24 w-24 rounded-full bg-accent-300/30 dark:bg-accent-700/30 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="relative">
+              <h2 class="font-serif text-2xl font-semibold tracking-tight">{subject}</h2>
+              <div class="mt-2 text-sm text-ink-500">{guides.length} guide{guides.length === 1 ? '' : 's'}</div>
+              <div class="mt-4 flex items-center gap-1 text-sm text-accent-700 dark:text-accent-400">
+                Explore
+                <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>

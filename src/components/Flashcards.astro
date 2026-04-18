@@ -1,0 +1,235 @@
+---
+interface Card { front: string; back: string; }
+interface Props {
+  title?: string;
+  cards: Card[];
+}
+const { title = 'Flashcards', cards } = Astro.props;
+const id = 'cards-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl p-6 shadow-soft" id={id} data-cards-root>
+  <header class="flex items-center justify-between gap-3 mb-5">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">F</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+        <p class="text-xs text-ink-500 mt-1">
+          <span data-cards-pos>1</span> / <span data-cards-total>{cards.length}</span>
+          · <span data-cards-mode>browse mode</span>
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 text-xs">
+      <a data-cards-signin href="/signup" class="hidden px-2 py-1 rounded-md text-accent-700 dark:text-accent-400 hover:underline">Sign up to save progress</a>
+      <button data-cards-shuffle type="button" class="px-2 py-1 rounded-md text-ink-500 hover:text-accent-700 dark:hover:text-accent-400 hover:bg-ink-100 dark:hover:bg-ink-800">Shuffle</button>
+    </div>
+  </header>
+
+  <div class="relative" style="perspective: 1200px;">
+    <button
+      type="button"
+      data-cards-flip
+      class="relative block w-full h-56 rounded-2xl transition-transform duration-500"
+      style="transform-style: preserve-3d;"
+      aria-label="Flip card"
+    >
+      <div class="absolute inset-0 rounded-2xl flex items-center justify-center text-center px-8 bg-gradient-to-br from-white to-ink-50 dark:from-ink-900 dark:to-ink-950 border border-ink-200 dark:border-ink-800 shadow-lift" style="backface-visibility: hidden;">
+        <div>
+          <div class="text-[11px] uppercase tracking-[0.18em] text-ink-400 font-semibold mb-3">Front</div>
+          <div data-cards-front class="font-serif text-xl text-ink-900 dark:text-ink-50 text-balance leading-tight">{cards[0]?.front}</div>
+        </div>
+      </div>
+      <div class="absolute inset-0 rounded-2xl flex items-center justify-center text-center px-8 bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-900/50 dark:to-ink-900 border border-accent-200 dark:border-accent-800 shadow-lift" style="backface-visibility: hidden; transform: rotateY(180deg);">
+        <div>
+          <div class="text-[11px] uppercase tracking-[0.18em] text-accent-700 dark:text-accent-300 font-semibold mb-3">Back</div>
+          <div data-cards-back class="text-lg text-ink-900 dark:text-ink-50 text-pretty leading-relaxed">{cards[0]?.back}</div>
+        </div>
+      </div>
+    </button>
+  </div>
+
+  <!-- Browse-mode controls (when signed out) -->
+  <div data-cards-browse class="mt-5 hidden items-center justify-between gap-3" style="display: none;">
+    <button data-cards-prev type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 text-sm hover:border-accent-400 dark:hover:border-accent-600 transition-colors">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+      Prev
+    </button>
+    <span class="text-xs text-ink-500">Click card to flip · ←/→ navigate</span>
+    <button data-cards-next type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 text-sm hover:border-accent-400 dark:hover:border-accent-600 transition-colors">
+      Next
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+
+  <!-- SRS-mode rating buttons (when signed in, after flip) -->
+  <div data-cards-srs class="hidden mt-5">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button data-rate="again" class="rate-btn rate-again">
+        <div class="text-[10px] uppercase tracking-wider font-semibold opacity-70">Again</div>
+        <div class="text-sm font-semibold mt-0.5">&lt;1m</div>
+      </button>
+      <button data-rate="hard" class="rate-btn rate-hard">
+        <div class="text-[10px] uppercase tracking-wider font-semibold opacity-70">Hard</div>
+        <div class="text-sm font-semibold mt-0.5" data-int-hard>1d</div>
+      </button>
+      <button data-rate="good" class="rate-btn rate-good">
+        <div class="text-[10px] uppercase tracking-wider font-semibold opacity-70">Good</div>
+        <div class="text-sm font-semibold mt-0.5" data-int-good>3d</div>
+      </button>
+      <button data-rate="easy" class="rate-btn rate-easy">
+        <div class="text-[10px] uppercase tracking-wider font-semibold opacity-70">Easy</div>
+        <div class="text-sm font-semibold mt-0.5" data-int-easy>7d</div>
+      </button>
+    </div>
+    <p class="mt-3 text-center text-[11px] text-ink-500">
+      Ratings schedule next review · <a href="/review" class="text-accent-700 dark:text-accent-400 hover:underline">view all due cards</a>
+    </p>
+  </div>
+
+  <script type="application/json" data-cards-data set:html={JSON.stringify(cards)} />
+</section>
+
+<style>
+  .rate-btn {
+    @apply rounded-lg px-3 py-2 text-center transition-all border;
+    @apply hover:-translate-y-0.5 hover:shadow-soft active:translate-y-0;
+  }
+  .rate-again { @apply bg-rose-50 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800; }
+  .rate-hard  { @apply bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800; }
+  .rate-good  { @apply bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800; }
+  .rate-easy  { @apply bg-accent-50 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 border-accent-200 dark:border-accent-800; }
+</style>
+
+<script>
+  import { currentUser } from '../lib/auth';
+  import { registerCard, review, loadDeck, type Rating } from '../lib/srs';
+
+  const fmtInterval = (days: number) => {
+    if (days < 1) return '<1d';
+    if (days < 30) return days + 'd';
+    const m = Math.round(days / 30);
+    return m < 12 ? m + 'mo' : Math.round(days / 365) + 'y';
+  };
+
+  const setupCards = (root: HTMLElement) => {
+    const dataEl = root.querySelector('[data-cards-data]');
+    if (!dataEl) return;
+    const cards: { front: string; back: string }[] = JSON.parse(dataEl.textContent || '[]');
+    if (cards.length === 0) return;
+
+    // Slug from URL: /guides/photosynthesis -> "photosynthesis"
+    const slugMatch = window.location.pathname.match(/^\/guides\/(.+)$/);
+    const guideSlug = slugMatch ? slugMatch[1] : 'unknown';
+
+    const flipBtn = root.querySelector('[data-cards-flip]') as HTMLButtonElement;
+    const frontEl = root.querySelector('[data-cards-front]')!;
+    const backEl = root.querySelector('[data-cards-back]')!;
+    const posEl = root.querySelector('[data-cards-pos]')!;
+    const modeEl = root.querySelector('[data-cards-mode]')!;
+    const browse = root.querySelector('[data-cards-browse]') as HTMLElement;
+    const srs = root.querySelector('[data-cards-srs]') as HTMLElement;
+    const signin = root.querySelector('[data-cards-signin]') as HTMLElement;
+
+    const me = currentUser();
+    const mode: 'browse' | 'srs' = me ? 'srs' : 'browse';
+    if (mode === 'srs') {
+      modeEl.textContent = 'review mode';
+      srs.classList.remove('hidden');
+      // Register every card so it enters the deck (idempotent)
+      cards.forEach((c, i) => registerCard(guideSlug, i, c.front, c.back));
+    } else {
+      modeEl.textContent = 'browse mode';
+      browse.style.display = 'flex';
+      signin.classList.remove('hidden');
+    }
+
+    let order = cards.map((_, i) => i);
+    let pos = 0;
+    let flipped = false;
+
+    const render = () => {
+      const c = cards[order[pos]];
+      flipped = false;
+      flipBtn.style.transform = 'rotateY(0deg)';
+      setTimeout(() => {
+        frontEl.textContent = c.front;
+        backEl.textContent = c.back;
+        if (mode === 'srs') updateIntervalLabels(order[pos]);
+      }, 150);
+      posEl.textContent = String(pos + 1);
+      // Hide ratings until flipped (in srs mode)
+      if (mode === 'srs') {
+        srs.classList.remove('opacity-100');
+        srs.classList.add('opacity-50', 'pointer-events-none');
+      }
+    };
+
+    const updateIntervalLabels = (cardIdx: number) => {
+      const deck = loadDeck();
+      const card = deck[`${guideSlug}::${cardIdx}`];
+      if (!card) return;
+      const hardI = card.interval === 0 ? 1 : Math.max(1, Math.round(card.interval * 1.2));
+      const goodI = card.interval === 0 ? 1 : card.interval === 1 ? 3 : Math.round(card.interval * card.ease);
+      const easyI = card.interval === 0 ? 4 : Math.round(card.interval * card.ease * 1.3);
+      (root.querySelector('[data-int-hard]') as HTMLElement).textContent = fmtInterval(hardI);
+      (root.querySelector('[data-int-good]') as HTMLElement).textContent = fmtInterval(goodI);
+      (root.querySelector('[data-int-easy]') as HTMLElement).textContent = fmtInterval(easyI);
+    };
+
+    const flip = () => {
+      flipped = !flipped;
+      flipBtn.style.transform = flipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+      if (mode === 'srs') {
+        if (flipped) {
+          srs.classList.add('opacity-100');
+          srs.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+          srs.classList.remove('opacity-100');
+          srs.classList.add('opacity-50', 'pointer-events-none');
+        }
+      }
+    };
+
+    const next = () => { pos = (pos + 1) % order.length; render(); };
+    const prev = () => { pos = (pos - 1 + order.length) % order.length; render(); };
+
+    flipBtn.addEventListener('click', flip);
+    root.querySelector('[data-cards-next]')?.addEventListener('click', next);
+    root.querySelector('[data-cards-prev]')?.addEventListener('click', prev);
+    root.querySelector('[data-cards-shuffle]')?.addEventListener('click', () => {
+      order = order.slice().sort(() => Math.random() - 0.5);
+      pos = 0; render();
+    });
+
+    if (mode === 'srs') {
+      root.querySelectorAll('[data-rate]').forEach((b) => {
+        b.addEventListener('click', () => {
+          if (!flipped) return;
+          const rating = b.getAttribute('data-rate') as Rating;
+          review(`${guideSlug}::${order[pos]}`, rating);
+          next();
+        });
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!root.isConnected) return;
+      const t = e.target as HTMLElement;
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return;
+      if (e.key === ' ') { e.preventDefault(); flip(); }
+      if (mode === 'browse') {
+        if (e.key === 'ArrowRight') next();
+        if (e.key === 'ArrowLeft') prev();
+      }
+    });
+
+    render();
+  };
+
+  const setup = () => {
+    document.querySelectorAll('[data-cards-root]').forEach((el) => setupCards(el as HTMLElement));
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

@@ -1,0 +1,259 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const guides = await getCollection('guides', ({ data }) => !data.draft);
+const existingSubjects = [...new Set(guides.map((g) => g.data.subject))].sort();
+const suggestedSubjects = [
+  ...existingSubjects,
+  ...['Biology', 'Chemistry', 'Physics', 'Math', 'English', 'History', 'Spanish', 'Computer Science']
+    .filter((s) => !existingSubjects.includes(s)),
+];
+---
+
+<BaseLayout
+  title="Request a guide"
+  description="Tell us what you want to study and we'll build a deep-dive guide for it."
+>
+  <section class="container-prose py-14 lg:py-20">
+    <div class="max-w-2xl mb-10 stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Request</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight text-balance">
+        Need a guide on something? <span class="gradient-text">Tell us.</span>
+      </h1>
+      <p class="mt-4 text-lg text-ink-600 dark:text-ink-300 leading-relaxed text-pretty">
+        Submit a topic and we'll build a full deep-dive guide for it.
+        Include as much detail as you can, the more context you give, the better the guide.
+      </p>
+    </div>
+
+    <form id="request-form" class="surface rounded-2xl p-6 sm:p-8 space-y-6">
+      <div class="grid sm:grid-cols-2 gap-5">
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Subject <span class="text-accent-700">*</span>
+          </span>
+          <select
+            name="subject"
+            required
+            class="form-input mt-2"
+          >
+            <option value="">Pick a subject...</option>
+            {suggestedSubjects.map((s) => <option value={s}>{s}</option>)}
+            <option value="Other">Other (specify in topic)</option>
+          </select>
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            When do you need it?
+          </span>
+          <select name="urgency" class="form-input mt-2">
+            <option value="No rush">No rush, whenever</option>
+            <option value="This month">This month</option>
+            <option value="Next 2 weeks">Next 2 weeks</option>
+            <option value="This week">This week (test soon!)</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+          Topic <span class="text-accent-700">*</span>
+        </span>
+        <input
+          type="text"
+          name="topic"
+          required
+          maxlength="120"
+          placeholder="e.g. Mitosis vs meiosis, derivatives, World War I causes"
+          class="form-input mt-2"
+        />
+      </label>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+          What do you want to understand? <span class="text-accent-700">*</span>
+        </span>
+        <textarea
+          name="goal"
+          required
+          rows="4"
+          maxlength="800"
+          placeholder="What's confusing? What does the test cover? What have you tried? The more specific, the better the guide."
+          class="form-input mt-2 resize-y"
+        ></textarea>
+        <span class="text-[11px] text-ink-400 mt-1 block"><span data-counter="goal">0</span> / 800</span>
+      </label>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+          Source material <span class="text-ink-400 font-normal normal-case tracking-normal">(optional)</span>
+        </span>
+        <textarea
+          name="sources"
+          rows="3"
+          maxlength="500"
+          placeholder="Textbook chapter, lecture notes, links, anything we should reference."
+          class="form-input mt-2 resize-y"
+        ></textarea>
+      </label>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Your name <span class="text-ink-400 font-normal normal-case tracking-normal">(optional)</span>
+          </span>
+          <input
+            type="text"
+            name="name"
+            maxlength="60"
+            placeholder="So we can credit you"
+            class="form-input mt-2"
+          />
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Email <span class="text-ink-400 font-normal normal-case tracking-normal">(optional)</span>
+          </span>
+          <input
+            type="email"
+            name="email"
+            maxlength="120"
+            placeholder="So we can ping you when it's ready"
+            class="form-input mt-2"
+          />
+        </label>
+      </div>
+
+      <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-ink-200 dark:border-ink-800">
+        <p class="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
+          Submitting opens your email app with the request pre-filled. Just hit send.
+        </p>
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all whitespace-nowrap"
+        >
+          Submit request
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+
+    <div id="request-success" class="hidden surface rounded-2xl p-10 text-center stagger-fade">
+      <div class="inline-flex items-center justify-center h-14 w-14 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-2xl mb-5">
+        ✓
+      </div>
+      <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Request opened in your email</h2>
+      <p class="text-ink-600 dark:text-ink-300 max-w-md mx-auto mb-6">
+        Hit send in your email app and it lands in our inbox. We'll start on it soon.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="/library" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">
+          Browse other guides
+        </a>
+        <button
+          type="button"
+          id="request-another"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all"
+        >
+          Submit another
+        </button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-input {
+    @apply block w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900;
+    @apply px-3 py-2.5 text-sm text-ink-900 dark:text-ink-50;
+    @apply placeholder-ink-400 dark:placeholder-ink-500;
+    @apply focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20;
+    @apply transition-colors;
+  }
+</style>
+
+<script is:inline>
+  // ─── Submission config ─────────────────────────────────────────────
+  // Default: mailto (opens user's email app, free, no setup)
+  // Upgrade: drop in a Formspree or Web3Forms endpoint to get real form submissions
+  //   - Formspree: 'https://formspree.io/f/YOUR_FORM_ID'
+  //   - Web3Forms: set FORM_ENDPOINT to '' and add a hidden access_key input
+  const FORM_ENDPOINT = ''; // empty = use mailto fallback
+  // Email is split + reassembled to make it slightly harder for scrapers
+  const TO_EMAIL = ['notkyler0601', 'gmail.com'].join('@');
+  // ───────────────────────────────────────────────────────────────────
+
+  const setup = () => {
+    const form = document.getElementById('request-form');
+    const success = document.getElementById('request-success');
+    const again = document.getElementById('request-another');
+    if (!form) return;
+
+    // Live char counter for goal textarea
+    document.querySelectorAll('[data-counter]').forEach((el) => {
+      const name = el.getAttribute('data-counter');
+      const field = form.querySelector(`[name="${name}"]`);
+      if (!field) return;
+      const update = () => { el.textContent = field.value.length; };
+      field.addEventListener('input', update);
+      update();
+    });
+
+    const reset = () => {
+      form.reset();
+      form.classList.remove('hidden');
+      success.classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelectorAll('[data-counter]').forEach((el) => { el.textContent = '0'; });
+    };
+    again?.addEventListener('click', reset);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+
+      const subject = `Study guide request: ${data.topic}`;
+      const body = [
+        `Subject: ${data.subject}`,
+        `Topic: ${data.topic}`,
+        `Urgency: ${data.urgency || 'No rush'}`,
+        '',
+        'What they want to understand:',
+        data.goal,
+        '',
+        data.sources ? `Source material:\n${data.sources}\n` : '',
+        data.name ? `From: ${data.name}` : '',
+        data.email ? `Reply to: ${data.email}` : '',
+      ].filter(Boolean).join('\n');
+
+      if (FORM_ENDPOINT) {
+        // Real backend submission
+        try {
+          const res = await fetch(FORM_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ ...data, subject, body }),
+          });
+          if (!res.ok) throw new Error('submit failed');
+        } catch (err) {
+          alert('Submission failed. Falling back to email.');
+          window.location.href = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+      } else {
+        // mailto fallback
+        window.location.href = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }
+
+      form.classList.add('hidden');
+      success.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

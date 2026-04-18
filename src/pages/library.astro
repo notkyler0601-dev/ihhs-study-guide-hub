@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GuideCard from '../components/GuideCard.astro';
+import { getCollection } from 'astro:content';
+
+const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const subjects = [...new Set(allGuides.map((g) => g.data.subject))].sort();
+---
+
+<BaseLayout title="Library" description="Every study guide in the IHHS Hub.">
+  <section class="container-wide py-12 lg:py-16">
+    <div class="max-w-3xl mb-10 stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Library</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight text-balance">
+        Every guide in <span class="gradient-text">one place</span>
+      </h1>
+      <p class="mt-4 text-lg text-ink-600 dark:text-ink-300 leading-relaxed">
+        {allGuides.length} guide{allGuides.length === 1 ? '' : 's'} across {subjects.length} subject{subjects.length === 1 ? '' : 's'}. Filter, search, dive in.
+      </p>
+    </div>
+
+    <div class="surface rounded-2xl p-5 mb-8">
+      <div class="flex flex-col gap-4">
+        <div>
+          <input
+            id="lib-search"
+            type="text"
+            placeholder="Search by title, topic, or tag..."
+            class="w-full bg-transparent border-b border-ink-200 dark:border-ink-800 px-1 py-2 text-base placeholder-ink-400 focus:outline-none focus:border-accent-500"
+          />
+        </div>
+        <div class="flex flex-wrap gap-3 items-center text-sm">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mr-1">Subject:</span>
+          <button data-filter-subject="all" class="filter-btn active px-3 py-1 rounded-full text-xs font-medium transition-colors">All</button>
+          {subjects.map((s) => (
+            <button data-filter-subject={s} class="filter-btn px-3 py-1 rounded-full text-xs font-medium transition-colors">{s}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div id="lib-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {allGuides.map((g) => (
+        <div data-guide
+          data-subject={g.data.subject}
+          data-search={(g.data.title + ' ' + g.data.description + ' ' + g.data.tags.join(' ')).toLowerCase()}
+        >
+          <GuideCard
+            href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
+            title={g.data.title}
+            description={g.data.description}
+            subject={g.data.subject}
+            estimatedTime={g.data.estimatedTime}
+            tags={g.data.tags}
+            date={g.data.date}
+          />
+        </div>
+      ))}
+    </div>
+
+    <div id="lib-empty" class="hidden surface rounded-2xl p-12 text-center mt-6">
+      <div class="font-serif text-xl mb-1">No guides match these filters</div>
+      <p class="text-sm text-ink-500">Try clearing some filters above.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .filter-btn {
+    @apply bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300 hover:bg-ink-200 dark:hover:bg-ink-700;
+  }
+  .filter-btn.active {
+    @apply bg-accent-700 text-white dark:bg-accent-600;
+  }
+</style>
+
+<script is:inline>
+  const setup = () => {
+    const search = document.getElementById('lib-search');
+    if (!search) return;
+    let activeSubject = 'all';
+    let query = '';
+
+    const apply = () => {
+      const cards = document.querySelectorAll('[data-guide]');
+      let visible = 0;
+      cards.forEach((c) => {
+        const subjectMatch = activeSubject === 'all' || c.dataset.subject === activeSubject;
+        const queryMatch = !query || c.dataset.search.includes(query);
+        const show = subjectMatch && queryMatch;
+        c.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      document.getElementById('lib-empty').classList.toggle('hidden', visible !== 0);
+    };
+
+    document.querySelectorAll('[data-filter-subject]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeSubject = btn.dataset.filterSubject;
+        apply();
+      });
+    });
+    search.addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); apply(); });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

@@ -1,0 +1,215 @@
+---
+import { getCollection } from 'astro:content';
+
+// Build a searchable index. We strip MDX/markdown syntax for cleaner snippets.
+const stripMd = (s: string) => s
+  .replace(/^---[\s\S]*?---/m, '')                    // frontmatter
+  .replace(/^import\s.*$/gm, '')                      // mdx imports
+  .replace(/<[^>]+>/g, ' ')                            // jsx/html tags
+  .replace(/```[\s\S]*?```/g, ' ')                    // code blocks
+  .replace(/!\[.*?\]\(.*?\)/g, ' ')                   // images
+  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')            // links -> text
+  .replace(/[#>*_~`]/g, ' ')                          // markdown chars
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const allGuides = await getCollection('guides', ({ data }) => !data.draft);
+const index = allGuides.map((g) => ({
+  slug: g.id.replace(/\.(md|mdx)$/, ''),
+  title: g.data.title,
+  subject: g.data.subject,
+  description: g.data.description,
+  tags: g.data.tags,
+  body: stripMd(g.body ?? ''),
+}));
+---
+
+<div
+  id="cmdk-root"
+  class="fixed inset-0 z-50 hidden items-start justify-center p-4 pt-[15vh]"
+  aria-hidden="true"
+>
+  <div id="cmdk-backdrop" class="absolute inset-0 bg-ink-950/60 backdrop-blur-sm"></div>
+  <div class="relative w-full max-w-2xl glass rounded-2xl shadow-lift overflow-hidden animate-fade-up border border-ink-200/60 dark:border-ink-800/60">
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-ink-200/60 dark:border-ink-800/60">
+      <svg class="h-4 w-4 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        id="cmdk-input"
+        type="text"
+        placeholder="Search guides, topics, or any text inside any guide..."
+        class="flex-1 bg-transparent text-sm placeholder-ink-400 focus:outline-none"
+        autocomplete="off"
+      />
+      <kbd class="kbd">esc</kbd>
+    </div>
+    <div id="cmdk-results" class="max-h-[55vh] overflow-y-auto scrollbar-thin p-2"></div>
+    <div class="flex items-center justify-between gap-3 px-4 py-2 border-t border-ink-200/60 dark:border-ink-800/60 text-xs text-ink-500">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1"><kbd class="kbd">↑</kbd><kbd class="kbd">↓</kbd> navigate</span>
+        <span class="flex items-center gap-1"><kbd class="kbd">↵</kbd> open</span>
+      </div>
+      <span class="hidden sm:inline">Searches titles, descriptions, and full content</span>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ index }}>
+  const root = document.getElementById('cmdk-root');
+  const input = document.getElementById('cmdk-input');
+  const results = document.getElementById('cmdk-results');
+  const backdrop = document.getElementById('cmdk-backdrop');
+  let active = 0;
+
+  // Quick action shortcuts available even when search box is empty.
+  const QUICK_ACTIONS = [
+    { kind: 'action', label: 'Today\'s reviews',  href: '/review',    icon: 'M2 12h6l3-9 4 18 3-9h4', sub: 'Spaced repetition' },
+    { kind: 'action', label: 'Dashboard',          href: '/dashboard', icon: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z', sub: 'Stats & streak' },
+    { kind: 'action', label: 'Library',            href: '/library',   icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z', sub: 'All guides' },
+    { kind: 'action', label: 'Request a guide',    href: '/request',   icon: 'M12 5v14M5 12h14', sub: 'Submit a topic' },
+  ];
+
+  const open = () => {
+    root.classList.remove('hidden');
+    root.classList.add('flex');
+    setTimeout(() => input.focus(), 10);
+    render('');
+  };
+  const close = () => {
+    root.classList.add('hidden');
+    root.classList.remove('flex');
+    input.value = '';
+  };
+
+  const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const highlight = (text, query) => {
+    if (!query) return escapeHtml(text);
+    const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return escapeHtml(text).replace(re, '<mark class="bg-accent-200 dark:bg-accent-800/60 text-accent-900 dark:text-accent-100 rounded px-0.5">$1</mark>');
+  };
+
+  const snippet = (body, query) => {
+    if (!query) return '';
+    const lower = body.toLowerCase();
+    const i = lower.indexOf(query.toLowerCase());
+    if (i < 0) return '';
+    const start = Math.max(0, i - 40);
+    const end = Math.min(body.length, i + query.length + 60);
+    return (start > 0 ? '...' : '') + body.slice(start, end) + (end < body.length ? '...' : '');
+  };
+
+  const score = (item, q) => {
+    if (!q) return 0;
+    const ql = q.toLowerCase();
+    let s = 0;
+    if (item.title.toLowerCase().includes(ql)) s += 10;
+    if (item.subject.toLowerCase().includes(ql)) s += 6;
+    if (item.description.toLowerCase().includes(ql)) s += 4;
+    if (item.tags.some((t) => t.toLowerCase().includes(ql))) s += 3;
+    if (item.body.toLowerCase().includes(ql)) s += 2;
+    return s;
+  };
+
+  const render = (q) => {
+    active = 0;
+    const query = q.trim();
+
+    if (!query) {
+      // Show quick actions + recent guides
+      results.innerHTML = `
+        <div class="px-2 py-1 text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-400">Actions</div>
+        ${QUICK_ACTIONS.map((a, i) => actionRow(a, i, i === 0)).join('')}
+        <div class="px-2 py-1 mt-2 text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-400">All guides</div>
+        ${index.slice(0, 8).map((g, i) => guideRow(g, '', i + QUICK_ACTIONS.length, false)).join('')}
+      `;
+      return;
+    }
+
+    const matches = index
+      .map((g) => ({ ...g, _score: score(g, query) }))
+      .filter((g) => g._score > 0)
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 12);
+
+    if (matches.length === 0) {
+      results.innerHTML = `<div class="px-4 py-10 text-center text-sm text-ink-400">No guides match "<span class="font-medium">${escapeHtml(query)}</span>".</div>`;
+      return;
+    }
+
+    results.innerHTML = matches.map((g, i) => guideRow(g, query, i, i === 0)).join('');
+  };
+
+  const actionRow = (a, i, isActive) => `
+    <a href="${a.href}" data-idx="${i}" data-href="${a.href}"
+       class="cmdk-row block px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-accent-50 dark:bg-accent-900/30' : 'hover:bg-ink-100 dark:hover:bg-ink-800/60'}">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center justify-center h-8 w-8 rounded-md bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="${a.icon}"/></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <div class="font-medium text-sm">${a.label}</div>
+          <div class="text-xs text-ink-500 truncate">${a.sub}</div>
+        </div>
+      </div>
+    </a>
+  `;
+
+  const guideRow = (g, query, i, isActive) => {
+    const titleHtml = highlight(g.title, query);
+    const descHtml = highlight(g.description, query);
+    const snip = snippet(g.body, query);
+    return `
+      <a href="/guides/${g.slug}" data-idx="${i}" data-href="/guides/${g.slug}"
+         class="cmdk-row block px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-accent-50 dark:bg-accent-900/30' : 'hover:bg-ink-100 dark:hover:bg-ink-800/60'}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="font-medium text-sm truncate">${titleHtml}</div>
+            <div class="text-xs text-ink-500 truncate">${descHtml}</div>
+            ${snip ? `<div class="mt-1 text-xs text-ink-500 line-clamp-2">${highlight(snip, query)}</div>` : ''}
+          </div>
+          <span class="badge badge-accent shrink-0">${escapeHtml(g.subject)}</span>
+        </div>
+      </a>
+    `;
+  };
+
+  const updateActive = () => {
+    const items = results.querySelectorAll('.cmdk-row');
+    items.forEach((el, i) => {
+      el.classList.toggle('bg-accent-50', i === active);
+      el.classList.toggle('dark:bg-accent-900/30', i === active);
+      el.classList.toggle('hover:bg-ink-100', i !== active);
+      el.classList.toggle('dark:hover:bg-ink-800/60', i !== active);
+    });
+    items[active]?.scrollIntoView({ block: 'nearest' });
+  };
+
+  document.addEventListener('keydown', (e) => {
+    const isOpen = !root.classList.contains('hidden');
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); isOpen ? close() : open(); return; }
+    if (!isOpen) return;
+    const items = results.querySelectorAll('.cmdk-row');
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); updateActive(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); updateActive(); }
+    if (e.key === 'Enter' && items[active]) {
+      e.preventDefault();
+      const href = items[active].getAttribute('data-href');
+      if (href) window.location.href = href;
+    }
+  });
+
+  const bindTrigger = () => {
+    const t = document.getElementById('search-trigger');
+    if (!t || t.dataset.cmdkBound) return;
+    t.dataset.cmdkBound = '1';
+    t.addEventListener('click', open);
+  };
+  bindTrigger();
+  document.addEventListener('astro:after-swap', bindTrigger);
+
+  backdrop?.addEventListener('click', close);
+  input?.addEventListener('input', (e) => render(e.target.value));
+</script>

@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About" description="About the IHHS Study Guide Hub.">
+  <section class="container-prose py-16 lg:py-20">
+    <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">About</div>
+    <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight mb-6">
+      A study tool that <span class="gradient-text">actually helps</span>
+    </h1>
+
+    <div class="prose dark:prose-invert">
+      <p>
+        The IHHS Study Guide Hub is a free, ad-free, no-account-needed library of deep-dive study guides built
+        by IHHS students for IHHS students. Every guide is structured the way memory actually works:
+        learning objectives, then concepts, then worked examples, then active recall.
+      </p>
+
+      <h2>What every guide includes</h2>
+      <ul>
+        <li><strong>Learning objectives</strong> so you know what mastery looks like</li>
+        <li><strong>A glossary</strong> of every term you'll meet</li>
+        <li><strong>Sectioned core concepts</strong> with worked examples</li>
+        <li><strong>Diagrams and equations</strong> rendered beautifully</li>
+        <li><strong>Practice questions</strong> with collapsible answers</li>
+        <li><strong>An interactive self-quiz</strong> with instant explanations</li>
+        <li><strong>A flashcard deck</strong> with shuffle and progress tracking</li>
+        <li><strong>Mnemonics, common pitfalls, and a one-page cheat sheet</strong></li>
+      </ul>
+
+      <h2>How to use it</h2>
+      <ol>
+        <li>Browse the library or search with <span class="kbd">⌘K</span> / <span class="kbd">Ctrl K</span></li>
+        <li>Read the deep dive end-to-end</li>
+        <li>Take the self-quiz</li>
+        <li>Drill the flashcards until they're effortless</li>
+        <li>Print the cheat sheet for the night before</li>
+      </ol>
+
+      <h2>How to contribute</h2>
+      <p>
+        Found something wrong? Want to add a guide? Talk to the maintainer.
+        Guides are written as markdown files, so anyone who can write a Google Doc can write one.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

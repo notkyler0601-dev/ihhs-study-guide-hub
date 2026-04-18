@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Dashboard" description="Your learning dashboard.">
+  <!-- Auth gate: rendered first, replaced by JS once user state is loaded -->
+  <div id="auth-gate" class="container-prose py-20 text-center">
+    <div class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-xl mb-4">⏳</div>
+    <p class="text-ink-500">Loading...</p>
+  </div>
+
+  <div id="auth-required" class="hidden container-prose py-20 text-center">
+    <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight mb-3">Sign up to track progress</h1>
+    <p class="text-ink-600 dark:text-ink-300 mb-6">Your dashboard, streak, and flashcard reviews live in your account.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="/signup?next=/dashboard" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">Create account</a>
+      <a href="/login?next=/dashboard" class="inline-flex items-center px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">Log in</a>
+    </div>
+  </div>
+
+  <div id="dashboard" class="hidden container-wide py-10 lg:py-14">
+    <!-- Hero -->
+    <header class="max-w-3xl mb-10 stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Dashboard</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight">
+        Hi, <span data-display-name class="gradient-text">there</span>.
+      </h1>
+      <p class="mt-3 text-lg text-ink-600 dark:text-ink-300">Here's where you are.</p>
+    </header>
+
+    <!-- Stat tiles -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <div class="surface rounded-2xl p-5">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold">Guides opened</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span data-stat="started" class="font-serif text-4xl font-semibold gradient-text">0</span>
+        </div>
+      </div>
+      <div class="surface rounded-2xl p-5">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold">Quizzes taken</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span data-stat="quizzes" class="font-serif text-4xl font-semibold gradient-text">0</span>
+        </div>
+      </div>
+      <div class="surface rounded-2xl p-5 col-span-2 lg:col-span-1">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold">Quiz avg</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span data-stat="avg" class="font-serif text-4xl font-semibold gradient-text">0</span>
+          <span class="text-sm text-ink-500">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent guides -->
+    <div class="surface rounded-2xl p-6">
+      <h2 class="font-serif text-lg font-semibold mb-4">Continue reading</h2>
+      <ul id="recent-guides" class="grid sm:grid-cols-2 gap-3 text-sm">
+        <li class="text-ink-500 italic">No guides opened yet. <a href="/library" class="text-accent-700 dark:text-accent-400 hover:underline">Browse the library</a>.</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { currentUser } from '../lib/auth';
+  import { computeStats } from '../lib/progress';
+
+  const setup = () => {
+    const gate = document.getElementById('auth-gate')!;
+    const required = document.getElementById('auth-required')!;
+    const dash = document.getElementById('dashboard')!;
+    gate.classList.add('hidden');
+
+    const u = currentUser();
+    if (!u) {
+      required.classList.remove('hidden');
+      return;
+    }
+    dash.classList.remove('hidden');
+
+    // Hero
+    const nameEl = document.querySelector('[data-display-name]');
+    if (nameEl) nameEl.textContent = u.displayName;
+
+    // Stats
+    const setStat = (k: string, v: string | number) => {
+      document.querySelectorAll(`[data-stat="${k}"]`).forEach((el) => { el.textContent = String(v); });
+    };
+    const stats = computeStats();
+    setStat('started', stats.guidesStarted);
+    setStat('quizzes', stats.quizzesTaken);
+    setStat('avg', stats.averageScore);
+
+    // Recent guides
+    const recentEl = document.getElementById('recent-guides')!;
+    if (stats.recentGuides.length > 0) {
+      recentEl.innerHTML = stats.recentGuides.map((g) => `
+        <li>
+          <a href="/guides/${g.slug}" class="block surface rounded-xl p-3 hover:border-accent-400 dark:hover:border-accent-600 transition-colors group">
+            <div class="font-medium text-ink-900 dark:text-ink-100 group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">${g.title}</div>
+            <div class="text-xs text-ink-500 mt-0.5">${g.subject} · ${g.visits} visit${g.visits === 1 ? '' : 's'}</div>
+          </a>
+        </li>
+      `).join('');
+    }
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

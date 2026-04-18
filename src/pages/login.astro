@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Log in" description="Log back in to your IHHS Study Guide Hub account.">
+  <section class="container-prose py-16 lg:py-20">
+    <div class="max-w-md mx-auto stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3 text-center">Log in</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight text-balance text-center mb-3">
+        Welcome <span class="gradient-text">back</span>
+      </h1>
+      <p class="text-ink-600 dark:text-ink-300 text-center mb-8">
+        Pick up where you left off.
+      </p>
+
+      <form id="login-form" class="surface rounded-2xl p-6 sm:p-8 space-y-5">
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Username
+          </span>
+          <input
+            type="text"
+            name="username"
+            required
+            minlength="3"
+            maxlength="20"
+            placeholder="Your username"
+            autocomplete="username"
+            class="form-input mt-2"
+          />
+        </label>
+
+        <div id="login-error" class="hidden text-sm text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30 rounded-lg px-4 py-3"></div>
+
+        <div id="known-accounts" class="hidden">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Accounts on this device
+          </span>
+          <div id="known-accounts-list" class="mt-2 flex flex-wrap gap-2"></div>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all"
+        >
+          Log in
+        </button>
+
+        <p class="text-xs text-ink-500 dark:text-ink-400 text-center pt-2">
+          New here? <a href="/signup" class="text-accent-700 dark:text-accent-400 hover:underline">Create an account</a>
+        </p>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-input {
+    @apply block w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900;
+    @apply px-3 py-2.5 text-sm text-ink-900 dark:text-ink-50;
+    @apply placeholder-ink-400 dark:placeholder-ink-500;
+    @apply focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20;
+    @apply transition-colors;
+  }
+</style>
+
+<script>
+  import { login, listAccounts, currentUser } from '../lib/auth';
+
+  const setup = () => {
+    if (currentUser()) {
+      window.location.href = '/dashboard';
+      return;
+    }
+    const form = document.getElementById('login-form') as HTMLFormElement | null;
+    const err = document.getElementById('login-error');
+    const known = document.getElementById('known-accounts');
+    const list = document.getElementById('known-accounts-list');
+    if (!form || !err || !known || !list) return;
+
+    const accounts = listAccounts();
+    if (accounts.length > 0) {
+      known.classList.remove('hidden');
+      list.innerHTML = accounts.map((a) =>
+        `<button type="button" data-username="${a.username}" class="px-3 py-1.5 rounded-lg surface text-xs hover:border-accent-400 dark:hover:border-accent-600 transition-colors"><span class="font-medium">${a.displayName}</span> <span class="text-ink-400">@${a.username}</span></button>`
+      ).join('');
+      list.querySelectorAll('[data-username]').forEach((b) => {
+        b.addEventListener('click', () => {
+          const u = b.getAttribute('data-username') ?? '';
+          (form.elements.namedItem('username') as HTMLInputElement).value = u;
+          form.requestSubmit();
+        });
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      err.classList.add('hidden');
+      const data = new FormData(form);
+      const username = String(data.get('username') ?? '');
+      const result = login(username);
+      if (!result.ok) {
+        err.textContent = result.error;
+        err.classList.remove('hidden');
+        return;
+      }
+      const redirect = new URLSearchParams(window.location.search).get('next') || '/dashboard';
+      window.location.href = redirect;
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

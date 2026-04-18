@@ -1,0 +1,13 @@
+---
+interface Props { term: string; }
+const { term } = Astro.props;
+---
+
+<span class="not-prose group relative inline-block">
+  <span class="border-b-2 border-dotted border-accent-400 cursor-help font-medium text-accent-800 dark:text-accent-300">
+    {term}
+  </span>
+  <span class="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 px-3 py-2 rounded-lg surface shadow-lift text-xs text-ink-700 dark:text-ink-200 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+    <slot />
+  </span>
+</span>

@@ -1,0 +1,138 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import ReadingProgress from '../components/ReadingProgress.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  guide: CollectionEntry<'guides'>;
+  headings: { depth: number; slug: string; text: string }[];
+  prev?: { slug: string; title: string } | null;
+  next?: { slug: string; title: string } | null;
+}
+const { guide, headings, prev, next } = Astro.props;
+const { title, description, subject, estimatedTime, date, updated, tags, authors } = guide.data;
+
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<BaseLayout title={title} description={description} showAurora={false}>
+  <ReadingProgress />
+
+  <article class="container-wide py-10 lg:py-14">
+    <header class="max-w-3xl mb-10 stagger-fade">
+      <div class="flex items-center gap-2 mb-5 text-xs text-ink-500">
+        <a href="/library" class="hover:text-accent-700 dark:hover:text-accent-400 transition-colors">Library</a>
+        <span class="opacity-40">/</span>
+        <a href={`/subjects/${encodeURIComponent(subject.toLowerCase())}`} class="hover:text-accent-700 dark:hover:text-accent-400 transition-colors">{subject}</a>
+      </div>
+
+      <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05] text-balance gradient-text" data-guide-title>
+        {title}
+      </h1>
+      <meta data-guide-meta data-guide-slug={guide.id.replace(/\.(md|mdx)$/, '')} data-guide-subject={subject} />
+
+      <p class="mt-5 text-lg text-ink-600 dark:text-ink-300 leading-relaxed text-pretty max-w-2xl">
+        {description}
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center gap-2.5">
+        <span class="badge badge-accent">{subject}</span>
+        <span class="badge">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          {estimatedTime} min
+        </span>
+        {tags.map((t) => <span class="badge">#{t}</span>)}
+      </div>
+
+      <div class="mt-5 text-xs text-ink-500 dark:text-ink-400 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <span>By {authors.join(', ')}</span>
+        <span>·</span>
+        <span>Published {fmt(date)}</span>
+        {updated && <><span>·</span><span>Updated {fmt(updated)}</span></>}
+      </div>
+    </header>
+
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_240px] gap-x-12 gap-y-8">
+      <div class="prose dark:prose-invert max-w-3xl animate-fade-up">
+        <slot />
+
+        <hr class="my-12 border-ink-200 dark:border-ink-800" />
+
+        <div class="not-prose flex items-center justify-between gap-4">
+          {prev ? (
+            <a href={`/guides/${prev.slug}`} class="group flex-1 surface rounded-xl p-4 card-hover">
+              <div class="text-xs text-ink-500 mb-1">← Previous</div>
+              <div class="font-serif font-semibold text-ink-900 dark:text-ink-100 group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">{prev.title}</div>
+            </a>
+          ) : <div class="flex-1"></div>}
+          {next ? (
+            <a href={`/guides/${next.slug}`} class="group flex-1 surface rounded-xl p-4 text-right card-hover">
+              <div class="text-xs text-ink-500 mb-1">Next →</div>
+              <div class="font-serif font-semibold text-ink-900 dark:text-ink-100 group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">{next.title}</div>
+            </a>
+          ) : <div class="flex-1"></div>}
+        </div>
+      </div>
+
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 space-y-6">
+          <TableOfContents headings={headings} />
+          <button
+            type="button"
+            onclick="window.print()"
+            class="no-print w-full inline-flex items-center justify-center gap-2 rounded-lg border border-ink-200 dark:border-ink-800 px-3 py-2 text-xs text-ink-600 dark:text-ink-300 hover:border-accent-400 dark:hover:border-accent-600 transition-colors"
+          >
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/>
+            </svg>
+            Print / Save as PDF
+          </button>
+        </div>
+      </aside>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  import mermaid from 'mermaid';
+  import { currentUser } from '../lib/auth';
+  import { trackGuideOpen } from '../lib/progress';
+
+  const trackOpen = () => {
+    if (!currentUser()) return;
+    const meta = document.querySelector('[data-guide-meta]') as HTMLElement | null;
+    const titleEl = document.querySelector('[data-guide-title]');
+    if (!meta || !titleEl) return;
+    const slug = meta.dataset.guideSlug ?? '';
+    const subject = meta.dataset.guideSubject ?? '';
+    const title = titleEl.textContent?.trim() ?? slug;
+    if (slug) trackGuideOpen(slug, title, subject);
+  };
+  trackOpen();
+  document.addEventListener('astro:after-swap', trackOpen);
+  const init = async () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    mermaid.initialize({ startOnLoad: false, theme: isDark ? 'dark' : 'default', securityLevel: 'loose', fontFamily: 'Inter, sans-serif' });
+    // Shiki adds data-language to the <pre>; find mermaid blocks that way (and also the legacy class-based selector).
+    const blocks = document.querySelectorAll('pre[data-language="mermaid"], pre > code.language-mermaid');
+    for (const [i, el] of Array.from(blocks).entries()) {
+      const pre = el.tagName === 'PRE' ? el : el.parentElement;
+      const code = pre?.textContent ?? '';
+      const id = `mermaid-${Date.now()}-${i}`;
+      try {
+        const { svg } = await mermaid.render(id, code);
+        const wrap = document.createElement('div');
+        wrap.className = 'mermaid-rendered my-6 flex justify-center surface rounded-xl p-6 overflow-x-auto';
+        wrap.innerHTML = svg;
+        pre?.replaceWith(wrap);
+      } catch (e) {
+        console.warn('Mermaid render failed', e);
+      }
+    }
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

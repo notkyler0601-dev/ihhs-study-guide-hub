@@ -1,0 +1,164 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GuideCard from '../components/GuideCard.astro';
+import { getCollection } from 'astro:content';
+
+const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const recentGuides = allGuides.slice(0, 6);
+const subjects = [...new Set(allGuides.map((g) => g.data.subject))];
+
+const stats = {
+  guides: allGuides.length,
+  subjects: subjects.length,
+  minutes: allGuides.reduce((sum, g) => sum + g.data.estimatedTime, 0),
+};
+---
+
+<BaseLayout title="IHHS Study Guide Hub">
+  <section class="relative overflow-hidden">
+    <div class="container-wide pt-16 lg:pt-24 pb-16 lg:pb-24">
+      <div class="max-w-3xl stagger-fade">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full surface text-xs font-medium text-ink-600 dark:text-ink-300 shadow-soft">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-accent-500 opacity-75 animate-ping"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-accent-600"></span>
+          </span>
+          Built by IHHS students, for IHHS students
+        </div>
+
+        <h1 class="mt-6 font-serif text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[0.95] text-balance">
+          Study deeper.<br/>
+          <span class="gradient-text">Remember longer.</span>
+        </h1>
+
+        <p class="mt-6 text-lg sm:text-xl text-ink-600 dark:text-ink-300 leading-relaxed max-w-2xl text-pretty">
+          Deep-dive interactive study guides with quizzes, flashcards, diagrams, and worked examples.
+          Made for the way your brain actually learns.
+        </p>
+
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a href="/library" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all">
+            Browse the library
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <button id="hero-search" type="button" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl surface font-medium text-sm hover:border-accent-400 dark:hover:border-accent-600 transition-all">
+            Search guides
+            <span class="kbd">⌘K</span>
+          </button>
+        </div>
+
+        <div class="mt-12 grid grid-cols-3 gap-6 max-w-md">
+          <div>
+            <div class="font-serif text-3xl font-semibold gradient-text">{stats.guides}</div>
+            <div class="text-xs uppercase tracking-[0.14em] text-ink-500 mt-1">Guides</div>
+          </div>
+          <div>
+            <div class="font-serif text-3xl font-semibold gradient-text">{stats.subjects}</div>
+            <div class="text-xs uppercase tracking-[0.14em] text-ink-500 mt-1">Subjects</div>
+          </div>
+          <div>
+            <div class="font-serif text-3xl font-semibold gradient-text">{stats.minutes}</div>
+            <div class="text-xs uppercase tracking-[0.14em] text-ink-500 mt-1">Minutes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-y border-ink-200 dark:border-ink-800 bg-white/50 dark:bg-ink-900/30 backdrop-blur">
+    <div class="container-wide py-10">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { i: '✦', t: 'Deep dives, not summaries', d: 'Each guide unpacks a topic from first principles to mastery.' },
+          { i: '◉', t: 'Interactive quizzes', d: 'Instant feedback with explanations on every answer.' },
+          { i: '⟳', t: 'Flashcard decks', d: 'Flip, shuffle, and mark, built into every guide.' },
+          { i: '∑', t: 'Math and diagrams', d: 'Beautiful KaTeX math and Mermaid diagrams render inline.' },
+        ].map((f) => (
+          <div class="flex gap-4">
+            <div class="shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-xl bg-accent-700 dark:bg-accent-600 text-white font-serif">{f.i}</div>
+            <div>
+              <div class="font-semibold text-ink-900 dark:text-ink-50 text-sm">{f.t}</div>
+              <div class="text-sm text-ink-600 dark:text-ink-400 mt-1 leading-relaxed">{f.d}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="container-wide py-16">
+    <div class="flex items-end justify-between mb-8 gap-4">
+      <div>
+        <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-2">Latest guides</div>
+        <h2 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">Just added</h2>
+      </div>
+      <a href="/library" class="text-sm text-accent-700 dark:text-accent-400 hover:underline whitespace-nowrap">View all →</a>
+    </div>
+
+    {recentGuides.length === 0 ? (
+      <div class="surface rounded-2xl p-12 text-center">
+        <div class="font-serif text-xl text-ink-700 dark:text-ink-200 mb-2">No guides yet</div>
+        <p class="text-sm text-ink-500 max-w-md mx-auto">
+          Drop a new <code class="text-accent-700 dark:text-accent-400">.mdx</code> file in <code>src/content/guides</code> and it'll appear here automatically.
+        </p>
+      </div>
+    ) : (
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {recentGuides.map((g) => (
+          <GuideCard
+            href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
+            title={g.data.title}
+            description={g.data.description}
+            subject={g.data.subject}
+            estimatedTime={g.data.estimatedTime}
+            tags={g.data.tags}
+            date={g.data.date}
+          />
+        ))}
+      </div>
+    )}
+  </section>
+
+  {subjects.length > 0 && (
+    <section class="container-wide py-8">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-4">Browse by subject</div>
+      <div class="flex flex-wrap gap-2">
+        {subjects.map((s) => (
+          <a href={`/subjects/${encodeURIComponent(s.toLowerCase())}`}
+            class="px-4 py-2 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 hover:text-accent-700 dark:hover:text-accent-400 transition-all">
+            {s}
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="container-wide pt-12 pb-20">
+    <a href="/request" class="group block surface rounded-2xl p-8 sm:p-10 card-hover relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-accent-50/60 via-transparent to-accent-100/40 dark:from-accent-900/20 dark:to-accent-800/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-accent-700 dark:text-accent-400 font-semibold mb-2">Don't see what you need?</div>
+          <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Request a study guide</h2>
+          <p class="text-ink-600 dark:text-ink-300 max-w-xl">
+            Tell us the topic and what's confusing. We'll build a full deep-dive guide and add it to the library.
+          </p>
+        </div>
+        <span class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent-700 group-hover:bg-accent-800 dark:bg-accent-600 dark:group-hover:bg-accent-500 text-white font-medium text-sm shadow-soft transition-all whitespace-nowrap">
+          Submit a request
+          <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  document.getElementById('hero-search')?.addEventListener('click', () => {
+    document.getElementById('search-trigger')?.click();
+  });
+</script>

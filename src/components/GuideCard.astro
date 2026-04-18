@@ -1,0 +1,46 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  subject: string;
+  estimatedTime: number;
+  tags?: string[];
+  date?: Date;
+}
+const { href, title, description, subject, estimatedTime, tags = [], date } = Astro.props;
+---
+
+<a
+  href={href}
+  class="group relative flex flex-col surface rounded-2xl p-6 card-hover overflow-hidden"
+>
+  <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+  <div class="flex items-start justify-between gap-3 mb-3">
+    <span class="badge badge-accent">{subject}</span>
+    {tags.length > 0 && <span class="badge">#{tags[0]}</span>}
+  </div>
+
+  <h3 class="font-serif text-xl font-semibold tracking-tight leading-tight text-ink-900 dark:text-ink-50 mb-2 text-balance">
+    {title}
+  </h3>
+  <p class="text-sm text-ink-600 dark:text-ink-400 leading-relaxed mb-4 flex-1 text-pretty">
+    {description}
+  </p>
+
+  <div class="flex items-center justify-between text-xs text-ink-500 dark:text-ink-400 pt-4 border-t border-ink-200 dark:border-ink-800">
+    <span class="flex items-center gap-1.5">
+      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+      </svg>
+      {estimatedTime} min
+    </span>
+    <span class="flex items-center gap-1 text-accent-700 dark:text-accent-400 opacity-0 group-hover:opacity-100 transition-opacity">
+      Read guide
+      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </span>
+  </div>
+</a>

@@ -1,0 +1,118 @@
+---
+---
+
+<div id="user-menu-root" class="relative">
+  <!-- Logged out: shown by default, hidden by JS if signed in -->
+  <div data-auth-anon class="flex items-center gap-1.5">
+    <a
+      href="/login"
+      class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50 transition-colors"
+    >Log in</a>
+    <a
+      href="/signup"
+      class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white transition-colors"
+    >Sign up</a>
+  </div>
+
+  <!-- Logged in: hidden by default, revealed by JS -->
+  <div data-auth-user class="hidden">
+    <button
+      type="button"
+      id="user-trigger"
+      class="inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-ink-200 bg-white/60 hover:border-accent-400 dark:border-ink-800 dark:bg-ink-900/60 dark:hover:border-accent-600 transition-colors"
+      aria-haspopup="menu"
+      aria-expanded="false"
+    >
+      <span data-user-avatar class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white text-xs font-semibold">??</span>
+      <span data-user-name class="hidden sm:block text-sm font-medium pr-1"></span>
+      <svg class="h-3.5 w-3.5 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div
+      id="user-dropdown"
+      class="hidden absolute right-0 top-full mt-2 w-60 surface rounded-xl shadow-lift overflow-hidden z-50"
+      role="menu"
+    >
+      <div class="px-4 py-3 border-b border-ink-200 dark:border-ink-800">
+        <div data-user-name-full class="font-medium text-sm truncate"></div>
+        <div data-user-handle class="text-xs text-ink-500 truncate"></div>
+      </div>
+      <nav class="py-1">
+        <a href="/dashboard" class="menu-link"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <a href="/library" class="menu-link"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Library</a>
+      </nav>
+      <div class="border-t border-ink-200 dark:border-ink-800 py-1">
+        <button id="user-logout" type="button" class="menu-link text-left w-full">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Log out
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .menu-link {
+    @apply flex items-center gap-2.5 px-4 py-2 text-sm text-ink-700 dark:text-ink-200;
+    @apply hover:bg-ink-100 dark:hover:bg-ink-800/60 transition-colors;
+  }
+</style>
+
+<script>
+  import { currentUser, logout, onAuthChange } from '../lib/auth';
+
+  const setup = () => {
+    const root = document.getElementById('user-menu-root');
+    if (!root) return;
+    const anon = root.querySelector('[data-auth-anon]') as HTMLElement | null;
+    const auth = root.querySelector('[data-auth-user]') as HTMLElement | null;
+    const trigger = document.getElementById('user-trigger');
+    const dropdown = document.getElementById('user-dropdown');
+    const logoutBtn = document.getElementById('user-logout');
+    const avatar = root.querySelector('[data-user-avatar]') as HTMLElement | null;
+    const name = root.querySelector('[data-user-name]') as HTMLElement | null;
+    const nameFull = root.querySelector('[data-user-name-full]') as HTMLElement | null;
+    const handle = root.querySelector('[data-user-handle]') as HTMLElement | null;
+
+    const render = () => {
+      const u = currentUser();
+      if (u) {
+        anon?.classList.add('hidden');
+        auth?.classList.remove('hidden');
+        if (avatar) avatar.textContent = u.displayName.slice(0, 2).toUpperCase();
+        if (name) name.textContent = u.displayName;
+        if (nameFull) nameFull.textContent = u.displayName;
+        if (handle) handle.textContent = '@' + u.username;
+      } else {
+        anon?.classList.remove('hidden');
+        auth?.classList.add('hidden');
+      }
+    };
+    render();
+    onAuthChange(render);
+
+    let open = false;
+    const setOpen = (v: boolean) => {
+      open = v;
+      dropdown?.classList.toggle('hidden', !open);
+      trigger?.setAttribute('aria-expanded', String(open));
+    };
+    trigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setOpen(!open);
+    });
+    document.addEventListener('click', (e) => {
+      if (open && !root.contains(e.target as Node)) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) setOpen(false);
+    });
+    logoutBtn?.addEventListener('click', () => {
+      logout();
+      setOpen(false);
+      window.location.href = '/';
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

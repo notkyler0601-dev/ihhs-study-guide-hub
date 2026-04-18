@@ -1,0 +1,247 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Review" description="Today's flashcard reviews scheduled by spaced repetition.">
+  <div id="auth-gate" class="container-prose py-20 text-center">
+    <div class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-xl mb-4">⏳</div>
+    <p class="text-ink-500">Loading...</p>
+  </div>
+
+  <div id="auth-required" class="hidden container-prose py-20 text-center">
+    <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight mb-3">Sign up to review</h1>
+    <p class="text-ink-600 dark:text-ink-300 mb-6">Your flashcard schedule lives in your account.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="/signup?next=/review" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">Create account</a>
+      <a href="/login?next=/review" class="inline-flex items-center px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">Log in</a>
+    </div>
+  </div>
+
+  <section id="review-empty" class="hidden container-prose py-20 text-center stagger-fade">
+    <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-3xl mb-5">✓</div>
+    <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight mb-2">All clear for today</h1>
+    <p class="text-ink-600 dark:text-ink-300 mb-6 max-w-md mx-auto">No flashcards are due. Open a guide to study new material, or come back tomorrow.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="/library" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">Browse guides</a>
+      <a href="/dashboard" class="inline-flex items-center px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">Dashboard</a>
+    </div>
+  </section>
+
+  <section id="review-done" class="hidden container-prose py-20 text-center stagger-fade">
+    <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-3xl mb-5">★</div>
+    <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight mb-2">Session complete</h1>
+    <p class="text-ink-600 dark:text-ink-300 mb-2 max-w-md mx-auto">
+      You reviewed <span data-done-count class="font-semibold text-accent-700 dark:text-accent-400">0</span> cards.
+    </p>
+    <p class="text-sm text-ink-500 mb-6">Streak is locked in for today.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a href="/dashboard" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">Back to dashboard</a>
+      <a href="/library" class="inline-flex items-center px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">Browse guides</a>
+    </div>
+  </section>
+
+  <section id="review-session" class="hidden container-prose py-12 lg:py-16">
+    <div class="flex items-center justify-between mb-6">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold">Today's review</div>
+      <div class="text-xs text-ink-500">
+        <span data-card-pos>1</span> / <span data-card-total>0</span>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="h-1 w-full rounded-full bg-ink-200 dark:bg-ink-800 mb-8 overflow-hidden">
+      <div data-progress class="h-full bg-gradient-to-r from-accent-600 to-accent-400 transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <!-- Card -->
+    <div class="relative" style="perspective: 1500px;">
+      <button
+        type="button"
+        data-card-flip
+        class="relative block w-full min-h-[280px] rounded-2xl transition-transform duration-500"
+        style="transform-style: preserve-3d;"
+        aria-label="Flip card"
+      >
+        <div class="absolute inset-0 rounded-2xl flex flex-col items-center justify-center text-center px-8 py-10 surface shadow-lift" style="backface-visibility: hidden;">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-ink-400 font-semibold mb-4">Question</div>
+          <div data-card-front class="font-serif text-2xl text-ink-900 dark:text-ink-50 text-balance leading-snug">...</div>
+          <div class="mt-6 text-xs text-ink-400">Tap to flip</div>
+        </div>
+        <div class="absolute inset-0 rounded-2xl flex flex-col items-center justify-center text-center px-8 py-10 bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-900/40 dark:to-ink-900 border border-accent-200 dark:border-accent-800 shadow-lift" style="backface-visibility: hidden; transform: rotateY(180deg);">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-accent-700 dark:text-accent-300 font-semibold mb-4">Answer</div>
+          <div data-card-back class="text-lg text-ink-900 dark:text-ink-50 text-pretty leading-relaxed">...</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Source guide link -->
+    <div class="mt-3 text-center text-xs text-ink-500">
+      from <a data-card-source href="#" class="text-accent-700 dark:text-accent-400 hover:underline"></a>
+    </div>
+
+    <!-- Rating buttons (revealed after flip) -->
+    <div data-card-ratings class="hidden mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button data-rate="again" class="rate-btn rate-again">
+        <div class="text-xs uppercase tracking-wider font-semibold opacity-70">Again</div>
+        <div class="text-base font-semibold mt-0.5">&lt;1m</div>
+      </button>
+      <button data-rate="hard" class="rate-btn rate-hard">
+        <div class="text-xs uppercase tracking-wider font-semibold opacity-70">Hard</div>
+        <div class="text-base font-semibold mt-0.5" data-interval="hard">~1d</div>
+      </button>
+      <button data-rate="good" class="rate-btn rate-good">
+        <div class="text-xs uppercase tracking-wider font-semibold opacity-70">Good</div>
+        <div class="text-base font-semibold mt-0.5" data-interval="good">~3d</div>
+      </button>
+      <button data-rate="easy" class="rate-btn rate-easy">
+        <div class="text-xs uppercase tracking-wider font-semibold opacity-70">Easy</div>
+        <div class="text-base font-semibold mt-0.5" data-interval="easy">~7d</div>
+      </button>
+    </div>
+
+    <p class="mt-4 text-center text-xs text-ink-500">
+      <kbd class="kbd">Space</kbd> flip · <kbd class="kbd">1</kbd>-<kbd class="kbd">4</kbd> rate
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .rate-btn {
+    @apply rounded-xl px-3 py-3 text-center transition-all border;
+    @apply hover:-translate-y-0.5 hover:shadow-soft active:translate-y-0;
+  }
+  .rate-again { @apply bg-rose-50 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200 border-rose-200 dark:border-rose-800; }
+  .rate-hard  { @apply bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800; }
+  .rate-good  { @apply bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800; }
+  .rate-easy  { @apply bg-accent-50 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 border-accent-200 dark:border-accent-800; }
+</style>
+
+<script>
+  import { currentUser } from '../lib/auth';
+  import { dueCards, review, type Rating, type CardState } from '../lib/srs';
+
+  const setup = () => {
+    const gate = document.getElementById('auth-gate')!;
+    const required = document.getElementById('auth-required')!;
+    const empty = document.getElementById('review-empty')!;
+    const done = document.getElementById('review-done')!;
+    const session = document.getElementById('review-session')!;
+
+    gate.classList.add('hidden');
+
+    if (!currentUser()) {
+      required.classList.remove('hidden');
+      return;
+    }
+
+    let queue = dueCards();
+    let pos = 0;
+    let completed = 0;
+    let flipped = false;
+
+    if (queue.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    session.classList.remove('hidden');
+
+    const flipBtn = session.querySelector('[data-card-flip]') as HTMLButtonElement;
+    const frontEl = session.querySelector('[data-card-front]')!;
+    const backEl = session.querySelector('[data-card-back]')!;
+    const sourceEl = session.querySelector('[data-card-source]') as HTMLAnchorElement;
+    const posEl = session.querySelector('[data-card-pos]')!;
+    const totalEl = session.querySelector('[data-card-total]')!;
+    const progressEl = session.querySelector('[data-progress]') as HTMLElement;
+    const ratings = session.querySelector('[data-card-ratings]') as HTMLElement;
+    const intervalLabels = {
+      hard: session.querySelector('[data-interval="hard"]')!,
+      good: session.querySelector('[data-interval="good"]')!,
+      easy: session.querySelector('[data-interval="easy"]')!,
+    };
+
+    totalEl.textContent = String(queue.length);
+
+    const fmtInterval = (days: number) => {
+      if (days < 1) return '<1d';
+      if (days === 1) return '1d';
+      if (days < 30) return `${days}d`;
+      const months = Math.round(days / 30);
+      if (months < 12) return `${months}mo`;
+      return `${Math.round(days / 365)}y`;
+    };
+
+    const previewIntervals = (card: CardState) => {
+      // Approximate next intervals for each rating without actually saving.
+      const hardI = card.interval === 0 ? 1 : Math.max(1, Math.round(card.interval * 1.2));
+      const goodI = card.interval === 0 ? 1 : card.interval === 1 ? 3 : Math.round(card.interval * card.ease);
+      const easyI = card.interval === 0 ? 4 : Math.round(card.interval * card.ease * 1.3);
+      intervalLabels.hard.textContent = '~' + fmtInterval(hardI);
+      intervalLabels.good.textContent = '~' + fmtInterval(goodI);
+      intervalLabels.easy.textContent = '~' + fmtInterval(easyI);
+    };
+
+    const renderCard = () => {
+      const card = queue[pos];
+      flipped = false;
+      flipBtn.style.transform = 'rotateY(0deg)';
+      ratings.classList.add('hidden');
+      // Slight delay to let the flip animation play before swapping content.
+      setTimeout(() => {
+        frontEl.textContent = card.front;
+        backEl.textContent = card.back;
+        sourceEl.textContent = card.guideSlug.replace(/-/g, ' ');
+        sourceEl.href = `/guides/${card.guideSlug}`;
+        previewIntervals(card);
+      }, 150);
+      posEl.textContent = String(pos + 1);
+      progressEl.style.width = `${(pos / queue.length) * 100}%`;
+    };
+
+    const flip = () => {
+      flipped = !flipped;
+      flipBtn.style.transform = flipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+      if (flipped) ratings.classList.remove('hidden');
+      else ratings.classList.add('hidden');
+    };
+
+    const handleRate = (rating: Rating) => {
+      const card = queue[pos];
+      review(card.id, rating);
+      completed += 1;
+      pos += 1;
+      progressEl.style.width = `${(pos / queue.length) * 100}%`;
+      if (pos >= queue.length) {
+        // Session complete
+        session.classList.add('hidden');
+        const dc = done.querySelector('[data-done-count]')!;
+        dc.textContent = String(completed);
+        done.classList.remove('hidden');
+        return;
+      }
+      renderCard();
+    };
+
+    flipBtn.addEventListener('click', flip);
+    ratings.querySelectorAll('[data-rate]').forEach((b) => {
+      b.addEventListener('click', () => handleRate(b.getAttribute('data-rate') as Rating));
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!session.isConnected || session.classList.contains('hidden')) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === ' ') { e.preventDefault(); flip(); }
+      if (flipped) {
+        if (e.key === '1') handleRate('again');
+        if (e.key === '2') handleRate('hard');
+        if (e.key === '3') handleRate('good');
+        if (e.key === '4') handleRate('easy');
+      }
+    });
+
+    renderCard();
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>
