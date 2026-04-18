@@ -44,17 +44,24 @@ Wired up in `astro.config.mjs` (`integrations` and `markdown` keys).
 
 Tile provider: **OpenStreetMap** (free, no key, attribution required by the component).
 
+## 3b. Backend (npm, conditional)
+
+| Package | Version | Purpose |
+|---|---|---|
+| `@supabase/supabase-js` | latest | Supabase auth + Postgres client. Only used when `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` env vars are set. Powers cross-device account sync, `/request` submissions, and the `/admin/requests` inbox. Falls back to local-only mode when env vars are missing. See `SUPABASE_SETUP.md`. |
+
 ## 4. Internal infrastructure (`src/lib/`)
 
 | Module | Purpose |
 |---|---|
 | `loadScript.ts` | Dedupe-safe lazy CDN loader. Exports `loadScript`, `loadStyle`, `waitForGlobal`, `importGlobal`. Used by every Tier 3 component. |
-| `auth.ts` | Local-first user accounts. `currentUser()`, sign-in/up. Username + display name stored in `localStorage`. |
-| `storage.ts` | Namespaced `localStorage` layer (`get`, `set`, `remove`) keyed per user-id. |
-| `progress.ts` | Per-user dashboard data: streaks, quiz history, guides opened. |
-| `srs.ts` | SM-2 spaced repetition scheduler. `registerCard`, `review`, `loadDeck`, `Rating`. Drives `<Flashcards>` review mode. |
+| `supabase.ts` | Supabase client singleton. Returns `null` when `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` env vars aren't set. `isCloudMode()` tells you which regime you're in. |
+| `auth.ts` | **Hybrid** cloud/local auth. Cloud mode: Supabase Auth (email + password) + a `profiles` table. Local mode: username-only localStorage accounts. `currentUser()` is sync in both modes (via cache). `signup()` and `login()` may return a Promise; always `await` them. |
+| `storage.ts` | Per-user namespaced key-value store. Writes to localStorage first (sync), then fire-and-forget upsert to Supabase `user_data` in cloud mode. |
+| `progress.ts` | Per-user dashboard data: streaks, quiz history, guides opened. Uses `storage.ts` (so cloud sync is free). |
+| `srs.ts` | SM-2 spaced repetition scheduler. `registerCard`, `review`, `loadDeck`, `Rating`. Drives `<Flashcards>` review mode. Uses `storage.ts`. |
 
-These are reused everywhere. Don't duplicate. If you need a new key in `localStorage`, namespace through `storage.ts`.
+These are reused everywhere. Don't duplicate. If you need a new key in storage, namespace through `storage.ts` and it will cloud-sync automatically.
 
 ## 5. External fonts (CDN, always loaded)
 
@@ -202,11 +209,7 @@ These are accessed by the above components but worth listing separately.
 
 ## 10. Reserved / planned (not yet installed)
 
-Documented as future options but not active:
-
-| Package | Purpose | Status |
-|---|---|---|
-| `@supabase/supabase-js` | Cross-device sync for accounts/progress/SRS. | Documented in `README.md` § "Optional: enable cross-device accounts via Supabase". `src/lib/auth.ts` and `src/lib/storage.ts` are intentionally swap-compatible. |
+Nothing is currently reserved. Everything that was planned is now active. Drop future placeholders here as they come up.
 
 ---
 

@@ -41,15 +41,21 @@ Standard skeleton (welcome.mdx is the canonical template):
 
 Frontmatter schema lives in `src/content/config.ts`. Required fields: `title`, `description`, `subject`, `estimatedTime`, `date`. Optional: `tags`, `authors`, `updated`, `cover`, `draft`.
 
-## Account / SRS code
+## Account / SRS / storage code
 
-The user has added accounts (no email needed), per-user progress, an SM-2 spaced repetition scheduler, and a daily review queue. Code lives in `src/lib/`:
+Accounts, per-user progress, SM-2 spaced repetition, and a daily review queue are wired up. Code lives in `src/lib/`:
 
-- `auth.ts`: who's logged in (localStorage-backed)
-- `progress.ts`: per-user dashboard data, quiz scores, guide opens, streaks
-- `srs.ts`: SM-2 scheduling for flashcards
+- `supabase.ts`: client singleton. Returns `null` when env vars aren't set.
+- `auth.ts`: **hybrid** cloud/local auth. When `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` are set, uses Supabase Auth (email + password). Otherwise falls back to local-only username-only accounts. `currentUser()` stays synchronous via a localStorage cache. `signup()` and `login()` return `Promise<Result>` in cloud mode, `Result` in local mode — callers must `await` them.
+- `storage.ts`: writes to localStorage first (instant), then fire-and-forget upserts to the Supabase `user_data` table in cloud mode. On login, `auth.ts#hydrateUserDataFromCloud` pulls every cloud row back into localStorage so reads stay sync.
+- `progress.ts`: per-user dashboard data, quiz scores, guide opens, streaks. Uses `storage.ts`.
+- `srs.ts`: SM-2 scheduling for flashcards. Uses `storage.ts`.
 
-Components that touch these (`Quiz.astro`, `Flashcards.astro`, `GuideLayout.astro`, `Header.astro`) already wire it up. Don't break those imports.
+Components that touch these (`Quiz.astro`, `Flashcards.astro`, `GuideLayout.astro`, `Header.astro`, `UserMenu.astro`, `signup.astro`, `login.astro`, `request.astro`, `admin/requests.astro`) are already wired up. Don't break those imports.
+
+### Cloud mode setup
+
+See `SUPABASE_SETUP.md` for the 10-minute manual setup. SQL schema in `supabase/schema.sql` is idempotent.
 
 ## Dev workflow
 
