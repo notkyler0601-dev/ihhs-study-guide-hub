@@ -331,7 +331,9 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
 <Scrollytelling
   graphicHeight="55vh"
   graphic={`<div id='balcony-text' style='position: relative; width: 100%; height: 100%; min-height: 100%; font-family: Fraunces, serif; color: #fafaf9; background: radial-gradient(circle at 75% 25%, #1c1917 0%, #0a0a0a 70%); padding: 28px 24px; box-shadow: inset 0 0 60px rgba(185,28,28,0.18); display: flex; flex-direction: column; justify-content: flex-start;'>
-  <div data-section='label' style='position: absolute; top: 16px; left: 24px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(250,250,249,0.45); font-family: Inter, sans-serif;'>Part 1, Romeo</div>
+  <div data-section='label' style='position: absolute; top: 16px; left: 24px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(250,250,249,0.45); font-family: Inter, sans-serif; transition: opacity 200ms ease; z-index: 5;'>Part 1, Romeo</div>
+
+  <div data-stage-grid style='display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; width: 100%; min-height: 100%;'>
   <svg id='balcony-moon' style='position: absolute; top: 16px; right: 20px; width: 48px; height: 48px; transition: opacity 800ms, filter 800ms; filter: drop-shadow(0 0 14px rgba(255,255,200,0.4));' viewBox='0 0 64 64'>
     <defs><radialGradient id='moonGrad' cx='35%' cy='35%'><stop offset='0%' stop-color='#fef9c3'/><stop offset='100%' stop-color='#facc15'/></radialGradient></defs>
     <circle cx='32' cy='32' r='22' fill='url(#moonGrad)' opacity='0.85'/>
@@ -339,7 +341,7 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
     <circle cx='28' cy='38' r='2' fill='#a16207' opacity='0.3'/>
   </svg>
 
-  <div class='bg-section' data-section='1' style='display: block; padding-top: 36px;'>
+  <div class='bg-section' data-section='1' style='grid-area: 1 / 1; padding: 36px 0 0 0; opacity: 1; transition: opacity 500ms ease, transform 500ms ease; transform: translateY(0);'>
     <div style='font-size: 16px; line-height: 1.7;'>
       <div data-line='1' data-section='1' style='transition: opacity 600ms;'>But soft, what light through yonder window breaks?</div>
       <div data-line='2' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>It is the East, and Juliet is the sun.</div>
@@ -352,7 +354,7 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
     </div>
   </div>
 
-  <div class='bg-section' data-section='2' style='display: none; padding-top: 36px;'>
+  <div class='bg-section' data-section='2' style='grid-area: 1 / 1; padding: 36px 0 0 0; opacity: 0; transition: opacity 500ms ease, transform 500ms ease; transform: translateY(8px); pointer-events: none;'>
     <div style='font-size: 14px; line-height: 1.6;'>
       <div data-line='1' data-section='2' style='transition: opacity 600ms;'>It is my lady. O, it is my love!</div>
       <div data-line='2' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>O, that she knew she were!</div>
@@ -373,7 +375,7 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
     </div>
   </div>
 
-  <div class='bg-section' data-section='3' style='display: none; padding-top: 36px;'>
+  <div class='bg-section' data-section='3' style='grid-area: 1 / 1; padding: 36px 0 0 0; opacity: 0; transition: opacity 500ms ease, transform 500ms ease; transform: translateY(8px); pointer-events: none;'>
     <div style='font-size: 16px; line-height: 1.7;'>
       <div data-line='1' data-section='3' style='transition: opacity 600ms;'>O, speak again, bright angel, for thou art</div>
       <div data-line='2' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>As glorious to this night, being o'er my head,</div>
@@ -385,7 +387,7 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
     </div>
   </div>
 
-  <div class='bg-section' data-section='4' style='display: none; padding-top: 36px;'>
+  <div class='bg-section' data-section='4' style='grid-area: 1 / 1; padding: 36px 0 0 0; opacity: 0; transition: opacity 500ms ease, transform 500ms ease; transform: translateY(8px); pointer-events: none;'>
     <div style='font-size: 18px; line-height: 1.75;'>
       <div data-line='1' data-section='4' style='transition: opacity 600ms;'>O Romeo, Romeo, wherefore art thou Romeo?</div>
       <div data-line='2' data-section='4' style='opacity: 0.25; transition: opacity 600ms;'>Deny thy father and refuse thy name,</div>
@@ -394,7 +396,7 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
     </div>
   </div>
 
-  <div class='bg-section' data-section='5' style='display: none; padding-top: 36px;'>
+  <div class='bg-section' data-section='5' style='grid-area: 1 / 1; padding: 36px 0 0 0; opacity: 0; transition: opacity 500ms ease, transform 500ms ease; transform: translateY(8px); pointer-events: none;'>
     <div style='font-size: 14px; line-height: 1.6;'>
       <div data-line='1' data-section='5' style='transition: opacity 600ms;'>'Tis but thy name that is my enemy.</div>
       <div data-line='2' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Thou art thyself, though not a Montague.</div>
@@ -409,6 +411,8 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
       <div data-line='11' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>And, for thy name, which is no part of thee,</div>
       <div data-line='12' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Take all myself.</div>
     </div>
+  </div>
+
   </div>
 </div>`}
   steps={[
@@ -446,15 +450,26 @@ The graphic above stays pinned while you scroll through 13 annotated cards. Each
     };
     const t = map[stepId];
     if (!t) return;
+    // Cross-fade sections: active fades in & slides up, others fade out & slide down.
     stage.querySelectorAll('.bg-section').forEach((s) => {
-      s.style.display = Number(s.getAttribute('data-section')) === t.section ? 'block' : 'none';
+      const isActive = Number(s.getAttribute('data-section')) === t.section;
+      s.style.opacity = isActive ? '1' : '0';
+      s.style.transform = isActive ? 'translateY(0)' : 'translateY(8px)';
+      s.style.pointerEvents = isActive ? 'auto' : 'none';
     });
+    // Highlight the active line within the active section.
     stage.querySelectorAll('[data-line]').forEach((l) => {
       if (Number(l.getAttribute('data-section')) !== t.section) return;
       l.style.opacity = Number(l.getAttribute('data-line')) <= t.line ? '1' : '0.25';
     });
+    // Smooth label cross-fade.
     const label = stage.querySelector('[data-section="label"]');
-    if (label) label.textContent = t.label;
+    if (label && label.textContent !== t.label) {
+      label.style.transition = 'opacity 200ms ease';
+      label.style.opacity = '0';
+      setTimeout(() => { label.textContent = t.label; label.style.opacity = '1'; }, 200);
+    }
+    // Moon fades / desaturates when Romeo invokes its death (Part 1, line 3+).
     const moon = document.getElementById('balcony-moon');
     if (moon) {
       if (t.section === 1 && t.line >= 3) {
