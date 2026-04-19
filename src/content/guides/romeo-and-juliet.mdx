@@ -324,51 +324,146 @@ Each link opens a fresh YouTube search so you always get a working clip (specifi
 Compare how each director handles the same lines: a stone balcony, a swimming pool, a black-and-white window. The text never changes; the staging always does.
 </Callout>
 
-### Scrolling the soliloquy
+### Scrolling the whole balcony scene
+
+The graphic above stays pinned while you scroll through 13 annotated cards. Each card highlights a key line from the assigned passage and explains the device or image it uses. The stage automatically switches sections (Part 1 to Part 5) as you reach each new chunk.
 
 <Scrollytelling
-  graphicHeight="60vh"
-  graphic={`<div style='position: relative; width: 100%; height: 100%; min-height: 60vh; font-family: Fraunces, serif; color: #fafaf9; background: radial-gradient(circle at 75% 25%, #1c1917 0%, #0a0a0a 70%); border-radius: 16px; padding: 40px 32px; box-shadow: inset 0 0 80px rgba(185,28,28,0.18); overflow: hidden; display: flex; flex-direction: column; justify-content: center;' id='balcony-text'>
-  <svg id='balcony-moon' style='position: absolute; top: 24px; right: 28px; width: 64px; height: 64px; transition: opacity 800ms, filter 800ms; filter: drop-shadow(0 0 18px rgba(255,255,200,0.4));' viewBox='0 0 64 64'>
+  graphicHeight="55vh"
+  graphic={`<div id='balcony-text' style='position: relative; width: 100%; height: 100%; min-height: 100%; font-family: Fraunces, serif; color: #fafaf9; background: radial-gradient(circle at 75% 25%, #1c1917 0%, #0a0a0a 70%); padding: 28px 24px; box-shadow: inset 0 0 60px rgba(185,28,28,0.18); display: flex; flex-direction: column; justify-content: flex-start;'>
+  <div data-section='label' style='position: absolute; top: 16px; left: 24px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(250,250,249,0.45); font-family: Inter, sans-serif;'>Part 1, Romeo</div>
+  <svg id='balcony-moon' style='position: absolute; top: 16px; right: 20px; width: 48px; height: 48px; transition: opacity 800ms, filter 800ms; filter: drop-shadow(0 0 14px rgba(255,255,200,0.4));' viewBox='0 0 64 64'>
     <defs><radialGradient id='moonGrad' cx='35%' cy='35%'><stop offset='0%' stop-color='#fef9c3'/><stop offset='100%' stop-color='#facc15'/></radialGradient></defs>
     <circle cx='32' cy='32' r='22' fill='url(#moonGrad)' opacity='0.85'/>
     <circle cx='40' cy='28' r='3' fill='#a16207' opacity='0.3'/>
     <circle cx='28' cy='38' r='2' fill='#a16207' opacity='0.3'/>
   </svg>
-  <svg id='balcony-window' style='position: absolute; top: 110px; right: 36px; width: 48px; height: 64px; transition: opacity 800ms; opacity: 0;' viewBox='0 0 48 64'>
-    <rect x='4' y='4' width='40' height='56' rx='6' fill='#fef3c7' opacity='0.85'/>
-    <line x1='24' y1='4' x2='24' y2='60' stroke='#7f1d1d' stroke-width='2'/>
-    <line x1='4' y1='32' x2='44' y2='32' stroke='#7f1d1d' stroke-width='2'/>
-  </svg>
-  <div style='font-size: 20px; line-height: 1.85; max-width: 78%;'>
-    <div data-line='1' style='transition: opacity 600ms;'>But, soft! what light through yonder window breaks?</div>
-    <div data-line='2' style='opacity: 0.25; transition: opacity 600ms;'>It is the east, and Juliet is the sun.</div>
-    <div data-line='3' style='opacity: 0.25; transition: opacity 600ms;'>Arise, fair sun, and kill the envious moon,</div>
-    <div data-line='4' style='opacity: 0.25; transition: opacity 600ms;'>Who is already sick and pale with grief...</div>
+
+  <div class='bg-section' data-section='1' style='display: block; padding-top: 36px;'>
+    <div style='font-size: 16px; line-height: 1.7;'>
+      <div data-line='1' data-section='1' style='transition: opacity 600ms;'>But soft, what light through yonder window breaks?</div>
+      <div data-line='2' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>It is the East, and Juliet is the sun.</div>
+      <div data-line='3' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>Arise, fair sun, and kill the envious moon,</div>
+      <div data-line='4' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>Who is already sick and pale with grief</div>
+      <div data-line='5' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>That thou, her maid, art far more fair than she.</div>
+      <div data-line='6' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>Be not her maid since she is envious.</div>
+      <div data-line='7' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>Her vestal livery is but sick and green</div>
+      <div data-line='8' data-section='1' style='opacity: 0.25; transition: opacity 600ms;'>And none but fools do wear it. Cast it off.</div>
+    </div>
   </div>
-  <div style='position: absolute; bottom: 16px; left: 32px; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(250,250,249,0.5);'>Act 2, Scene 2</div>
+
+  <div class='bg-section' data-section='2' style='display: none; padding-top: 36px;'>
+    <div style='font-size: 14px; line-height: 1.6;'>
+      <div data-line='1' data-section='2' style='transition: opacity 600ms;'>It is my lady. O, it is my love!</div>
+      <div data-line='2' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>O, that she knew she were!</div>
+      <div data-line='3' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>She speaks, yet she says nothing. What of that?</div>
+      <div data-line='4' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>Her eye discourses; I will answer it.</div>
+      <div data-line='5' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>I am too bold. 'Tis not to me she speaks.</div>
+      <div data-line='6' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>Two of the fairest stars in all the heaven,</div>
+      <div data-line='7' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>Having some business, do entreat her eyes</div>
+      <div data-line='8' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>To twinkle in their spheres till they return.</div>
+      <div data-line='9' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>What if her eyes were there, they in her head?</div>
+      <div data-line='10' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>The brightness of her cheek would shame those stars</div>
+      <div data-line='11' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>As daylight doth a lamp; her eye in heaven</div>
+      <div data-line='12' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>Would through the airy region stream so bright</div>
+      <div data-line='13' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>That birds would sing and think it were not night.</div>
+      <div data-line='14' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>See how she leans her cheek upon her hand.</div>
+      <div data-line='15' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>O, that I were a glove upon that hand,</div>
+      <div data-line='16' data-section='2' style='opacity: 0.25; transition: opacity 600ms;'>That I might touch that cheek!</div>
+    </div>
+  </div>
+
+  <div class='bg-section' data-section='3' style='display: none; padding-top: 36px;'>
+    <div style='font-size: 16px; line-height: 1.7;'>
+      <div data-line='1' data-section='3' style='transition: opacity 600ms;'>O, speak again, bright angel, for thou art</div>
+      <div data-line='2' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>As glorious to this night, being o'er my head,</div>
+      <div data-line='3' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>As is a wingèd messenger of heaven</div>
+      <div data-line='4' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>Unto the white-upturnèd wond'ring eyes</div>
+      <div data-line='5' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>Of mortals that fall back to gaze on him</div>
+      <div data-line='6' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>When he bestrides the lazy puffing clouds</div>
+      <div data-line='7' data-section='3' style='opacity: 0.25; transition: opacity 600ms;'>And sails upon the bosom of the air.</div>
+    </div>
+  </div>
+
+  <div class='bg-section' data-section='4' style='display: none; padding-top: 36px;'>
+    <div style='font-size: 18px; line-height: 1.75;'>
+      <div data-line='1' data-section='4' style='transition: opacity 600ms;'>O Romeo, Romeo, wherefore art thou Romeo?</div>
+      <div data-line='2' data-section='4' style='opacity: 0.25; transition: opacity 600ms;'>Deny thy father and refuse thy name,</div>
+      <div data-line='3' data-section='4' style='opacity: 0.25; transition: opacity 600ms;'>Or, if thou wilt not, be but sworn my love,</div>
+      <div data-line='4' data-section='4' style='opacity: 0.25; transition: opacity 600ms;'>And I'll no longer be a Capulet.</div>
+    </div>
+  </div>
+
+  <div class='bg-section' data-section='5' style='display: none; padding-top: 36px;'>
+    <div style='font-size: 14px; line-height: 1.6;'>
+      <div data-line='1' data-section='5' style='transition: opacity 600ms;'>'Tis but thy name that is my enemy.</div>
+      <div data-line='2' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Thou art thyself, though not a Montague.</div>
+      <div data-line='3' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>What's Montague? It is nor hand, nor foot,</div>
+      <div data-line='4' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Nor arm, nor face. O, be some other name</div>
+      <div data-line='5' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Belonging to a man.</div>
+      <div data-line='6' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>What's in a name? That which we call a rose</div>
+      <div data-line='7' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>By any other word would smell as sweet.</div>
+      <div data-line='8' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>So Romeo would, were he not Romeo called,</div>
+      <div data-line='9' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Retain that dear perfection which he owes</div>
+      <div data-line='10' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Without that title. Romeo, doff thy name,</div>
+      <div data-line='11' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>And, for thy name, which is no part of thee,</div>
+      <div data-line='12' data-section='5' style='opacity: 0.25; transition: opacity 600ms;'>Take all myself.</div>
+    </div>
+  </div>
 </div>`}
   steps={[
-    { id: 'open', body: '<h3>“But, soft!”</h3><p>The line opens with a beat-break: <em>BUT</em>, <em>SOFT</em>, two stressed syllables back-to-back. Shakespeare uses this when a character is suddenly arrested by what they see. Romeo is mid-thought when Juliet appears.</p>' },
-    { id: 'sun', body: '<h3>“Juliet is the sun.”</h3><p>Romeo crowns Juliet a heavenly body. The metaphor sets up the entire light-vs-dark imagery system that runs through the rest of the play. Juliet is light; the night and the moon are her enemies.</p>' },
-    { id: 'moon', body: '<h3>The envious moon</h3><p>The moon is the goddess Diana, virginity. Romeo wants Juliet to “kill” it, that is, give up chastity. This is a young man\'s seduction speech dressed up as cosmology.</p>' },
-    { id: 'sick', body: '<h3>Foreshadowing</h3><p>“Sick and pale with grief.” The play is full of <em>death</em> imagery in moments of love. Romeo cannot praise Juliet without invoking what will undo her.</p>' }
+    { id: 'soft',     body: '<h3>"But, soft!"</h3><p>The line opens with a beat-break: <em>BUT</em>, <em>SOFT</em>, two stressed syllables back-to-back. Shakespeare uses this when a character is suddenly arrested by what they see. Romeo is mid-thought when Juliet appears at the window.</p>' },
+    { id: 'sun',      body: '<h3>"Juliet is the sun."</h3><p>Romeo crowns Juliet a heavenly body. This single metaphor sets up the entire light-vs-dark imagery system that runs through the rest of the play. Juliet is light; the night and the moon are her enemies.</p>' },
+    { id: 'moon',     body: '<h3>The envious moon</h3><p>The moon is the goddess Diana, who represents virginity. Romeo wants Juliet to "kill" it, meaning give up her chaste status. This is a young man\'s seduction speech dressed up as cosmology.</p>' },
+    { id: 'vestal',   body: '<h3>"Vestal livery"</h3><p>"Vestal" refers to the Vestal Virgins of Rome who tended a sacred fire. "Livery" is a uniform. Romeo is asking Juliet to take off her virginity like a costume. The Elizabethan audience would have caught the bawdy second meaning instantly.</p>' },
+    { id: 'lady',     body: '<h3>"It is my lady."</h3><p>Romeo finally lets himself say it. Up to now he\'s used metaphor (sun, moon, stars) to keep distance. The plain four words "It is my lady" mark the moment he commits emotionally.</p>' },
+    { id: 'stars',    body: '<h3>Eyes as stars</h3><p>Romeo invents an entire conceit: two stars have business elsewhere and ask Juliet\'s eyes to fill in for them. He then argues her eyes would shine SO bright that birds would sing thinking it was day. Hyperbole stacked on hyperbole.</p>' },
+    { id: 'glove',    body: '<h3>"O, that I were a glove upon that hand"</h3><p>The famous line. Romeo wishes to be the most intimate ordinary object: a glove she\'d wear, so he could touch her cheek. The wish is at once tender and surprisingly carnal.</p>' },
+    { id: 'angel',    body: '<h3>"Bright angel"</h3><p>After Juliet sighs ("Ay me"), Romeo answers her aloud. He shifts from cosmic imagery (sun, stars) to <em>religious</em> imagery (angel, messenger of heaven). Juliet is now both the heavens and the divine.</p>' },
+    { id: 'winged',   body: '<h3>The winged messenger</h3><p>The reference is to Gabriel or another angel. Romeo describes mortals tilting their heads back to gaze at the angel as he sails on clouds. He\'s comparing Juliet on her balcony to a divine apparition over a crowd of upturned faces.</p>' },
+    { id: 'wherefore',body: '<h3>"Wherefore art thou Romeo?"</h3><p>The most-misquoted line in English. <em>Wherefore</em> means <em>why</em>, not <em>where</em>. Juliet, still believing she is alone, is asking the universe why he has to be a Montague. The pain is in the name, not in his location.</p>' },
+    { id: 'capulet',  body: '<h3>"I\'ll no longer be a Capulet."</h3><p>Juliet offers, alone in her room, to give up her own family for him. This is a 13-year-old making the largest possible offer her culture allows. The play tracks how the adults around her fail to honor that offer.</p>' },
+    { id: 'rose',     body: '<h3>"That which we call a rose..."</h3><p>The defining line of the speech and one of the most quoted in all literature. Juliet argues that <em>names are arbitrary</em>. The flower would smell the same with any label; Romeo is the same person regardless of being a Montague.</p>' },
+    { id: 'doff',     body: '<h3>"Doff thy name, take all myself"</h3><p>"Doff" means take off, like a hat. Juliet asks Romeo to shed his last name and, in exchange, she will give him every part of herself. The moment her speech ends, Romeo steps out of the dark and accepts the bargain.</p>' }
   ]}
   onStep={`(stepId) => {
     const stage = document.getElementById('balcony-text');
     if (!stage) return;
-    const map = { open: 1, sun: 2, moon: 3, sick: 4 };
-    const target = map[stepId] || 1;
-    stage.querySelectorAll('[data-line]').forEach((el) => {
-      const n = Number(el.getAttribute('data-line'));
-      el.style.opacity = n <= target ? '1' : '0.25';
+    const map = {
+      soft:      { section: 1, line: 1, label: "Part 1, Romeo" },
+      sun:       { section: 1, line: 2, label: "Part 1, Romeo" },
+      moon:      { section: 1, line: 3, label: "Part 1, Romeo" },
+      vestal:    { section: 1, line: 7, label: "Part 1, Romeo" },
+      lady:      { section: 2, line: 1, label: "Part 2, Romeo" },
+      stars:     { section: 2, line: 6, label: "Part 2, Romeo" },
+      glove:     { section: 2, line: 15, label: "Part 2, Romeo" },
+      angel:     { section: 3, line: 1, label: "Part 3, Romeo" },
+      winged:    { section: 3, line: 3, label: "Part 3, Romeo" },
+      wherefore: { section: 4, line: 1, label: "Part 4, Juliet" },
+      capulet:   { section: 4, line: 4, label: "Part 4, Juliet" },
+      rose:      { section: 5, line: 6, label: "Part 5, Juliet" },
+      doff:      { section: 5, line: 11, label: "Part 5, Juliet" }
+    };
+    const t = map[stepId];
+    if (!t) return;
+    stage.querySelectorAll('.bg-section').forEach((s) => {
+      s.style.display = Number(s.getAttribute('data-section')) === t.section ? 'block' : 'none';
     });
-    const win = document.getElementById('balcony-window');
+    stage.querySelectorAll('[data-line]').forEach((l) => {
+      if (Number(l.getAttribute('data-section')) !== t.section) return;
+      l.style.opacity = Number(l.getAttribute('data-line')) <= t.line ? '1' : '0.25';
+    });
+    const label = stage.querySelector('[data-section="label"]');
+    if (label) label.textContent = t.label;
     const moon = document.getElementById('balcony-moon');
-    if (win) win.style.opacity = target >= 1 ? '1' : '0';
     if (moon) {
-      if (target >= 3) { moon.style.opacity = '0.4'; moon.style.filter = 'drop-shadow(0 0 8px rgba(120,113,108,0.3)) grayscale(0.7)'; }
-      else { moon.style.opacity = '1'; moon.style.filter = 'drop-shadow(0 0 18px rgba(255,255,200,0.4))'; }
+      if (t.section === 1 && t.line >= 3) {
+        moon.style.opacity = '0.4';
+        moon.style.filter = 'drop-shadow(0 0 8px rgba(120,113,108,0.3)) grayscale(0.7)';
+      } else {
+        moon.style.opacity = '1';
+        moon.style.filter = 'drop-shadow(0 0 14px rgba(255,255,200,0.4))';
+      }
     }
   }`}
 />
