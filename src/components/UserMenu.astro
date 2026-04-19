@@ -107,10 +107,25 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && open) setOpen(false);
     });
-    logoutBtn?.addEventListener('click', () => {
-      logout();
+    logoutBtn?.addEventListener('click', async (e) => {
+      e.preventDefault();
       setOpen(false);
-      window.location.href = '/';
+      // Disable the button so users don't get a hung-feel mid-signout.
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.disabled = true;
+      const prev = btn.textContent;
+      btn.textContent = 'Signing out...';
+      try {
+        // Must await: logout() returns a Promise in cloud mode (calls
+        // sb.auth.signOut). If we navigate before it resolves, the next
+        // page's bootstrapCloudSession finds the session still valid and
+        // logs the user back in.
+        await logout();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prev;
+        window.location.href = '/';
+      }
     });
   };
   setup();
