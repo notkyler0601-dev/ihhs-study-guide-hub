@@ -17,6 +17,7 @@ import Flashcards from '../../components/Flashcards.astro';
 import VerticalTimeline from '../../components/VerticalTimeline.astro';
 import NetworkGraph from '../../components/NetworkGraph.astro';
 import MapView from '../../components/MapView.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
 import NivoSankey from '../../components/NivoSankey.astro';
 import NivoChord from '../../components/NivoChord.astro';
 import RechartsBar from '../../components/RechartsBar.astro';
@@ -307,8 +308,16 @@ When you hit a Shakespeare line that feels stiff, count syllables. If it's exact
 
 This is the most famous scene in English drama. Watch a production once, then we'll memorize it.
 
-<Callout type="tip" title="Three productions worth watching">
-Each link opens a YouTube search so you always get a fresh, working clip (production uploads come and go).
+### Watch a quick overview
+
+If the embedded player below shows "Video unavailable" you can swap the YouTube URL in the guide source for any video you'd like (look for the `<VideoPlayer url="...">` line near the balcony scene section). Many official R&J productions disable embedding, so a search link below is provided as a fallback.
+
+<VideoPlayer url="https://www.youtube.com/watch?v=YeqYZ8tOArc" />
+
+[Search YouTube for full balcony scene productions →](https://www.youtube.com/results?search_query=romeo+juliet+balcony+scene+full)
+
+<Callout type="tip" title="Watch the balcony scene in three different productions">
+Each link opens a fresh YouTube search so you always get a working clip (specific uploads come and go).
 
 - **Franco Zeffirelli, 1968** (the classic, period-accurate, the version most schools show): [open on YouTube](https://www.youtube.com/results?search_query=zeffirelli+1968+romeo+juliet+balcony+scene)
 - **Baz Luhrmann, 1996** (modern Verona Beach, swimming pool, same text): [open on YouTube](https://www.youtube.com/results?search_query=luhrmann+romeo+juliet+balcony+scene+1996)
