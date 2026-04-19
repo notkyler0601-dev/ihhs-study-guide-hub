@@ -109,14 +109,16 @@ create policy "user_data write own"
   with check (auth.uid() = user_id);
 
 -- Requests
-drop policy if exists "requests insert anyone"  on public.requests;
+drop policy if exists "requests insert anyone"   on public.requests;
+drop policy if exists "requests insert authed"   on public.requests;
 drop policy if exists "requests read own or admin" on public.requests;
-drop policy if exists "requests update admin"   on public.requests;
+drop policy if exists "requests update admin"    on public.requests;
 
--- Anyone (logged in or not) can submit a request.
-create policy "requests insert anyone"
+-- Only signed-in users can submit a request, and only with their own user_id.
+-- This prevents anonymous spam and lets us follow up with the requester.
+create policy "requests insert authed"
   on public.requests for insert
-  with check (true);
+  with check (auth.uid() is not null and auth.uid() = user_id);
 
 -- You can only read your own submissions. Admins can read all.
 create policy "requests read own or admin"

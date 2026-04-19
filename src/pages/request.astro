@@ -27,7 +27,33 @@ const suggestedSubjects = [
       </p>
     </div>
 
-    <form id="request-form" class="surface rounded-2xl p-6 sm:p-8 space-y-6">
+    <!-- Sign-in gate, shown by default. JS hides this and reveals the form when the user is signed in. -->
+    <div id="request-gate" class="surface rounded-2xl p-8 sm:p-10 text-center">
+      <div class="inline-flex items-center justify-center h-14 w-14 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-2xl mb-5">
+        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Sign in to submit a request</h2>
+      <p class="text-ink-600 dark:text-ink-300 max-w-md mx-auto mb-6">
+        We require an account so we can follow up on requests, prevent spam, and credit you for ideas that become guides.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="/login?next=/request" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">
+          Log in
+        </a>
+        <a href="/signup?next=/request" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">
+          Create an account
+        </a>
+      </div>
+    </div>
+
+    <form id="request-form" class="hidden surface rounded-2xl p-6 sm:p-8 space-y-6">
+      <div data-request-as class="text-xs text-ink-500 dark:text-ink-400 flex items-center gap-2 px-3 py-2 rounded-lg bg-ink-50 dark:bg-ink-900/60 border border-ink-200 dark:border-ink-800">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Submitting as <strong data-request-as-name class="text-ink-900 dark:text-ink-50"></strong>
+      </div>
+
       <div class="grid sm:grid-cols-2 gap-5">
         <label class="block">
           <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
@@ -99,33 +125,7 @@ const suggestedSubjects = [
         ></textarea>
       </label>
 
-      <div class="grid sm:grid-cols-2 gap-5">
-        <label class="block">
-          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
-            Your name <span class="text-ink-400 font-normal normal-case tracking-normal">(optional)</span>
-          </span>
-          <input
-            type="text"
-            name="name"
-            maxlength="60"
-            placeholder="So we can credit you"
-            class="form-input mt-2"
-          />
-        </label>
-
-        <label class="block">
-          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
-            Email <span class="text-ink-400 font-normal normal-case tracking-normal">(optional)</span>
-          </span>
-          <input
-            type="email"
-            name="email"
-            maxlength="120"
-            placeholder="So we can ping you when it's ready"
-            class="form-input mt-2"
-          />
-        </label>
-      </div>
+      <div id="request-error" class="hidden text-sm text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30 rounded-lg px-4 py-3"></div>
 
       <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-ink-200 dark:border-ink-800">
         <p class="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
@@ -133,7 +133,8 @@ const suggestedSubjects = [
         </p>
         <button
           type="submit"
-          class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all whitespace-nowrap"
+          id="request-submit"
+          class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all whitespace-nowrap disabled:opacity-50"
         >
           Submit request
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -179,16 +180,34 @@ const suggestedSubjects = [
 
 <script>
   import { supabase, isCloudMode } from '../lib/supabase';
-  import { currentUser } from '../lib/auth';
-
-  // Split + reassembled to make it slightly harder for scrapers.
-  const TO_EMAIL = ['notkyler0601', 'gmail.com'].join('@');
+  import { currentUser, onAuthChange } from '../lib/auth';
 
   const setup = () => {
     const form = document.getElementById('request-form') as HTMLFormElement | null;
     const success = document.getElementById('request-success');
+    const gate = document.getElementById('request-gate');
     const again = document.getElementById('request-another');
-    if (!form || !success) return;
+    const errEl = document.getElementById('request-error');
+    const submitBtn = document.getElementById('request-submit') as HTMLButtonElement | null;
+    const asName = document.querySelector('[data-request-as-name]');
+    if (!form || !success || !gate || !errEl || !submitBtn) return;
+
+    // Visibility based on auth state.
+    const showForUser = () => {
+      const me = currentUser();
+      if (me) {
+        gate.classList.add('hidden');
+        form.classList.remove('hidden');
+        success.classList.add('hidden');
+        if (asName) asName.textContent = `${me.displayName} (@${me.username})`;
+      } else {
+        gate.classList.remove('hidden');
+        form.classList.add('hidden');
+        success.classList.add('hidden');
+      }
+    };
+    showForUser();
+    onAuthChange(showForUser);
 
     // Live char counter for goal textarea.
     document.querySelectorAll('[data-counter]').forEach((el) => {
@@ -202,8 +221,10 @@ const suggestedSubjects = [
 
     const reset = () => {
       form.reset();
-      form.classList.remove('hidden');
       success.classList.add('hidden');
+      const me = currentUser();
+      if (me) form.classList.remove('hidden');
+      else gate.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       document.querySelectorAll('[data-counter]').forEach((el) => { (el as HTMLElement).textContent = '0'; });
     };
@@ -211,50 +232,53 @@ const suggestedSubjects = [
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      errEl.classList.add('hidden');
+
+      const me = currentUser();
+      if (!me) {
+        errEl.textContent = 'Please sign in to submit a request.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
       const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
 
-      // Cloud mode: insert into Supabase.
+      // Cloud mode: insert into Supabase. RLS blocks unauthenticated inserts server-side too.
       if (isCloudMode()) {
         const sb = supabase();
         if (sb) {
-          const me = currentUser();
           const { error } = await sb.from('requests').insert({
             subject: data.subject,
             topic: data.topic,
             urgency: data.urgency || null,
             goal: data.goal,
             sources: data.sources || null,
-            name: data.name || null,
-            email: data.email || null,
-            user_id: me?.id ?? null,
+            name: me.displayName,
+            email: me.email ?? null,
+            user_id: me.id,
           });
+          submitBtn.disabled = false;
           if (!error) {
             form.classList.add('hidden');
             success.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
           }
-          console.warn('Supabase request insert failed:', error.message);
-          // fall through to mailto fallback
+          errEl.textContent = 'Could not submit: ' + error.message;
+          errEl.classList.remove('hidden');
+          return;
         }
       }
 
-      // Fallback (local mode or Supabase failure): mailto.
-      const subject = `Study guide request: ${data.topic}`;
-      const body = [
-        `Subject: ${data.subject}`,
-        `Topic: ${data.topic}`,
-        `Urgency: ${data.urgency || 'No rush'}`,
-        '',
-        'What they want to understand:',
-        data.goal,
-        '',
-        data.sources ? `Source material:\n${data.sources}\n` : '',
-        data.name ? `From: ${data.name}` : '',
-        data.email ? `Reply to: ${data.email}` : '',
-      ].filter(Boolean).join('\n');
-      window.location.href = `mailto:${TO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
+      // Local mode (no Supabase): show success but stash to localStorage for the admin to import later.
+      try {
+        const key = 'ihhs:local-requests';
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push({ ...data, name: me.displayName, email: me.email, user_id: me.id, at: new Date().toISOString() });
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch {}
+      submitBtn.disabled = false;
       form.classList.add('hidden');
       success.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
