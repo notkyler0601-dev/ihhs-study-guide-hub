@@ -19,7 +19,7 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
     </svg>
     {title}
   </header>
-  <div data-pom-mode class="text-[11px] uppercase tracking-[0.18em] text-ink-500 font-semibold mb-1">Work</div>
+  <div data-pom-mode class="text-[11px] uppercase tracking-[0.18em] text-ink-500 font-semibold mb-1">Lock in Twin🥀</div>
   <div data-pom-time class="font-serif text-6xl font-semibold gradient-text tracking-tight mb-4 tabular-nums">25:00</div>
   <div class="flex items-center justify-center gap-2 mb-3">
     <button data-pom-toggle type="button" class="px-5 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm">Start</button>
@@ -42,7 +42,7 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       const resetBtn = root.querySelector<HTMLButtonElement>('[data-pom-reset]');
       if (!timeEl || !modeEl || !cycleEl || !toggleBtn || !skipBtn || !resetBtn) return;
 
-      let mode = 'Work';
+      let mode = 'Lock in Twin🥀';
       let cycle = 1;
       let secondsLeft = conf.workMin * 60;
       let interval: ReturnType<typeof setInterval> | null = null;
@@ -52,7 +52,7 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       const setMode = (m: string) => {
         mode = m;
         modeEl.textContent = m;
-        secondsLeft = m === 'Work'
+        secondsLeft = m === 'Lock in Twin🥀'
           ? conf.workMin * 60
           : m === 'Long break'
             ? conf.longBreakMin * 60
@@ -61,13 +61,13 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       };
 
       const advance = () => {
-        if (mode === 'Work') {
+        if (mode === 'Lock in Twin🥀') {
           if (cycle % conf.cyclesUntilLong === 0) setMode('Long break');
           else setMode('Short break');
         } else {
           cycle++;
           cycleEl.textContent = String(cycle);
-          setMode('Work');
+          setMode('Lock in Twin🥀');
         }
       };
 
@@ -114,10 +114,10 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
         stop();
         cycle = 1;
         cycleEl.textContent = '1';
-        setMode('Work');
+        setMode('Lock in Twin🥀');
       });
 
-      setMode('Work');
+      setMode('Lock in Twin🥀');
     });
   };
   init();

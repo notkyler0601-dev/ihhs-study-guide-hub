@@ -1,0 +1,222 @@
+---
+// Floating Pomodoro timer fixed to the bottom-left corner of every guide page.
+// State persists in sessionStorage so it survives Astro View Transitions
+// navigation between guides. Collapsible to a tiny clock-only pill.
+//
+// Mounted globally from GuideLayout.astro, so guide authors don't need to
+// import or invoke it. To opt-out on a specific page, pass `floatingTimer={false}`
+// to BaseLayout (not yet wired in; add when needed).
+interface Props {
+  workMin?: number;
+  shortBreakMin?: number;
+  longBreakMin?: number;
+  cyclesUntilLong?: number;
+}
+const { workMin = 25, shortBreakMin = 5, longBreakMin = 15, cyclesUntilLong = 4 } = Astro.props;
+const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilLong });
+---
+
+<aside id="floating-timer" data-ft data-conf={conf} class="no-print fixed bottom-4 left-4 z-40 select-none" aria-label="Study timer">
+  <div data-ft-card class="surface rounded-xl shadow-lift overflow-hidden text-ink-900 dark:text-ink-50">
+    <header class="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-ink-200 dark:border-ink-800 bg-ink-50/80 dark:bg-ink-900/80">
+      <span data-ft-mode class="text-[11px] font-semibold tracking-tight">Lock in Twin🥀</span>
+      <div class="flex items-center gap-0.5">
+        <button data-ft-collapse type="button" aria-label="Collapse" class="px-1.5 text-ink-400 hover:text-accent-700 dark:hover:text-accent-400 leading-none">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </button>
+        <button data-ft-close type="button" aria-label="Hide timer" class="px-1.5 text-ink-400 hover:text-rose-500 leading-none">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+        </button>
+      </div>
+    </header>
+    <div data-ft-body class="px-3 py-2.5">
+      <div data-ft-time class="font-serif text-3xl font-semibold gradient-text tabular-nums text-center leading-none mb-2">25:00</div>
+      <div class="flex items-center justify-center gap-1.5">
+        <button data-ft-toggle type="button" class="px-3 py-1 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-xs font-medium min-w-[60px]">Start</button>
+        <button data-ft-skip type="button" aria-label="Skip" class="h-7 w-7 grid place-items-center rounded-md bg-ink-100 dark:bg-ink-800 hover:bg-ink-200 dark:hover:bg-ink-700">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m13 5 7 7-7 7M5 5l7 7-7 7"/></svg>
+        </button>
+        <button data-ft-reset type="button" aria-label="Reset" class="h-7 w-7 grid place-items-center rounded-md bg-ink-100 dark:bg-ink-800 hover:bg-ink-200 dark:hover:bg-ink-700">
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+        </button>
+      </div>
+      <div class="mt-1 text-[10px] text-center text-ink-500">Cycle <span data-ft-cycle class="font-semibold text-ink-900 dark:text-ink-50">1</span></div>
+    </div>
+  </div>
+
+  <!-- Collapsed pill (shown when user clicks the dash) -->
+  <button data-ft-pill type="button" class="hidden surface rounded-full shadow-lift px-3 py-1.5 flex items-center gap-2 text-xs font-mono">
+    <span data-ft-pill-time class="tabular-nums font-semibold">25:00</span>
+    <svg class="h-3 w-3 text-ink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+
+  <!-- Hidden re-show button (shown when user clicks ×) -->
+  <button data-ft-show type="button" class="hidden h-9 w-9 grid place-items-center rounded-full surface shadow-lift text-ink-700 dark:text-ink-200 hover:text-accent-700 dark:hover:text-accent-400" aria-label="Show study timer">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>
+    </svg>
+  </button>
+</aside>
+
+<script>
+  type SavedState = {
+    mode: 'Lock in Twin🥀' | 'Short break' | 'Long break';
+    cycle: number;
+    secondsLeft: number;
+    isRunning: boolean;
+    lastTickAt: number;     // ms epoch
+    visibility: 'expanded' | 'collapsed' | 'hidden';
+  };
+
+  const STORAGE_KEY = 'ihhs:floating-timer';
+  const WORK_LABEL = 'Lock in Twin🥀';
+
+  const init = () => {
+    const root = document.getElementById('floating-timer') as HTMLElement | null;
+    if (!root || root.dataset.ftReady === '1') return;
+    root.dataset.ftReady = '1';
+    const conf = JSON.parse(root.dataset.conf || '{}');
+    const card = root.querySelector<HTMLElement>('[data-ft-card]')!;
+    const pill = root.querySelector<HTMLButtonElement>('[data-ft-pill]')!;
+    const show = root.querySelector<HTMLButtonElement>('[data-ft-show]')!;
+    const timeEl = root.querySelector<HTMLElement>('[data-ft-time]')!;
+    const pillTimeEl = root.querySelector<HTMLElement>('[data-ft-pill-time]')!;
+    const modeEl = root.querySelector<HTMLElement>('[data-ft-mode]')!;
+    const cycleEl = root.querySelector<HTMLElement>('[data-ft-cycle]')!;
+    const toggleBtn = root.querySelector<HTMLButtonElement>('[data-ft-toggle]')!;
+    const skipBtn = root.querySelector<HTMLButtonElement>('[data-ft-skip]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-ft-reset]')!;
+    const collapseBtn = root.querySelector<HTMLButtonElement>('[data-ft-collapse]')!;
+    const closeBtn = root.querySelector<HTMLButtonElement>('[data-ft-close]')!;
+
+    const fmt = (s: number) => {
+      const sec = Math.max(0, Math.floor(s));
+      return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+    };
+
+    const load = (): SavedState => {
+      try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch {}
+      return {
+        mode: WORK_LABEL,
+        cycle: 1,
+        secondsLeft: conf.workMin * 60,
+        isRunning: false,
+        lastTickAt: Date.now(),
+        visibility: 'expanded',
+      };
+    };
+    const save = (s: SavedState) => {
+      try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+    };
+
+    let state = load();
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    // Apply elapsed time since last tick if we were running before navigation.
+    if (state.isRunning) {
+      const elapsed = (Date.now() - state.lastTickAt) / 1000;
+      state.secondsLeft = Math.max(0, state.secondsLeft - elapsed);
+    }
+
+    const setVisibility = (v: SavedState['visibility']) => {
+      state.visibility = v;
+      card.classList.toggle('hidden', v !== 'expanded');
+      pill.classList.toggle('hidden', v !== 'collapsed');
+      pill.classList.toggle('flex', v === 'collapsed');
+      show.classList.toggle('hidden', v !== 'hidden');
+      show.classList.toggle('grid', v === 'hidden');
+      save(state);
+    };
+
+    const render = () => {
+      const t = fmt(state.secondsLeft);
+      timeEl.textContent = t;
+      pillTimeEl.textContent = t;
+      modeEl.textContent = state.mode;
+      cycleEl.textContent = String(state.cycle);
+      toggleBtn.textContent = state.isRunning ? 'Pause' : (state.secondsLeft < secondsForMode(state.mode) ? 'Resume' : 'Start');
+    };
+
+    const secondsForMode = (m: string) => m === WORK_LABEL ? conf.workMin * 60 : m === 'Long break' ? conf.longBreakMin * 60 : conf.shortBreakMin * 60;
+
+    const beep = () => {
+      try {
+        const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+      } catch {}
+    };
+
+    const advance = () => {
+      if (state.mode === WORK_LABEL) {
+        if (state.cycle % conf.cyclesUntilLong === 0) {
+          state.mode = 'Long break';
+        } else {
+          state.mode = 'Short break';
+        }
+      } else {
+        state.cycle++;
+        state.mode = WORK_LABEL;
+      }
+      state.secondsLeft = secondsForMode(state.mode);
+    };
+
+    const tick = () => {
+      const now = Date.now();
+      const elapsed = (now - state.lastTickAt) / 1000;
+      state.lastTickAt = now;
+      state.secondsLeft -= elapsed;
+      if (state.secondsLeft <= 0) {
+        stop();
+        beep();
+        advance();
+      }
+      render();
+      save(state);
+    };
+
+    const start = () => {
+      if (interval) return;
+      state.isRunning = true;
+      state.lastTickAt = Date.now();
+      interval = setInterval(tick, 1000);
+      render(); save(state);
+    };
+    const stop = () => {
+      if (interval) { clearInterval(interval); interval = null; }
+      state.isRunning = false;
+      render(); save(state);
+    };
+
+    toggleBtn.addEventListener('click', () => state.isRunning ? stop() : start());
+    skipBtn.addEventListener('click', () => { stop(); advance(); render(); save(state); });
+    resetBtn.addEventListener('click', () => {
+      stop();
+      state.cycle = 1;
+      state.mode = WORK_LABEL;
+      state.secondsLeft = conf.workMin * 60;
+      render(); save(state);
+    });
+    collapseBtn.addEventListener('click', () => setVisibility('collapsed'));
+    closeBtn.addEventListener('click', () => { stop(); setVisibility('hidden'); });
+    pill.addEventListener('click', () => setVisibility('expanded'));
+    show.addEventListener('click', () => setVisibility('expanded'));
+
+    setVisibility(state.visibility);
+    render();
+    if (state.isRunning) start();
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
