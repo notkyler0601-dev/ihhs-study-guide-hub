@@ -26,19 +26,23 @@ const { graphic, steps, onStep = '', graphicHeight = '70vh' } = Astro.props;
 const id = 'scroll-' + Math.random().toString(36).slice(2, 9);
 ---
 
-<section class="not-prose my-12" id={id} data-scrolly>
-  <div class="grid lg:grid-cols-[1fr_minmax(0,420px)] gap-8 items-start">
-    <div data-scrolly-graphic class="lg:sticky lg:top-24 surface rounded-2xl p-6 flex items-center justify-center overflow-hidden" style={`min-height: ${graphicHeight};`}>
-      <Fragment set:html={graphic} />
+<section class="not-prose my-12 overflow-x-hidden" id={id} data-scrolly>
+  <div class="grid lg:grid-cols-[1fr_minmax(0,400px)] gap-6 items-start">
+    <div data-scrolly-graphic class="lg:sticky lg:top-24 surface rounded-2xl flex items-center justify-center overflow-hidden min-w-0" style={`min-height: ${graphicHeight}; box-sizing: border-box;`}>
+      <div class="w-full h-full relative" style={`min-height: ${graphicHeight};`}>
+        <Fragment set:html={graphic} />
+      </div>
     </div>
-    <div class="space-y-[60vh] py-[20vh]">
-      {steps.map((step) => (
-        <article data-scrolly-step={step.id} class="surface rounded-xl p-6 transition-all data-[active=true]:border-accent-500 data-[active=true]:shadow-glow">
+    <div class="space-y-6 lg:space-y-[35vh] py-2 lg:py-[15vh] min-w-0">
+      {steps.map((step, i) => (
+        <article data-scrolly-step={step.id} class="surface rounded-xl p-6 pl-10 transition-all data-[active=true]:border-accent-500 data-[active=true]:shadow-glow relative">
+          <span class="absolute top-5 left-4 inline-flex items-center justify-center h-7 w-7 rounded-full bg-accent-700 text-white text-xs font-mono font-semibold">{i + 1}</span>
           <Fragment set:html={step.body} />
         </article>
       ))}
     </div>
   </div>
+  <div class="hidden lg:block mt-4 text-center text-xs text-ink-500">↓ scroll to walk through each step ↓</div>
 </section>
 
 <script define:vars={{ id, onStep }}>

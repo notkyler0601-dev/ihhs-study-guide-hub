@@ -3,29 +3,38 @@ import { ResponsiveSankey } from '@nivo/sankey';
 interface Props {
   data: { nodes: { id: string }[]; links: { source: string; target: string; value: number }[] };
   height?: number;
+  labelOrientation?: 'horizontal' | 'vertical';
 }
 
-export default function NivoSankey({ data, height = 420 }: Props) {
+export default function NivoSankey({ data, height = 520, labelOrientation = 'vertical' }: Props) {
   return (
-    <div style={{ height }}>
+    <div style={{ height, minWidth: 0 }}>
       <ResponsiveSankey
         data={data}
-        margin={{ top: 20, right: 140, bottom: 20, left: 100 }}
+        margin={
+          labelOrientation === 'vertical'
+            ? { top: 80, right: 24, bottom: 80, left: 24 }
+            : { top: 24, right: 200, bottom: 24, left: 160 }
+        }
         align="justify"
         colors={{ scheme: 'red_purple' }}
         nodeOpacity={1}
         nodeHoverOpacity={1}
-        nodeThickness={18}
-        nodeSpacing={24}
+        nodeThickness={22}
+        nodeSpacing={32}
         nodeBorderWidth={0}
-        linkOpacity={0.5}
-        linkHoverOpacity={0.85}
-        linkContract={2}
-        enableLinkGradient={true}
+        linkOpacity={0.55}
+        linkHoverOpacity={0.9}
+        linkContract={3}
+        enableLinkGradient
         labelPosition="outside"
-        labelOrientation="horizontal"
+        labelOrientation={labelOrientation}
         labelPadding={12}
-        labelTextColor={{ from: 'color', modifiers: [['darker', 1.4]] }}
+        labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+        theme={{
+          labels: { text: { fontSize: 12, fontFamily: 'Inter, sans-serif', fontWeight: 500 } },
+          tooltip: { container: { fontSize: 12 } },
+        }}
         animate
       />
     </div>

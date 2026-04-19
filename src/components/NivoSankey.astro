@@ -17,10 +17,11 @@ import NivoSankeyReact from './react/NivoSankey.tsx';
 interface Props {
   data: { nodes: { id: string }[]; links: { source: string; target: string; value: number }[] };
   height?: number;
+  labelOrientation?: 'horizontal' | 'vertical';
 }
-const { data, height = 420 } = Astro.props;
+const { data, height = 520, labelOrientation = 'vertical' } = Astro.props;
 ---
 
 <div class="not-prose my-6 surface rounded-xl p-4">
-  <NivoSankeyReact client:only="react" data={data} height={height} />
+  <NivoSankeyReact client:only="react" data={data} height={height} labelOrientation={labelOrientation} />
 </div>
