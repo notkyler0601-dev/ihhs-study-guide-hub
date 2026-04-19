@@ -446,7 +446,6 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 |---|---|---|---|
 | `<VideoPlayer url="..." />` | react-player | `react-player` | One API for YouTube, Vimeo, Twitch, SoundCloud, MP4, HLS, DASH. |
 | `<MuxPlayer playbackId="..." src="..." />` | Mux Player web component | `@mux/mux-player`, `@mux/mux-player-react` | Adaptive bitrate, low latency, real-time analytics. |
-| `<VidstackPlayer src="..." title="..." poster="..." />` | Vidstack | `@vidstack/react` | Accessible HTML5/HLS/DASH player with chapters, captions, keyboard shortcuts. Self-hosted alternative to Mux. |
 
 ### Rich text editing
 

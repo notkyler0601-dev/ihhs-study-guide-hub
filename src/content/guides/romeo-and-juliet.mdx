@@ -16,7 +16,7 @@ import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
 import VerticalTimeline from '../../components/VerticalTimeline.astro';
 import NetworkGraph from '../../components/NetworkGraph.astro';
-import MapLibreView from '../../components/MapLibreView.astro';
+import MapView from '../../components/MapView.astro';
 import NivoSankey from '../../components/NivoSankey.astro';
 import NivoChord from '../../components/NivoChord.astro';
 import RechartsBar from '../../components/RechartsBar.astro';
@@ -24,7 +24,6 @@ import RechartsLine from '../../components/RechartsLine.astro';
 import DragMatch from '../../components/DragMatch.astro';
 import Scrollytelling from '../../components/Scrollytelling.astro';
 import Memorize from '../../components/Memorize.astro';
-import Pronounce from '../../components/Pronounce.astro';
 
 ## Learning objectives
 
@@ -142,16 +141,17 @@ The play does not span weeks. **Sunday → Thursday.** That compression is why e
 
 Verona was a real Italian city when Shakespeare wrote, and remains one of the most-visited literary destinations on Earth. The play's locations map to actual streets you can walk today.
 
-<MapLibreView
-  center={[10.999, 45.443]}
-  zoom={14.5}
-  height="420px"
+<MapView
+  title="Verona, Italy: the play's real locations"
+  center={[45.4418, 10.998]}
+  zoom={15}
+  height="460px"
   markers={[
-    { lng: 10.998, lat: 45.443, label: "Casa di Giulietta (the famous balcony, 14th c. courtyard)", color: "#b91c1c" },
-    { lng: 11.001, lat: 45.444, label: "Piazza delle Erbe (the marketplace where Act 1 brawl happens)", color: "#b91c1c" },
-    { lng: 10.992, lat: 45.439, label: "Tomba di Giulietta (the tomb, in a former monastery)", color: "#7f1d1d" },
-    { lng: 11.003, lat: 45.444, label: "Casa di Romeo (a private 13th c. fortified house)", color: "#7f1d1d" },
-    { lng: 10.996, lat: 45.439, label: "San Fermo Maggiore (the church Romeo and Juliet's marriage is associated with)", color: "#52525b" }
+    { lat: 45.4429, lng: 10.9985, label: "Casa di Giulietta", popup: "Juliet's House: 14th century courtyard with the famous balcony", color: "#b91c1c" },
+    { lat: 45.4438, lng: 11.0007, label: "Piazza delle Erbe", popup: "The marketplace where the Act 1 brawl breaks out", color: "#b91c1c" },
+    { lat: 45.4396, lng: 10.9925, label: "Tomba di Giulietta", popup: "Juliet's tomb, inside a former Capuchin monastery", color: "#7f1d1d" },
+    { lat: 45.4445, lng: 11.0036, label: "Casa di Romeo", popup: "A 13th century fortified house traditionally identified as Romeo's", color: "#7f1d1d" },
+    { lat: 45.4391, lng: 10.9961, label: "San Fermo Maggiore", popup: "The medieval church associated with Romeo and Juliet's secret marriage", color: "#52525b" }
   ]}
 />
 
@@ -392,7 +392,9 @@ And none but fools do wear it; cast it off.`}
 
 ### Hear it spoken
 
-<Pronounce src="https://archive.org/download/romeo_juliet_librivox/romeoandjuliet_07_shakespeare.mp3" label="Public-domain LibriVox reading of Act 2, Scene 2 (the full balcony scene)" />
+<Callout type="tip" title="Listen to the soliloquy">
+Free public-domain readings of the full balcony scene are available on LibriVox. Try [LibriVox's Romeo and Juliet collection](https://librivox.org/search?title=romeo+and+juliet&author=Shakespeare) for several full-cast versions.
+</Callout>
 
 ## Famous quotes unpacked
 
