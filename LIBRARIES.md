@@ -460,6 +460,12 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 |---|---|---|---|
 | `<ImageAnnotate src="..." />` | marker.js 2 | `markerjs2` | Draw arrows, callouts, freehand notes on top of any image. |
 
+### Memorization
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<Memorize text="..." title="..." />` | Custom | none | Progressive recall practice for poems, soliloquies, vocab paragraphs. Four modes: read, cloze (random blanks), first-letter hint, cold recall (line-by-line reveal). Tracks best % per device in localStorage. |
+
 ---
 
 ## 9b. React integration

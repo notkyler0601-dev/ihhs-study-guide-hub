@@ -7,6 +7,8 @@ interface Props { items: Item[]; mode?: 'VERTICAL' | 'HORIZONTAL' | 'VERTICAL_AL
 const { items, mode = 'VERTICAL_ALTERNATING', height = '600px' } = Astro.props;
 ---
 
-<div class="not-prose my-6 surface rounded-xl p-4 overflow-hidden">
-  <ChronoTimelineReact client:only="react" items={items} mode={mode} height={height} />
+<div class="not-prose my-6 surface rounded-xl p-4 overflow-hidden relative isolate">
+  <div style={`height: ${height}; overflow-y: auto; overflow-x: hidden; position: relative;`}>
+    <ChronoTimelineReact client:only="react" items={items} mode={mode} height={height} />
+  </div>
 </div>

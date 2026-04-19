@@ -1,0 +1,264 @@
+---
+// Memorize a passage with progressive recall modes:
+//   1. Read       - full text visible
+//   2. Cloze      - ~30% of words blanked (click blanks to peek)
+//   3. First letter - words show only their first letter
+//   4. Cold recall - text fully hidden, "reveal next line" button
+//
+// Tracks per-passage progress in localStorage when signed in.
+//
+// Usage:
+//   <Memorize
+//     title="Romeo's balcony soliloquy"
+//     attribution="Act 2, Scene 2"
+//     text={`But, soft! what light through yonder window breaks?
+// It is the east, and Juliet is the sun.
+// Arise, fair sun, and kill the envious moon,
+// Who is already sick and pale with grief...`}
+//   />
+interface Props {
+  text: string;
+  title?: string;
+  attribution?: string;
+  storageKey?: string;
+}
+const { text, title = 'Memorize this passage', attribution, storageKey } = Astro.props;
+const id = 'memorize-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-memorize>
+  <header class="flex items-start justify-between gap-3 px-6 pt-6 pb-4 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-3 min-w-0">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold shrink-0">M</span>
+      <div class="min-w-0">
+        <h3 class="font-serif text-lg font-semibold leading-tight truncate">{title}</h3>
+        {attribution && <p class="text-xs text-ink-500 mt-0.5">{attribution}</p>}
+      </div>
+    </div>
+    <div class="text-xs text-ink-500 text-right shrink-0">
+      <div data-memorize-progress>0% memorized</div>
+      <div class="text-[10px] uppercase tracking-wider mt-0.5">Per device</div>
+    </div>
+  </header>
+
+  <div class="flex flex-wrap gap-1.5 px-6 py-3 bg-ink-50 dark:bg-ink-900/40 border-b border-ink-200 dark:border-ink-800">
+    <button data-mode="read" class="mode-btn active">📖 Read</button>
+    <button data-mode="cloze" class="mode-btn">✏️ Cloze</button>
+    <button data-mode="hint" class="mode-btn">🔤 First letter</button>
+    <button data-mode="blank" class="mode-btn">🎭 Cold recall</button>
+  </div>
+
+  <div class="px-6 py-6">
+    <div data-memorize-text class="font-serif text-lg leading-[1.9] text-ink-900 dark:text-ink-50 select-none whitespace-pre-wrap"></div>
+  </div>
+
+  <div class="flex items-center justify-between gap-3 px-6 py-3 border-t border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40 text-sm">
+    <div class="flex items-center gap-2">
+      <button data-memorize-reveal class="hidden px-3 py-1.5 rounded-md bg-accent-700 hover:bg-accent-800 text-white text-xs font-medium">Reveal next line</button>
+      <button data-memorize-shuffle class="hidden px-3 py-1.5 rounded-md border border-ink-200 dark:border-ink-800 text-xs hover:border-accent-400">New blanks</button>
+    </div>
+    <div class="text-xs text-ink-500">
+      <span data-memorize-stat>0 / 0 words</span>
+    </div>
+  </div>
+
+  <script type="application/json" data-memorize-source set:html={text}></script>
+</section>
+
+<style is:global>
+  [data-memorize] .mode-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 150ms;
+    background: #ffffff;
+    color: #52525b;
+    border: 1px solid #e4e4e7;
+    cursor: pointer;
+  }
+  .dark [data-memorize] .mode-btn { background: #18181b; color: #d4d4d8; border-color: #27272a; }
+  [data-memorize] .mode-btn:hover { border-color: #f87171; }
+  .dark [data-memorize] .mode-btn:hover { border-color: #dc2626; }
+  [data-memorize] .mode-btn.active { background: #b91c1c; color: #ffffff; border-color: #b91c1c; }
+  .dark [data-memorize] .mode-btn.active { background: #dc2626; border-color: #dc2626; }
+
+  [data-memorize-text] .word { transition: color 200ms, background 200ms; padding: 1px 1px; }
+  [data-memorize-text] .word.blank {
+    color: transparent !important;
+    background: rgb(228 228 231 / 0.85);
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .dark [data-memorize-text] .word.blank { background: rgb(63 63 70 / 0.7); }
+  [data-memorize-text] .word.peek { color: #18181b !important; background: rgb(254 226 226) !important; }
+  .dark [data-memorize-text] .word.peek { color: #fafafa !important; background: rgb(127 29 29 / 0.6) !important; }
+  [data-memorize-text] .word.hint { color: rgb(120 113 108); }
+  .dark [data-memorize-text] .word.hint { color: rgb(168 162 158); }
+  [data-memorize-text] .word.hint::after {
+    content: attr(data-tail);
+    color: transparent;
+    background: rgb(228 228 231 / 0.6);
+    border-radius: 2px;
+    padding: 0 2px;
+    margin-left: 1px;
+  }
+  .dark [data-memorize-text] .word.hint::after { background: rgb(63 63 70 / 0.55); }
+  [data-memorize-text] .line.hidden-line .word {
+    color: transparent !important;
+    background: rgb(228 228 231 / 0.6);
+    border-radius: 3px;
+  }
+  .dark [data-memorize-text] .line.hidden-line .word { background: rgb(63 63 70 / 0.5); }
+</style>
+
+<script>
+  type Mode = 'read' | 'cloze' | 'hint' | 'blank';
+
+  const setupOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const id = root.id;
+    const dataEl = root.querySelector('[data-memorize-source]');
+    if (!dataEl) return;
+    const sourceText = (dataEl.textContent || '').trim();
+    const lines = sourceText.split('\n');
+    const allWords = sourceText.match(/\S+/g) || [];
+    const totalWords = allWords.length;
+
+    const textEl = root.querySelector('[data-memorize-text]') as HTMLElement;
+    const statEl = root.querySelector('[data-memorize-stat]') as HTMLElement;
+    const progressEl = root.querySelector('[data-memorize-progress]') as HTMLElement;
+    const revealBtn = root.querySelector('[data-memorize-reveal]') as HTMLButtonElement;
+    const shuffleBtn = root.querySelector('[data-memorize-shuffle]') as HTMLButtonElement;
+    const modeBtns = root.querySelectorAll<HTMLButtonElement>('[data-mode]');
+
+    let mode: Mode = 'read';
+    let revealedLines = 0;
+    let blankSeed = Math.random();
+    const storageKey = `memorize:${id}`;
+
+    const loadProgress = (): number => {
+      try { return Number(localStorage.getItem(storageKey + ':best') || '0'); } catch { return 0; }
+    };
+    const saveProgress = (pct: number) => {
+      try {
+        const best = Math.max(loadProgress(), pct);
+        localStorage.setItem(storageKey + ':best', String(best));
+        progressEl.textContent = `Best: ${best}% memorized`;
+      } catch {}
+    };
+    progressEl.textContent = loadProgress() ? `Best: ${loadProgress()}% memorized` : '0% memorized';
+
+    const renderRead = () => {
+      textEl.innerHTML = lines.map((line) => {
+        const tokens = line.split(/(\s+)/).map((t) => /\S/.test(t) ? `<span class="word">${escapeHtml(t)}</span>` : t).join('');
+        return `<span class="line">${tokens}</span>`;
+      }).join('\n');
+      statEl.textContent = `${totalWords} / ${totalWords} words visible`;
+    };
+
+    const renderCloze = () => {
+      // Hash-based deterministic blank selection using blankSeed
+      const rand = mulberry32(Math.floor(blankSeed * 1e9));
+      let blanks = 0, total = 0;
+      textEl.innerHTML = lines.map((line) => {
+        const tokens = line.split(/(\s+)/).map((t) => {
+          if (!/\S/.test(t)) return t;
+          total++;
+          // Skip punctuation-only tokens and short words
+          const word = t.replace(/[^\w']/g, '');
+          if (word.length < 4 || rand() > 0.32) return `<span class="word">${escapeHtml(t)}</span>`;
+          blanks++;
+          return `<span class="word blank" data-orig="${escapeAttr(t)}">${escapeHtml(t)}</span>`;
+        }).join('');
+        return `<span class="line">${tokens}</span>`;
+      }).join('\n');
+      // Click a blank to peek
+      textEl.querySelectorAll<HTMLElement>('.word.blank').forEach((el) => {
+        el.addEventListener('click', () => {
+          el.classList.add('peek');
+          setTimeout(() => el.classList.remove('peek'), 1500);
+        });
+      });
+      statEl.textContent = `${total - blanks} / ${total} words shown · ${blanks} blanks`;
+      saveProgress(Math.round(((total - blanks) / total) * 100));
+    };
+
+    const renderHint = () => {
+      let total = 0;
+      textEl.innerHTML = lines.map((line) => {
+        const tokens = line.split(/(\s+)/).map((t) => {
+          if (!/\S/.test(t)) return t;
+          total++;
+          const first = t.charAt(0);
+          const tail = t.slice(1);
+          return `<span class="word hint" data-tail="${escapeAttr(tail)}">${escapeHtml(first)}</span>`;
+        }).join('');
+        return `<span class="line">${tokens}</span>`;
+      }).join('\n');
+      statEl.textContent = `First letters only · ${total} words`;
+      saveProgress(60);
+    };
+
+    const renderBlank = () => {
+      revealBtn.classList.remove('hidden');
+      textEl.innerHTML = lines.map((line, i) => {
+        const visible = i < revealedLines;
+        if (visible) {
+          const tokens = line.split(/(\s+)/).map((t) => /\S/.test(t) ? `<span class="word">${escapeHtml(t)}</span>` : t).join('');
+          return `<span class="line">${tokens}</span>`;
+        }
+        const tokens = line.split(/(\s+)/).map((t) => /\S/.test(t) ? `<span class="word">${escapeHtml(t)}</span>` : t).join('');
+        return `<span class="line hidden-line">${tokens}</span>`;
+      }).join('\n');
+      const visibleWords = lines.slice(0, revealedLines).join(' ').match(/\S+/g)?.length || 0;
+      statEl.textContent = `${revealedLines} / ${lines.length} lines revealed`;
+      if (revealedLines >= lines.length) {
+        revealBtn.disabled = true;
+        revealBtn.textContent = 'Whole passage revealed';
+        saveProgress(100);
+      } else {
+        revealBtn.disabled = false;
+        revealBtn.textContent = revealedLines === 0 ? 'Reveal first line' : 'Reveal next line';
+      }
+    };
+
+    const render = () => {
+      // Hide controls by default; specific modes re-show what they need
+      revealBtn.classList.add('hidden');
+      shuffleBtn.classList.add('hidden');
+      revealBtn.disabled = false;
+      revealBtn.textContent = 'Reveal next line';
+      modeBtns.forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
+
+      if (mode === 'read') return renderRead();
+      if (mode === 'cloze') { shuffleBtn.classList.remove('hidden'); return renderCloze(); }
+      if (mode === 'hint') return renderHint();
+      if (mode === 'blank') return renderBlank();
+    };
+
+    modeBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        mode = btn.dataset.mode as Mode;
+        if (mode === 'blank') revealedLines = 0;
+        render();
+      });
+    });
+    revealBtn.addEventListener('click', () => { revealedLines++; render(); });
+    shuffleBtn.addEventListener('click', () => { blankSeed = Math.random(); render(); });
+
+    render();
+  };
+
+  const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const escapeAttr = (s: string) => escapeHtml(s);
+  const mulberry32 = (a: number) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-memorize]').forEach(setupOne);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
