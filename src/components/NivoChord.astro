@@ -1,0 +1,23 @@
+---
+// Nivo Chord: animated relationships between groups (trade flows, alliances,
+// gene interactions). Polished React aesthetic. Different from existing
+// d3-chord-based <Chord> by interactivity and animations.
+//
+// Usage:
+//   <NivoChord
+//     keys={['US', 'UK', 'USSR', 'France']}
+//     matrix={[
+//       [0, 30, 25, 10],
+//       [30, 0, 15, 20],
+//       [25, 15, 0,  5],
+//       [10, 20,  5, 0]
+//     ]}
+//   />
+import NivoChordReact from './react/NivoChord.tsx';
+interface Props { keys: string[]; matrix: number[][]; height?: number; }
+const { keys, matrix, height = 460 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <NivoChordReact client:only="react" keys={keys} matrix={matrix} height={height} />
+</div>

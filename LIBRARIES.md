@@ -400,7 +400,11 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 | `<RechartsLine data={[...]} xKey="..." lines={[...]} />` | Recharts 3 | `recharts` | Smooth line chart, default red palette. |
 | `<NivoSankey data={...} />` | `@nivo/sankey` | `@nivo/core`, `@nivo/sankey` | Animated Sankey with gradient links. Different aesthetic from existing `<Sankey>` (d3-sankey). |
 | `<NivoCalendar data={[...]} from="..." to="..." />` | `@nivo/calendar` | same | Polished multi-year calendar heatmap. Different from `<CalHeatmap>` (90-day fixed). |
+| `<NivoChord keys={[...]} matrix={...} />` | `@nivo/chord` | same | Animated chord diagram. Polished alternative to existing d3-based `<Chord>`. |
+| `<NivoSunburst data={...} />` | `@nivo/sunburst` | same | Radial hierarchy. Animated alternative to existing `<SunburstChart>`. |
+| `<NivoStream keys={[...]} data={[...]} />` | `@nivo/stream` | same | Stacked stream graph. Show category share-over-time. |
 | `<TremorCard label="..." value="..." progress={...} />` | Tremor 3 | `@tremor/react` | Dashboard KPI card with delta badge and progress bar. |
+| `<VisxScatter data={[...]} />` | Visx | `@visx/visx` | Bespoke scatter plot. Escape hatch when Recharts/Nivo are too rigid. |
 | `<ObservablePlot spec="..." />` | Observable Plot | `@observablehq/plot` | Terse declarative plotting from D3's creators. 3-line statistical plots. |
 
 ### Modern spaced repetition
@@ -434,6 +438,7 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 |---|---|---|---|
 | `<ChronoTimeline items={[...]} mode="VERTICAL_ALTERNATING" />` | react-chrono 3 | `react-chrono` | Vertical/horizontal/alternating modes with cards, search, nested support. |
 | `<VisTimeline items={[...]} groups={[...]} />` | vis-timeline | `vis-timeline`, `vis-data` | Draggable, zoomable timeline with parallel-lane groups. |
+| `<VerticalTimeline items={[...]} />` | react-vertical-timeline-component | `react-vertical-timeline-component` | Scroll-reveal alternating timeline ideal for narrative storytelling. |
 
 ### Universal media players
 
@@ -441,6 +446,7 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 |---|---|---|---|
 | `<VideoPlayer url="..." />` | react-player | `react-player` | One API for YouTube, Vimeo, Twitch, SoundCloud, MP4, HLS, DASH. |
 | `<MuxPlayer playbackId="..." src="..." />` | Mux Player web component | `@mux/mux-player`, `@mux/mux-player-react` | Adaptive bitrate, low latency, real-time analytics. |
+| `<VidstackPlayer src="..." title="..." poster="..." />` | Vidstack | `@vidstack/react` | Accessible HTML5/HLS/DASH player with chapters, captions, keyboard shortcuts. Self-hosted alternative to Mux. |
 
 ### Rich text editing
 

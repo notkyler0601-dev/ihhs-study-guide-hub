@@ -1,0 +1,21 @@
+---
+// Nivo Stream graph: stacked area showing how categories change over time.
+// Great for "share of war production by country, 1939-1945" or "share of
+// global energy by source, 1970-2025".
+//
+// Usage:
+//   <NivoStream
+//     keys={['Coal', 'Oil', 'Gas', 'Nuclear', 'Renewables']}
+//     data={[
+//       { Coal: 38, Oil: 32, Gas: 18, Nuclear: 6, Renewables: 6 },
+//       { Coal: 30, Oil: 28, Gas: 22, Nuclear: 8, Renewables: 12 }
+//     ]}
+//   />
+import NivoStreamReact from './react/NivoStream.tsx';
+interface Props { keys: string[]; data: Record<string, number>[]; height?: number; }
+const { keys, data, height = 360 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <NivoStreamReact client:only="react" keys={keys} data={data} height={height} />
+</div>

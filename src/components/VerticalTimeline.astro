@@ -1,0 +1,19 @@
+---
+// react-vertical-timeline-component: scroll-reveal alternating timeline.
+// Best for narrative storytelling (a soldier's letters home, a scientist's
+// career, the lifecycle of a star).
+//
+// Usage:
+//   <VerticalTimeline items={[
+//     { date: 'June 1940', title: 'Fall of France', body: 'German forces enter Paris.', icon: '⚔' },
+//     { date: 'Dec 1941',  title: 'Pearl Harbor',  body: 'US enters the war.',          icon: '⚓' }
+//   ]} />
+import VerticalTimelineReact from './react/VerticalTimeline.tsx';
+interface Item { date: string; title: string; subtitle?: string; body?: string; icon?: string; }
+interface Props { items: Item[]; }
+const { items } = Astro.props;
+---
+
+<div class="not-prose my-6">
+  <VerticalTimelineReact client:only="react" items={items} />
+</div>

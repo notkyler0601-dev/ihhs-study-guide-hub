@@ -1,0 +1,20 @@
+---
+// Vidstack: accessible, themeable HTML5 / HLS / DASH video player with
+// keyboard shortcuts, chapters, and captions. Self-hosted video alternative
+// to <MuxPlayer> (which requires Mux hosting).
+//
+// Usage:
+//   <VidstackPlayer src="/lectures/photosynthesis.mp4" title="Photosynthesis lecture" />
+import VidstackPlayerReact from './react/VidstackPlayer.tsx';
+interface Props {
+  src: string;
+  poster?: string;
+  title?: string;
+  height?: string;
+}
+const { src, poster, title, height = '420px' } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden">
+  <VidstackPlayerReact client:only="react" src={src} poster={poster} title={title} height={height} />
+</div>

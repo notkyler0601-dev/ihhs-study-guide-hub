@@ -1,0 +1,21 @@
+---
+// Nivo Sunburst: radial hierarchical viz. Animated polished React take on the
+// existing d3-based <SunburstChart>.
+//
+// Usage:
+//   <NivoSunburst data={{
+//     id: 'Kingdom',
+//     children: [
+//       { id: 'Animal', children: [{ id: 'Mammal', value: 10 }, { id: 'Bird', value: 6 }] },
+//       { id: 'Plant',  children: [{ id: 'Tree', value: 8 }, { id: 'Flower', value: 5 }] }
+//     ]
+//   }} />
+import NivoSunburstReact from './react/NivoSunburst.tsx';
+interface Node { id: string; value?: number; children?: Node[]; }
+interface Props { data: Node; height?: number; }
+const { data, height = 460 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <NivoSunburstReact client:only="react" data={data} height={height} />
+</div>

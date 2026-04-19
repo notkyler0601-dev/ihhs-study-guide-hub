@@ -1,0 +1,21 @@
+---
+// Visx scatter plot. Use Visx as the bespoke escape hatch when Recharts/Nivo
+// are too rigid (need custom shapes, axes, brushing, annotations).
+//
+// Usage:
+//   <VisxScatter
+//     data={[
+//       { x: 1, y: 5, label: 'Mercury' },
+//       { x: 2, y: 8, label: 'Venus' }
+//     ]}
+//     xLabel="Distance from Sun (AU)" yLabel="Orbital period (years)"
+//   />
+import VisxScatterReact from './react/VisxScatter.tsx';
+interface Point { x: number; y: number; r?: number; label?: string; }
+interface Props { data: Point[]; xLabel?: string; yLabel?: string; height?: number; }
+const { data, xLabel = '', yLabel = '', height = 360 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <VisxScatterReact client:only="react" data={data} xLabel={xLabel} yLabel={yLabel} height={height} />
+</div>
