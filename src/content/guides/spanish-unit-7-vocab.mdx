@@ -19,6 +19,7 @@ import DragSort from '../../components/DragSort.astro';
 import MatchPairs from '../../components/MatchPairs.astro';
 import StepThrough from '../../components/StepThrough.astro';
 import RoughNotation from '../../components/RoughNotation.astro';
+import TypingQuiz from '../../components/TypingQuiz.astro';
 
 ## Learning objectives
 
@@ -448,6 +449,71 @@ Fifteen English-prompt questions where you pick the correct Spanish answer.
       answer: 1,
       explain: "Pidieron. The e becomes i in the third person preterite of pedir (and sentirse, reírse, mentir)."
     }
+  ]}
+/>
+
+## Vocab typing quiz
+
+The English word appears, you type the Spanish. The quiz grades you, points out which letters were wrong, and shows the proper accents. Use the buttons under the input to type **á é í ó ú ñ ü**. Take it as many times as you want.
+
+<Callout type="tip" title="Grading">
+The quiz accepts answers with or without the article (`muñeco` or `el muñeco`). It also accepts close-but-missing-an-accent answers but flags the spelling so you learn it. Hit **Enter** to submit, **Enter** again to advance to the next question.
+</Callout>
+
+<TypingQuiz
+  title="Unit 7 typing quiz (50 words)"
+  promptLabel="Type the Spanish for"
+  pairs={[
+    { en: "many times",                     es: "muchas veces" },
+    { en: "always",                          es: "siempre" },
+    { en: "on Mondays",                      es: "los lunes" },
+    { en: "on Saturday nights",              es: "los sábados por la noche" },
+    { en: "on weekends",                     es: "los fines de semana" },
+    { en: "every day",                       es: "todos los días", alt: ["cada día"] },
+    { en: "sometimes",                       es: "algunas veces" },
+    { en: "once in a while",                 es: "de vez en cuando" },
+    { en: "frequently / often",              es: "a menudo" },
+    { en: "rarely",                          es: "rara vez" },
+    { en: "generally",                       es: "generalmente", alt: ["por lo general"] },
+    { en: "while",                           es: "mientras" },
+    { en: "childhood",                       es: "la niñez", alt: ["la infancia"] },
+    { en: "toy",                             es: "el juguete" },
+    { en: "doll / action figure",            es: "la muñeca", alt: ["el muñeco"] },
+    { en: "playground",                      es: "el patio de recreo" },
+    { en: "neighborhood",                    es: "el vecindario", alt: ["el barrio"] },
+    { en: "cartoons",                        es: "los dibujos animados" },
+    { en: "story",                           es: "el cuento" },
+    { en: "nap",                             es: "la siesta" },
+    { en: "mischievous (m.)",                es: "travieso" },
+    { en: "obedient",                        es: "obediente" },
+    { en: "disobedient",                     es: "desobediente" },
+    { en: "spoiled (m.)",                    es: "consentido", alt: ["mimado"] },
+    { en: "shy (m.)",                        es: "tímido" },
+    { en: "sociable",                        es: "sociable" },
+    { en: "affectionate (m.)",               es: "cariñoso" },
+    { en: "curious (m.)",                    es: "curioso" },
+    { en: "well-behaved (m.)",               es: "bien educado" },
+    { en: "rude (m.)",                       es: "maleducado" },
+    { en: "to obey",                         es: "obedecer" },
+    { en: "to bother (gustar pattern)",      es: "molestar" },
+    { en: "to fight (reflexive)",            es: "pelearse" },
+    { en: "to behave (reflexive)",           es: "portarse" },
+    { en: "to enjoy",                        es: "disfrutar" },
+    { en: "to collect",                      es: "coleccionar" },
+    { en: "to look for",                     es: "buscar" },
+    { en: "to play (an instrument)",         es: "tocar" },
+    { en: "to take out / get a grade",       es: "sacar" },
+    { en: "to arrive",                       es: "llegar" },
+    { en: "to enjoy (gozar)",                es: "gozar" },
+    { en: "to read",                         es: "leer" },
+    { en: "to fall",                         es: "caer" },
+    { en: "to hear",                         es: "oír" },
+    { en: "to build",                        es: "construir" },
+    { en: "to sleep",                        es: "dormir" },
+    { en: "to ask for / order",              es: "pedir" },
+    { en: "to feel (reflexive)",             es: "sentirse" },
+    { en: "to laugh (reflexive)",            es: "reírse" },
+    { en: "to lie",                          es: "mentir" },
   ]}
 />
 

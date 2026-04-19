@@ -1,0 +1,355 @@
+---
+// Typed-answer vocab quiz. Shows the prompt (e.g., English), student types
+// the answer (e.g., Spanish), gets graded with spelling feedback. Includes
+// quick-insert buttons for accented characters. Repeatable as many times as
+// they want, with an optional "drill missed only" mode.
+//
+// pairs: [{ en, es, alt? }] where alt is an array of acceptable variants.
+// You can also separate variants with ' / ' inside es itself, e.g.
+// "el muñeco / la muñeca" accepts either form.
+interface Pair { en: string; es: string; alt?: string[]; }
+interface Props {
+  title?: string;
+  pairs: Pair[];
+  accents?: string[];
+  promptLabel?: string;     // text above the prompt, e.g. "Type the Spanish for"
+  acceptArticles?: 'required' | 'optional' | 'ignore';
+  caseSensitive?: boolean;
+}
+const {
+  title = 'Typing quiz',
+  pairs,
+  accents = ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'ü', '¿', '¡'],
+  promptLabel = 'Type the Spanish for',
+  acceptArticles = 'optional',
+  caseSensitive = false,
+} = Astro.props;
+const id = 'tq-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ pairs, accents, promptLabel, acceptArticles, caseSensitive });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-tq data-conf={conf}>
+  <header class="mb-4 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white text-xs">⌨</span>
+      {title}
+    </span>
+    <span class="text-xs text-ink-500">
+      Q <span data-tq-pos>1</span> / <span data-tq-total>{pairs.length}</span>
+      <span class="ml-3">Score <span data-tq-score class="font-semibold text-emerald-700 dark:text-emerald-400">0</span></span>
+    </span>
+  </header>
+
+  <!-- Question state -->
+  <div data-tq-question>
+    <div data-tq-prompt-label class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">{promptLabel}</div>
+    <div data-tq-prompt class="font-serif text-3xl text-ink-900 dark:text-ink-50 mb-5 break-words">...</div>
+
+    <input
+      data-tq-input
+      type="text"
+      placeholder="Type your answer..."
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      class="w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-4 py-3 text-lg font-mono focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+    />
+
+    <div class="mt-3 flex flex-wrap items-center gap-1.5">
+      <span class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mr-1">Accents</span>
+      {accents.map((a) => (
+        <button data-tq-accent={a} type="button"
+          class="h-9 min-w-[2.25rem] px-2 rounded-md border border-ink-200 dark:border-ink-700 hover:border-accent-400 dark:hover:border-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/30 font-serif text-base text-ink-900 dark:text-ink-50">
+          {a}
+        </button>
+      ))}
+      <button data-tq-clear type="button" aria-label="Clear" class="ml-auto h-9 px-2 rounded-md text-ink-500 hover:text-rose-500 text-xs">Clear</button>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between gap-3 pt-3 border-t border-ink-200 dark:border-ink-800">
+      <button data-tq-skip type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">I don't know</button>
+      <button data-tq-submit type="button" class="px-5 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm">
+        Submit (Enter)
+      </button>
+    </div>
+  </div>
+
+  <!-- Per-question feedback -->
+  <div data-tq-feedback class="hidden mt-5 p-4 rounded-xl border-l-4">
+    <div data-tq-feedback-title class="font-serif text-lg font-semibold mb-2"></div>
+    <div data-tq-feedback-detail class="font-mono text-sm leading-7 mb-3"></div>
+    <button data-tq-next type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">
+      Next →
+    </button>
+  </div>
+
+  <!-- Final results screen -->
+  <div data-tq-results class="hidden">
+    <div class="text-center mb-4">
+      <div class="text-xs uppercase tracking-[0.18em] font-semibold text-ink-500 mb-2">Quiz complete</div>
+      <div class="font-serif text-5xl font-semibold gradient-text mb-1"><span data-tq-final-score>0</span> / <span data-tq-final-total>0</span></div>
+      <div class="text-sm text-ink-600 dark:text-ink-300" data-tq-final-msg></div>
+    </div>
+    <div data-tq-missed class="bg-ink-50 dark:bg-ink-900/60 rounded-lg p-4 mb-4 max-h-72 overflow-y-auto"></div>
+    <div class="flex items-center justify-center gap-2 flex-wrap">
+      <button data-tq-restart type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Try again (all)</button>
+      <button data-tq-restart-missed type="button" class="hidden px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium">Drill the misses only</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Pair = { en: string; es: string; alt?: string[] };
+  type Conf = {
+    pairs: Pair[];
+    accents: string[];
+    promptLabel: string;
+    acceptArticles: 'required' | 'optional' | 'ignore';
+    caseSensitive: boolean;
+  };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[c]));
+
+  // Stripped (no accents) for fuzzy comparison
+  const stripDiacritics = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
+  // Character-by-character diff using LCS for nicer feedback display.
+  // Returns two HTML strings: one for the user's answer (extras/wrong in red),
+  // one for the correct answer (matches in green, missing in red).
+  const renderDiff = (user: string, correct: string) => {
+    const a = user, b = correct;
+    const m = a.length, n = b.length;
+    const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1].toLowerCase() === b[j - 1].toLowerCase()
+        ? dp[i - 1][j - 1] + 1
+        : Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+    // Walk back to mark
+    let i = m, j = n;
+    const aMark: ('match' | 'extra')[] = new Array(m).fill('extra');
+    const bMark: ('match' | 'missing')[] = new Array(n).fill('missing');
+    while (i > 0 && j > 0) {
+      if (a[i - 1].toLowerCase() === b[j - 1].toLowerCase()) {
+        aMark[i - 1] = 'match'; bMark[j - 1] = 'match';
+        i--; j--;
+      } else if (dp[i - 1][j] >= dp[i][j - 1]) i--; else j--;
+    }
+    const userHtml = a.split('').map((c, k) =>
+      aMark[k] === 'match' ? `<span class="text-emerald-700 dark:text-emerald-400">${escapeHtml(c)}</span>`
+      : `<span class="bg-rose-200 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 rounded px-0.5">${escapeHtml(c)}</span>`
+    ).join('') || '<span class="text-ink-400">(blank)</span>';
+    const corrHtml = b.split('').map((c, k) =>
+      bMark[k] === 'match' ? `<span class="text-emerald-700 dark:text-emerald-400">${escapeHtml(c)}</span>`
+      : `<span class="bg-emerald-200 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 rounded px-0.5">${escapeHtml(c)}</span>`
+    ).join('');
+    return { userHtml, corrHtml };
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-tq]:not([data-tq-ready])').forEach((root) => {
+      root.dataset.tqReady = '1';
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+
+      const promptEl = root.querySelector<HTMLElement>('[data-tq-prompt]')!;
+      const input = root.querySelector<HTMLInputElement>('[data-tq-input]')!;
+      const submitBtn = root.querySelector<HTMLButtonElement>('[data-tq-submit]')!;
+      const skipBtn = root.querySelector<HTMLButtonElement>('[data-tq-skip]')!;
+      const clearBtn = root.querySelector<HTMLButtonElement>('[data-tq-clear]')!;
+      const nextBtn = root.querySelector<HTMLButtonElement>('[data-tq-next]')!;
+      const restartBtn = root.querySelector<HTMLButtonElement>('[data-tq-restart]')!;
+      const restartMissedBtn = root.querySelector<HTMLButtonElement>('[data-tq-restart-missed]')!;
+      const questionEl = root.querySelector<HTMLElement>('[data-tq-question]')!;
+      const feedbackEl = root.querySelector<HTMLElement>('[data-tq-feedback]')!;
+      const feedbackTitle = root.querySelector<HTMLElement>('[data-tq-feedback-title]')!;
+      const feedbackDetail = root.querySelector<HTMLElement>('[data-tq-feedback-detail]')!;
+      const resultsEl = root.querySelector<HTMLElement>('[data-tq-results]')!;
+      const finalScoreEl = root.querySelector<HTMLElement>('[data-tq-final-score]')!;
+      const finalTotalEl = root.querySelector<HTMLElement>('[data-tq-final-total]')!;
+      const finalMsgEl = root.querySelector<HTMLElement>('[data-tq-final-msg]')!;
+      const missedEl = root.querySelector<HTMLElement>('[data-tq-missed]')!;
+      const posEl = root.querySelector<HTMLElement>('[data-tq-pos]')!;
+      const totalEl = root.querySelector<HTMLElement>('[data-tq-total]')!;
+      const scoreEl = root.querySelector<HTMLElement>('[data-tq-score]')!;
+
+      // Mutable session state
+      let basePairs: Pair[] = conf.pairs;
+      let pairs: Pair[] = basePairs;
+      let order: number[] = [];
+      let pos = 0;
+      let score = 0;
+      let missed: Pair[] = [];
+
+      const normalize = (s: string) => {
+        let n = s.trim().replace(/\s+/g, ' ');
+        if (!conf.caseSensitive) n = n.toLowerCase();
+        return n;
+      };
+      const stripArticle = (s: string) => s.replace(/^(el|la|los|las|los\sdibujos)\s+/i, '');
+
+      // Returns the canonical correct answer to display (first variant).
+      const canonicalAnswer = (pair: Pair) => pair.es;
+
+      // Returns true if user's input is acceptable.
+      const isCorrect = (user: string, pair: Pair): boolean => {
+        const u = normalize(user);
+        if (!u) return false;
+        const variants = [pair.es, ...(pair.alt ?? [])]
+          .flatMap((s) => s.split(' / ').map((p) => p.trim()))
+          .map(normalize);
+        for (const v of variants) {
+          if (u === v) return true;
+          if (conf.acceptArticles !== 'required') {
+            if (u === stripArticle(v)) return true;
+            if (stripArticle(u) === v) return true;
+            if (stripArticle(u) === stripArticle(v)) return true;
+          }
+          // Last resort: ignore diacritics for grading; we still call out the spelling in feedback.
+          if (stripDiacritics(u) === stripDiacritics(v)) return true;
+        }
+        return false;
+      };
+
+      const renderQuestion = () => {
+        const pair = pairs[order[pos]];
+        promptEl.textContent = pair.en;
+        input.value = '';
+        input.focus();
+        posEl.textContent = String(pos + 1);
+        questionEl.classList.remove('hidden');
+        feedbackEl.classList.add('hidden');
+        resultsEl.classList.add('hidden');
+      };
+
+      const renderFeedback = (user: string, pair: Pair, correct: boolean) => {
+        questionEl.classList.add('hidden');
+        feedbackEl.classList.remove('hidden');
+        const baseCls = 'mt-5 p-4 rounded-xl border-l-4 ';
+        feedbackEl.className = baseCls + (correct
+          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30'
+          : 'border-rose-500 bg-rose-50 dark:bg-rose-900/30');
+        feedbackTitle.className = 'font-serif text-lg font-semibold mb-2 ' +
+          (correct ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300');
+
+        const answer = canonicalAnswer(pair);
+        if (correct) {
+          // Even if accepted via diacritics, show the proper spelling so they learn it.
+          const exact = normalize(user) === normalize(answer);
+          feedbackTitle.textContent = exact ? '✓ Correct.' : '✓ Close enough, watch the accents.';
+          feedbackDetail.innerHTML = `Answer: <strong class="text-emerald-700 dark:text-emerald-300">${escapeHtml(answer)}</strong>`;
+        } else {
+          feedbackTitle.textContent = user.trim() ? '✗ Not quite.' : '✗ Skipped.';
+          const diff = renderDiff(user || '', answer);
+          feedbackDetail.innerHTML = `
+            <div>You wrote:&nbsp;&nbsp;<span>${diff.userHtml}</span></div>
+            <div class="mt-1">Correct:&nbsp;&nbsp;&nbsp;&nbsp;<span>${diff.corrHtml}</span></div>
+          `;
+        }
+        nextBtn.focus();
+      };
+
+      const advance = () => {
+        pos++;
+        if (pos >= order.length) renderResults();
+        else renderQuestion();
+      };
+
+      const renderResults = () => {
+        questionEl.classList.add('hidden');
+        feedbackEl.classList.add('hidden');
+        resultsEl.classList.remove('hidden');
+        finalScoreEl.textContent = String(score);
+        finalTotalEl.textContent = String(order.length);
+        const pct = Math.round((score / order.length) * 100);
+        finalMsgEl.textContent = pct === 100 ? '¡Perfecto! Flawless run.'
+          : pct >= 80 ? `${pct}% correct. Solid grasp, drill the misses to lock it in.`
+          : pct >= 50 ? `${pct}% correct. Good start. Drill the misses and try again.`
+          : `${pct}% correct. Re-read the vocab section, then try again.`;
+
+        if (missed.length > 0) {
+          missedEl.innerHTML = '<div class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">Words you missed</div>'
+            + missed.map((m) => `<div class="flex justify-between gap-3 py-1.5 border-b border-ink-200 dark:border-ink-800 last:border-0"><span class="text-ink-700 dark:text-ink-300">${escapeHtml(m.en)}</span><span class="font-mono text-accent-700 dark:text-accent-400">${escapeHtml(m.es)}</span></div>`).join('');
+          restartMissedBtn.classList.remove('hidden');
+        } else {
+          missedEl.innerHTML = '<div class="text-emerald-700 dark:text-emerald-400 font-medium text-center">No misses. ¡Increíble!</div>';
+          restartMissedBtn.classList.add('hidden');
+        }
+      };
+
+      const restart = (onlyMissed: boolean) => {
+        pairs = onlyMissed ? [...missed] : basePairs;
+        order = pairs.map((_, i) => i).sort(() => Math.random() - 0.5);
+        pos = 0;
+        score = 0;
+        missed = [];
+        scoreEl.textContent = '0';
+        totalEl.textContent = String(order.length);
+        renderQuestion();
+      };
+
+      submitBtn.addEventListener('click', () => {
+        const user = input.value;
+        const pair = pairs[order[pos]];
+        const correct = isCorrect(user, pair);
+        if (correct) {
+          score++;
+          scoreEl.textContent = String(score);
+        } else {
+          missed.push(pair);
+        }
+        renderFeedback(user, pair, correct);
+      });
+
+      skipBtn.addEventListener('click', () => {
+        const pair = pairs[order[pos]];
+        missed.push(pair);
+        renderFeedback('', pair, false);
+      });
+
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        input.focus();
+      });
+
+      nextBtn.addEventListener('click', advance);
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitBtn.click();
+        }
+      });
+
+      // Accent buttons: insert at cursor position, keep focus on input.
+      root.querySelectorAll<HTMLButtonElement>('[data-tq-accent]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const ch = btn.getAttribute('data-tq-accent') ?? '';
+          const start = input.selectionStart ?? input.value.length;
+          const end = input.selectionEnd ?? input.value.length;
+          input.value = input.value.slice(0, start) + ch + input.value.slice(end);
+          input.focus();
+          input.selectionStart = input.selectionEnd = start + ch.length;
+        });
+      });
+
+      // Pressing Enter on the feedback panel advances.
+      document.addEventListener('keydown', (e) => {
+        if (!root.isConnected) return;
+        if (e.key !== 'Enter') return;
+        if (!feedbackEl.classList.contains('hidden')) {
+          e.preventDefault();
+          nextBtn.click();
+        }
+      });
+
+      restartBtn.addEventListener('click', () => restart(false));
+      restartMissedBtn.addEventListener('click', () => restart(true));
+
+      restart(false);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

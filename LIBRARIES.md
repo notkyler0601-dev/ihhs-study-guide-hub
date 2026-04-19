@@ -331,6 +331,12 @@ Built specifically to make learning more visual: animations, hand-drawn aestheti
 | `<Fabric setup="..." />` | Fabric.js 5.3 | `cdn.jsdelivr.net/npm/fabric` | Same idea as Konva, used inside Canva. |
 | `<RoughViz type="bar" labels={[...]} values={[...]} />` | rough-viz 2.0 | `unpkg.com/rough-viz` | Hand-drawn-aesthetic charts. |
 
+### Typed-answer drilling
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<TypingQuiz pairs={[{en, es, alt?}, ...]} accents={[...]} />` | Custom | none | Prompt to typed-answer quiz. Per-question grading with character-level diff (matches green, wrong red). Quick-insert buttons for accented characters (default Spanish set: á é í ó ú ñ ü ¿ ¡). Accepts answers with or without articles, lenient on missing diacritics, repeatable infinitely with a "drill the misses only" mode. Used by `spanish-unit-7-vocab` for production-direction practice (English prompt → Spanish typed answer). Generic enough for any language. |
+
 ### UX widgets
 
 | Component | Library | CDN | Brief |
