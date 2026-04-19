@@ -1,0 +1,62 @@
+---
+// vis-timeline: draggable, zoomable timeline. Great for parallel-lane comparisons
+// (e.g., Pacific vs European theaters during WWII).
+//
+// Usage:
+//   <VisTimeline
+//     items={[
+//       { id: 1, group: 'Europe', content: 'Invasion of Poland', start: '1939-09-01' },
+//       { id: 2, group: 'Pacific', content: 'Pearl Harbor', start: '1941-12-07' }
+//     ]}
+//     groups={[{ id: 'Europe', content: 'Europe' }, { id: 'Pacific', content: 'Pacific' }]}
+//   />
+interface TimelineItem { id: string | number; content: string; start: string; end?: string; group?: string | number; }
+interface TimelineGroup { id: string | number; content: string; }
+interface Props {
+  items: TimelineItem[];
+  groups?: TimelineGroup[];
+  height?: string;
+  start?: string;
+  end?: string;
+}
+const { items, groups = [], height = '380px', start, end } = Astro.props;
+const id = 'vt-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden">
+  <div id={id} style={`height: ${height};`}></div>
+</div>
+
+<script define:vars={{ id, items, groups, start, end }}>
+  const init = async () => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.bound) return;
+    el.dataset.bound = '1';
+    const vis = await import('vis-timeline/standalone');
+    await import('vis-timeline/styles/vis-timeline-graph2d.min.css');
+    const ds = new vis.DataSet(items);
+    const opts = {
+      stack: true,
+      orientation: 'top',
+      zoomable: true,
+      moveable: true,
+      ...(start ? { start } : {}),
+      ...(end ? { end } : {}),
+    };
+    if (groups.length > 0) {
+      new vis.Timeline(el, ds, new vis.DataSet(groups), opts);
+    } else {
+      new vis.Timeline(el, ds, opts);
+    }
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
+
+<style is:global>
+  .vis-item { background: #fee2e2; border-color: #b91c1c; color: #7f1d1d; }
+  .vis-item.vis-selected { background: #b91c1c; color: #fff; }
+  .vis-time-axis .vis-text, .vis-labelset .vis-label { color: #52525b; font-family: 'Inter', sans-serif; }
+  .dark .vis-item { background: rgba(127,29,29,0.4); border-color: #f87171; color: #fecaca; }
+  .dark .vis-time-axis .vis-text, .dark .vis-labelset .vis-label { color: #d4d4d8; }
+</style>

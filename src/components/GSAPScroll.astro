@@ -1,0 +1,45 @@
+---
+// Cinematic scroll animations via GSAP + ScrollTrigger.
+// GSAP is now 100% free for commercial use under Webflow's stewardship (2024+).
+//
+// Pass a `setup` function body that receives { gsap, ScrollTrigger, root }.
+// `root` is the section element so you can scope selectors.
+//
+// Example:
+//   <GSAPScroll setup={`
+//     gsap.from(root.querySelector('.title'), {
+//       opacity: 0, y: 60, duration: 1,
+//       scrollTrigger: { trigger: root, start: 'top 80%' }
+//     });
+//   `}>
+//     <h2 class="title">This headline animates in</h2>
+//   </GSAPScroll>
+interface Props {
+  setup: string;
+}
+const { setup } = Astro.props;
+const id = 'gsap-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8" id={id} data-gsap-root>
+  <slot />
+</section>
+
+<script define:vars={{ id, setup }}>
+  const init = async () => {
+    const root = document.getElementById(id);
+    if (!root || root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const { gsap } = await import('gsap');
+    const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+    gsap.registerPlugin(ScrollTrigger);
+    try {
+      const fn = new Function('gsap', 'ScrollTrigger', 'root', setup);
+      fn(gsap, ScrollTrigger, root);
+    } catch (e) {
+      console.warn('GSAPScroll setup failed', e);
+    }
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

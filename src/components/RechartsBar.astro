@@ -1,0 +1,26 @@
+---
+// Simple shadcn-style bar chart via Recharts. Default red palette matches the IHHS theme.
+//
+// Usage:
+//   <RechartsBar
+//     data={[
+//       { plant: 'C3', efficiency: 1 },
+//       { plant: 'C4', efficiency: 1.5 },
+//       { plant: 'CAM', efficiency: 0.7 }
+//     ]}
+//     xKey="plant"
+//     bars={[{ dataKey: 'efficiency', name: 'Relative efficiency' }]}
+//   />
+import RechartsBarReact from './react/RechartsBar.tsx';
+interface Props {
+  data: Record<string, any>[];
+  xKey: string;
+  bars: { dataKey: string; name?: string; color?: string }[];
+  height?: number;
+}
+const { data, xKey, bars, height = 320 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <RechartsBarReact client:only="react" data={data} xKey={xKey} bars={bars} height={height} />
+</div>

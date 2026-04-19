@@ -13,6 +13,11 @@ import KeyTerm from '../../components/KeyTerm.astro';
 import Collapsible from '../../components/Collapsible.astro';
 import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
+import NivoSankey from '../../components/NivoSankey.astro';
+import RechartsBar from '../../components/RechartsBar.astro';
+import DragMatch from '../../components/DragMatch.astro';
+import FlowDiagram from '../../components/FlowDiagram.astro';
+import Globe3D from '../../components/Globe3D.astro';
 
 ## Learning objectives
 
@@ -59,6 +64,37 @@ flowchart LR
 
 The light reactions **capture energy**. The Calvin cycle **uses that energy to build sugar**. Each stage feeds the other.
 
+#### Energy flow at a glance
+
+This Sankey diagram shows where the energy in a photon ends up. Hover any link to see how much flow it represents.
+
+<NivoSankey
+  data={{
+    nodes: [
+      { id: 'Sunlight' },
+      { id: 'Photosystem II' },
+      { id: 'Photosystem I' },
+      { id: 'ATP' },
+      { id: 'NADPH' },
+      { id: 'Calvin cycle' },
+      { id: 'Glucose' },
+      { id: 'Heat lost' }
+    ],
+    links: [
+      { source: 'Sunlight', target: 'Photosystem II', value: 100 },
+      { source: 'Photosystem II', target: 'Photosystem I', value: 60 },
+      { source: 'Photosystem II', target: 'ATP', value: 25 },
+      { source: 'Photosystem II', target: 'Heat lost', value: 15 },
+      { source: 'Photosystem I', target: 'NADPH', value: 50 },
+      { source: 'Photosystem I', target: 'Heat lost', value: 10 },
+      { source: 'ATP', target: 'Calvin cycle', value: 25 },
+      { source: 'NADPH', target: 'Calvin cycle', value: 50 },
+      { source: 'Calvin cycle', target: 'Glucose', value: 70 },
+      { source: 'Calvin cycle', target: 'Heat lost', value: 5 }
+    ]
+  }}
+/>
+
 ### Stage 1: The light-dependent reactions
 
 These happen in the thylakoid membrane. The job: turn light into chemical energy (ATP and NADPH) and split water as a side effect (which releases O₂).
@@ -98,6 +134,20 @@ RuBisCO has a flaw: it sometimes grabs O₂ instead of CO₂, wasting energy (a 
 | **C₄** | Pre-fixes CO₂ in mesophyll cells, concentrates it for RuBisCO | Hot, sunny climates (corn, sugarcane) |
 | **CAM** | Opens stomata only at night to grab CO₂ | Arid climates (cacti, pineapple) |
 
+Relative photosynthetic rate at high temperature (rough field measurements, normalized to C₃ = 1):
+
+<RechartsBar
+  data={[
+    { plant: 'C3 (wheat)', rate: 1.0 },
+    { plant: 'C4 (corn)', rate: 1.6 },
+    { plant: 'CAM (cactus)', rate: 0.4 }
+  ]}
+  xKey="plant"
+  bars={[{ dataKey: 'rate', name: 'Relative rate (high temp, full sun)' }]}
+/>
+
+C₄ wins because it suppresses photorespiration. CAM trades raw rate for water efficiency, opening stomata only at night.
+
 ## Worked example
 
 **Question:** A plant is moved from bright sun into deep shade. The leaves still receive some light. What happens to its production of glucose, and why?
@@ -112,6 +162,18 @@ RuBisCO has a flaw: it sometimes grabs O₂ instead of CO₂, wasting energy (a 
 **Answer:** Glucose production drops because the light reactions can't supply enough ATP/NADPH to keep the Calvin cycle running.
 
 ## Practice
+
+### Drag-to-match: who does what?
+
+<DragMatch
+  pairs={[
+    { left: 'Photosystem II', right: 'Splits water and releases O₂' },
+    { left: 'Photosystem I',  right: 'Re-energizes the electron with a second photon' },
+    { left: 'ATP synthase',   right: 'Spins as H⁺ ions flow back across the thylakoid' },
+    { left: 'RuBisCO',        right: 'Attaches CO₂ to RuBP in the Calvin cycle' },
+    { left: 'NADPH',          right: 'Carries electrons from light reactions to Calvin cycle' }
+  ]}
+/>
 
 <Collapsible question="Why does splitting water produce oxygen as a 'waste' product? Wouldn't evolution have found a use for it?">
 For early photosynthetic organisms, O₂ was actually toxic, and the **Great Oxidation Event** (~2.4 billion years ago) caused mass extinctions of anaerobic life. Modern aerobic respiration evolved later as a way to *use* this "waste" by burning sugars with O₂. So in a sense, evolution did find a use, it just took a billion years and required a totally different metabolic pathway.
@@ -196,6 +258,23 @@ C₄'s carbon-concentrating mechanism costs extra ATP. In hot weather, RuBisCO w
 - **Confusing the chloroplast compartments.** Thylakoid = light reactions. Stroma = Calvin cycle.
 - **Forgetting that the Calvin cycle is light-*independent* but not light-*unrelated*.** It needs ATP and NADPH from the light reactions, so it stops in the dark.
 - **Mixing up C₄ and CAM.** Both fight photorespiration but in different ways: C₄ separates by **space** (cell types), CAM separates by **time** (day vs night).
+
+## Where photosynthesis happens
+
+The world's most photosynthetic regions are the tropical rainforests and the open ocean (phytoplankton). The rotating globe below highlights some of the biggest carbon-fixing zones.
+
+<Globe3D
+  title="Top photosynthetic regions"
+  markers={[
+    { lat: -3.4, lng: -62.2, label: 'Amazon rainforest', size: 0.8 },
+    { lat: 0.0, lng: 25.0, label: 'Congo basin', size: 0.7 },
+    { lat: -2.5, lng: 117.0, label: 'Indonesian rainforest', size: 0.7 },
+    { lat: 0.0, lng: -30.0, label: 'Equatorial Atlantic phytoplankton', size: 0.6 },
+    { lat: 0.0, lng: -160.0, label: 'Equatorial Pacific phytoplankton', size: 0.6 },
+    { lat: 50.0, lng: -120.0, label: 'North American boreal forest', size: 0.5 },
+    { lat: 60.0, lng: 90.0, label: 'Siberian taiga', size: 0.5 }
+  ]}
+/>
 
 ## Cheat sheet
 

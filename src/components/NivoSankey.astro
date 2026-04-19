@@ -1,0 +1,26 @@
+---
+// Nivo Sankey: flow magnitudes between nodes with smooth animations and gradient links.
+// Different from <Sankey> (d3-sankey) by aesthetic and interactivity.
+//
+// Usage in MDX:
+//   <NivoSankey
+//     data={{
+//       nodes: [{ id: 'Sun' }, { id: 'PSII' }, { id: 'ATP' }, { id: 'Glucose' }],
+//       links: [
+//         { source: 'Sun',  target: 'PSII', value: 100 },
+//         { source: 'PSII', target: 'ATP',  value: 60 },
+//         { source: 'ATP',  target: 'Glucose', value: 40 }
+//       ]
+//     }}
+//   />
+import NivoSankeyReact from './react/NivoSankey.tsx';
+interface Props {
+  data: { nodes: { id: string }[]; links: { source: string; target: string; value: number }[] };
+  height?: number;
+}
+const { data, height = 420 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <NivoSankeyReact client:only="react" data={data} height={height} />
+</div>

@@ -1,0 +1,15 @@
+---
+// Smooth line chart via Recharts. Pair with RechartsBar/RechartsArea for consistent dashboards.
+import RechartsLineReact from './react/RechartsLine.tsx';
+interface Props {
+  data: Record<string, any>[];
+  xKey: string;
+  lines: { dataKey: string; name?: string; color?: string }[];
+  height?: number;
+}
+const { data, xKey, lines, height = 320 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <RechartsLineReact client:only="react" data={data} xKey={xKey} lines={lines} height={height} />
+</div>

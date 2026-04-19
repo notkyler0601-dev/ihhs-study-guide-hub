@@ -1,0 +1,83 @@
+---
+// cobe: 5KB WebGL globe shader. Lightweight pinpoint-only alternative to <Globe3D>.
+// Dark sphere with red markers + red glow on a dark stage. Drag to rotate.
+//
+// Usage:
+//   <CobeGlobe markers={[{ lat: 40.7, lng: -74, size: 0.05 }]} />
+interface Marker { lat: number; lng: number; size?: number; }
+interface Props {
+  markers?: Marker[];
+  size?: number;
+}
+const { markers = [], size = 480 } = Astro.props;
+const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-6 flex justify-center" data-cobe-root data-cobe-id={id} data-cobe-size={size}>
+  <div
+    class="relative rounded-2xl overflow-hidden"
+    style={`width: ${size}px; height: ${size}px; max-width: 100%; aspect-ratio: 1; background: radial-gradient(circle at 50% 30%, #1c1917 0%, #0a0a0a 100%); box-shadow: 0 24px 48px -12px rgba(0,0,0,0.25);`}
+    data-cobe-stage
+  >
+    <canvas id={id} style={`width: ${size}px; height: ${size}px; max-width: 100%; aspect-ratio: 1; opacity: 0; transition: opacity 600ms ease;`}></canvas>
+  </div>
+  <script type="application/json" data-cobe-markers set:html={JSON.stringify(markers)}></script>
+</div>
+
+<script>
+  import createGlobe from 'cobe';
+
+  const initOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const id = root.dataset.cobeId!;
+    const size = Number(root.dataset.cobeSize || '480');
+    const canvas = document.getElementById(id) as HTMLCanvasElement | null;
+    const dataEl = root.querySelector('[data-cobe-markers]');
+    if (!canvas || !dataEl) return;
+    const markers: { lat: number; lng: number; size?: number }[] = JSON.parse(dataEl.textContent || '[]');
+
+    let phi = 0;
+    let pointerInteracting: number | null = null;
+    let pointerInteractionMovement = 0;
+
+    createGlobe(canvas, {
+      devicePixelRatio: 2,
+      width: size * 2,
+      height: size * 2,
+      phi: 0,
+      theta: 0.25,
+      dark: 1,
+      diffuse: 3,
+      mapSamples: 20000,
+      mapBrightness: 12,
+      baseColor: [0.05, 0.05, 0.08],
+      markerColor: [1, 0.35, 0.35],
+      glowColor: [0.7, 0.18, 0.18],
+      markers: markers.map((m) => ({ location: [m.lat, m.lng] as [number, number], size: m.size ?? 0.06 })),
+      onRender: (state) => {
+        if (pointerInteracting === null) phi += 0.004;
+        state.phi = phi + pointerInteractionMovement / 200;
+      },
+    });
+
+    canvas.addEventListener('pointerdown', (e) => {
+      pointerInteracting = e.clientX - pointerInteractionMovement;
+      canvas.style.cursor = 'grabbing';
+    });
+    const release = () => { pointerInteracting = null; canvas.style.cursor = 'grab'; };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointerout', release);
+    canvas.addEventListener('pointermove', (e) => {
+      if (pointerInteracting !== null) pointerInteractionMovement = e.clientX - pointerInteracting;
+    });
+    canvas.style.cursor = 'grab';
+    setTimeout(() => { canvas.style.opacity = '1'; }, 80);
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-cobe-root]').forEach(initOne);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

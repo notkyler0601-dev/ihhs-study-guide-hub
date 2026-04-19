@@ -374,6 +374,102 @@ These are accessed by the above components but worth listing separately.
 
 ---
 
+## 8d. Tier 6 components (research-report additions)
+
+Added in 2026-04 after auditing the latest "futuristic toolkit" research report. These libraries close gaps the existing tiers didn't fill: cinematic scroll storytelling, interactive React-based flowcharts and charts, modern SRS, free Mapbox-grade mapping, and universal video.
+
+### Scroll storytelling and animation
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<Scrollytelling steps={[...]} graphic="..." onStep="..." />` | scrollama 3.2 | `scrollama` | Newsroom-standard pinned graphic with scroll-triggered text steps. Different from `<RevealOnScroll>` (just stagger fade). |
+| `<GSAPScroll setup="..." />` | GSAP 3 + ScrollTrigger | `gsap`, `@gsap/react` | Cinematic pinning, scrubbing, complex sequences. **Now 100% free for commercial use** (Webflow stewardship, 2024). |
+| `<SmoothScroll />` (drop in BaseLayout) | Lenis | `lenis` | Site-wide buttery smooth scroll. Preserves keyboard accessibility and Cmd-F. |
+
+### Interactive diagrams
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<FlowDiagram nodes={[...]} edges={[...]} />` | React Flow (`@xyflow/react`) v12 | `@xyflow/react`, `@dagrejs/dagre`, `elkjs` | Drag-and-zoom flowcharts with clickable React-component nodes. Different from `<Mermaid>` code blocks (static SVG). |
+
+### Polished React charts
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<RechartsBar data={[...]} xKey="..." bars={[...]} />` | Recharts 3 | `recharts` | shadcn-style bar chart, default red palette. |
+| `<RechartsLine data={[...]} xKey="..." lines={[...]} />` | Recharts 3 | `recharts` | Smooth line chart, default red palette. |
+| `<NivoSankey data={...} />` | `@nivo/sankey` | `@nivo/core`, `@nivo/sankey` | Animated Sankey with gradient links. Different aesthetic from existing `<Sankey>` (d3-sankey). |
+| `<NivoCalendar data={[...]} from="..." to="..." />` | `@nivo/calendar` | same | Polished multi-year calendar heatmap. Different from `<CalHeatmap>` (90-day fixed). |
+| `<TremorCard label="..." value="..." progress={...} />` | Tremor 3 | `@tremor/react` | Dashboard KPI card with delta badge and progress bar. |
+| `<ObservablePlot spec="..." />` | Observable Plot | `@observablehq/plot` | Terse declarative plotting from D3's creators. 3-line statistical plots. |
+
+### Modern spaced repetition
+
+| Module | Library | npm | Brief |
+|---|---|---|---|
+| `import { fsrsReview } from '../lib/fsrs'` | ts-fsrs | `ts-fsrs` | FSRS algorithm (powers modern Anki). ~81% better retention than SM-2 in benchmarks. Coexists with the SM-2 implementation in `srs.ts`. |
+
+### Modern drag-and-drop
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<DragMatch pairs={[{left, right}, ...]} />` | `@dnd-kit/core` | `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` | Accessible matching exercise. Modern replacement for react-beautiful-dnd. |
+
+### Maps (free, commercial)
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<MapLibreView center={[...]} zoom={...} markers={[...]} />` | MapLibre GL | `maplibre-gl`, `react-map-gl` | Open-source vector map (Mapbox GL fork). Zero billing. |
+| `<DeckMap arcs={[...]} points={[...]} />` | deck.gl 9 + react-map-gl | `deck.gl`, `@deck.gl/layers`, `@deck.gl/react`, `@deck.gl/geo-layers`, `@deck.gl/aggregation-layers` | GPU-accelerated map overlays: animated arcs, point clusters, heatmaps. |
+
+### Globes
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<CobeGlobe markers={[...]} />` | cobe | `cobe` | 5KB WebGL globe shader. Lightweight pinpoint-only alternative to `<Globe3D>` (full globe.gl). |
+
+### Rich timelines
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<ChronoTimeline items={[...]} mode="VERTICAL_ALTERNATING" />` | react-chrono 3 | `react-chrono` | Vertical/horizontal/alternating modes with cards, search, nested support. |
+| `<VisTimeline items={[...]} groups={[...]} />` | vis-timeline | `vis-timeline`, `vis-data` | Draggable, zoomable timeline with parallel-lane groups. |
+
+### Universal media players
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<VideoPlayer url="..." />` | react-player | `react-player` | One API for YouTube, Vimeo, Twitch, SoundCloud, MP4, HLS, DASH. |
+| `<MuxPlayer playbackId="..." src="..." />` | Mux Player web component | `@mux/mux-player`, `@mux/mux-player-react` | Adaptive bitrate, low latency, real-time analytics. |
+
+### Rich text editing
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<RichTextEditor placeholder="..." storageKey="..." />` | TipTap | `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit` | Bold/italic/headings/lists/quotes/code rich text editor. Saves to localStorage. |
+
+### Image annotation
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<ImageAnnotate src="..." />` | marker.js 2 | `markerjs2` | Draw arrows, callouts, freehand notes on top of any image. |
+
+---
+
+## 9b. React integration
+
+Added 2026-04 to support React-only libraries (Recharts, Nivo, React Flow, Tremor, react-chrono, TipTap, etc.).
+
+| Package | Purpose |
+|---|---|
+| `@astrojs/react` | Astro integration so `client:only="react"` works in `.astro` files. |
+| `react`, `react-dom` (v18) | React runtime, pinned to v18 due to Vidstack peer constraints. |
+| `motion` | Smooth React animations (replaces deprecated framer-motion). |
+
+React components live in `src/components/react/` and are imported by their Astro wrappers (which add the surface card and the `client:only="react"` directive).
+
+---
+
 ## 10. Reserved / planned (not yet installed)
 
 Nothing is currently reserved. Everything that was planned is now active. Drop future placeholders here as they come up.

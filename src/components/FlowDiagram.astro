@@ -1,0 +1,29 @@
+---
+// Interactive clickable flowcharts via React Flow (@xyflow/react).
+// Unlike Mermaid (static SVG), React Flow nodes can be dragged, clicked, and expanded.
+//
+// Usage in MDX:
+//   <FlowDiagram
+//     client:only="react"
+//     nodes={[
+//       { id: '1', position: { x: 0, y: 0 },   data: { label: 'Sunlight' } },
+//       { id: '2', position: { x: 220, y: 0 }, data: { label: 'PSII' } },
+//       { id: '3', position: { x: 440, y: 0 }, data: { label: 'ATP + NADPH' } }
+//     ]}
+//     edges={[
+//       { id: 'e1-2', source: '1', target: '2', animated: true },
+//       { id: 'e2-3', source: '2', target: '3', animated: true }
+//     ]}
+//   />
+import FlowDiagramReact from './react/FlowDiagram.tsx';
+interface Props {
+  nodes: any[];
+  edges: any[];
+  height?: string;
+}
+const { nodes, edges, height = '420px' } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden" style={`height: ${height};`}>
+  <FlowDiagramReact client:only="react" nodes={nodes} edges={edges} />
+</div>

@@ -1,0 +1,22 @@
+---
+// Drag-and-drop matching exercise via @dnd-kit. Modern accessible alternative to MatchPairs.
+//
+// Usage:
+//   <DragMatch pairs={[
+//     { left: 'PSII',  right: 'Splits water and releases O2' },
+//     { left: 'PSI',   right: 'Re-energizes the electron' },
+//     { left: 'ATP synthase', right: 'Uses H+ gradient to make ATP' }
+//   ]} />
+import DragMatchReact from './react/DragMatch.tsx';
+interface Pair { left: string; right: string; }
+interface Props { pairs: Pair[]; title?: string; }
+const { pairs, title = 'Drag to match' } = Astro.props;
+---
+
+<section class="not-prose my-6 surface rounded-2xl p-6 shadow-soft">
+  <header class="flex items-center gap-3 mb-4">
+    <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">M</span>
+    <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+  </header>
+  <DragMatchReact client:only="react" pairs={pairs} />
+</section>

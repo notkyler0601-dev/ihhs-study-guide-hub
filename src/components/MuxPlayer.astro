@@ -1,0 +1,38 @@
+---
+// Mux Player web component. Adaptive bitrate, low-latency, real-time analytics.
+// Pass either a `playbackId` (Mux) or a `src` (any HLS/MP4 URL).
+//
+// Usage:
+//   <MuxPlayer playbackId="DS00Spx1CV902MCtPj5WknGlR102V5HFkDe" />
+//   <MuxPlayer src="https://stream.mux.com/.../high.m3u8" />
+interface Props {
+  playbackId?: string;
+  src?: string;
+  metadataVideoTitle?: string;
+  poster?: string;
+  height?: string;
+}
+const { playbackId, src, metadataVideoTitle, poster, height = '420px' } = Astro.props;
+const id = 'mux-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden" style={`height: ${height};`} id={id}></div>
+
+<script define:vars={{ id, playbackId, src, metadataVideoTitle, poster }}>
+  const init = async () => {
+    const wrap = document.getElementById(id);
+    if (!wrap || wrap.dataset.bound) return;
+    wrap.dataset.bound = '1';
+    await import('@mux/mux-player');
+    const el = document.createElement('mux-player');
+    if (playbackId) el.setAttribute('playback-id', playbackId);
+    if (src) el.setAttribute('src', src);
+    if (metadataVideoTitle) el.setAttribute('metadata-video-title', metadataVideoTitle);
+    if (poster) el.setAttribute('poster', poster);
+    el.setAttribute('accent-color', '#b91c1c');
+    el.style.cssText = 'width: 100%; height: 100%; --controls: hsl(0 0% 100% / 0.95);';
+    wrap.appendChild(el);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -1,0 +1,16 @@
+---
+// Nivo Calendar heatmap. Pass an array of { day: 'YYYY-MM-DD', value: number }.
+// Distinct from <CalHeatmap> by being polished React, full-year, and supporting multi-year layouts.
+import NivoCalendarReact from './react/NivoCalendar.tsx';
+interface Props {
+  data: { day: string; value: number }[];
+  from: string;
+  to: string;
+  height?: number;
+}
+const { data, from, to, height = 220 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <NivoCalendarReact client:only="react" data={data} from={from} to={to} height={height} />
+</div>

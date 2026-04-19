@@ -1,0 +1,21 @@
+---
+// Universal video player via react-player. One API for YouTube, Vimeo, Facebook,
+// Twitch, SoundCloud, MP4, HLS, DASH. Lazy thumbnail by default.
+//
+// Usage:
+//   <VideoPlayer url="https://www.youtube.com/watch?v=Y4eR9Lqy5UE" />
+//   <VideoPlayer url="/lectures/photosynthesis.mp4" />
+import VideoPlayerReact from './react/VideoPlayer.tsx';
+interface Props {
+  url: string;
+  width?: string;
+  height?: string;
+  controls?: boolean;
+  light?: boolean;
+}
+const { url, width = '100%', height = '420px', controls = true, light = true } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden">
+  <VideoPlayerReact client:only="react" url={url} width={width} height={height} controls={controls} light={light} />
+</div>

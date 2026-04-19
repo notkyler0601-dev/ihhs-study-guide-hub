@@ -1,0 +1,12 @@
+---
+// React Chrono: rich vertical/horizontal/alternating timeline with nested support and search.
+// Different from <Timeline> (TimelineJS slideshow) and <VisTimeline> (zoom/pan).
+import ChronoTimelineReact from './react/ChronoTimeline.tsx';
+interface Item { title: string; cardTitle?: string; cardSubtitle?: string; cardDetailedText?: string; url?: string; }
+interface Props { items: Item[]; mode?: 'VERTICAL' | 'HORIZONTAL' | 'VERTICAL_ALTERNATING'; height?: string; }
+const { items, mode = 'VERTICAL_ALTERNATING', height = '600px' } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4 overflow-hidden">
+  <ChronoTimelineReact client:only="react" items={items} mode={mode} height={height} />
+</div>

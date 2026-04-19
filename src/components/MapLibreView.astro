@@ -1,0 +1,62 @@
+---
+// MapLibre GL: free open-source vector map (Mapbox GL fork). Zero billing.
+// Loaded lazily; tiles served by MapTiler/Stadia/etc free demo styles.
+//
+// Usage in MDX:
+//   <MapLibreView
+//     center={[2.35, 48.86]}
+//     zoom={5}
+//     markers={[
+//       { lng: 2.35, lat: 48.86, label: 'Paris' },
+//       { lng: -0.13, lat: 51.50, label: 'London' }
+//     ]}
+//   />
+interface Marker { lng: number; lat: number; label?: string; color?: string; }
+interface Props {
+  center?: [number, number];
+  zoom?: number;
+  height?: string;
+  style?: string;
+  markers?: Marker[];
+}
+const {
+  center = [0, 20],
+  zoom = 1.5,
+  height = '420px',
+  style = 'https://demotiles.maplibre.org/style.json',
+  markers = [],
+} = Astro.props;
+const id = 'maplibre-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden">
+  <div id={id} style={`width: 100%; height: ${height};`}></div>
+</div>
+
+<script define:vars={{ id, center, zoom, style, markers }}>
+  const init = async () => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.bound) return;
+    el.dataset.bound = '1';
+    const maplibregl = (await import('maplibre-gl')).default;
+    await import('maplibre-gl/dist/maplibre-gl.css');
+    const map = new maplibregl.Map({
+      container: id,
+      style,
+      center,
+      zoom,
+      attributionControl: { compact: true },
+    });
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+    map.on('load', () => {
+      markers.forEach((m) => {
+        const marker = new maplibregl.Marker({ color: m.color || '#b91c1c' })
+          .setLngLat([m.lng, m.lat])
+          .addTo(map);
+        if (m.label) marker.setPopup(new maplibregl.Popup({ offset: 12 }).setText(m.label));
+      });
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

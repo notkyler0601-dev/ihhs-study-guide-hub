@@ -1,0 +1,20 @@
+---
+// Tremor dashboard KPI card. Polished metric tile with delta badge and progress bar.
+//
+// Usage:
+//   <TremorCard label="Mastered cards" value={42} delta="+8" deltaType="increase" progress={67} helper="67% to deck mastery" />
+import TremorCardReact from './react/TremorCard.tsx';
+interface Props {
+  label: string;
+  value: string | number;
+  delta?: string;
+  deltaType?: 'increase' | 'moderateIncrease' | 'unchanged' | 'moderateDecrease' | 'decrease';
+  progress?: number;
+  helper?: string;
+}
+const { label, value, delta, deltaType, progress, helper } = Astro.props;
+---
+
+<div class="not-prose my-4">
+  <TremorCardReact client:only="react" label={label} value={value} delta={delta} deltaType={deltaType} progress={progress} helper={helper} />
+</div>

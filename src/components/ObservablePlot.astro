@@ -1,0 +1,42 @@
+---
+// Observable Plot: terse declarative plotting from D3's creators. Perfect for
+// quick exploratory plots embedded in MDX with minimal config.
+//
+// Usage:
+//   <ObservablePlot
+//     spec={`Plot.lineY([
+//       { year: 1939, deaths: 0.5 },
+//       { year: 1945, deaths: 70 }
+//     ], { x: 'year', y: 'deaths' }).plot({ marginLeft: 50 })`}
+//   />
+interface Props {
+  spec: string;
+  height?: string;
+}
+const { spec, height = '320px' } = Astro.props;
+const id = 'oplot-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <div id={id} style={`min-height: ${height};`}></div>
+</div>
+
+<script define:vars={{ id, spec }}>
+  const init = async () => {
+    const container = document.getElementById(id);
+    if (!container || container.dataset.bound) return;
+    container.dataset.bound = '1';
+    const Plot = await import('@observablehq/plot');
+    try {
+      const fn = new Function('Plot', `return ${spec};`);
+      const node = fn(Plot);
+      container.innerHTML = '';
+      container.appendChild(node);
+    } catch (e) {
+      console.warn('ObservablePlot spec failed', e);
+      container.innerHTML = '<div style="color: #b91c1c">Plot spec failed; check console.</div>';
+    }
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

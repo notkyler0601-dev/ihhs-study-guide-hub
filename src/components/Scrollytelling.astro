@@ -1,0 +1,67 @@
+---
+// Newsroom-style scroll-driven storytelling via Scrollama.
+// Pin a sticky visualization (the "graphic") while scrollable text "steps" trigger state changes.
+//
+// Usage in MDX:
+//   <Scrollytelling
+//     graphic={`<img id="diagram" src="/photosynthesis.svg" />`}
+//     steps={[
+//       { id: 'intro',  body: '<h3>Sunlight hits chlorophyll</h3><p>...</p>' },
+//       { id: 'split',  body: '<h3>Water is split</h3><p>...</p>' },
+//       { id: 'cycle',  body: '<h3>Calvin cycle builds glucose</h3><p>...</p>' },
+//     ]}
+//     onStep={`(stepId) => { document.getElementById('diagram').dataset.stage = stepId; }`}
+//   />
+interface Step {
+  id: string;
+  body: string;
+}
+interface Props {
+  graphic: string;
+  steps: Step[];
+  onStep?: string;
+  graphicHeight?: string;
+}
+const { graphic, steps, onStep = '', graphicHeight = '70vh' } = Astro.props;
+const id = 'scroll-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-12" id={id} data-scrolly>
+  <div class="grid lg:grid-cols-[1fr_minmax(0,420px)] gap-8 items-start">
+    <div data-scrolly-graphic class="lg:sticky lg:top-24 surface rounded-2xl p-6 flex items-center justify-center overflow-hidden" style={`min-height: ${graphicHeight};`}>
+      <Fragment set:html={graphic} />
+    </div>
+    <div class="space-y-[60vh] py-[20vh]">
+      {steps.map((step) => (
+        <article data-scrolly-step={step.id} class="surface rounded-xl p-6 transition-all data-[active=true]:border-accent-500 data-[active=true]:shadow-glow">
+          <Fragment set:html={step.body} />
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ id, onStep }}>
+  const setup = async () => {
+    const root = document.getElementById(id);
+    if (!root || root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const scrollama = (await import('scrollama')).default;
+    const scroller = scrollama();
+    scroller
+      .setup({ step: `#${id} [data-scrolly-step]`, offset: 0.6, debug: false })
+      .onStepEnter(({ element, direction }) => {
+        root.querySelectorAll('[data-scrolly-step]').forEach((el) => el.removeAttribute('data-active'));
+        element.setAttribute('data-active', 'true');
+        if (onStep) {
+          try {
+            const fn = new Function('stepId', 'direction', `return (${onStep})(stepId, direction);`);
+            fn(element.getAttribute('data-scrolly-step'), direction);
+          } catch (e) { console.warn('onStep failed', e); }
+        }
+      });
+    window.addEventListener('resize', scroller.resize);
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

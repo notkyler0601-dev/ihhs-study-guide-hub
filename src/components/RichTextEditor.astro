@@ -1,0 +1,19 @@
+---
+// TipTap rich-text editor for student responses, journaling, or note-taking.
+// Saves to localStorage per-page.
+//
+// Usage:
+//   <RichTextEditor placeholder="Write a paragraph explaining the Calvin cycle in your own words." storageKey="essay-1" />
+import RichTextEditorReact from './react/RichTextEditor.tsx';
+interface Props {
+  placeholder?: string;
+  storageKey?: string;
+  initial?: string;
+  height?: string;
+}
+const { placeholder = 'Start writing...', storageKey, initial = '', height = '260px' } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <RichTextEditorReact client:only="react" placeholder={placeholder} storageKey={storageKey} initial={initial} height={height} />
+</div>

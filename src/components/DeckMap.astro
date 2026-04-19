@@ -1,0 +1,28 @@
+---
+// deck.gl GPU-accelerated map overlays on a free MapLibre basemap.
+// Use for animated arcs (trade routes, troop movements), point clusters, heatmaps.
+//
+// Usage:
+//   <DeckMap
+//     arcs={[
+//       { from: [-74, 40.7], to: [2.35, 48.86], width: 2 },
+//       { from: [-74, 40.7], to: [-0.13, 51.50], width: 2 }
+//     ]}
+//     points={[{ lng: -74, lat: 40.7, size: 8 }]}
+//     initialView={{ longitude: -30, latitude: 45, zoom: 2 }}
+//   />
+import DeckMapReact from './react/DeckMap.tsx';
+interface Arc { from: [number, number]; to: [number, number]; color?: [number, number, number]; width?: number; }
+interface Point { lng: number; lat: number; size?: number; color?: [number, number, number]; }
+interface Props {
+  arcs?: Arc[];
+  points?: Point[];
+  initialView?: { longitude: number; latitude: number; zoom: number };
+  height?: number;
+}
+const { arcs = [], points = [], initialView, height = 480 } = Astro.props;
+---
+
+<div class="not-prose my-6 surface rounded-xl overflow-hidden">
+  <DeckMapReact client:only="react" arcs={arcs} points={points} initialView={initialView} height={height} />
+</div>

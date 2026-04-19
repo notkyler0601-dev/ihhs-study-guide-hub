@@ -1,0 +1,39 @@
+---
+// marker.js 2 image annotation. Click to add arrows, callouts, freehand notes
+// on top of any image (historical photo, anatomical diagram, scanned map).
+//
+// Usage:
+//   <ImageAnnotate src="/images/leaf-cross-section.jpg" alt="Leaf cross-section" />
+interface Props {
+  src: string;
+  alt?: string;
+  height?: string;
+}
+const { src, alt = '', height = '480px' } = Astro.props;
+const id = 'mjs-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="not-prose my-6 surface rounded-xl p-4">
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500">Annotate the image</span>
+    <button id={`${id}-edit`} type="button" class="px-3 py-1 text-xs rounded-md bg-accent-700 hover:bg-accent-800 text-white font-medium">Annotate</button>
+  </div>
+  <img id={id} src={src} alt={alt} style={`max-height: ${height}; width: 100%; object-fit: contain; border-radius: 8px;`} />
+</div>
+
+<script define:vars={{ id }}>
+  const init = async () => {
+    const btn = document.getElementById(`${id}-edit`);
+    const img = document.getElementById(id);
+    if (!btn || !img || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', async () => {
+      const markerjs2 = (await import('markerjs2')).default;
+      const ma = new markerjs2.MarkerArea(img);
+      ma.addEventListener('render', (event) => { img.src = event.dataUrl; });
+      ma.show();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
