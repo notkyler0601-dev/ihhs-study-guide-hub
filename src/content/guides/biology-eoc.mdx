@@ -30,6 +30,7 @@ import Molecule from '../../components/Molecule.astro';
 import DNASequence from '../../components/DNASequence.astro';
 import PunnettSquare from '../../components/PunnettSquare.astro';
 import EvolutionSim from '../../components/EvolutionSim.astro';
+import FinchSim from '../../components/FinchSim.astro';
 import DichotomousKey from '../../components/DichotomousKey.astro';
 import TestTimer from '../../components/TestTimer.astro';
 
@@ -359,11 +360,18 @@ Closely related species cluster geographically in ways that match historical lan
 DNA and protein sequences match the patterns predicted by anatomy and the fossil record. Humans and chimps share **~98.8%** of their DNA. The more closely related two species are, the more similar their molecules.
 </Callout>
 
-## Watch natural selection happen
+## Watch natural selection happen: Galápagos finches
 
-This is a real natural-selection simulator. The environment "favors" red-tinted organisms (the deep red background). Press **▶ Run**. Predators cull organisms whose color is far from red each generation; survivors reproduce with mild mutation. Watch the population shift toward red over 30+ generations.
+This is the textbook story, brought to life. Each finch has a **beak depth** (the trait under selection). Two seed types fall on the beach:
 
-<EvolutionSim populationSize={70} selectionPressure={0.4} mutationRate={0.1} environmentColor="#7f1d1d" />
+- **Small green seeds** any finch can eat (1 calorie)
+- **Big brown seeds** only finches with beak ≥ 10 mm can crack (3 calories)
+
+Each "year" lasts 7 seconds. At the end of the year, finches with fewer than 2 calories starve. Survivors mate and offspring inherit the parent's beak depth (with mild mutation).
+
+**Press ▶ Run, watch the histogram on the right, then click ☀ Trigger drought.** During drought the small seeds vanish, so only big-beaked finches eat. Within 3-4 years the mean beak depth shifts noticeably right. End the drought and watch it drift back. This is exactly what Peter and Rosemary Grant observed on Daphne Major in 1977.
+
+<FinchSim populationSize={32} />
 
 <Callout type="theorem" title="Darwin's four conditions for natural selection">
 1. **Variation** within a population (some organisms differ from others)

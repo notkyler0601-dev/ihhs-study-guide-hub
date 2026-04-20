@@ -471,6 +471,7 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 |---|---|---|---|
 | `<PunnettSquare parent1="Bb" parent2="Bb" dominant="B" traits={{...}} />` | Custom | none | Interactive monohybrid genetic cross widget. Dropdowns let students change parent genotypes; offspring genotype + phenotype ratios update live. Color-codes dominant vs recessive cells. Used in the Biology EOC guide. |
 | `<EvolutionSim populationSize={60} selectionPressure={0.35} environmentColor="#7f1d1d" />` | Custom canvas | none | Live natural-selection simulator. Population of 3D-shaded colored organisms wanders an environment; a hunting predator (with eyes) chases the worst-fit prey; culled organisms fade with a death-puff. Twin live graphs (mean trait + population size). Smooth wandering motion with predator-flee behavior. |
+| `<FinchSim populationSize={32} />` | Custom canvas | none | Galápagos finch evolution sim. Hand-drawn finches with size-varying beaks forage on a beach for small (any beak) and big (beak ≥ 10 mm) seeds. Click ☀ Trigger drought to remove small seeds and watch mean beak depth shift right within a few years. Live histogram of beak depth, mean-over-time line, and population graph. The textbook example, playable. |
 | `<DichotomousKey tree={{ question, yes, no, result, note }} />` | Custom | none | Branching identification tree. Each node is a yes/no question that leads to either another question or a final identification. Breadcrumb shows path taken. Reset to try again. |
 
 ### Test-day timing

@@ -1,0 +1,576 @@
+---
+// Galápagos finch natural-selection simulation. Each finch has a beak-depth
+// trait. Two seed types fall on the beach: small (any beak) and big (only
+// beak depth >= 10 mm can crack). During drought, small seeds vanish, so
+// small-beaked finches starve and big-beaked finches dominate.
+//
+// Watch the live histogram of beak depths shift right after every drought.
+//
+// Usage:
+//   <FinchSim populationSize={30} />
+interface Props {
+  populationSize?: number;
+  height?: number;
+}
+const { populationSize = 30, height = 380 } = Astro.props;
+const id = 'finch-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-6" id={id} data-finch
+  data-pop={populationSize} data-h={height}>
+  <header class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">F</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">Galápagos finch evolution</h3>
+        <p class="text-xs text-ink-500 mt-1">
+          Year <span data-finch-year class="font-mono font-semibold text-accent-700 dark:text-accent-400">0</span>
+          · Finches <span data-finch-pop class="font-mono">{populationSize}</span>
+          · Mean beak <span data-finch-mean class="font-mono">10.0</span> mm
+          · Weather <span data-finch-weather class="font-mono font-semibold text-emerald-700 dark:text-emerald-400">normal</span>
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button data-finch-toggle class="px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-xs font-medium">▶ Run</button>
+      <button data-finch-drought class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium">☀ Trigger drought</button>
+      <button data-finch-reset class="px-3 py-1.5 rounded-lg border border-ink-200 dark:border-ink-800 text-xs hover:border-accent-400">Reset</button>
+    </div>
+  </header>
+
+  <div class="grid lg:grid-cols-[1fr_260px] gap-4">
+    <canvas data-finch-canvas style={`width: 100%; height: ${height}px; background: linear-gradient(to bottom, #87ceeb 0%, #87ceeb 35%, #f5deb3 36%, #d4a574 100%); border-radius: 12px; display: block;`}></canvas>
+    <div class="flex flex-col gap-3 text-sm">
+      <div>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Beak depth distribution</div>
+        <canvas data-finch-hist style="width: 100%; height: 110px; background: #fafafa; border-radius: 8px; display: block;"></canvas>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Mean beak depth (mm)</div>
+        <canvas data-finch-mean-graph style="width: 100%; height: 80px; background: #fafafa; border-radius: 8px; display: block;"></canvas>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Population</div>
+        <canvas data-finch-pop-graph style="width: 100%; height: 60px; background: #fafafa; border-radius: 8px; display: block;"></canvas>
+      </div>
+      <div class="text-[11px] text-ink-500 leading-relaxed flex flex-col gap-1.5">
+        <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full" style="background: #84cc16;"></span> Small seed (any beak, 1 cal)</div>
+        <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full" style="background: #78350f;"></span> Big seed (beak ≥ 10 mm, 3 cal)</div>
+        <div class="text-ink-400 mt-1">Need 2 cal/year to survive.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Finch = {
+    x: number; y: number;
+    vx: number; vy: number;
+    beak: number;       // mm, 7-14 typical
+    calories: number;   // accumulated this year
+    target: Seed | null;
+    bobPhase: number;   // for hop animation
+  };
+  type Seed = {
+    x: number; y: number;
+    big: boolean;       // big seed needs beak >= 10
+    eaten: boolean;
+  };
+
+  const setupOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const popSize = Number(root.dataset.pop || '30');
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-finch-canvas]')!;
+    const histCanvas = root.querySelector<HTMLCanvasElement>('[data-finch-hist]')!;
+    const meanCanvas = root.querySelector<HTMLCanvasElement>('[data-finch-mean-graph]')!;
+    const popCanvas = root.querySelector<HTMLCanvasElement>('[data-finch-pop-graph]')!;
+    const ctx = canvas.getContext('2d')!;
+    const hctx = histCanvas.getContext('2d')!;
+    const mctx = meanCanvas.getContext('2d')!;
+    const pctx = popCanvas.getContext('2d')!;
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      [canvas, histCanvas, meanCanvas, popCanvas].forEach((c) => {
+        c.width = c.offsetWidth * dpr;
+        c.height = c.offsetHeight * dpr;
+        c.getContext('2d')!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      });
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    let finches: Finch[] = [];
+    let seeds: Seed[] = [];
+    let year = 0;
+    let weather: 'normal' | 'drought' = 'normal';
+    let yearTimer = 0;       // ms elapsed in current year
+    const YEAR_MS = 7000;    // 7 seconds per year
+    let meanHistory: number[] = [];
+    let popHistory: number[] = [];
+    let running = false;
+    let lastFrameTs = 0;
+    let droughtPending = false;
+    const SEED_THRESHOLD_BEAK = 10;  // mm needed to crack big seeds
+    const CAL_TO_SURVIVE = 2;
+
+    function gaussian(mean: number, sd: number): number {
+      // Box-Muller
+      const u = Math.random(), v = Math.random();
+      return mean + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    function makeFinch(parent?: Finch): Finch {
+      const groundY = canvas.offsetHeight * 0.36;
+      const beak = parent
+        ? Math.max(6, Math.min(15, parent.beak + (Math.random() - 0.5) * 0.8))
+        : Math.max(6, Math.min(15, gaussian(10, 1.2)));
+      return {
+        x: Math.random() * (canvas.offsetWidth - 40) + 20,
+        y: groundY + Math.random() * (canvas.offsetHeight - groundY - 30) + 10,
+        vx: 0, vy: 0,
+        beak,
+        calories: 0,
+        target: null,
+        bobPhase: Math.random() * Math.PI * 2,
+      };
+    }
+
+    function spawnSeeds() {
+      seeds = [];
+      const groundY = canvas.offsetHeight * 0.36;
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      const smallCount = weather === 'drought' ? 0 : 60;
+      const bigCount = weather === 'drought' ? 12 : 18;
+      for (let i = 0; i < smallCount; i++) {
+        seeds.push({
+          x: Math.random() * (w - 20) + 10,
+          y: groundY + 20 + Math.random() * (h - groundY - 30),
+          big: false,
+          eaten: false,
+        });
+      }
+      for (let i = 0; i < bigCount; i++) {
+        seeds.push({
+          x: Math.random() * (w - 20) + 10,
+          y: groundY + 20 + Math.random() * (h - groundY - 30),
+          big: true,
+          eaten: false,
+        });
+      }
+    }
+
+    function reset() {
+      finches = Array.from({ length: popSize }, () => makeFinch());
+      year = 0;
+      weather = 'normal';
+      yearTimer = 0;
+      meanHistory = [meanBeak()];
+      popHistory = [finches.length];
+      droughtPending = false;
+      spawnSeeds();
+      drawAll();
+      updateUI();
+    }
+
+    function meanBeak(): number {
+      if (finches.length === 0) return 0;
+      return finches.reduce((s, f) => s + f.beak, 0) / finches.length;
+    }
+
+    function endYear() {
+      year++;
+      // Survival: any finch with too few calories dies
+      const survivors = finches.filter((f) => f.calories >= CAL_TO_SURVIVE);
+      // Reproduction: each pair of survivors makes one offspring until popSize
+      const next: Finch[] = survivors.map((f) => ({ ...f, calories: 0, target: null }));
+      while (next.length < popSize && survivors.length > 0) {
+        const parent = survivors[Math.floor(Math.random() * survivors.length)];
+        next.push(makeFinch(parent));
+      }
+      finches = next;
+      meanHistory.push(meanBeak());
+      popHistory.push(finches.length);
+      if (meanHistory.length > 80) { meanHistory.shift(); popHistory.shift(); }
+      // Apply queued drought toggle at year boundary
+      if (droughtPending) {
+        weather = weather === 'drought' ? 'normal' : 'drought';
+        droughtPending = false;
+      }
+      spawnSeeds();
+    }
+
+    function findNearestSeed(f: Finch): Seed | null {
+      let best: Seed | null = null;
+      let bestDist = Infinity;
+      for (const s of seeds) {
+        if (s.eaten) continue;
+        if (s.big && f.beak < SEED_THRESHOLD_BEAK) continue;  // can't eat big seeds
+        const d = Math.hypot(s.x - f.x, s.y - f.y);
+        if (d < bestDist) { bestDist = d; best = s; }
+      }
+      return best;
+    }
+
+    function drawFinch(f: Finch) {
+      const facing = f.vx >= 0 ? 1 : -1;
+      const bob = Math.sin(f.bobPhase) * 1.5;
+      const x = f.x;
+      const y = f.y + bob;
+
+      // Body (oval, brown)
+      ctx.fillStyle = '#8b4513';
+      ctx.beginPath();
+      ctx.ellipse(x, y, 12, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Wing
+      ctx.fillStyle = '#5e2c0e';
+      ctx.beginPath();
+      ctx.ellipse(x - facing * 2, y - 1, 8, 5, facing * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head
+      const headX = x + facing * 8;
+      const headY = y - 4;
+      ctx.fillStyle = '#6b3410';
+      ctx.beginPath();
+      ctx.arc(headX, headY, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Beak (bigger beak = more food access). Sized by trait.
+      const beakLen = 4 + (f.beak - 7) * 1.2;       // 4-13.6 px
+      const beakHeight = 1.5 + (f.beak - 7) * 0.5;  // 1.5-5.5 px
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(headX + facing * 4, headY - beakHeight / 2);
+      ctx.lineTo(headX + facing * (4 + beakLen), headY);
+      ctx.lineTo(headX + facing * 4, headY + beakHeight / 2);
+      ctx.closePath();
+      ctx.fill();
+      // Beak outline
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      // Eye
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(headX + facing * 1.5, headY - 1, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(headX + facing * 1.8, headY - 1, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tail
+      ctx.fillStyle = '#5e2c0e';
+      ctx.beginPath();
+      ctx.moveTo(x - facing * 11, y - 2);
+      ctx.lineTo(x - facing * 18, y - 5);
+      ctx.lineTo(x - facing * 18, y + 5);
+      ctx.lineTo(x - facing * 11, y + 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Legs
+      const legY = f.y + 8;
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.5;
+      const legLift = Math.abs(Math.sin(f.bobPhase));
+      ctx.beginPath();
+      ctx.moveTo(x - 2, y + 8);
+      ctx.lineTo(x - 2, legY + 5 - legLift * 2);
+      ctx.moveTo(x + 2, y + 8);
+      ctx.lineTo(x + 2, legY + 5 - (1 - legLift) * 2);
+      ctx.stroke();
+    }
+
+    function drawSeed(s: Seed) {
+      if (s.eaten) return;
+      if (s.big) {
+        // Big seed: brown nut shape
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y, 6, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        // ridge line
+        ctx.beginPath();
+        ctx.moveTo(s.x - 4, s.y);
+        ctx.lineTo(s.x + 4, s.y);
+        ctx.stroke();
+      } else {
+        // Small seed: green dot
+        ctx.fillStyle = '#84cc16';
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawAll() {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      // Sky
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.36);
+      if (weather === 'drought') {
+        skyGrad.addColorStop(0, '#fde68a');  // pale yellow drought sky
+        skyGrad.addColorStop(1, '#fbbf24');
+      } else {
+        skyGrad.addColorStop(0, '#87ceeb');
+        skyGrad.addColorStop(1, '#b6e0f5');
+      }
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h * 0.36);
+
+      // Sun
+      ctx.fillStyle = weather === 'drought' ? '#f59e0b' : '#fef3c7';
+      ctx.beginPath();
+      ctx.arc(w * 0.85, h * 0.12, 18, 0, Math.PI * 2);
+      ctx.fill();
+      if (weather === 'drought') {
+        // Sun rays
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(w * 0.85 + Math.cos(a) * 22, h * 0.12 + Math.sin(a) * 22);
+          ctx.lineTo(w * 0.85 + Math.cos(a) * 30, h * 0.12 + Math.sin(a) * 30);
+          ctx.stroke();
+        }
+      }
+
+      // Ground (sand)
+      const groundGrad = ctx.createLinearGradient(0, h * 0.36, 0, h);
+      groundGrad.addColorStop(0, weather === 'drought' ? '#e7c290' : '#f5deb3');
+      groundGrad.addColorStop(1, weather === 'drought' ? '#a87a4d' : '#d4a574');
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, h * 0.36, w, h - h * 0.36);
+
+      // Horizon line
+      ctx.strokeStyle = weather === 'drought' ? '#9a6d3a' : '#a08862';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.36);
+      ctx.lineTo(w, h * 0.36);
+      ctx.stroke();
+
+      // Cactus (just a touch of Galápagos vibe)
+      const cactusX = w * 0.06;
+      const cactusY = h * 0.36;
+      ctx.fillStyle = weather === 'drought' ? '#65a30d' : '#3f6212';
+      ctx.fillRect(cactusX, cactusY - 30, 8, 30);
+      ctx.fillRect(cactusX - 8, cactusY - 22, 8, 12);
+      ctx.fillRect(cactusX + 8, cactusY - 18, 8, 8);
+
+      // Seeds
+      seeds.forEach(drawSeed);
+      // Finches
+      finches.forEach(drawFinch);
+
+      drawHistogram();
+      drawMeanGraph();
+      drawPopGraph();
+    }
+
+    function drawHistogram() {
+      const w = histCanvas.offsetWidth;
+      const h = histCanvas.offsetHeight;
+      hctx.clearRect(0, 0, w, h);
+      // Bins from 6 to 15 mm
+      const minB = 6, maxB = 15;
+      const binCount = 18;
+      const bins = new Array(binCount).fill(0);
+      finches.forEach((f) => {
+        const b = Math.floor(((f.beak - minB) / (maxB - minB)) * binCount);
+        const idx = Math.max(0, Math.min(binCount - 1, b));
+        bins[idx]++;
+      });
+      const maxBinVal = Math.max(...bins, 1);
+      const barW = w / binCount;
+      bins.forEach((n, i) => {
+        const barH = (n / maxBinVal) * (h - 18);
+        const x = i * barW;
+        const y = h - 12 - barH;
+        // Bar color: green if beak < threshold, red if >= threshold
+        const beakValue = minB + (i / binCount) * (maxB - minB);
+        hctx.fillStyle = beakValue >= SEED_THRESHOLD_BEAK ? '#b91c1c' : '#84cc16';
+        hctx.fillRect(x + 1, y, barW - 2, barH);
+      });
+      // Threshold line at 10mm
+      const threshX = ((SEED_THRESHOLD_BEAK - minB) / (maxB - minB)) * w;
+      hctx.strokeStyle = '#78350f';
+      hctx.setLineDash([2, 2]);
+      hctx.beginPath();
+      hctx.moveTo(threshX, 4);
+      hctx.lineTo(threshX, h - 12);
+      hctx.stroke();
+      hctx.setLineDash([]);
+      // X-axis labels
+      hctx.fillStyle = '#71717a';
+      hctx.font = '8px Inter, sans-serif';
+      hctx.fillText('6', 2, h - 2);
+      hctx.fillText('10', threshX - 4, h - 2);
+      hctx.fillText('15', w - 10, h - 2);
+    }
+
+    function drawMeanGraph() {
+      const w = meanCanvas.offsetWidth;
+      const h = meanCanvas.offsetHeight;
+      mctx.clearRect(0, 0, w, h);
+      // Y-axis range: 7 to 13 mm
+      const minY = 7, maxY = 13;
+      // Reference line at 10
+      const refY = h - ((10 - minY) / (maxY - minY)) * h;
+      mctx.strokeStyle = '#78350f';
+      mctx.setLineDash([2, 2]);
+      mctx.lineWidth = 1;
+      mctx.beginPath();
+      mctx.moveTo(0, refY);
+      mctx.lineTo(w, refY);
+      mctx.stroke();
+      mctx.setLineDash([]);
+      mctx.fillStyle = '#78350f';
+      mctx.font = '8px Inter, sans-serif';
+      mctx.fillText('10', 2, refY - 1);
+      // Line
+      if (meanHistory.length < 2) return;
+      mctx.strokeStyle = '#b91c1c';
+      mctx.lineWidth = 2;
+      mctx.beginPath();
+      meanHistory.forEach((m, i) => {
+        const x = (i / Math.max(1, meanHistory.length - 1)) * w;
+        const cm = Math.max(minY, Math.min(maxY, m));
+        const y = h - ((cm - minY) / (maxY - minY)) * h;
+        if (i === 0) mctx.moveTo(x, y); else mctx.lineTo(x, y);
+      });
+      mctx.stroke();
+      const lastM = meanHistory[meanHistory.length - 1].toFixed(1);
+      mctx.fillStyle = '#b91c1c';
+      mctx.font = '10px monospace';
+      mctx.fillText(lastM + ' mm', w - 38, 12);
+    }
+
+    function drawPopGraph() {
+      const w = popCanvas.offsetWidth;
+      const h = popCanvas.offsetHeight;
+      pctx.clearRect(0, 0, w, h);
+      const max = Math.max(popSize, ...popHistory);
+      pctx.strokeStyle = '#7f1d1d';
+      pctx.lineWidth = 2;
+      pctx.beginPath();
+      popHistory.forEach((p, i) => {
+        const x = (i / Math.max(1, popHistory.length - 1)) * w;
+        const y = h - (p / max) * h * 0.85;
+        if (i === 0) pctx.moveTo(x, y); else pctx.lineTo(x, y);
+      });
+      pctx.stroke();
+      pctx.fillStyle = '#7f1d1d';
+      pctx.font = '10px monospace';
+      pctx.fillText(String(popHistory[popHistory.length - 1]), 4, 12);
+    }
+
+    function updateUI() {
+      root.querySelector('[data-finch-year]')!.textContent = String(year);
+      root.querySelector('[data-finch-pop]')!.textContent = String(finches.length);
+      root.querySelector('[data-finch-mean]')!.textContent = meanBeak().toFixed(1);
+      const wEl = root.querySelector<HTMLElement>('[data-finch-weather]')!;
+      wEl.textContent = weather;
+      wEl.className = 'font-mono font-semibold ' + (weather === 'drought'
+        ? 'text-amber-700 dark:text-amber-400'
+        : 'text-emerald-700 dark:text-emerald-400');
+      const droughtBtn = root.querySelector<HTMLButtonElement>('[data-finch-drought]')!;
+      if (droughtPending) {
+        droughtBtn.textContent = '⏳ ' + (weather === 'drought' ? 'End' : 'Start') + ' next year';
+      } else {
+        droughtBtn.textContent = weather === 'drought' ? '🌧 End drought' : '☀ Trigger drought';
+      }
+    }
+
+    function tick(ts: number) {
+      if (!lastFrameTs) lastFrameTs = ts;
+      const dt = Math.min(50, ts - lastFrameTs);
+      lastFrameTs = ts;
+
+      if (running) {
+        yearTimer += dt;
+        // Move finches and let them eat
+        finches.forEach((f) => {
+          if (!f.target || f.target.eaten || (f.target.big && f.beak < SEED_THRESHOLD_BEAK)) {
+            f.target = findNearestSeed(f);
+          }
+          if (f.target) {
+            const dx = f.target.x - f.x;
+            const dy = f.target.y - f.y;
+            const d = Math.hypot(dx, dy);
+            if (d < 6) {
+              // Reach seed: eat
+              f.target.eaten = true;
+              f.calories += f.target.big ? 3 : 1;
+              f.target = null;
+            } else {
+              const speed = 0.9;
+              f.vx = (dx / d) * speed;
+              f.vy = (dy / d) * speed;
+              f.x += f.vx * (dt / 16);
+              f.y += f.vy * (dt / 16);
+              f.bobPhase += 0.18;
+            }
+          } else {
+            // No reachable seed: wander gently
+            f.vx *= 0.92;
+            f.vy *= 0.92;
+            f.x += f.vx * (dt / 16);
+            f.y += f.vy * (dt / 16);
+          }
+        });
+
+        // End of year?
+        if (yearTimer >= YEAR_MS) {
+          yearTimer = 0;
+          endYear();
+          updateUI();
+        }
+      } else {
+        // Idle: gentle bob only
+        finches.forEach((f) => { f.bobPhase += 0.06; });
+      }
+
+      drawAll();
+      requestAnimationFrame(tick);
+    }
+
+    function startStop() {
+      running = !running;
+      const btn = root.querySelector<HTMLButtonElement>('[data-finch-toggle]')!;
+      btn.textContent = running ? '⏸ Pause' : '▶ Run';
+    }
+
+    root.querySelector('[data-finch-toggle]')!.addEventListener('click', startStop);
+    root.querySelector('[data-finch-drought]')!.addEventListener('click', () => {
+      droughtPending = true;
+      updateUI();
+    });
+    root.querySelector('[data-finch-reset]')!.addEventListener('click', () => {
+      running = false;
+      const btn = root.querySelector<HTMLButtonElement>('[data-finch-toggle]')!;
+      btn.textContent = '▶ Run';
+      reset();
+    });
+
+    reset();
+    requestAnimationFrame(tick);
+  };
+
+  const init = () => document.querySelectorAll<HTMLElement>('[data-finch]').forEach(setupOne);
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
