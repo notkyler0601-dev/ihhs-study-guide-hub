@@ -1,6 +1,8 @@
 ---
 // Display a DNA/RNA/protein sequence with optional highlighted features.
 // features: [{ start, end, label, color? }]  (1-indexed, inclusive)
+// When `codons` is true (default for dna/rna), the sequence is grouped into
+// codons and each codon shows its amino acid on hover.
 interface Feature { start: number; end: number; label: string; color?: string; }
 interface Props {
   sequence: string;
@@ -8,6 +10,7 @@ interface Props {
   features?: Feature[];
   title?: string;
   blockSize?: number;
+  codons?: boolean;
 }
 const {
   sequence,
@@ -15,7 +18,49 @@ const {
   features = [],
   title,
   blockSize = 10,
+  codons: codonsProp,
 } = Astro.props;
+
+const codons = codonsProp ?? (type !== 'protein');
+
+// Codon table (DNA, T-based). RNA sequences are normalized to T for lookup.
+const CODON_TABLE: Record<string, { aa: string; name: string; stop?: boolean; start?: boolean }> = {
+  TTT: { aa: 'Phe', name: 'Phenylalanine' }, TTC: { aa: 'Phe', name: 'Phenylalanine' },
+  TTA: { aa: 'Leu', name: 'Leucine' }, TTG: { aa: 'Leu', name: 'Leucine' },
+  CTT: { aa: 'Leu', name: 'Leucine' }, CTC: { aa: 'Leu', name: 'Leucine' },
+  CTA: { aa: 'Leu', name: 'Leucine' }, CTG: { aa: 'Leu', name: 'Leucine' },
+  ATT: { aa: 'Ile', name: 'Isoleucine' }, ATC: { aa: 'Ile', name: 'Isoleucine' },
+  ATA: { aa: 'Ile', name: 'Isoleucine' },
+  ATG: { aa: 'Met', name: 'Methionine (start)', start: true },
+  GTT: { aa: 'Val', name: 'Valine' }, GTC: { aa: 'Val', name: 'Valine' },
+  GTA: { aa: 'Val', name: 'Valine' }, GTG: { aa: 'Val', name: 'Valine' },
+  TCT: { aa: 'Ser', name: 'Serine' }, TCC: { aa: 'Ser', name: 'Serine' },
+  TCA: { aa: 'Ser', name: 'Serine' }, TCG: { aa: 'Ser', name: 'Serine' },
+  AGT: { aa: 'Ser', name: 'Serine' }, AGC: { aa: 'Ser', name: 'Serine' },
+  CCT: { aa: 'Pro', name: 'Proline' }, CCC: { aa: 'Pro', name: 'Proline' },
+  CCA: { aa: 'Pro', name: 'Proline' }, CCG: { aa: 'Pro', name: 'Proline' },
+  ACT: { aa: 'Thr', name: 'Threonine' }, ACC: { aa: 'Thr', name: 'Threonine' },
+  ACA: { aa: 'Thr', name: 'Threonine' }, ACG: { aa: 'Thr', name: 'Threonine' },
+  GCT: { aa: 'Ala', name: 'Alanine' }, GCC: { aa: 'Ala', name: 'Alanine' },
+  GCA: { aa: 'Ala', name: 'Alanine' }, GCG: { aa: 'Ala', name: 'Alanine' },
+  TAT: { aa: 'Tyr', name: 'Tyrosine' }, TAC: { aa: 'Tyr', name: 'Tyrosine' },
+  TAA: { aa: 'Stop', name: 'Stop codon', stop: true },
+  TAG: { aa: 'Stop', name: 'Stop codon', stop: true },
+  TGA: { aa: 'Stop', name: 'Stop codon', stop: true },
+  CAT: { aa: 'His', name: 'Histidine' }, CAC: { aa: 'His', name: 'Histidine' },
+  CAA: { aa: 'Gln', name: 'Glutamine' }, CAG: { aa: 'Gln', name: 'Glutamine' },
+  AAT: { aa: 'Asn', name: 'Asparagine' }, AAC: { aa: 'Asn', name: 'Asparagine' },
+  AAA: { aa: 'Lys', name: 'Lysine' }, AAG: { aa: 'Lys', name: 'Lysine' },
+  GAT: { aa: 'Asp', name: 'Aspartate' }, GAC: { aa: 'Asp', name: 'Aspartate' },
+  GAA: { aa: 'Glu', name: 'Glutamate' }, GAG: { aa: 'Glu', name: 'Glutamate' },
+  TGT: { aa: 'Cys', name: 'Cysteine' }, TGC: { aa: 'Cys', name: 'Cysteine' },
+  TGG: { aa: 'Trp', name: 'Tryptophan' },
+  CGT: { aa: 'Arg', name: 'Arginine' }, CGC: { aa: 'Arg', name: 'Arginine' },
+  CGA: { aa: 'Arg', name: 'Arginine' }, CGG: { aa: 'Arg', name: 'Arginine' },
+  AGA: { aa: 'Arg', name: 'Arginine' }, AGG: { aa: 'Arg', name: 'Arginine' },
+  GGT: { aa: 'Gly', name: 'Glycine' }, GGC: { aa: 'Gly', name: 'Glycine' },
+  GGA: { aa: 'Gly', name: 'Glycine' }, GGG: { aa: 'Gly', name: 'Glycine' },
+};
 
 // Pre-compute per-character feature membership for static rendering.
 const chars = sequence.replace(/\s+/g, '').toUpperCase().split('');
@@ -27,6 +72,20 @@ features.forEach((f, fi) => {
     charFeature[i] = { ...f, color };
   }
 });
+
+type CodonGroup = { bases: string[]; startIdx: number; info: { aa: string; name: string; stop?: boolean; start?: boolean } | null };
+const codonGroups: CodonGroup[] = [];
+if (codons) {
+  for (let i = 0; i < chars.length; i += 3) {
+    const bases = chars.slice(i, i + 3);
+    const key = bases.join('').replace(/U/g, 'T');
+    const info = bases.length === 3 ? (CODON_TABLE[key] ?? null) : null;
+    codonGroups.push({ bases, startIdx: i, info });
+  }
+}
+
+const displayType = type === 'protein' ? 'Protein' : type.toUpperCase();
+const unitLabel = type === 'protein' ? 'aa' : 'bp';
 ---
 
 <figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft">
@@ -34,7 +93,7 @@ features.forEach((f, fi) => {
     <figcaption class="mb-3 flex items-center justify-between gap-3">
       <span class="font-serif text-base font-semibold">{title}</span>
       <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">
-        {type === 'protein' ? 'Protein' : type.toUpperCase()} · {chars.length} {type === 'protein' ? 'aa' : 'bp'}
+        {displayType} · {chars.length} {unitLabel}
       </span>
     </figcaption>
   )}
@@ -54,12 +113,42 @@ features.forEach((f, fi) => {
     </div>
   )}
 
-  <div class="font-mono text-[13px] leading-7 break-all whitespace-pre-wrap select-all">
-    {chars.map((c, i) => {
-      const f = charFeature[i];
-      const block = i > 0 && i % blockSize === 0 ? ' ' : '';
-      const style = f ? `background:${f.color}; color:#27272a; padding:0 1px; border-radius:2px;` : '';
-      return <>{block}<span style={style} title={f?.label}>{c}</span></>;
-    })}
-  </div>
+  {codons ? (
+    <div class="font-mono text-[13px] leading-8 flex flex-wrap gap-x-2 gap-y-1">
+      {codonGroups.map((g) => {
+        const codonStr = g.bases.join('');
+        const tip = g.info
+          ? `${codonStr} → ${g.info.name}${g.info.stop ? '' : ` (${g.info.aa})`}`
+          : `${codonStr} (partial codon)`;
+        return (
+          <span
+            class="group relative inline-flex flex-col items-center cursor-help"
+            title={tip}
+            tabindex="0"
+          >
+            <span class="flex">
+              {g.bases.map((c, j) => {
+                const idx = g.startIdx + j;
+                const f = charFeature[idx];
+                const style = f ? `background:${f.color}; color:#27272a; padding:0 1px; border-radius:2px;` : '';
+                return <span style={style}>{c}</span>;
+              })}
+            </span>
+            <span class="text-[10px] leading-none text-ink-500 group-hover:text-accent-600 dark:text-ink-400 dark:group-hover:text-accent-400 transition-colors">
+              {g.info ? g.info.aa : '—'}
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  ) : (
+    <div class="font-mono text-[13px] leading-7 break-all whitespace-pre-wrap select-all">
+      {chars.map((c, i) => {
+        const f = charFeature[i];
+        const block = i > 0 && i % blockSize === 0 ? ' ' : '';
+        const style = f ? `background:${f.color}; color:#27272a; padding:0 1px; border-radius:2px;` : '';
+        return <>{block}<span style={style} title={f?.label}>{c}</span></>;
+      })}
+    </div>
+  )}
 </figure>
