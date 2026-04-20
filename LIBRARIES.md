@@ -470,7 +470,8 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 | Component | Library | npm | Brief |
 |---|---|---|---|
 | `<PunnettSquare parent1="Bb" parent2="Bb" dominant="B" traits={{...}} />` | Custom | none | Interactive monohybrid genetic cross widget. Dropdowns let students change parent genotypes; offspring genotype + phenotype ratios update live. Color-codes dominant vs recessive cells. Used in the Biology EOC guide. |
-| `<EvolutionSim populationSize={60} selectionPressure={0.35} environmentColor="#7f1d1d" />` | Custom canvas | none | Live natural-selection simulator. Population of colored organisms drifts; predators cull individuals far from environment color; survivors reproduce with mutation. Live mean-trait line graph. Drag to play, step, reset. |
+| `<EvolutionSim populationSize={60} selectionPressure={0.35} environmentColor="#7f1d1d" />` | Custom canvas | none | Live natural-selection simulator. Population of 3D-shaded colored organisms wanders an environment; a hunting predator (with eyes) chases the worst-fit prey; culled organisms fade with a death-puff. Twin live graphs (mean trait + population size). Smooth wandering motion with predator-flee behavior. |
+| `<DichotomousKey tree={{ question, yes, no, result, note }} />` | Custom | none | Branching identification tree. Each node is a yes/no question that leads to either another question or a final identification. Breadcrumb shows path taken. Reset to try again. |
 
 ### Test-day timing
 

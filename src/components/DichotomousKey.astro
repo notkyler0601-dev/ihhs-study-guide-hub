@@ -1,0 +1,201 @@
+---
+// Branching dichotomous key for species identification or any binary decision
+// tree. Each node is either a YES/NO question (with a yes-branch and a
+// no-branch) or a leaf with a result. Students click their way down to an
+// identification.
+//
+// Tree shape (recursive):
+//   { question: "Has backbone?",
+//     yes: { question: "Fur?", yes: { result: "Mammal", note: "..." }, no: {...} },
+//     no:  { result: "Invertebrate", note: "..." } }
+//
+// Usage:
+//   <DichotomousKey
+//     title="Identify a vertebrate"
+//     yesLabel="Yes"
+//     noLabel="No"
+//     tree={{
+//       question: "Does the animal have hair or fur?",
+//       yes: { result: "Mammal", note: "Warm-blooded, mammary glands." },
+//       no:  { question: "Feathers?",
+//              yes: { result: "Bird" },
+//              no:  { result: "Reptile, fish, or amphibian (need more info)" } }
+//     }}
+//   />
+interface Node {
+  question?: string;
+  yes?: Node;
+  no?: Node;
+  yesLabel?: string;
+  noLabel?: string;
+  result?: string;
+  note?: string;
+}
+interface Props {
+  title?: string;
+  yesLabel?: string;
+  noLabel?: string;
+  tree: Node;
+}
+const { title = 'Dichotomous key', yesLabel = 'Yes', noLabel = 'No', tree } = Astro.props;
+const id = 'dkey-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-6" id={id} data-dkey>
+  <header class="flex items-center gap-3 mb-4">
+    <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">K</span>
+    <div>
+      <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+      <p class="text-xs text-ink-500 mt-1">Click to answer. Each answer narrows the identification.</p>
+    </div>
+  </header>
+
+  <nav data-dkey-breadcrumb class="flex flex-wrap items-center gap-1.5 text-xs text-ink-500 mb-5 min-h-[1.5rem]"></nav>
+
+  <div data-dkey-stage class="min-h-[180px]"></div>
+
+  <div class="mt-5 pt-4 border-t border-ink-200 dark:border-ink-800 flex justify-between items-center">
+    <span class="text-xs text-ink-500">Step <span data-dkey-step class="font-mono font-semibold text-accent-700 dark:text-accent-400">1</span></span>
+    <button data-dkey-reset type="button" class="text-xs px-3 py-1.5 rounded-md border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600">Start over</button>
+  </div>
+
+  <script type="application/json" data-dkey-tree set:html={JSON.stringify({ tree, yesLabel, noLabel })}></script>
+</section>
+
+<script>
+  type Node = {
+    question?: string;
+    yes?: Node;
+    no?: Node;
+    yesLabel?: string;
+    noLabel?: string;
+    result?: string;
+    note?: string;
+  };
+
+  const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
+  const setupOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const dataEl = root.querySelector('[data-dkey-tree]');
+    if (!dataEl) return;
+    const cfg = JSON.parse(dataEl.textContent || '{}');
+    const tree: Node = cfg.tree;
+    const defaultYes: string = cfg.yesLabel || 'Yes';
+    const defaultNo: string = cfg.noLabel || 'No';
+
+    const stage = root.querySelector<HTMLElement>('[data-dkey-stage]')!;
+    const breadcrumb = root.querySelector<HTMLElement>('[data-dkey-breadcrumb]')!;
+    const stepEl = root.querySelector<HTMLElement>('[data-dkey-step]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-dkey-reset]')!;
+
+    let path: { label: string; node: Node }[] = [];
+
+    const render = () => {
+      const node = path.length === 0 ? tree : path[path.length - 1].node;
+      stepEl.textContent = String(path.length + 1);
+
+      // Breadcrumb
+      breadcrumb.innerHTML = path.length === 0
+        ? '<span class="text-ink-400">Start</span>'
+        : path.map((p, i) => `
+            <span class="flex items-center gap-1.5">
+              ${i > 0 ? '<span class="opacity-50">→</span>' : '<span class="text-ink-400">Start</span><span class="opacity-50">→</span>'}
+              <span class="px-2 py-0.5 rounded-md bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 text-[11px] font-medium">${escapeHtml(p.label)}</span>
+            </span>
+          `).join('');
+
+      if (node.result) {
+        // Leaf: identification
+        stage.innerHTML = `
+          <div class="rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-900/30 dark:to-ink-900 border border-accent-200 dark:border-accent-800 p-6 text-center">
+            <div class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400 mb-2">Identification</div>
+            <div class="font-serif text-2xl font-semibold gradient-text mb-2">${escapeHtml(node.result)}</div>
+            ${node.note ? `<p class="text-sm text-ink-700 dark:text-ink-300 max-w-prose mx-auto">${escapeHtml(node.note)}</p>` : ''}
+          </div>
+        `;
+      } else if (node.question) {
+        // Internal: question
+        const yesLabel = node.yesLabel || defaultYes;
+        const noLabel = node.noLabel || defaultNo;
+        stage.innerHTML = `
+          <div class="space-y-4">
+            <p class="text-lg font-medium text-ink-900 dark:text-ink-100 text-pretty">${escapeHtml(node.question)}</p>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <button data-dkey-answer="yes" class="dkey-btn group">
+                <span class="dkey-icon-yes">✓</span>
+                <span class="font-medium">${escapeHtml(yesLabel)}</span>
+              </button>
+              <button data-dkey-answer="no" class="dkey-btn group">
+                <span class="dkey-icon-no">✗</span>
+                <span class="font-medium">${escapeHtml(noLabel)}</span>
+              </button>
+            </div>
+          </div>
+        `;
+        stage.querySelectorAll<HTMLButtonElement>('[data-dkey-answer]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const choice = btn.dataset.dkeyAnswer as 'yes' | 'no';
+            const next = choice === 'yes' ? node.yes : node.no;
+            const label = choice === 'yes' ? yesLabel : noLabel;
+            if (next) {
+              path.push({ label, node: next });
+              render();
+            }
+          });
+        });
+      } else {
+        stage.innerHTML = '<p class="text-ink-500 text-sm">No more branches. Reset and try again.</p>';
+      }
+    };
+
+    resetBtn.addEventListener('click', () => { path = []; render(); });
+    render();
+  };
+
+  const init = () => document.querySelectorAll<HTMLElement>('[data-dkey]').forEach(setupOne);
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
+
+<style is:global>
+  .dkey-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 2px solid #e4e4e7;
+    background: #ffffff;
+    text-align: left;
+    transition: all 200ms ease;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  .dark .dkey-btn { background: #18181b; border-color: #27272a; color: #fafafa; }
+  .dkey-btn:hover {
+    border-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -4px rgba(185, 28, 28, 0.15);
+  }
+  .dark .dkey-btn:hover { border-color: #f87171; box-shadow: 0 6px 16px -4px rgba(220, 38, 38, 0.25); }
+  .dkey-icon-yes, .dkey-icon-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 200ms;
+  }
+  .dkey-icon-yes { background: rgba(16, 185, 129, 0.15); color: #15803d; }
+  .dark .dkey-icon-yes { background: rgba(16, 185, 129, 0.25); color: #86efac; }
+  .dkey-icon-no { background: rgba(185, 28, 28, 0.15); color: #b91c1c; }
+  .dark .dkey-icon-no { background: rgba(220, 38, 38, 0.25); color: #fca5a5; }
+  .dkey-btn:hover .dkey-icon-yes { background: #15803d; color: #fff; }
+  .dkey-btn:hover .dkey-icon-no { background: #b91c1c; color: #fff; }
+</style>

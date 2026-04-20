@@ -30,6 +30,7 @@ import Molecule from '../../components/Molecule.astro';
 import DNASequence from '../../components/DNASequence.astro';
 import PunnettSquare from '../../components/PunnettSquare.astro';
 import EvolutionSim from '../../components/EvolutionSim.astro';
+import DichotomousKey from '../../components/DichotomousKey.astro';
 import TestTimer from '../../components/TestTimer.astro';
 
 ## What's on the Ohio Biology EOC
@@ -393,6 +394,35 @@ When the medium ground finch population on Daphne Major faced a 1977 drought, on
 />
 
 A 0.5 mm shift in just 2 years. Multiply that across millions of years and you get the 13 distinct Darwin's finch species we see today, each with a beak adapted to a different food source.
+
+## Identify a vertebrate (interactive key)
+
+Biologists use **dichotomous keys** to identify unknown organisms. Each step is a yes/no question that narrows the possibilities. Try this one for the five vertebrate classes.
+
+<DichotomousKey
+  title="What kind of vertebrate is it?"
+  tree={{
+    question: "Does the animal have hair or fur?",
+    yes: {
+      question: "Does the female feed her young with milk?",
+      yes: { result: "Mammal", note: "All mammals have hair or fur (even whales, briefly, as embryos) and produce milk. Examples: humans, mice, bats, whales." },
+      no:  { result: "Likely a mammal still, with the milk-feeding suppressed. Re-check the hair." }
+    },
+    no: {
+      question: "Does it have feathers?",
+      yes: { result: "Bird", note: "Birds are the only living animals with feathers. Birds are also the only surviving lineage of dinosaurs." },
+      no: {
+        question: "Does it spend its whole life in water?",
+        yes: { result: "Fish", note: "Fish breathe via gills throughout life and have scales (most species). Examples: salmon, sharks, eels." },
+        no: {
+          question: "Does it have dry, scaly skin and lay eggs on land?",
+          yes: { result: "Reptile", note: "Reptiles have dry scaly skin and reproduce on land via amniotic eggs. Examples: snakes, lizards, turtles, crocodiles." },
+          no: { result: "Amphibian", note: "Amphibians have moist, smooth skin and lay eggs in water. They typically live a 'double life': aquatic larva (tadpole) and terrestrial adult. Examples: frogs, salamanders, newts." }
+        }
+      }
+    }
+  }}
+/>
 
 ## Phylogenetic trees
 

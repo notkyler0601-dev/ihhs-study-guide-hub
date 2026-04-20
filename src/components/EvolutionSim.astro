@@ -1,7 +1,11 @@
 ---
-// Live natural-selection simulation. A population of N organisms varies on a
-// trait (e.g., color). Predator culls the most-extreme phenotypes each
-// generation; survivors reproduce with slight mutation. Watch the trait shift.
+// Live natural-selection simulation. A population of organisms varies on a
+// trait (color hue). A predator stalks the population and culls the
+// individuals farthest from the environment color. Survivors reproduce
+// with mild mutation. Watch the trait shift across generations.
+//
+// New in this version: predator entity, smoother organism motion, gradient
+// "3D" dots, death animations, twin live graphs (mean trait + population).
 //
 // Usage:
 //   <EvolutionSim
@@ -22,7 +26,7 @@ const {
   selectionPressure = 0.35,
   mutationRate = 0.08,
   environmentColor = '#7f1d1d',
-  height = 360,
+  height = 400,
 } = Astro.props;
 const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
 ---
@@ -39,6 +43,7 @@ const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
           Generation <span data-evo-gen class="font-mono font-semibold text-accent-700 dark:text-accent-400">0</span>
           · Population <span data-evo-pop class="font-mono">{populationSize}</span>
           · Mean trait <span data-evo-mean class="font-mono">0.50</span>
+          · Match <span data-evo-match class="font-mono">0%</span>
         </p>
       </div>
     </div>
@@ -49,24 +54,37 @@ const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
     </div>
   </header>
 
-  <div class="grid lg:grid-cols-[1fr_220px] gap-4">
-    <canvas data-evo-canvas style={`width: 100%; height: ${height}px; background: #0a0a0a; border-radius: 12px; display: block;`}></canvas>
+  <div class="grid lg:grid-cols-[1fr_240px] gap-4">
+    <canvas data-evo-canvas style={`width: 100%; height: ${height}px; background: #050505; border-radius: 12px; display: block; cursor: crosshair;`}></canvas>
     <div class="flex flex-col gap-3 text-sm">
       <div>
         <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1">Environment favors</div>
-        <div class="rounded-lg p-2 text-center text-white text-xs font-medium" style={`background: ${environmentColor};`}>This color</div>
+        <div class="rounded-lg p-2 text-center text-white text-xs font-medium" style={`background: ${environmentColor};`}>This color (cull = far from this)</div>
       </div>
       <div>
-        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-2">Mean trait over time</div>
-        <canvas data-evo-graph style={`width: 100%; height: 120px; background: #fafafa; border-radius: 8px; display: block;`}></canvas>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Mean trait → environment</div>
+        <canvas data-evo-graph style="width: 100%; height: 90px; background: #fafafa; border-radius: 8px; display: block;"></canvas>
       </div>
-      <p class="text-[11px] text-ink-500 leading-relaxed">Each dot is one organism. Color = trait. Predators eat the organisms least like the environment. Survivors reproduce with mild mutation.</p>
+      <div>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Population size</div>
+        <canvas data-evo-popgraph style="width: 100%; height: 70px; background: #fafafa; border-radius: 8px; display: block;"></canvas>
+      </div>
+      <div class="flex items-center gap-2 text-[11px] text-ink-500 leading-relaxed">
+        <span class="inline-block w-3 h-3 rounded-full" style="background: #ef4444;"></span>
+        <span>= predator (hunts dots far from environment color)</span>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  type Org = { x: number; y: number; vx: number; vy: number; trait: number };
+  type Org = {
+    x: number; y: number;
+    vx: number; vy: number;
+    trait: number;
+    age: number;
+    dying: number;  // 0..1 fade-out timer when killed
+  };
 
   const setupOne = (root: HTMLElement) => {
     if (root.dataset.bound) return;
@@ -77,139 +95,323 @@ const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
     const envColorHex = root.dataset.env || '#7f1d1d';
     const canvas = root.querySelector<HTMLCanvasElement>('[data-evo-canvas]')!;
     const graphCanvas = root.querySelector<HTMLCanvasElement>('[data-evo-graph]')!;
+    const popCanvas = root.querySelector<HTMLCanvasElement>('[data-evo-popgraph]')!;
     const ctx = canvas.getContext('2d')!;
     const gctx = graphCanvas.getContext('2d')!;
+    const pctx = popCanvas.getContext('2d')!;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      graphCanvas.width = graphCanvas.offsetWidth * dpr;
-      graphCanvas.height = graphCanvas.offsetHeight * dpr;
-      gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      [canvas, graphCanvas, popCanvas].forEach((c) => {
+        c.width = c.offsetWidth * dpr;
+        c.height = c.offsetHeight * dpr;
+        c.getContext('2d')!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      });
     };
     resize();
     window.addEventListener('resize', resize);
 
     const envRgb = hexToRgb(envColorHex);
-    const envTrait = rgbToHsl(envRgb).h / 360; // hue 0..1
+    const envHue = rgbToHsl(envRgb).h / 360;
 
     let population: Org[] = [];
+    let predator = { x: 0, y: 0, tx: 0, ty: 0, mood: 0 };  // mood = recent kill flash
     let generation = 0;
-    let history: number[] = [];
+    let traitHistory: number[] = [];
+    let popHistory: number[] = [];
     let running = false;
     let rafId = 0;
+    let stepIntervalId = 0;
+    let lastStepTime = 0;
 
-    function makeOrg(): Org {
+    function makeOrg(parent?: Org): Org {
       return {
-        x: Math.random() * canvas.offsetWidth,
-        y: Math.random() * canvas.offsetHeight,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6,
-        trait: Math.random(),
+        x: parent ? parent.x + (Math.random() - 0.5) * 20 : Math.random() * canvas.offsetWidth,
+        y: parent ? parent.y + (Math.random() - 0.5) * 20 : Math.random() * canvas.offsetHeight,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2,
+        trait: parent
+          ? Math.max(0, Math.min(1, parent.trait + (Math.random() - 0.5) * mutation * 2))
+          : Math.random(),
+        age: 0,
+        dying: 0,
       };
     }
 
     function reset() {
-      population = Array.from({ length: popSize }, makeOrg);
+      population = Array.from({ length: popSize }, () => makeOrg());
+      predator = { x: canvas.offsetWidth / 2, y: canvas.offsetHeight / 2, tx: canvas.offsetWidth / 2, ty: canvas.offsetHeight / 2, mood: 0 };
       generation = 0;
-      history = [meanTrait()];
+      traitHistory = [meanTrait()];
+      popHistory = [population.length];
       drawAll();
       updateUI();
     }
 
     function meanTrait(): number {
-      if (population.length === 0) return 0;
-      return population.reduce((s, o) => s + o.trait, 0) / population.length;
+      const alive = population.filter((o) => o.dying === 0);
+      if (alive.length === 0) return 0;
+      return alive.reduce((s, o) => s + o.trait, 0) / alive.length;
+    }
+
+    function fitness(o: Org): number {
+      // Distance from environment color (0 = perfect match, 1 = opposite)
+      const d = Math.min(1, Math.abs(o.trait - envHue) * 1.6);
+      return 1 - d;
     }
 
     function step() {
       generation++;
-      // Selection: keep individuals closer to env trait (with stochasticity)
-      const survivors = population.filter((o) => {
-        const fitness = 1 - Math.min(1, Math.abs(o.trait - envTrait) * 1.5);
-        return Math.random() < (1 - pressure) + pressure * fitness;
+      // Selection: cull individuals with low fitness, with stochasticity
+      const culled: Org[] = [];
+      const survivors: Org[] = [];
+      population.forEach((o) => {
+        if (o.dying > 0) return;
+        const f = fitness(o);
+        const survive = Math.random() < (1 - pressure) + pressure * f;
+        if (survive) survivors.push(o);
+        else culled.push(o);
       });
-      // Reproduce until back to popSize, with mutation
-      const next: Org[] = survivors.map((o) => ({ ...o }));
+      // Mark culled ones for fade-out animation
+      culled.forEach((o) => { o.dying = 1; });
+
+      // Reproduction: bring back to popSize via mutation
+      const next: Org[] = survivors.map((o) => ({ ...o, age: o.age + 1 }));
       while (next.length < popSize && survivors.length > 0) {
         const parent = survivors[Math.floor(Math.random() * survivors.length)];
-        next.push({
-          x: parent.x + (Math.random() - 0.5) * 30,
-          y: parent.y + (Math.random() - 0.5) * 30,
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: (Math.random() - 0.5) * 0.6,
-          trait: Math.max(0, Math.min(1, parent.trait + (Math.random() - 0.5) * mutation * 2)),
-        });
+        next.push(makeOrg(parent));
       }
-      population = next;
-      history.push(meanTrait());
-      if (history.length > 200) history.shift();
+      // Keep dying organisms in population briefly so they fade out visually
+      population = [...next, ...culled];
+      traitHistory.push(meanTrait());
+      popHistory.push(survivors.length);
+      if (traitHistory.length > 100) { traitHistory.shift(); popHistory.shift(); }
     }
 
     function drawAll() {
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;
       ctx.clearRect(0, 0, w, h);
-      // Subtle background hint of env color
-      const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) / 2);
-      grad.addColorStop(0, hexWithAlpha(envColorHex, 0.18));
-      grad.addColorStop(1, '#0a0a0a');
+      // Environment radial gradient
+      const grad = ctx.createRadialGradient(w * 0.5, h * 0.4, 0, w * 0.5, h * 0.4, Math.max(w, h) * 0.7);
+      grad.addColorStop(0, hexWithAlpha(envColorHex, 0.32));
+      grad.addColorStop(0.6, hexWithAlpha(envColorHex, 0.10));
+      grad.addColorStop(1, '#050505');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
-      // Update positions
+      // Subtle grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 28) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y < h; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      // Update + draw organisms
       population.forEach((o) => {
-        o.x += o.vx;
-        o.y += o.vy;
-        if (o.x < 6 || o.x > w - 6) o.vx *= -1;
-        if (o.y < 6 || o.y > h - 6) o.vy *= -1;
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = traitToColor(o.trait);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        if (o.dying > 0) {
+          // Dying animation: shrink and fade out
+          o.dying = Math.max(0, o.dying - 0.05);
+          ctx.globalAlpha = o.dying;
+          drawOrg(o, 7 * o.dying);
+          // Death puff
+          const r = (1 - o.dying) * 18;
+          ctx.beginPath();
+          ctx.arc(o.x, o.y, r, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(239, 68, 68, ${o.dying * 0.6})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        } else {
+          // Live: gentle wandering with slight noise
+          o.vx += (Math.random() - 0.5) * 0.18;
+          o.vy += (Math.random() - 0.5) * 0.18;
+          // Drag
+          o.vx *= 0.96;
+          o.vy *= 0.96;
+          // Speed limit
+          const speed = Math.hypot(o.vx, o.vy);
+          if (speed > 1.4) { o.vx = (o.vx / speed) * 1.4; o.vy = (o.vy / speed) * 1.4; }
+          o.x += o.vx;
+          o.y += o.vy;
+          // Bounce off walls
+          if (o.x < 8) { o.x = 8; o.vx *= -0.7; }
+          if (o.x > w - 8) { o.x = w - 8; o.vx *= -0.7; }
+          if (o.y < 8) { o.y = 8; o.vy *= -0.7; }
+          if (o.y > h - 8) { o.y = h - 8; o.vy *= -0.7; }
+          // Flee from predator a little
+          const dx = o.x - predator.x, dy = o.y - predator.y;
+          const dpred = Math.hypot(dx, dy);
+          if (dpred < 80) {
+            o.vx += (dx / dpred) * 0.4;
+            o.vy += (dy / dpred) * 0.4;
+          }
+          drawOrg(o, 6 + Math.min(2, o.age * 0.15));
+        }
       });
-      drawGraph();
+      // Remove fully dead organisms
+      population = population.filter((o) => o.dying === 0 || o.dying > 0.05);
+
+      // Update + draw predator
+      // Move predator toward worst-fit prey
+      let targetOrg: Org | null = null;
+      let worstFit = 1;
+      population.forEach((o) => {
+        if (o.dying > 0) return;
+        const f = fitness(o);
+        if (f < worstFit) { worstFit = f; targetOrg = o; }
+      });
+      if (targetOrg) {
+        predator.tx = targetOrg.x;
+        predator.ty = targetOrg.y;
+      }
+      const pdx = predator.tx - predator.x;
+      const pdy = predator.ty - predator.y;
+      const pdist = Math.hypot(pdx, pdy);
+      if (pdist > 1) {
+        predator.x += (pdx / pdist) * 1.2;
+        predator.y += (pdy / pdist) * 1.2;
+      }
+      // Predator visual
+      predator.mood = Math.max(0, predator.mood - 0.02);
+      const predRadius = 11 + predator.mood * 6;
+      const predGrad = ctx.createRadialGradient(predator.x, predator.y, 0, predator.x, predator.y, predRadius);
+      predGrad.addColorStop(0, '#ef4444');
+      predGrad.addColorStop(0.7, predator.mood > 0.3 ? '#fef2f2' : '#dc2626');
+      predGrad.addColorStop(1, 'rgba(127,29,29,0.0)');
+      ctx.fillStyle = predGrad;
+      ctx.beginPath();
+      ctx.arc(predator.x, predator.y, predRadius, 0, Math.PI * 2);
+      ctx.fill();
+      // Predator eyes
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(predator.x - 3, predator.y - 2, 1.5, 0, Math.PI * 2);
+      ctx.arc(predator.x + 3, predator.y - 2, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawTraitGraph();
+      drawPopGraph();
     }
 
-    function drawGraph() {
+    function drawOrg(o: Org, baseRadius: number) {
+      // 3D-ish gradient sphere
+      const color = traitToColor(o.trait);
+      const lighter = traitToColor(o.trait, 0.85);
+      const grad = ctx.createRadialGradient(o.x - baseRadius * 0.3, o.y - baseRadius * 0.3, baseRadius * 0.1, o.x, o.y, baseRadius);
+      grad.addColorStop(0, lighter);
+      grad.addColorStop(1, color);
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, baseRadius, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      // Highlight
+      ctx.beginPath();
+      ctx.arc(o.x - baseRadius * 0.35, o.y - baseRadius * 0.35, baseRadius * 0.25, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fill();
+      // Subtle shadow ring
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, baseRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    function drawTraitGraph() {
       const w = graphCanvas.offsetWidth;
       const h = graphCanvas.offsetHeight;
       gctx.clearRect(0, 0, w, h);
-      // Env trait reference line
-      const envY = h - envTrait * h;
+      // Background grid
+      gctx.strokeStyle = '#e4e4e7';
+      gctx.lineWidth = 0.5;
+      for (let i = 1; i < 4; i++) {
+        const y = (i / 4) * h;
+        gctx.beginPath(); gctx.moveTo(0, y); gctx.lineTo(w, y); gctx.stroke();
+      }
+      // Environment trait reference
+      const envY = h - envHue * h;
       gctx.strokeStyle = envColorHex;
       gctx.setLineDash([4, 3]);
-      gctx.beginPath();
-      gctx.moveTo(0, envY);
-      gctx.lineTo(w, envY);
-      gctx.stroke();
+      gctx.lineWidth = 1.5;
+      gctx.beginPath(); gctx.moveTo(0, envY); gctx.lineTo(w, envY); gctx.stroke();
       gctx.setLineDash([]);
-      // History line
-      if (history.length < 2) return;
+      // Label
+      gctx.fillStyle = envColorHex;
+      gctx.font = '9px Inter, sans-serif';
+      gctx.fillText('env', 4, envY - 2);
+      // History
+      if (traitHistory.length < 2) return;
+      // Filled area under line
+      gctx.beginPath();
+      traitHistory.forEach((m, i) => {
+        const x = (i / (traitHistory.length - 1)) * w;
+        const y = h - m * h;
+        if (i === 0) gctx.moveTo(x, y); else gctx.lineTo(x, y);
+      });
+      gctx.lineTo(w, h);
+      gctx.lineTo(0, h);
+      gctx.closePath();
+      gctx.fillStyle = hexWithAlpha('#b91c1c', 0.10);
+      gctx.fill();
+      // Line
       gctx.strokeStyle = '#b91c1c';
       gctx.lineWidth = 2;
       gctx.beginPath();
-      history.forEach((m, i) => {
-        const x = (i / (history.length - 1)) * w;
+      traitHistory.forEach((m, i) => {
+        const x = (i / (traitHistory.length - 1)) * w;
         const y = h - m * h;
-        if (i === 0) gctx.moveTo(x, y);
-        else gctx.lineTo(x, y);
+        if (i === 0) gctx.moveTo(x, y); else gctx.lineTo(x, y);
       });
       gctx.stroke();
+      // Current point
+      const lastX = w;
+      const lastY = h - traitHistory[traitHistory.length - 1] * h;
+      gctx.fillStyle = '#b91c1c';
+      gctx.beginPath();
+      gctx.arc(lastX - 4, lastY, 3, 0, Math.PI * 2);
+      gctx.fill();
+    }
+
+    function drawPopGraph() {
+      const w = popCanvas.offsetWidth;
+      const h = popCanvas.offsetHeight;
+      pctx.clearRect(0, 0, w, h);
+      pctx.strokeStyle = '#e4e4e7';
+      pctx.lineWidth = 0.5;
+      const midY = h / 2;
+      pctx.beginPath(); pctx.moveTo(0, midY); pctx.lineTo(w, midY); pctx.stroke();
+      if (popHistory.length < 2) return;
+      const max = Math.max(popSize, ...popHistory);
+      pctx.strokeStyle = '#7f1d1d';
+      pctx.lineWidth = 2;
+      pctx.beginPath();
+      popHistory.forEach((p, i) => {
+        const x = (i / (popHistory.length - 1)) * w;
+        const y = h - (p / max) * h * 0.9;
+        if (i === 0) pctx.moveTo(x, y); else pctx.lineTo(x, y);
+      });
+      pctx.stroke();
+      // Label most recent value
+      pctx.fillStyle = '#7f1d1d';
+      pctx.font = '10px monospace';
+      pctx.fillText(String(popHistory[popHistory.length - 1]), 4, 12);
     }
 
     function updateUI() {
+      const alive = population.filter((o) => o.dying === 0);
       root.querySelector('[data-evo-gen]')!.textContent = String(generation);
-      root.querySelector('[data-evo-pop]')!.textContent = String(population.length);
-      root.querySelector('[data-evo-mean]')!.textContent = meanTrait().toFixed(2);
+      root.querySelector('[data-evo-pop]')!.textContent = String(alive.length);
+      const m = meanTrait();
+      root.querySelector('[data-evo-mean]')!.textContent = m.toFixed(2);
+      const matchPct = Math.round((1 - Math.min(1, Math.abs(m - envHue) * 1.6)) * 100);
+      root.querySelector('[data-evo-match]')!.textContent = matchPct + '%';
     }
 
-    function loop() {
+    function loop(ts: number) {
       drawAll();
+      // Predator pulses when there's a kill (any dying organism)
+      if (population.some((o) => o.dying > 0.5 && o.dying < 0.95)) {
+        predator.mood = Math.min(1, predator.mood + 0.5);
+      }
       if (running) rafId = requestAnimationFrame(loop);
     }
 
@@ -219,12 +421,13 @@ const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
       btn.textContent = running ? '⏸ Pause' : '▶ Run';
       if (running) {
         rafId = requestAnimationFrame(loop);
-        // Run a step every 800ms while playing
-        const intervalId = window.setInterval(() => {
-          if (!running) { clearInterval(intervalId); return; }
+        stepIntervalId = window.setInterval(() => {
+          if (!running) { clearInterval(stepIntervalId); return; }
           step();
           updateUI();
-        }, 800);
+        }, 900);
+      } else {
+        clearInterval(stepIntervalId);
       }
     }
 
@@ -235,11 +438,12 @@ const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
       const btn = root.querySelector<HTMLButtonElement>('[data-evo-toggle]')!;
       btn.textContent = '▶ Run';
       cancelAnimationFrame(rafId);
+      clearInterval(stepIntervalId);
       reset();
     });
 
     reset();
-    loop(); // animate even when paused so dots drift
+    requestAnimationFrame(loop);  // animate even when paused so dots drift
   };
 
   function hexToRgb(hex: string) {
@@ -264,10 +468,10 @@ const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
     }
     return { h, s, l };
   }
-  function traitToColor(t: number): string {
-    // Map trait 0..1 to a hue from blue (240) through purple (280) to red (0/360)
-    const hue = 240 + t * 120;  // 240..360 -> blue -> red
-    return `hsl(${hue % 360}, 75%, 60%)`;
+  function traitToColor(t: number, lighten = 0): string {
+    const hue = (240 + t * 120) % 360;  // blue..purple..red
+    const lightness = 55 + lighten * 20;
+    return `hsl(${hue}, 78%, ${lightness}%)`;
   }
 
   const init = () => document.querySelectorAll<HTMLElement>('[data-evosim]').forEach(setupOne);
