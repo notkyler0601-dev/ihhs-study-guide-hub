@@ -8,7 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import react from '@astrojs/react';
 
 export default defineConfig({
-  site: 'https://ihhs-study-guide-hub.local',
+  site: 'https://ihsgh.org',
   integrations: [mdx({
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
