@@ -27,9 +27,9 @@ const id = 'scroll-' + Math.random().toString(36).slice(2, 9);
 ---
 
 <section class="not-prose my-12" id={id} data-scrolly data-scrolly-id={id}>
-  <div class="grid lg:grid-cols-[1fr_minmax(0,400px)] gap-6 items-start">
-    <div data-scrolly-graphic class="sticky top-20 lg:top-24 surface rounded-2xl flex items-center justify-center overflow-hidden min-w-0 z-10" style={`max-height: 60vh; min-height: 280px; box-sizing: border-box;`}>
-      <div class="w-full h-full relative overflow-y-auto scrollbar-thin" style={`min-height: 280px; max-height: 60vh;`}>
+  <div class="grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-6 items-start">
+    <div data-scrolly-graphic class="sticky top-20 lg:top-24 surface rounded-2xl flex items-center justify-center overflow-hidden min-w-0 z-10" style={`max-height: 70vh; min-height: 380px; box-sizing: border-box;`}>
+      <div class="w-full h-full relative overflow-y-auto scrollbar-thin" style={`min-height: 380px; max-height: 70vh;`}>
         <Fragment set:html={graphic} />
       </div>
     </div>

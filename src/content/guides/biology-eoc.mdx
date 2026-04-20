@@ -23,15 +23,9 @@ import VerticalTimeline from '../../components/VerticalTimeline.astro';
 import Phylogeny from '../../components/Phylogeny.astro';
 import DragMatch from '../../components/DragMatch.astro';
 import DragSort from '../../components/DragSort.astro';
-import Hotspots from '../../components/Hotspots.astro';
 import Memorize from '../../components/Memorize.astro';
 import Scrollytelling from '../../components/Scrollytelling.astro';
 import PhETSim from '../../components/PhETSim.astro';
-import DeepZoomAnnotated from '../../components/DeepZoomAnnotated.astro';
-import CellSim from '../../components/CellSim.astro';
-import Sketchfab from '../../components/Sketchfab.astro';
-import MathBox from '../../components/MathBox.astro';
-import VideoPlayer from '../../components/VideoPlayer.astro';
 import Molecule from '../../components/Molecule.astro';
 import DNASequence from '../../components/DNASequence.astro';
 import PunnettSquare from '../../components/PunnettSquare.astro';
@@ -247,7 +241,7 @@ A cross between two heterozygotes (Bb × Bb) ALWAYS gives a **3:1 phenotype rati
 A **pedigree** is a family tree that tracks a trait across generations. The Ohio EOC will give you one and ask whether the trait is dominant, recessive, X-linked, or autosomal.
 
 <NetworkGraph
-  layout="dagre"
+  layout="breadthfirst"
   nodes={[
     { id: 'g1f', label: 'Father (aa)', color: '#3b82f6', shape: 'rectangle' },
     { id: 'g1m', label: 'Mother (Aa)', color: '#ec4899', shape: 'circle' },
@@ -404,7 +398,21 @@ A 0.5 mm shift in just 2 years. Multiply that across millions of years and you g
 
 A **phylogeny** shows evolutionary relationships. Tip = present-day species. Internal node = common ancestor. The closer two tips share a common ancestor, the more closely related they are.
 
-<Phylogeny newick="(Lamprey,(Shark,(Salmon,(Frog,(Lizard,(Mouse,Human))))));" />
+```mermaid
+flowchart LR
+  Vert[Vertebrate ancestor] --> Lamprey
+  Vert --> Jawed[Jawed ancestor]
+  Jawed --> Shark
+  Jawed --> Bony[Bony fish ancestor]
+  Bony --> Salmon
+  Bony --> Tetra[Tetrapod ancestor]
+  Tetra --> Frog
+  Tetra --> Amniote[Amniote ancestor]
+  Amniote --> Lizard
+  Amniote --> Mammal[Mammal ancestor]
+  Mammal --> Mouse
+  Mammal --> Human
+```
 
 <Callout type="tip" title="Reading trees">
 Don't read tip-to-tip horizontally. Read by **most recent common ancestor**. A mouse and a human share a more recent common ancestor than a mouse and a lizard, so they're more closely related, even if they look less alike.
@@ -427,21 +435,34 @@ Life has been around for about **3.8 billion years**. Mass extinctions reset the
   { date: "Today", title: "Sixth mass extinction (in progress)", body: "Driven by humans. Species are going extinct at 100-1,000x the background rate.", icon: "⚠️" }
 ]} />
 
-## CrashCourse: natural selection (10 min)
 
-John Green walks through Darwin's logic, the peppered moth, and antibiotic resistance.
-
-<VideoPlayer url="https://www.youtube.com/watch?v=1HbvBVhpChI" />
-
-## Hardy-Weinberg in 3D
+## Hardy-Weinberg equilibrium
 
 When a population is in **Hardy-Weinberg equilibrium**, allele frequencies don't change. The conditions are strict (no mutation, no migration, no selection, infinite population, random mating) so it never quite holds in nature. The math gives you a baseline to compare real populations against.
 
 The equation: $p^2 + 2pq + q^2 = 1$
 
-where $p$ = frequency of dominant allele, $q$ = frequency of recessive allele, $p^2$ = % homozygous dominant, $2pq$ = % heterozygous, $q^2$ = % homozygous recessive.
+where $p$ = frequency of the dominant allele, $q$ = frequency of the recessive allele, $p^2$ = fraction of homozygous dominant, $2pq$ = fraction of heterozygous, $q^2$ = fraction of homozygous recessive. By definition $p + q = 1$.
 
-<MathBox setup={`mathbox.set('focus', 4); mathbox.cartesian({ range: [[0,1],[0,1],[0,1]], scale: [2,2,1] }).axis({ axis: 'x' }).axis({ axis: 'y' }).axis({ axis: 'z' }).grid({ axes: 'xy' }).area({ width: 32, height: 32, axes: 'xy', expr: function (emit, p, q) { emit(p, q, p*p + 2*p*q + q*q); }, color: 0xb91c1c, shaded: true });`} />
+<Callout type="theorem" title="The 5 conditions">
+A population stays in equilibrium ONLY when ALL five conditions hold:
+1. No mutation
+2. No migration (no gene flow)
+3. No natural selection
+4. Infinite population (no genetic drift)
+5. Random mating
+
+Real populations break at least one of these constantly, which is why allele frequencies do change. That's evolution.
+</Callout>
+
+### Worked example
+
+If $q^2 = 0.16$ (16% of the population is homozygous recessive), then:
+- $q = \sqrt{0.16} = 0.4$ (recessive allele frequency)
+- $p = 1 - 0.4 = 0.6$ (dominant allele frequency)
+- $p^2 = 0.36$ (36% homozygous dominant)
+- $2pq = 2(0.6)(0.4) = 0.48$ (48% heterozygous)
+- Check: $0.36 + 0.48 + 0.16 = 1.00$ ✓
 
 ## Evolution practice
 
@@ -786,19 +807,7 @@ Atmospheric CO₂ has gone from ~280 ppm (pre-industrial) to over 420 ppm today,
 
 The smallest unit of life. The Ohio EOC tests **cell structure, membrane transport, mitosis, meiosis, and a deep understanding of photosynthesis and cellular respiration** (the energy pathways).
 
-## Cell structure: a real electron microscope view
-
-Below is a real scanning electron microscope image. Zoom in (scroll/pinch) and click any annotation marker to identify the organelle.
-
-<DeepZoomAnnotated
-  src="https://openseadragon.github.io/example-images/highsmith/highsmith.dzi"
-  markers={[
-    { x: 0.3, y: 0.4, label: "Nucleus: contains DNA, controls cell" },
-    { x: 0.55, y: 0.5, label: "Mitochondrion: ATP factory" },
-    { x: 0.7, y: 0.3, label: "Ribosome: makes proteins" },
-    { x: 0.45, y: 0.6, label: "ER: protein and lipid factory" }
-  ]}
-/>
+## Cell structure
 
 ### The 12 organelles you must know
 
@@ -816,18 +825,6 @@ Below is a real scanning electron microscope image. Zoom in (scroll/pinch) and c
 | **Cell membrane** | Selective barrier | All cells |
 | **Cytoplasm** | Fluid where reactions happen | All cells |
 | **Cytoskeleton** | Cell shape, organelle transport | All cells |
-
-## Watch a real cell breathe
-
-This Artistoo simulation runs a real cellular Potts model. Watch a single cell shift its shape moment by moment, the same way real biology models tissue formation and immune cell migration. The boundary jiggles because the algorithm continuously re-evaluates which pixels belong to the cell vs. the medium based on energy minimization, exactly the kind of stochastic process happening in your tissues right now.
-
-<CellSim title="Live cellular Potts model" />
-
-## Rotate a 3D mitochondrion
-
-The mitochondrion is the powerhouse of the cell. Drag this 3D model to see the inner membrane folds (**cristae**) where the electron transport chain lives.
-
-<Sketchfab uid="2cb6daea7d8f418087d8eed99f55cebf" />
 
 ## Membrane transport
 
