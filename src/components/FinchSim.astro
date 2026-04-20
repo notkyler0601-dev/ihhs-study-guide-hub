@@ -70,6 +70,7 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
     calories: number;   // accumulated this year
     target: Seed | null;
     bobPhase: number;   // for hop animation
+    dying: number;      // 0..1 fade-out timer for end-of-year death animation
   };
   type Seed = {
     x: number; y: number;
@@ -134,6 +135,7 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
         calories: 0,
         target: null,
         bobPhase: Math.random() * Math.PI * 2,
+        dying: 0,
       };
     }
 
@@ -176,23 +178,41 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
     }
 
     function meanBeak(): number {
-      if (finches.length === 0) return 0;
-      return finches.reduce((s, f) => s + f.beak, 0) / finches.length;
+      const alive = finches.filter((f) => f.dying === 0);
+      if (alive.length === 0) return 0;
+      return alive.reduce((s, f) => s + f.beak, 0) / alive.length;
     }
 
     function endYear() {
       year++;
-      // Survival: any finch with too few calories dies
+      // Mark starving finches dying (kept visible briefly for death animation)
+      const starving = finches.filter((f) => f.calories < CAL_TO_SURVIVE);
       const survivors = finches.filter((f) => f.calories >= CAL_TO_SURVIVE);
-      // Reproduction: each pair of survivors makes one offspring until popSize
-      const next: Finch[] = survivors.map((f) => ({ ...f, calories: 0, target: null }));
-      while (next.length < popSize && survivors.length > 0) {
-        const parent = survivors[Math.floor(Math.random() * survivors.length)];
-        next.push(makeFinch(parent));
+      starving.forEach((f) => { f.dying = 1; });
+
+      // Reproduction: each survivor has a chance to produce one offspring,
+      // but the population is capped at popSize (carrying capacity of the island).
+      // Population CAN drop below popSize during a drought and recover slowly.
+      const offspring: Finch[] = [];
+      survivors.forEach((parent) => {
+        if (Math.random() < 0.6) offspring.push(makeFinch(parent));
+      });
+      let combined: Finch[] = [
+        ...survivors.map((f) => ({ ...f, calories: 0, target: null, dying: 0 })),
+        ...offspring,
+      ];
+      // Cap at carrying capacity (resources limit how many can live here)
+      if (combined.length > popSize) {
+        combined.sort(() => Math.random() - 0.5);
+        combined = combined.slice(0, popSize);
       }
-      finches = next;
+
+      // Keep the dying birds visible alongside the new generation for the
+      // first ~600ms so the death is visible
+      finches = [...combined, ...starving];
+
       meanHistory.push(meanBeak());
-      popHistory.push(finches.length);
+      popHistory.push(combined.length);  // record live count, not including dying
       if (meanHistory.length > 80) { meanHistory.shift(); popHistory.shift(); }
       // Apply queued drought toggle at year boundary
       if (droughtPending) {
@@ -219,6 +239,43 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
       const bob = Math.sin(f.bobPhase) * 1.5;
       const x = f.x;
       const y = f.y + bob;
+
+      if (f.dying > 0) {
+        // Death animation: tilt + fade + small expanding "starvation" ring
+        ctx.save();
+        ctx.globalAlpha = f.dying;
+        ctx.translate(x, y);
+        ctx.rotate((1 - f.dying) * Math.PI * 0.5);
+        ctx.translate(-x, -y);
+        // Body
+        ctx.fillStyle = '#7a3d1a';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 12, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Head
+        ctx.fillStyle = '#5e2c0e';
+        ctx.beginPath();
+        ctx.arc(x + facing * 8, y - 4, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+        // X eye
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + facing * 7, y - 5);
+        ctx.lineTo(x + facing * 9, y - 3);
+        ctx.moveTo(x + facing * 9, y - 5);
+        ctx.lineTo(x + facing * 7, y - 3);
+        ctx.stroke();
+        ctx.restore();
+        // Expanding ring
+        const ringR = (1 - f.dying) * 22;
+        ctx.beginPath();
+        ctx.arc(x, y, ringR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(120, 53, 15, ${f.dying * 0.7})`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        return;
+      }
 
       // Body (oval, brown)
       ctx.fillStyle = '#8b4513';
@@ -479,8 +536,9 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
     }
 
     function updateUI() {
+      const live = finches.filter((f) => f.dying === 0).length;
       root.querySelector('[data-finch-year]')!.textContent = String(year);
-      root.querySelector('[data-finch-pop]')!.textContent = String(finches.length);
+      root.querySelector('[data-finch-pop]')!.textContent = String(live);
       root.querySelector('[data-finch-mean]')!.textContent = meanBeak().toFixed(1);
       const wEl = root.querySelector<HTMLElement>('[data-finch-weather]')!;
       wEl.textContent = weather;
@@ -500,10 +558,21 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
       const dt = Math.min(50, ts - lastFrameTs);
       lastFrameTs = ts;
 
+      // Always advance death animation (even when paused, so it's visible immediately)
+      finches.forEach((f) => {
+        if (f.dying > 0) {
+          f.dying = Math.max(0, f.dying - 0.02 * (dt / 16));
+        }
+      });
+      // Clean up fully-faded dead birds
+      finches = finches.filter((f) => !(f.dying > 0 && f.dying < 0.05) && f.dying !== -1);
+      finches = finches.filter((f) => f.dying === 0 || f.dying > 0.05);
+
       if (running) {
         yearTimer += dt;
-        // Move finches and let them eat
+        // Move LIVE finches and let them eat
         finches.forEach((f) => {
+          if (f.dying > 0) return;
           if (!f.target || f.target.eaten || (f.target.big && f.beak < SEED_THRESHOLD_BEAK)) {
             f.target = findNearestSeed(f);
           }
@@ -540,11 +609,13 @@ const id = 'finch-' + Math.random().toString(36).slice(2, 9);
           updateUI();
         }
       } else {
-        // Idle: gentle bob only
-        finches.forEach((f) => { f.bobPhase += 0.06; });
+        // Idle: gentle bob only on live birds
+        finches.forEach((f) => { if (f.dying === 0) f.bobPhase += 0.06; });
       }
 
       drawAll();
+      // Refresh population/mean every frame so the count drops as birds fade
+      updateUI();
       requestAnimationFrame(tick);
     }
 
