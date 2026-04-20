@@ -1,0 +1,276 @@
+---
+// Live natural-selection simulation. A population of N organisms varies on a
+// trait (e.g., color). Predator culls the most-extreme phenotypes each
+// generation; survivors reproduce with slight mutation. Watch the trait shift.
+//
+// Usage:
+//   <EvolutionSim
+//     populationSize={60}
+//     selectionPressure={0.35}
+//     mutationRate={0.08}
+//     environmentColor="#7f1d1d"
+//   />
+interface Props {
+  populationSize?: number;
+  selectionPressure?: number;
+  mutationRate?: number;
+  environmentColor?: string;
+  height?: number;
+}
+const {
+  populationSize = 60,
+  selectionPressure = 0.35,
+  mutationRate = 0.08,
+  environmentColor = '#7f1d1d',
+  height = 360,
+} = Astro.props;
+const id = 'evosim-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-6" id={id} data-evosim
+  data-pop={populationSize} data-pressure={selectionPressure} data-mutation={mutationRate}
+  data-env={environmentColor} data-h={height}>
+  <header class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">E</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">Natural selection live</h3>
+        <p class="text-xs text-ink-500 mt-1">
+          Generation <span data-evo-gen class="font-mono font-semibold text-accent-700 dark:text-accent-400">0</span>
+          · Population <span data-evo-pop class="font-mono">{populationSize}</span>
+          · Mean trait <span data-evo-mean class="font-mono">0.50</span>
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button data-evo-toggle class="px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-xs font-medium">▶ Run</button>
+      <button data-evo-step class="px-3 py-1.5 rounded-lg border border-ink-200 dark:border-ink-800 text-xs hover:border-accent-400">Step 1</button>
+      <button data-evo-reset class="px-3 py-1.5 rounded-lg border border-ink-200 dark:border-ink-800 text-xs hover:border-accent-400">Reset</button>
+    </div>
+  </header>
+
+  <div class="grid lg:grid-cols-[1fr_220px] gap-4">
+    <canvas data-evo-canvas style={`width: 100%; height: ${height}px; background: #0a0a0a; border-radius: 12px; display: block;`}></canvas>
+    <div class="flex flex-col gap-3 text-sm">
+      <div>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1">Environment favors</div>
+        <div class="rounded-lg p-2 text-center text-white text-xs font-medium" style={`background: ${environmentColor};`}>This color</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-2">Mean trait over time</div>
+        <canvas data-evo-graph style={`width: 100%; height: 120px; background: #fafafa; border-radius: 8px; display: block;`}></canvas>
+      </div>
+      <p class="text-[11px] text-ink-500 leading-relaxed">Each dot is one organism. Color = trait. Predators eat the organisms least like the environment. Survivors reproduce with mild mutation.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Org = { x: number; y: number; vx: number; vy: number; trait: number };
+
+  const setupOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const popSize = Number(root.dataset.pop || '60');
+    const pressure = Number(root.dataset.pressure || '0.35');
+    const mutation = Number(root.dataset.mutation || '0.08');
+    const envColorHex = root.dataset.env || '#7f1d1d';
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-evo-canvas]')!;
+    const graphCanvas = root.querySelector<HTMLCanvasElement>('[data-evo-graph]')!;
+    const ctx = canvas.getContext('2d')!;
+    const gctx = graphCanvas.getContext('2d')!;
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      graphCanvas.width = graphCanvas.offsetWidth * dpr;
+      graphCanvas.height = graphCanvas.offsetHeight * dpr;
+      gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const envRgb = hexToRgb(envColorHex);
+    const envTrait = rgbToHsl(envRgb).h / 360; // hue 0..1
+
+    let population: Org[] = [];
+    let generation = 0;
+    let history: number[] = [];
+    let running = false;
+    let rafId = 0;
+
+    function makeOrg(): Org {
+      return {
+        x: Math.random() * canvas.offsetWidth,
+        y: Math.random() * canvas.offsetHeight,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        trait: Math.random(),
+      };
+    }
+
+    function reset() {
+      population = Array.from({ length: popSize }, makeOrg);
+      generation = 0;
+      history = [meanTrait()];
+      drawAll();
+      updateUI();
+    }
+
+    function meanTrait(): number {
+      if (population.length === 0) return 0;
+      return population.reduce((s, o) => s + o.trait, 0) / population.length;
+    }
+
+    function step() {
+      generation++;
+      // Selection: keep individuals closer to env trait (with stochasticity)
+      const survivors = population.filter((o) => {
+        const fitness = 1 - Math.min(1, Math.abs(o.trait - envTrait) * 1.5);
+        return Math.random() < (1 - pressure) + pressure * fitness;
+      });
+      // Reproduce until back to popSize, with mutation
+      const next: Org[] = survivors.map((o) => ({ ...o }));
+      while (next.length < popSize && survivors.length > 0) {
+        const parent = survivors[Math.floor(Math.random() * survivors.length)];
+        next.push({
+          x: parent.x + (Math.random() - 0.5) * 30,
+          y: parent.y + (Math.random() - 0.5) * 30,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          trait: Math.max(0, Math.min(1, parent.trait + (Math.random() - 0.5) * mutation * 2)),
+        });
+      }
+      population = next;
+      history.push(meanTrait());
+      if (history.length > 200) history.shift();
+    }
+
+    function drawAll() {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      ctx.clearRect(0, 0, w, h);
+      // Subtle background hint of env color
+      const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) / 2);
+      grad.addColorStop(0, hexWithAlpha(envColorHex, 0.18));
+      grad.addColorStop(1, '#0a0a0a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      // Update positions
+      population.forEach((o) => {
+        o.x += o.vx;
+        o.y += o.vy;
+        if (o.x < 6 || o.x > w - 6) o.vx *= -1;
+        if (o.y < 6 || o.y > h - 6) o.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = traitToColor(o.trait);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+      drawGraph();
+    }
+
+    function drawGraph() {
+      const w = graphCanvas.offsetWidth;
+      const h = graphCanvas.offsetHeight;
+      gctx.clearRect(0, 0, w, h);
+      // Env trait reference line
+      const envY = h - envTrait * h;
+      gctx.strokeStyle = envColorHex;
+      gctx.setLineDash([4, 3]);
+      gctx.beginPath();
+      gctx.moveTo(0, envY);
+      gctx.lineTo(w, envY);
+      gctx.stroke();
+      gctx.setLineDash([]);
+      // History line
+      if (history.length < 2) return;
+      gctx.strokeStyle = '#b91c1c';
+      gctx.lineWidth = 2;
+      gctx.beginPath();
+      history.forEach((m, i) => {
+        const x = (i / (history.length - 1)) * w;
+        const y = h - m * h;
+        if (i === 0) gctx.moveTo(x, y);
+        else gctx.lineTo(x, y);
+      });
+      gctx.stroke();
+    }
+
+    function updateUI() {
+      root.querySelector('[data-evo-gen]')!.textContent = String(generation);
+      root.querySelector('[data-evo-pop]')!.textContent = String(population.length);
+      root.querySelector('[data-evo-mean]')!.textContent = meanTrait().toFixed(2);
+    }
+
+    function loop() {
+      drawAll();
+      if (running) rafId = requestAnimationFrame(loop);
+    }
+
+    function startStop() {
+      running = !running;
+      const btn = root.querySelector<HTMLButtonElement>('[data-evo-toggle]')!;
+      btn.textContent = running ? '⏸ Pause' : '▶ Run';
+      if (running) {
+        rafId = requestAnimationFrame(loop);
+        // Run a step every 800ms while playing
+        const intervalId = window.setInterval(() => {
+          if (!running) { clearInterval(intervalId); return; }
+          step();
+          updateUI();
+        }, 800);
+      }
+    }
+
+    root.querySelector('[data-evo-toggle]')!.addEventListener('click', startStop);
+    root.querySelector('[data-evo-step]')!.addEventListener('click', () => { step(); drawAll(); updateUI(); });
+    root.querySelector('[data-evo-reset]')!.addEventListener('click', () => {
+      running = false;
+      const btn = root.querySelector<HTMLButtonElement>('[data-evo-toggle]')!;
+      btn.textContent = '▶ Run';
+      cancelAnimationFrame(rafId);
+      reset();
+    });
+
+    reset();
+    loop(); // animate even when paused so dots drift
+  };
+
+  function hexToRgb(hex: string) {
+    const c = hex.replace('#', '');
+    return { r: parseInt(c.slice(0, 2), 16), g: parseInt(c.slice(2, 4), 16), b: parseInt(c.slice(4, 6), 16) };
+  }
+  function hexWithAlpha(hex: string, a: number) {
+    const { r, g, b } = hexToRgb(hex);
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+  function rgbToHsl({ r, g, b }: { r: number; g: number; b: number }) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0; const l = (max + min) / 2; let s = 0;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return { h, s, l };
+  }
+  function traitToColor(t: number): string {
+    // Map trait 0..1 to a hue from blue (240) through purple (280) to red (0/360)
+    const hue = 240 + t * 120;  // 240..360 -> blue -> red
+    return `hsl(${hue % 360}, 75%, 60%)`;
+  }
+
+  const init = () => document.querySelectorAll<HTMLElement>('[data-evosim]').forEach(setupOne);
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

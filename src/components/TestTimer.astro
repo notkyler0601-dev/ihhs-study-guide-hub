@@ -1,0 +1,113 @@
+---
+// Countdown timer for timed tests/quizzes inside a guide. Different from the
+// always-on FloatingTimer (a Pomodoro). Drop this above a <Quiz> for mock-test
+// conditions: pick the duration, click Start, get a confetti burst when done.
+//
+// Usage:
+//   <TestTimer minutes={60} title="Mock EOC time limit" />
+interface Props {
+  minutes?: number;
+  title?: string;
+}
+const { minutes = 60, title = 'Test timer' } = Astro.props;
+const id = 'timer-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-6 surface rounded-2xl shadow-soft p-5" id={id} data-testtimer data-minutes={minutes}>
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">⏱</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+        <p class="text-xs text-ink-500 mt-1">{minutes}-minute time limit. Click Start when you begin.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div data-tt-display class="font-mono text-3xl font-bold text-ink-900 dark:text-ink-50 tabular-nums">{String(minutes).padStart(2, '0')}:00</div>
+      <button data-tt-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Start</button>
+      <button data-tt-reset type="button" class="px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 text-sm hover:border-accent-400">Reset</button>
+    </div>
+  </div>
+  <div class="mt-3 h-1.5 bg-ink-100 dark:bg-ink-800 rounded-full overflow-hidden">
+    <div data-tt-bar class="h-full bg-accent-600 dark:bg-accent-500 transition-all duration-[1000ms] ease-linear" style="width: 0%;"></div>
+  </div>
+</section>
+
+<script>
+  import { fireConfetti } from '../lib/confetti';
+
+  const setupOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const totalMinutes = Number(root.dataset.minutes || '60');
+    const totalSeconds = totalMinutes * 60;
+    const display = root.querySelector<HTMLElement>('[data-tt-display]')!;
+    const startBtn = root.querySelector<HTMLButtonElement>('[data-tt-start]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-tt-reset]')!;
+    const bar = root.querySelector<HTMLElement>('[data-tt-bar]')!;
+
+    let remaining = totalSeconds;
+    let intervalId: number | null = null;
+    let running = false;
+
+    const fmt = (s: number) => {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    };
+    const updateUI = () => {
+      display.textContent = fmt(remaining);
+      const pct = ((totalSeconds - remaining) / totalSeconds) * 100;
+      bar.style.width = pct + '%';
+      // Color shifts to amber/red as time runs low
+      if (remaining < 60) bar.style.background = '#dc2626';
+      else if (remaining < 300) bar.style.background = '#f59e0b';
+      else bar.style.background = '';
+    };
+
+    const tick = () => {
+      if (!running) return;
+      remaining = Math.max(0, remaining - 1);
+      updateUI();
+      if (remaining === 0) {
+        stop();
+        startBtn.textContent = "Time's up";
+        startBtn.disabled = true;
+        display.style.color = '#dc2626';
+        void fireConfetti('cannons');
+      }
+    };
+
+    const start = () => {
+      if (remaining === 0) return;
+      running = true;
+      startBtn.textContent = 'Pause';
+      intervalId = window.setInterval(tick, 1000);
+    };
+    const pause = () => {
+      running = false;
+      startBtn.textContent = remaining < totalSeconds ? 'Resume' : 'Start';
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    };
+    const stop = () => {
+      running = false;
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    };
+    const reset = () => {
+      stop();
+      remaining = totalSeconds;
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start';
+      display.style.color = '';
+      updateUI();
+    };
+
+    startBtn.addEventListener('click', () => (running ? pause() : start()));
+    resetBtn.addEventListener('click', reset);
+    updateUI();
+  };
+
+  const init = () => document.querySelectorAll<HTMLElement>('[data-testtimer]').forEach(setupOne);
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

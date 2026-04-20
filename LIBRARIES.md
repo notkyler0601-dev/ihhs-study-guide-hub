@@ -465,6 +465,19 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 |---|---|---|---|
 | `<Memorize text="..." title="..." />` | Custom | none | Progressive recall practice for poems, soliloquies, vocab paragraphs. Four modes: read, cloze (random blanks), first-letter hint, cold recall (line-by-line reveal). Tracks best % per device in localStorage. |
 
+### Subject-specific simulations
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<PunnettSquare parent1="Bb" parent2="Bb" dominant="B" traits={{...}} />` | Custom | none | Interactive monohybrid genetic cross widget. Dropdowns let students change parent genotypes; offspring genotype + phenotype ratios update live. Color-codes dominant vs recessive cells. Used in the Biology EOC guide. |
+| `<EvolutionSim populationSize={60} selectionPressure={0.35} environmentColor="#7f1d1d" />` | Custom canvas | none | Live natural-selection simulator. Population of colored organisms drifts; predators cull individuals far from environment color; survivors reproduce with mutation. Live mean-trait line graph. Drag to play, step, reset. |
+
+### Test-day timing
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<TestTimer minutes={60} title="..." />` | Custom (uses lib/confetti) | none | Countdown timer for timed quizzes/mock tests. Color-coded progress bar (green to amber to red). Pause/resume. Fires confetti when time runs out. Different from the always-on Pomodoro. |
+
 ---
 
 ## 9b. React integration

@@ -1,0 +1,211 @@
+---
+// Interactive Punnett square for monohybrid genetic crosses.
+// Pass parent genotypes and allele meanings; the component computes offspring
+// genotype + phenotype ratios live and lets students change the parents.
+//
+// Usage:
+//   <PunnettSquare
+//     parent1="Bb"
+//     parent2="Bb"
+//     dominant="B"
+//     traits={{ B: "Brown eyes", b: "Blue eyes" }}
+//     trait="Eye color"
+//   />
+interface Props {
+  parent1: string;
+  parent2: string;
+  dominant: string;
+  traits: Record<string, string>;
+  trait?: string;
+}
+const { parent1, parent2, dominant, traits, trait = 'Trait' } = Astro.props;
+const id = 'punnett-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-6" id={id} data-punnett>
+  <header class="flex items-center gap-3 mb-5">
+    <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white font-serif font-semibold">P</span>
+    <div>
+      <h3 class="font-serif text-lg font-semibold leading-none">Punnett square: {trait}</h3>
+      <p class="text-xs text-ink-500 mt-1">Change the parents to see how offspring ratios shift.</p>
+    </div>
+  </header>
+
+  <div class="grid sm:grid-cols-2 gap-4 mb-5">
+    <label class="block text-sm">
+      <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 block mb-1">Parent 1</span>
+      <select data-parent="1" class="w-full px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 focus:outline-none focus:border-accent-500"></select>
+    </label>
+    <label class="block text-sm">
+      <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 block mb-1">Parent 2</span>
+      <select data-parent="2" class="w-full px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 focus:outline-none focus:border-accent-500"></select>
+    </label>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="mx-auto" style="border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th class="w-12 h-12"></th>
+          <th data-col-header data-col="0" class="w-20 h-12 text-center font-mono font-bold text-lg border-b-2 border-ink-300 dark:border-ink-700"></th>
+          <th data-col-header data-col="1" class="w-20 h-12 text-center font-mono font-bold text-lg border-b-2 border-ink-300 dark:border-ink-700"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th data-row-header data-row="0" class="w-12 h-20 text-center font-mono font-bold text-lg border-r-2 border-ink-300 dark:border-ink-700"></th>
+          <td data-cell="0,0" class="punnett-cell"></td>
+          <td data-cell="0,1" class="punnett-cell"></td>
+        </tr>
+        <tr>
+          <th data-row-header data-row="1" class="w-12 h-20 text-center font-mono font-bold text-lg border-r-2 border-ink-300 dark:border-ink-700"></th>
+          <td data-cell="1,0" class="punnett-cell"></td>
+          <td data-cell="1,1" class="punnett-cell"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-4 mt-6 pt-5 border-t border-ink-200 dark:border-ink-800">
+    <div>
+      <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-2">Genotype ratio</div>
+      <div data-genotype class="font-mono text-base text-ink-900 dark:text-ink-100"></div>
+    </div>
+    <div>
+      <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-2">Phenotype ratio</div>
+      <div data-phenotype class="text-base text-ink-900 dark:text-ink-100"></div>
+    </div>
+  </div>
+
+  <script type="application/json" data-punnett-config set:html={JSON.stringify({ parent1, parent2, dominant, traits, trait })}></script>
+</section>
+
+<style is:global>
+  .punnett-cell {
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 1.5rem;
+    border: 1px solid #e4e4e7;
+    transition: background 250ms;
+  }
+  .dark .punnett-cell { border-color: #27272a; }
+  .punnett-cell.dominant { background: rgba(185, 28, 28, 0.10); color: #7f1d1d; }
+  .dark .punnett-cell.dominant { background: rgba(220, 38, 38, 0.20); color: #fecaca; }
+  .punnett-cell.recessive { background: rgba(82, 82, 91, 0.08); color: #52525b; }
+  .dark .punnett-cell.recessive { background: rgba(82, 82, 91, 0.25); color: #d4d4d8; }
+</style>
+
+<script>
+  const setupOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const cfgEl = root.querySelector('[data-punnett-config]');
+    if (!cfgEl) return;
+    const cfg = JSON.parse(cfgEl.textContent || '{}');
+    const dominant: string = cfg.dominant;
+    const recessive = dominant.toLowerCase() === dominant
+      ? Object.keys(cfg.traits).find((k) => k !== dominant) || dominant.toUpperCase()
+      : dominant.toLowerCase();
+    const traits: Record<string, string> = cfg.traits;
+    const trait: string = cfg.trait;
+
+    const genotypes = [
+      dominant + dominant,        // homozygous dominant
+      dominant + recessive,       // heterozygous
+      recessive + recessive,      // homozygous recessive
+    ];
+
+    // Populate dropdowns
+    root.querySelectorAll<HTMLSelectElement>('[data-parent]').forEach((sel) => {
+      genotypes.forEach((g) => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = `${g} (${describeGenotype(g)})`;
+        sel.appendChild(opt);
+      });
+    });
+
+    function describeGenotype(g: string) {
+      if (g === dominant + dominant) return 'homozygous dominant';
+      if (g === recessive + recessive) return 'homozygous recessive';
+      return 'heterozygous';
+    }
+
+    function phenotypeOf(g: string): string {
+      const hasDominant = g.includes(dominant);
+      return hasDominant ? traits[dominant] : traits[recessive];
+    }
+
+    // Set initial values
+    const sel1 = root.querySelector<HTMLSelectElement>('[data-parent="1"]')!;
+    const sel2 = root.querySelector<HTMLSelectElement>('[data-parent="2"]')!;
+    sel1.value = cfg.parent1;
+    sel2.value = cfg.parent2;
+
+    function render() {
+      const p1 = sel1.value;
+      const p2 = sel2.value;
+      const cols = [p2[0], p2[1]];
+      const rows = [p1[0], p1[1]];
+
+      // Headers
+      root.querySelectorAll<HTMLElement>('[data-col-header]').forEach((th) => {
+        const i = Number(th.dataset.col);
+        th.textContent = cols[i];
+      });
+      root.querySelectorAll<HTMLElement>('[data-row-header]').forEach((th) => {
+        const i = Number(th.dataset.row);
+        th.textContent = rows[i];
+      });
+
+      // Cells
+      const counts: Record<string, number> = {};
+      const phenoCounts: Record<string, number> = {};
+      [0, 1].forEach((r) => {
+        [0, 1].forEach((c) => {
+          const cell = root.querySelector<HTMLElement>(`[data-cell="${r},${c}"]`)!;
+          const a = rows[r];
+          const b = cols[c];
+          // Sort so dominant comes first if present
+          const genotype = a === dominant || b === dominant
+            ? (a === dominant ? dominant + b.toLowerCase() : dominant + a.toLowerCase()).replace(dominant + dominant.toLowerCase(), dominant + dominant)
+            : (a + b);
+          const normalized = a + b;  // Just the raw combination for counting
+          // Sort: uppercase first
+          const sorted = [a, b].sort((x, y) => x === dominant ? -1 : 1).join('');
+          cell.textContent = sorted;
+          cell.classList.remove('dominant', 'recessive');
+          cell.classList.add(sorted.includes(dominant) ? 'dominant' : 'recessive');
+          counts[sorted] = (counts[sorted] || 0) + 1;
+          const pheno = phenotypeOf(sorted);
+          phenoCounts[pheno] = (phenoCounts[pheno] || 0) + 1;
+        });
+      });
+
+      // Genotype ratio
+      const genotypeStr = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([g, n]) => `${n} ${g}`)
+        .join(' : ');
+      root.querySelector('[data-genotype]')!.textContent = genotypeStr;
+
+      // Phenotype ratio
+      const phenotypeStr = Object.entries(phenoCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([p, n]) => `${n} ${p}`)
+        .join(' : ');
+      root.querySelector('[data-phenotype]')!.textContent = phenotypeStr;
+    }
+
+    sel1.addEventListener('change', render);
+    sel2.addEventListener('change', render);
+    render();
+  };
+
+  const init = () => document.querySelectorAll<HTMLElement>('[data-punnett]').forEach(setupOne);
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
