@@ -12,9 +12,18 @@ interface Env {
     run: (model: string, input: unknown) => Promise<ReadableStream | { response: string }>;
   };
   RATE_LIMITER: { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
-  ALLOWED_ORIGIN: string;
+  ALLOWED_ORIGINS: string;
   MODEL: string;
 }
+
+const VERCEL_PREVIEW_RE = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
+
+const isAllowed = (origin: string, list: string): boolean => {
+  if (!origin) return false;
+  if (VERCEL_PREVIEW_RE.test(origin)) return true;
+  const allowed = list.split(',').map((s) => s.trim()).filter(Boolean);
+  return allowed.includes('*') || allowed.includes(origin);
+};
 
 const SYSTEM_PROMPT =
   'You are the IHHS Study Guide tutor for high school students. ' +
@@ -22,15 +31,17 @@ const SYSTEM_PROMPT =
   'Do not use em dashes; use commas, periods, or "and" instead. ' +
   'If the student asks something outside academic help, politely redirect.';
 
-const corsHeaders = (allowed: string, origin: string) => {
-  const allowOrigin = allowed === '*' || origin === allowed ? origin || allowed : allowed;
-  return {
-    'Access-Control-Allow-Origin': allowOrigin,
+const corsHeaders = (origin: string, list: string) => {
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
+  if (isAllowed(origin, list)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+  return headers;
 };
 
 const json = (data: unknown, status: number, headers: Record<string, string>) =>
@@ -42,7 +53,7 @@ const json = (data: unknown, status: number, headers: Record<string, string>) =>
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get('Origin') ?? '';
-    const cors = corsHeaders(env.ALLOWED_ORIGIN ?? '*', origin);
+    const cors = corsHeaders(origin, env.ALLOWED_ORIGINS ?? '*');
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: cors });

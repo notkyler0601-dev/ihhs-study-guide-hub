@@ -15,6 +15,7 @@ namespace_id = "2001"
 simple = { limit = 20, period = 60 }
 
 [vars]
-# Set to the production origin. Override per env or via `wrangler secret put`.
-ALLOWED_ORIGIN = "https://ihsgh.org"
+# Comma-separated whitelist of origins allowed to call the Worker.
+# Any *.vercel.app origin is also allowed automatically so preview deploys work.
+ALLOWED_ORIGINS = "https://ihsgh.org,https://www.ihsgh.org,http://localhost:4321"
 MODEL = "@cf/meta/llama-3.1-8b-instruct"
