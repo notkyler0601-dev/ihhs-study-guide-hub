@@ -24,8 +24,20 @@ jobs:
       - name: Install
         run: npm install
 
+      - name: Check for Cloudflare API token secret
+        env:
+          TOKEN_LEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && 'present' || 'missing' }}
+        run: |
+          echo "CLOUDFLARE_API_TOKEN secret is: $TOKEN_LEN"
+          if [ "$TOKEN_LEN" = "missing" ]; then
+            echo "::error::Repository secret CLOUDFLARE_API_TOKEN is not set. Add it at Settings -> Secrets and variables -> Actions -> Repository secrets."
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           workingDirectory: worker
