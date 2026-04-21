@@ -1,485 +1,232 @@
 ---
-// <AITutor>
-//
-// In-browser AI study tutor powered by WebLLM (Llama 3.2, Qwen 2.5, Phi 3.5...).
-// 100% client-side: nothing is sent over the network, no API keys, no costs.
-// First load downloads + caches the model (~700 MB to ~2.4 GB depending on choice).
-//
-// Auto-grabs the surrounding guide's prose as context so answers are grounded
-// in what the student is actually reading.
-//
-// Usage in MDX:
-//   import AITutor from '../../components/AITutor.astro';
-//   <AITutor />
-//
-// Props:
-//   - title?: header label (default "AI study tutor")
-//   - subject?: hint to the model about the subject area
-//   - heightClass?: tailwind height for chat scroller (default h-[420px])
-//
-// Requires WebGPU (Chrome, Edge, Arc, Brave). Shows a friendly fallback otherwise.
-
+// Streaming chat tutor backed by a Cloudflare Worker (Workers AI).
+// Login-gated via currentUser(). Set PUBLIC_AI_TUTOR_URL to the Worker URL.
 interface Props {
+  guideTitle?: string;
   title?: string;
-  subject?: string;
-  heightClass?: string;
+  placeholder?: string;
 }
-const { title = 'AI study tutor', subject, heightClass = 'h-[420px]' } = Astro.props;
+const {
+  guideTitle,
+  title = 'Ask the tutor',
+  placeholder = 'Ask a question about this guide...',
+} = Astro.props;
+
 const id = 'tutor-' + Math.random().toString(36).slice(2, 9);
+const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 ---
 
-<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-tutor-root data-subject={subject ?? ''}>
-  <!-- Header -->
-  <header class="flex items-center justify-between gap-3 px-5 py-4 border-b border-ink-200 dark:border-ink-800 bg-gradient-to-r from-accent-50/60 to-transparent dark:from-accent-900/20">
-    <div class="flex items-center gap-3 min-w-0">
-      <span class="relative inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-ink-900 text-white font-serif font-semibold shrink-0">
-        <span aria-hidden="true">✦</span>
-        <span class="absolute -bottom-0.5 -right-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-ink-900" data-tutor-status-dot></span>
-      </span>
-      <div class="min-w-0">
-        <h3 class="font-serif text-lg font-semibold leading-none truncate">{title}</h3>
-        <p class="text-[11px] text-ink-500 mt-1 flex items-center gap-1.5">
-          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          <span>100% private. Runs entirely in your browser.</span>
-        </p>
+<section
+  class="not-prose my-8 surface rounded-2xl p-6 shadow-soft"
+  data-tutor-root
+  id={id}
+  data-tutor-endpoint={endpoint ?? ''}
+  data-tutor-guide={guideTitle ?? ''}
+>
+  <header class="flex items-center justify-between gap-3 mb-4">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">AI</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+        <p class="text-xs text-ink-500 mt-1">Runs on Cloudflare Workers AI. Powered by Llama 3.1.</p>
       </div>
     </div>
-
-    <div class="flex items-center gap-2 shrink-0">
-      <select
-        data-tutor-model
-        class="text-xs bg-white dark:bg-ink-900 border border-ink-200 dark:border-ink-800 rounded-md px-2 py-1.5 focus:outline-none focus:border-accent-500 max-w-[140px] sm:max-w-none"
-        aria-label="Choose model"
-      >
-        <!-- options injected by client script -->
-      </select>
-      <button
-        type="button"
-        data-tutor-clear
-        class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400 px-2 py-1 rounded-md hover:bg-ink-100 dark:hover:bg-ink-800"
-        title="Clear conversation"
-      >Clear</button>
-    </div>
+    <button type="button" data-tutor-reset class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Clear</button>
   </header>
 
-  <!-- WebGPU not supported fallback -->
-  <div data-tutor-unsupported class="hidden p-8 text-center">
-    <div class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 mb-3">
-      <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-    </div>
-    <p class="font-medium text-ink-900 dark:text-ink-100 mb-1">WebGPU not available</p>
-    <p class="text-sm text-ink-600 dark:text-ink-400 max-w-md mx-auto">
-      The AI tutor needs WebGPU to run a model in your browser. Try opening this guide in <strong>Chrome</strong>, <strong>Edge</strong>, <strong>Arc</strong>, or <strong>Brave</strong> on a desktop or laptop.
-    </p>
+  <div
+    data-tutor-log
+    class="min-h-[120px] max-h-[420px] overflow-y-auto space-y-3 mb-4 text-sm leading-relaxed"
+    aria-live="polite"
+  ></div>
+
+  <div data-tutor-gate class="hidden rounded-lg border border-dashed border-ink-200 dark:border-ink-700 p-4 text-sm text-ink-600 dark:text-ink-300">
+    <a href="/login" class="text-accent-700 dark:text-accent-300 underline">Log in</a>
+    or <a href="/signup" class="text-accent-700 dark:text-accent-300 underline">create a free account</a>
+    to chat with the tutor.
   </div>
 
-  <!-- Pre-load state (engine not loaded yet) -->
-  <div data-tutor-prestart class="p-8 text-center">
-    <div class="mx-auto mb-4 h-14 w-14 rounded-2xl bg-gradient-to-br from-accent-600 to-ink-950 flex items-center justify-center text-white text-2xl shadow-lift">
-      <span data-tutor-rotate aria-hidden="true">✦</span>
-    </div>
-    <p class="font-serif text-xl font-semibold text-ink-900 dark:text-ink-50 mb-1">Ready when you are</p>
-    <p class="text-sm text-ink-600 dark:text-ink-400 max-w-md mx-auto mb-5">
-      Click below to download the model. It happens once (cached for next time) and then everything runs offline. Pick a smaller model for slower devices.
-    </p>
+  <div data-tutor-offline class="hidden rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-4 text-sm text-amber-900 dark:text-amber-200">
+    The tutor is not configured on this deployment. Ask a site admin to set
+    <code class="font-mono">PUBLIC_AI_TUTOR_URL</code>.
+  </div>
+
+  <form data-tutor-form class="flex items-end gap-2">
+    <label class="sr-only" for={`${id}-input`}>Question</label>
+    <textarea
+      id={`${id}-input`}
+      data-tutor-input
+      rows="2"
+      placeholder={placeholder}
+      class="flex-1 resize-none rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
+    ></textarea>
     <button
-      type="button"
-      data-tutor-start
-      class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium shadow-soft hover:shadow-lift transition-all"
+      type="submit"
+      data-tutor-send
+      class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-600 text-white text-sm font-medium hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-      <span data-tutor-start-label>Load AI tutor</span>
+      Ask
     </button>
-    <p class="text-[11px] text-ink-500 mt-3" data-tutor-size-hint></p>
-  </div>
-
-  <!-- Loading progress -->
-  <div data-tutor-loading class="hidden p-8 text-center">
-    <div class="mx-auto mb-4 h-14 w-14 rounded-2xl bg-ink-100 dark:bg-ink-800 flex items-center justify-center">
-      <svg class="h-6 w-6 text-accent-700 dark:text-accent-400 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-      </svg>
-    </div>
-    <p class="text-sm font-medium text-ink-900 dark:text-ink-100 mb-2" data-tutor-loading-label>Initializing...</p>
-    <div class="mx-auto max-w-xs h-1.5 rounded-full bg-ink-200 dark:bg-ink-800 overflow-hidden">
-      <div class="h-full bg-gradient-to-r from-accent-600 to-accent-400 transition-all duration-200" style="width: 0%" data-tutor-progress></div>
-    </div>
-    <p class="text-[11px] text-ink-500 mt-2" data-tutor-loading-detail></p>
-  </div>
-
-  <!-- Chat area -->
-  <div data-tutor-chat-wrap class="hidden">
-    <div class={`px-5 py-4 overflow-y-auto scrollbar-thin space-y-4 ${heightClass}`} data-tutor-messages>
-      <!-- Welcome bubble -->
-      <div class="flex gap-3">
-        <span class="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-xs font-semibold">AI</span>
-        <div class="text-sm text-ink-700 dark:text-ink-300 leading-relaxed">
-          Hi! I've read the guide above. Ask me anything about it, or use the suggestions below.
-        </div>
-      </div>
-    </div>
-
-    <!-- Suggested prompts -->
-    <div class="px-5 pt-1 pb-3 flex flex-wrap gap-1.5 border-t border-ink-100 dark:border-ink-800/60" data-tutor-suggestions>
-      <button type="button" data-suggest="Explain the most important concept in this guide as if I'm hearing it for the first time. Use a simple analogy." class="suggest-pill">Explain it simply</button>
-      <button type="button" data-suggest="Generate 3 multiple-choice practice questions based on this guide. Show the answer + a one-sentence explanation after each." class="suggest-pill">Quiz me</button>
-      <button type="button" data-suggest="Summarize this entire guide as a numbered list of the 5 most important takeaways." class="suggest-pill">5 key takeaways</button>
-      <button type="button" data-suggest="Give me a worked example for the trickiest topic in this guide. Show every step." class="suggest-pill">Worked example</button>
-      <button type="button" data-suggest="What are the most common mistakes students make on this material? Be specific." class="suggest-pill">Common mistakes</button>
-    </div>
-
-    <!-- Composer -->
-    <form class="flex items-end gap-2 px-5 pt-2 pb-4 border-t border-ink-200 dark:border-ink-800" data-tutor-form>
-      <div class="flex-1 relative">
-        <textarea
-          data-tutor-input
-          rows="1"
-          placeholder="Ask anything about this guide..."
-          class="w-full resize-none bg-ink-50 dark:bg-ink-900 border border-ink-200 dark:border-ink-800 rounded-xl px-3 py-2.5 pr-10 text-sm placeholder-ink-400 focus:outline-none focus:border-accent-500 focus:bg-white dark:focus:bg-ink-950 max-h-40 scrollbar-thin"
-        ></textarea>
-        <span class="absolute bottom-1.5 right-2 text-[10px] text-ink-400 pointer-events-none hidden sm:inline">Enter to send · Shift+Enter newline</span>
-      </div>
-      <button
-        type="submit"
-        data-tutor-send
-        class="inline-flex items-center justify-center h-10 w-10 shrink-0 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        aria-label="Send"
-      >
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-      </button>
-      <button
-        type="button"
-        data-tutor-stop
-        class="hidden inline-flex items-center justify-center h-10 w-10 shrink-0 rounded-xl border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors"
-        aria-label="Stop generating"
-        title="Stop generating"
-      >
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
-      </button>
-    </form>
-
-    <!-- Model + token info footer -->
-    <div class="px-5 py-2 border-t border-ink-100 dark:border-ink-800/60 text-[10px] text-ink-500 flex items-center justify-between gap-3">
-      <span>Powered by <a href="https://github.com/mlc-ai/web-llm" target="_blank" rel="noopener" class="hover:text-accent-700 dark:hover:text-accent-400 underline-offset-2 hover:underline">WebLLM</a></span>
-      <span data-tutor-stats></span>
-    </div>
-  </div>
+  </form>
 </section>
 
-<style>
-  .suggest-pill {
-    @apply text-xs px-2.5 py-1 rounded-full border border-ink-200 dark:border-ink-800 text-ink-600 dark:text-ink-300;
-    @apply hover:border-accent-400 dark:hover:border-accent-600 hover:text-accent-700 dark:hover:text-accent-300 hover:bg-accent-50 dark:hover:bg-accent-900/20;
-    @apply transition-colors;
-  }
-
-  .msg-bubble {
-    @apply text-sm leading-relaxed;
-  }
-  .msg-bubble.assistant {
-    @apply text-ink-800 dark:text-ink-200;
-  }
-  .msg-bubble.user {
-    @apply text-ink-900 dark:text-ink-100;
-  }
-  .msg-bubble p { @apply my-2 first:mt-0 last:mb-0; }
-  .msg-bubble ul, .msg-bubble ol { @apply my-2 pl-5 space-y-1; }
-  .msg-bubble ul { @apply list-disc; }
-  .msg-bubble ol { @apply list-decimal; }
-  .msg-bubble code {
-    @apply bg-ink-100 dark:bg-ink-800 text-accent-800 dark:text-accent-300;
-    @apply px-1.5 py-0.5 rounded text-[0.85em] font-mono;
-  }
-  .msg-bubble pre {
-    @apply my-3 p-3 rounded-lg bg-ink-900 text-ink-50 dark:bg-ink-950 dark:border dark:border-ink-800;
-    @apply overflow-x-auto text-xs;
-  }
-  .msg-bubble pre code { @apply bg-transparent text-ink-50 p-0; }
-  .msg-bubble strong { @apply font-semibold; }
-  .msg-bubble blockquote { @apply border-l-2 border-accent-400 pl-3 my-2 italic; }
-</style>
-
 <script>
-  import { marked } from 'marked';
-  import DOMPurify from 'dompurify';
-  import {
-    MODELS,
-    getDefaultModel,
-    isWebGPUSupported,
-    loadEngine,
-    streamChat,
-    getGuideContext,
-    getPreferredModelId,
-    setPreferredModelId,
-  } from '../lib/webllm';
+  import { currentUser } from '../lib/auth';
 
-  marked.setOptions({ breaks: true, gfm: true });
+  type Msg = { role: 'user' | 'assistant'; content: string };
 
-  type Msg = { role: 'system' | 'user' | 'assistant'; content: string };
+  const escape = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
-  // Render markdown safely.
-  const renderMd = (md: string): string =>
-    DOMPurify.sanitize(marked.parse(md, { async: false }) as string);
-
-  const buildSystemPrompt = (subject: string | null) => {
-    const guide = getGuideContext(7000);
-    const subjectLine = subject ? `Subject: ${subject}.` : '';
-    return [
-      `You are a friendly, knowledgeable study tutor for IHHS students. ${subjectLine}`,
-      `The student is reading the following study guide. Answer their questions based on this guide first; if asked something outside the guide, use general knowledge but flag that it goes beyond the material.`,
-      `When helpful, ask Socratic follow-up questions. Use clear examples, short paragraphs, and bulleted lists. Format math with LaTeX in $...$ or $$...$$. Use markdown for emphasis, lists, and code blocks.`,
-      `Never invent facts. If unsure, say so.`,
-      ``,
-      `--- GUIDE CONTENT ---`,
-      guide || '(No guide content found on this page; answer general study questions instead.)',
-      `--- END GUIDE ---`,
-    ].join('\n');
+  // Light markdown: **bold**, *italic*, `code`, paragraphs.
+  const renderMarkdown = (src: string) => {
+    const esc = escape(src);
+    const withInline = esc
+      .replace(/`([^`]+)`/g, '<code class="font-mono text-[0.85em] bg-ink-100 dark:bg-ink-800 px-1 rounded">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+    return withInline
+      .split(/\n{2,}/)
+      .map((p) => `<p>${p.replace(/\n/g, '<br/>')}</p>`)
+      .join('');
   };
 
-  const setupOne = (root: HTMLElement) => {
-    if ((root as any).__tutorWired) return;
-    (root as any).__tutorWired = true;
+  const roots = document.querySelectorAll<HTMLElement>('[data-tutor-root]');
+  roots.forEach((root) => {
+    const endpoint = root.dataset.tutorEndpoint || '';
+    const guideTitle = root.dataset.tutorGuide || '';
+    const log = root.querySelector<HTMLElement>('[data-tutor-log]')!;
+    const form = root.querySelector<HTMLFormElement>('[data-tutor-form]')!;
+    const input = root.querySelector<HTMLTextAreaElement>('[data-tutor-input]')!;
+    const sendBtn = root.querySelector<HTMLButtonElement>('[data-tutor-send]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-tutor-reset]')!;
+    const gate = root.querySelector<HTMLElement>('[data-tutor-gate]')!;
+    const offline = root.querySelector<HTMLElement>('[data-tutor-offline]')!;
 
-    const subject = root.dataset.subject || null;
+    const showGated = () => {
+      gate.classList.remove('hidden');
+      form.classList.add('hidden');
+    };
+    const showOffline = () => {
+      offline.classList.remove('hidden');
+      form.classList.add('hidden');
+    };
 
-    // Element refs
-    const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector(sel) as T | null;
-    const unsupportedEl = $('[data-tutor-unsupported]')!;
-    const prestartEl = $('[data-tutor-prestart]')!;
-    const loadingEl = $('[data-tutor-loading]')!;
-    const chatWrapEl = $('[data-tutor-chat-wrap]')!;
-    const messagesEl = $('[data-tutor-messages]') as HTMLElement;
-    const formEl = $('[data-tutor-form]') as HTMLFormElement;
-    const inputEl = $('[data-tutor-input]') as HTMLTextAreaElement;
-    const sendBtn = $('[data-tutor-send]') as HTMLButtonElement;
-    const stopBtn = $('[data-tutor-stop]') as HTMLButtonElement;
-    const startBtn = $('[data-tutor-start]') as HTMLButtonElement;
-    const startLabel = $('[data-tutor-start-label]')!;
-    const sizeHint = $('[data-tutor-size-hint]')!;
-    const modelSelect = $('[data-tutor-model]') as HTMLSelectElement;
-    const clearBtn = $('[data-tutor-clear]')!;
-    const progressBar = $('[data-tutor-progress]') as HTMLElement;
-    const loadingLabel = $('[data-tutor-loading-label]')!;
-    const loadingDetail = $('[data-tutor-loading-detail]')!;
-    const statsEl = $('[data-tutor-stats]')!;
-
-    // WebGPU check
-    if (!isWebGPUSupported()) {
-      prestartEl.classList.add('hidden');
-      unsupportedEl.classList.remove('hidden');
-      modelSelect.disabled = true;
+    if (!endpoint) {
+      showOffline();
+      return;
+    }
+    if (!currentUser()) {
+      showGated();
       return;
     }
 
-    // Populate model picker
-    const preferredId = getPreferredModelId();
-    MODELS.forEach((m) => {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `${m.label} (${m.size})`;
-      opt.title = m.description;
-      if (m.id === preferredId) opt.selected = true;
-      modelSelect.appendChild(opt);
-    });
-    const updateSizeHint = () => {
-      const m = MODELS.find((x) => x.id === modelSelect.value) ?? getDefaultModel();
-      sizeHint.textContent = `${m.label} · ${m.size} download · ${m.description}`;
-    };
-    updateSizeHint();
-    modelSelect.addEventListener('change', () => {
-      setPreferredModelId(modelSelect.value);
-      updateSizeHint();
-    });
+    const history: Msg[] = [];
 
-    // Animated star in prestart
-    const rotateEl = $('[data-tutor-rotate]');
-    let rotateTimer: number | null = window.setInterval(() => {
-      const glyphs = ['✦', '✧', '★', '✺', '✹'];
-      if (rotateEl) rotateEl.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-    }, 1500);
-
-    // Conversation state
-    const messages: Msg[] = [];
-    let abortCtrl: AbortController | null = null;
-    let engine: Awaited<ReturnType<typeof loadEngine>> | null = null;
-
-    // Append a message to the DOM. Returns the body element (so we can stream into it).
-    const appendMessage = (role: 'user' | 'assistant', content: string) => {
+    const appendMessage = (role: Msg['role'], content: string): HTMLElement => {
       const wrap = document.createElement('div');
-      wrap.className = 'flex gap-3 ' + (role === 'user' ? 'justify-end' : '');
-      const avatar = document.createElement('span');
-      avatar.className = 'shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-lg text-xs font-semibold ' + (
-        role === 'user'
-          ? 'bg-ink-200 dark:bg-ink-700 text-ink-700 dark:text-ink-200 order-2'
-          : 'bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300'
-      );
-      avatar.textContent = role === 'user' ? 'You' : 'AI';
-      const body = document.createElement('div');
-      body.className = `msg-bubble ${role} max-w-[calc(100%-3rem)] ${role === 'user' ? 'text-right' : ''}`;
-      body.innerHTML = role === 'user' ? renderMd(content) : (content ? renderMd(content) : '<span class="opacity-50">...</span>');
-      if (role === 'user') {
-        wrap.appendChild(body);
-        wrap.appendChild(avatar);
-      } else {
-        wrap.appendChild(avatar);
-        wrap.appendChild(body);
-      }
-      messagesEl.appendChild(wrap);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      return body;
+      wrap.className = role === 'user'
+        ? 'flex justify-end'
+        : 'flex justify-start';
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-accent-600 text-white px-4 py-2'
+        : 'max-w-[80%] rounded-2xl rounded-bl-sm bg-ink-100 dark:bg-ink-800 text-ink-900 dark:text-ink-100 px-4 py-2';
+      bubble.innerHTML = renderMarkdown(content || '…');
+      wrap.appendChild(bubble);
+      log.appendChild(wrap);
+      log.scrollTop = log.scrollHeight;
+      return bubble;
     };
 
-    const setLoadingState = (text: string, pct: number) => {
-      loadingLabel.textContent = text.replace(/^Loading model from cache\[/, 'Loading [');
-      loadingDetail.textContent = pct >= 1 ? 'Almost ready...' : `${Math.round(pct * 100)}%`;
-      progressBar.style.width = Math.max(2, Math.round(pct * 100)) + '%';
+    const setBusy = (busy: boolean) => {
+      sendBtn.disabled = busy;
+      input.disabled = busy;
+      sendBtn.textContent = busy ? 'Thinking' : 'Ask';
     };
 
-    // Engine boot
-    const boot = async () => {
-      const modelId = modelSelect.value;
-      prestartEl.classList.add('hidden');
-      loadingEl.classList.remove('hidden');
-      if (rotateTimer) { clearInterval(rotateTimer); rotateTimer = null; }
+    const parseSSELine = (line: string): string | null => {
+      if (!line.startsWith('data:')) return null;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === '[DONE]') return null;
       try {
-        engine = await loadEngine(modelId, (text, pct) => setLoadingState(text, pct));
-        loadingEl.classList.add('hidden');
-        chatWrapEl.classList.remove('hidden');
-        statsEl.textContent = MODELS.find((m) => m.id === modelId)?.label ?? modelId;
-        inputEl.focus();
-      } catch (err: any) {
-        loadingEl.classList.add('hidden');
-        prestartEl.classList.remove('hidden');
-        const msg = err?.message || String(err);
-        startLabel.textContent = 'Retry load';
-        sizeHint.textContent = `Failed: ${msg}`;
-        sizeHint.className = 'text-[11px] mt-3 text-rose-600 dark:text-rose-400';
-        console.error('[AITutor] engine load failed', err);
+        const obj = JSON.parse(payload);
+        if (typeof obj.response === 'string') return obj.response;
+        if (typeof obj.delta === 'string') return obj.delta;
+        return null;
+      } catch {
+        return null;
       }
     };
 
-    startBtn.addEventListener('click', boot);
+    const ask = async (question: string) => {
+      history.push({ role: 'user', content: question });
+      appendMessage('user', question);
+      const bubble = appendMessage('assistant', '');
+      let acc = '';
+      setBusy(true);
 
-    // Reload model when picker changes after load
-    modelSelect.addEventListener('change', async () => {
-      if (!engine) return;
-      chatWrapEl.classList.add('hidden');
-      loadingEl.classList.remove('hidden');
-      setLoadingState('Switching model...', 0.02);
       try {
-        engine = await loadEngine(modelSelect.value, (text, pct) => setLoadingState(text, pct));
-        loadingEl.classList.add('hidden');
-        chatWrapEl.classList.remove('hidden');
-        statsEl.textContent = MODELS.find((m) => m.id === modelSelect.value)?.label ?? modelSelect.value;
-      } catch (err) {
-        loadingEl.classList.add('hidden');
-        prestartEl.classList.remove('hidden');
-        console.error(err);
-      }
-    });
-
-    // Auto-resize the textarea
-    const autosize = () => {
-      inputEl.style.height = 'auto';
-      inputEl.style.height = Math.min(160, inputEl.scrollHeight) + 'px';
-    };
-    inputEl.addEventListener('input', autosize);
-
-    // Submit handler
-    const send = async (text: string) => {
-      if (!engine || !text.trim()) return;
-
-      // Lazy-add system message on first send so we capture latest guide content.
-      if (messages.length === 0) {
-        messages.push({ role: 'system', content: buildSystemPrompt(subject) });
-      }
-
-      messages.push({ role: 'user', content: text });
-      appendMessage('user', text);
-      inputEl.value = '';
-      autosize();
-
-      const assistantBody = appendMessage('assistant', '');
-      sendBtn.classList.add('hidden');
-      stopBtn.classList.remove('hidden');
-      inputEl.disabled = true;
-
-      abortCtrl = new AbortController();
-      try {
-        for await (const { full } of streamChat(engine, messages, { signal: abortCtrl.signal, temperature: 0.6, maxTokens: 1024 })) {
-          assistantBody.innerHTML = renderMd(full);
-          messagesEl.scrollTop = messagesEl.scrollHeight;
+        const res = await fetch(`${endpoint.replace(/\/$/, '')}/tutor`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: history, guideTitle: guideTitle || undefined }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+          bubble.innerHTML = renderMarkdown(`*${err.error ?? 'Something went wrong.'}*`);
+          return;
         }
-        // Persist final assistant turn
-        messages.push({ role: 'assistant', content: assistantBody.textContent ?? '' });
-      } catch (err: any) {
-        assistantBody.innerHTML = renderMd(`*Error:* ${err?.message || err}`);
+        if (!res.body) {
+          bubble.innerHTML = renderMarkdown('*No response body.*');
+          return;
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split('\n');
+          buf = lines.pop() ?? '';
+          for (const line of lines) {
+            const chunk = parseSSELine(line);
+            if (chunk) {
+              acc += chunk;
+              bubble.innerHTML = renderMarkdown(acc);
+              log.scrollTop = log.scrollHeight;
+            }
+          }
+        }
+        history.push({ role: 'assistant', content: acc });
+      } catch (e) {
+        bubble.innerHTML = renderMarkdown(`*Network error. Try again.*`);
       } finally {
-        sendBtn.classList.remove('hidden');
-        stopBtn.classList.add('hidden');
-        inputEl.disabled = false;
-        inputEl.focus();
-        abortCtrl = null;
+        setBusy(false);
+        input.focus();
       }
     };
 
-    formEl.addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const text = inputEl.value.trim();
-      if (text) send(text);
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = '';
+      ask(q);
     });
-    inputEl.addEventListener('keydown', (e) => {
+
+    input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        formEl.requestSubmit();
+        form.requestSubmit();
       }
     });
 
-    // Stop button
-    stopBtn.addEventListener('click', () => {
-      abortCtrl?.abort();
+    resetBtn.addEventListener('click', () => {
+      history.length = 0;
+      log.innerHTML = '';
+      input.focus();
     });
-
-    // Suggested prompts
-    root.querySelectorAll('[data-suggest]').forEach((el) => {
-      el.addEventListener('click', () => {
-        const text = (el as HTMLElement).getAttribute('data-suggest') || '';
-        if (engine) send(text);
-        else {
-          // Stash the prompt and boot, then send.
-          inputEl.value = text;
-          startBtn.click();
-          // Once chat appears, auto-send.
-          const obs = new MutationObserver(() => {
-            if (!chatWrapEl.classList.contains('hidden')) {
-              obs.disconnect();
-              setTimeout(() => send(text), 50);
-            }
-          });
-          obs.observe(chatWrapEl, { attributes: true, attributeFilter: ['class'] });
-        }
-      });
-    });
-
-    // Clear conversation
-    clearBtn.addEventListener('click', () => {
-      messages.length = 0;
-      messagesEl.innerHTML = '';
-      const greeting = document.createElement('div');
-      greeting.className = 'flex gap-3';
-      greeting.innerHTML = `
-        <span class="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-xs font-semibold">AI</span>
-        <div class="text-sm text-ink-700 dark:text-ink-300 leading-relaxed">Conversation cleared. Ask away!</div>
-      `;
-      messagesEl.appendChild(greeting);
-    });
-  };
-
-  const setup = () => {
-    document.querySelectorAll('[data-tutor-root]').forEach((el) => setupOne(el as HTMLElement));
-  };
-  setup();
-  document.addEventListener('astro:after-swap', setup);
+  });
 </script>

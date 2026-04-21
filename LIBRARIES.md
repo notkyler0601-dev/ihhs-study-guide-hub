@@ -49,6 +49,7 @@ Tile provider: **OpenStreetMap** (free, no key, attribution required by the comp
 | Package | Version | Purpose |
 |---|---|---|
 | `@supabase/supabase-js` | latest | Supabase auth + Postgres client. Only used when `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` env vars are set. Powers cross-device account sync, `/request` submissions, and the `/admin/requests` inbox. Falls back to local-only mode when env vars are missing. See `SUPABASE_SETUP.md`. |
+| `ihhs-ai-tutor` Worker | n/a | Standalone Cloudflare Worker in `worker/` that proxies to Workers AI (Llama 3.1 8B). The `<AITutor>` component calls `${PUBLIC_AI_TUTOR_URL}/tutor` and streams the reply. Falls back to an "unconfigured" notice when env var is missing. See `worker/README.md`. |
 
 ## 4. Internal infrastructure (`src/lib/`)
 
@@ -118,7 +119,8 @@ Pre-existing subject-specific components. CDN script loads only when the compone
 | `<PhETSim sim="..." />` | PhET sims | iframe `phet.colorado.edu/sims/html/...` | Hundreds of pre-built simulations. |
 | `<PhysicsSandbox setup="..." />` | Matter.js 0.20.0 | `cdn.jsdelivr.net/npm/matter-js` | 2D rigid body physics. |
 | `<ChemStructure smiles="..." />` | SmilesDrawer 2.1.7 | `cdn.jsdelivr.net/npm/smiles-drawer` | Render molecules from SMILES strings. |
-| `<DNASequence sequence="..." />` | none (custom SVG/HTML) | n/a | DNA/RNA/protein with feature highlights. |
+| `<DNASequence sequence="..." />` | none (custom SVG/HTML) | n/a | DNA/RNA/protein with feature highlights and codon-to-amino-acid hover tooltips. |
+| `<AITutor guideTitle="..." />` | Cloudflare Workers AI (server-side) | n/a | Login-gated chat tutor. Streams SSE from `${PUBLIC_AI_TUTOR_URL}/tutor`. Shows a setup notice when env var is missing. |
 | `<Phylogeny newick="..." />` | phylotree.js 1.5.0 + d3 v7 + underscore 1.13.6 | `cdn.jsdelivr.net/npm/phylotree`, `d3js.org/d3.v7.min.js`, `cdn.jsdelivr.net/npm/underscore` | Evolutionary trees. |
 | `<CircuitSim starter="rc" />` | Falstad CircuitJS | iframe `www.falstad.com/circuit/circuitjs.html` | Drag-drop circuit simulator. |
 

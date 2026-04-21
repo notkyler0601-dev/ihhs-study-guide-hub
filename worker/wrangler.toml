@@ -1,0 +1,20 @@
+name = "ihhs-ai-tutor"
+main = "src/index.ts"
+compatibility_date = "2025-02-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+# Per-IP rate limit: 20 requests per 60 seconds.
+# Namespace id is arbitrary but must be unique per account.
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "2001"
+simple = { limit = 20, period = 60 }
+
+[vars]
+# Set to the production origin. Override per env or via `wrangler secret put`.
+ALLOWED_ORIGIN = "https://ihsgh.org"
+MODEL = "@cf/meta/llama-3.1-8b-instruct"
