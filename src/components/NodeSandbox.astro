@@ -1,0 +1,29 @@
+---
+// <NodeSandbox /> — full multi-file code playground via Sandpack 2.
+//
+// Usage:
+//   <NodeSandbox template="react" />
+//   <NodeSandbox template="node" files={{"index.js": "console.log('hi')"}} />
+
+import NodeSandboxReact from './react/NodeSandbox';
+
+interface Props {
+  template?: string;
+  files?: Record<string, string | { code: string; hidden?: boolean; readOnly?: boolean; active?: boolean }>;
+  showConsole?: boolean;
+  showLineNumbers?: boolean;
+  editorHeight?: number;
+  theme?: 'light' | 'dark' | 'auto';
+  title?: string;
+}
+const { title, ...rest } = Astro.props;
+---
+
+{title && (
+  <div class="not-prose flex items-center gap-2 mt-8 mb-2 text-xs uppercase tracking-[0.14em] font-semibold text-ink-500">
+    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    <span>{title}</span>
+  </div>
+)}
+
+<NodeSandboxReact client:only="react" {...(rest as any)} />

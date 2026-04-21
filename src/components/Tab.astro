@@ -1,0 +1,86 @@
+---
+// <Tab /> — guitar/bass tablature + standard notation via AlphaTab.
+//
+// Reads Guitar Pro (.gp, .gp3, .gp4, .gp5, .gpx, .gp7) or AlphaTex (the
+// terse text format AlphaTab ships with).
+//
+// Usage:
+//   <Tab src="/music/song.gp5" />
+//   <Tab tex={`\\title "Scale"\n\\track\n\\tempo 90\n.\n0.6 2.6 4.6 5.6 7.6 9.6 11.6 12.6 |`} />
+
+interface Props {
+  src?: string;
+  tex?: string;
+  title?: string;
+  height?: number;
+}
+const { src, tex, title, height = 360 } = Astro.props;
+const id = 'tab-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-tab-root data-src={src ?? ''}>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </span>
+      <div>
+        <h3 class="font-serif text-sm font-semibold leading-none">{title ?? 'Tablature'}</h3>
+        <p class="text-[10px] text-ink-500 mt-1">Guitar Pro / AlphaTex · AlphaTab</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1">
+      <button type="button" data-tab-play class="text-xs px-3 py-1 rounded-md bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white">▶ Play</button>
+      <button type="button" data-tab-stop class="text-xs px-2 py-1 rounded-md hover:bg-ink-100 dark:hover:bg-ink-800 text-ink-500">■</button>
+    </div>
+  </header>
+
+  <div data-tab-status class="px-5 py-2 text-xs text-ink-500 border-b border-ink-100 dark:border-ink-800/60">Loading...</div>
+
+  <div class="bg-white dark:bg-ink-50 overflow-auto scrollbar-thin" style={`max-height: ${height * 2}px; min-height: ${height}px;`}>
+    <div data-tab-container></div>
+  </div>
+
+  {tex && <script type="application/x-alphatex" data-tab-tex set:html={tex} />}
+</section>
+
+<script>
+  const setupOne = async (root: HTMLElement) => {
+    if ((root as any).__tabWired) return;
+    (root as any).__tabWired = true;
+
+    const status = root.querySelector('[data-tab-status]') as HTMLElement;
+    const container = root.querySelector('[data-tab-container]') as HTMLElement;
+    const src = root.dataset.src;
+    const tex = root.querySelector('[data-tab-tex]')?.textContent ?? null;
+
+    try {
+      const alphaTab = await import('@coderline/alphatab');
+      const settings: any = {
+        core: { tex: !!tex, file: src || undefined },
+        display: { staveProfile: 'ScoreTab', resources: { mainGlyphColor: '#18181b' } },
+        player: { enablePlayer: true, enableCursor: true, soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2' },
+      };
+
+      const api = new (alphaTab as any).AlphaTabApi(container, settings);
+      if (tex) api.tex(tex);
+
+      api.renderStarted.on(() => status.textContent = 'Rendering...');
+      api.renderFinished.on(() => { status.textContent = ''; status.classList.add('hidden'); });
+      api.error.on((err: any) => {
+        status.textContent = `Error: ${err?.message || err}`;
+        status.classList.add('text-rose-600');
+      });
+
+      root.querySelector('[data-tab-play]')?.addEventListener('click', () => api.playPause());
+      root.querySelector('[data-tab-stop]')?.addEventListener('click', () => api.stop());
+    } catch (err: any) {
+      status.textContent = `AlphaTab failed: ${err?.message || err}`;
+      status.classList.add('text-rose-600');
+    }
+  };
+
+  const setup = () => document.querySelectorAll('[data-tab-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

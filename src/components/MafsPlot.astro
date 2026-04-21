@@ -1,0 +1,30 @@
+---
+// <MafsPlot /> — React math viz via Mafs.
+//
+// Usage:
+//   <MafsPlot fns={["Math.sin(x)", "x*x/4"]} />
+//   <MafsPlot fns={["x*x"]} points={[{x: 1, y: 1, label: "(1,1)"}]} viewBox={[-3,3,-1,5]} />
+//   <MafsPlot movable />
+
+import MafsPlotReact from './react/MafsPlot';
+
+interface Props {
+  fns?: string[];
+  points?: { x: number; y: number; label?: string; color?: string }[];
+  vectors?: { tail: [number, number]; tip: [number, number]; color?: string }[];
+  movable?: boolean;
+  viewBox?: [number, number, number, number];
+  height?: number;
+  title?: string;
+}
+const { title, ...rest } = Astro.props;
+---
+
+{title && (
+  <div class="not-prose flex items-center gap-2 mt-8 mb-2 text-xs uppercase tracking-[0.14em] font-semibold text-ink-500">
+    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18M9 17V9M14 17V5M19 17v-7"/></svg>
+    <span>{title}</span>
+  </div>
+)}
+
+<MafsPlotReact client:only="react" {...rest} />

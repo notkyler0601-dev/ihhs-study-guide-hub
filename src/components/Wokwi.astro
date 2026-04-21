@@ -1,0 +1,42 @@
+---
+// <Wokwi /> — embed a Wokwi microcontroller simulator project.
+//
+// Wokwi simulates Arduino, ESP32, ESP8266, Raspberry Pi Pico, STM32 with
+// peripherals (sensors, displays, motors) entirely in the browser. Free.
+//
+// Usage:
+//   <Wokwi project="123456789" />          // wokwi.com/projects/<id>
+//   <Wokwi url="https://wokwi.com/projects/123456789" />
+//   <Wokwi project="..." height={520} />
+
+interface Props {
+  project?: string;
+  url?: string;
+  height?: number;
+  title?: string;
+}
+const { project, url, height = 480, title = 'Wokwi simulator' } = Astro.props;
+const src = url || (project ? `https://wokwi.com/projects/${project}` : 'https://wokwi.com');
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden">
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+      </span>
+      <div>
+        <h3 class="font-serif text-sm font-semibold leading-none">{title}</h3>
+        <p class="text-[10px] text-ink-500 mt-1">Arduino / ESP32 / Pi Pico / STM32 · embedded by wokwi.com</p>
+      </div>
+    </div>
+    <a href={src} target="_blank" rel="noopener" class="text-[11px] text-accent-700 dark:text-accent-400 hover:underline">Open in new tab ↗</a>
+  </header>
+  <iframe
+    src={src}
+    title={title}
+    style={`width: 100%; height: ${height}px; border: 0;`}
+    loading="lazy"
+    allow="clipboard-read; clipboard-write; serial"
+  ></iframe>
+</section>

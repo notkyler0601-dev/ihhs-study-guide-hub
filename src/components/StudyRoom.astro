@@ -1,0 +1,171 @@
+---
+// <StudyRoom /> — peer-to-peer collaborative study room via Yjs + y-webrtc.
+//
+// Shared chat, shared notes textarea, and a live participant list. Pure P2P
+// over WebRTC (uses Yjs's public signaling servers for rendezvous). Free,
+// no backend. Students paste the same room URL and the state syncs live.
+//
+// Usage:
+//   <StudyRoom />                         // roomId defaults to guide slug
+//   <StudyRoom roomId="bio-group-1" />
+
+interface Props {
+  roomId?: string;
+  title?: string;
+}
+const { roomId, title = 'Study room' } = Astro.props;
+const id = 'room-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-room-root data-room-id={roomId ?? ''}>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
+      <div class="min-w-0">
+        <h3 class="font-serif text-sm font-semibold leading-none truncate">{title}</h3>
+        <p class="text-[10px] text-ink-500 mt-1">Peer-to-peer · <span data-room-peers>0</span> connected</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button type="button" data-room-copy class="text-[11px] px-2 py-1 rounded-md border border-ink-200 dark:border-ink-800 text-ink-600 dark:text-ink-300 hover:border-accent-400 dark:hover:border-accent-600">Copy invite</button>
+      <span class="text-[11px] font-mono text-ink-500" data-room-id-display></span>
+    </div>
+  </header>
+
+  <div class="grid md:grid-cols-[1fr_280px] gap-0">
+    <!-- Shared notes -->
+    <div class="border-b md:border-b-0 md:border-r border-ink-200 dark:border-ink-800">
+      <div class="px-5 py-2 text-[10px] uppercase tracking-[0.14em] font-semibold text-ink-500">Shared notes</div>
+      <textarea
+        data-room-notes
+        rows="10"
+        class="w-full px-5 py-3 bg-transparent border-0 text-sm text-ink-800 dark:text-ink-200 focus:outline-none resize-y min-h-[200px] font-mono"
+        placeholder="Everyone here can type. Notes sync live."
+      ></textarea>
+    </div>
+
+    <!-- Chat -->
+    <div class="flex flex-col h-[300px] md:h-auto">
+      <div class="px-5 py-2 text-[10px] uppercase tracking-[0.14em] font-semibold text-ink-500 border-b border-ink-100 dark:border-ink-800/60">Chat</div>
+      <div data-room-chat class="flex-1 overflow-y-auto scrollbar-thin px-4 py-2 space-y-2 text-sm"></div>
+      <form data-room-form class="flex gap-2 p-2 border-t border-ink-200 dark:border-ink-800">
+        <input data-room-input type="text" placeholder="Say something..." class="flex-1 px-3 py-1.5 rounded-lg bg-ink-50 dark:bg-ink-900 border border-ink-200 dark:border-ink-800 text-sm focus:outline-none focus:border-accent-500" />
+        <button type="submit" class="px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-800 text-white text-sm">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="px-5 py-2 border-t border-ink-100 dark:border-ink-800/60 text-[10px] text-ink-500">
+    Powered by Yjs + y-webrtc. Traffic is peer-to-peer and encrypted by the browser's WebRTC stack.
+  </div>
+</section>
+
+<script>
+  const setupOne = async (root: HTMLElement) => {
+    if ((root as any).__roomWired) return;
+    (root as any).__roomWired = true;
+
+    // Derive room id: explicit prop > guide slug > url path
+    const explicit = root.dataset.roomId;
+    const slugMatch = window.location.pathname.match(/^\/guides\/([^/]+)/);
+    const roomId = explicit || (slugMatch ? 'guide-' + slugMatch[1] : 'hub-' + window.location.pathname.replace(/\//g, '-'));
+
+    const chatEl = root.querySelector('[data-room-chat]') as HTMLElement;
+    const inputEl = root.querySelector('[data-room-input]') as HTMLInputElement;
+    const formEl = root.querySelector('[data-room-form]') as HTMLFormElement;
+    const notesEl = root.querySelector('[data-room-notes]') as HTMLTextAreaElement;
+    const peersEl = root.querySelector('[data-room-peers]') as HTMLElement;
+    const idDisplay = root.querySelector('[data-room-id-display]') as HTMLElement;
+    const copyBtn = root.querySelector('[data-room-copy]') as HTMLButtonElement;
+
+    idDisplay.textContent = roomId;
+
+    try {
+      const Y = await import('yjs');
+      const { WebrtcProvider } = await import('y-webrtc');
+
+      const doc = new Y.Doc();
+      const provider = new WebrtcProvider(roomId, doc, {
+        signaling: [
+          'wss://signaling.yjs.dev',
+          'wss://y-webrtc-signaling-eu.herokuapp.com',
+          'wss://y-webrtc-signaling-us.herokuapp.com',
+        ],
+      });
+      const yNotes = doc.getText('notes');
+      const yChat = doc.getArray<{ author: string; text: string; ts: number }>('chat');
+
+      // Pick a random color + nickname for this session
+      const nick = 'student-' + Math.random().toString(36).slice(2, 6);
+      const color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 45%)`;
+      provider.awareness.setLocalStateField('user', { nick, color });
+
+      // Peers counter
+      const updatePeers = () => {
+        peersEl.textContent = String(provider.awareness.getStates().size);
+      };
+      provider.awareness.on('change', updatePeers);
+      updatePeers();
+
+      // Notes sync
+      let suppress = false;
+      const renderNotes = () => {
+        if (suppress) return;
+        const next = yNotes.toString();
+        if (notesEl.value !== next) notesEl.value = next;
+      };
+      renderNotes();
+      yNotes.observe(renderNotes);
+      notesEl.addEventListener('input', () => {
+        suppress = true;
+        doc.transact(() => {
+          yNotes.delete(0, yNotes.length);
+          yNotes.insert(0, notesEl.value);
+        });
+        suppress = false;
+      });
+
+      // Chat sync
+      const renderChat = () => {
+        chatEl.innerHTML = '';
+        for (const msg of yChat.toArray()) {
+          const m = document.createElement('div');
+          m.innerHTML = `<span class="text-[10px] uppercase tracking-wider font-semibold mr-2" style="color: ${(msg as any).color || '#999'}">${escapeHtml((msg as any).nick || 'anon')}</span><span>${escapeHtml(msg.text)}</span>`;
+          chatEl.appendChild(m);
+        }
+        chatEl.scrollTop = chatEl.scrollHeight;
+      };
+      const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+      yChat.observe(renderChat);
+      renderChat();
+
+      formEl.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = inputEl.value.trim();
+        if (!text) return;
+        yChat.push([{ author: nick, text, ts: Date.now(), nick, color } as any]);
+        inputEl.value = '';
+      });
+
+      // Invite copy
+      copyBtn.addEventListener('click', async () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', roomId);
+        try {
+          await navigator.clipboard.writeText(url.toString());
+          const orig = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => (copyBtn.textContent = orig), 1500);
+        } catch {}
+      });
+    } catch (err: any) {
+      chatEl.innerHTML = `<p class="text-rose-600 text-sm">Could not start study room: ${err?.message || err}</p>`;
+    }
+  };
+
+  const setup = () => document.querySelectorAll('[data-room-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

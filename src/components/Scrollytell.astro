@@ -1,0 +1,104 @@
+---
+// <Scrollytell /> — newsroom-style pinned-graphic scrollytelling via scrollama.
+//
+// As the student scrolls, each text "step" triggers a graphic update on the
+// sticky panel. The graphic stays pinned beside (or above) the steps.
+//
+// Usage in MDX:
+//   <Scrollytell
+//     steps={[
+//       { id: 'a', heading: 'Mitochondrion', body: 'The powerhouse of the cell.' },
+//       { id: 'b', heading: 'Cristae', body: 'Folded inner membrane increases surface area.' },
+//       { id: 'c', heading: 'ETC', body: 'Electron transport chain pumps H+ across the inner membrane.' },
+//     ]}
+//     graphics={{
+//       a: 'https://example.com/mito-1.svg',
+//       b: 'https://example.com/mito-2.svg',
+//       c: 'https://example.com/mito-3.svg',
+//     }}
+//   />
+//
+// You can also pass a custom function via `setupCode` (a string of JS) for
+// custom graphic switching, but the URL/imgs case covers most needs.
+
+interface Step { id: string; heading: string; body: string; }
+interface Props {
+  steps: Step[];
+  graphics?: Record<string, string>;
+  graphicHeight?: number;
+  title?: string;
+}
+const { steps, graphics = {}, graphicHeight = 480, title } = Astro.props;
+const id = 'scroll-' + Math.random().toString(36).slice(2, 9);
+const graphicsJson = JSON.stringify(graphics);
+---
+
+<section class="not-prose my-12" id={id} data-scroll-root>
+  {title && (
+    <h3 class="font-serif text-2xl font-semibold tracking-tight mb-6 px-2">{title}</h3>
+  )}
+
+  <div class="grid lg:grid-cols-[1fr_1fr] gap-8 lg:gap-12">
+    <!-- Sticky graphic -->
+    <div class="lg:order-2 lg:sticky lg:top-24 self-start">
+      <div class="surface rounded-2xl overflow-hidden flex items-center justify-center bg-ink-50 dark:bg-ink-900" style={`height: ${graphicHeight}px;`}>
+        <img data-scroll-img src={graphics[steps[0]?.id] || ''} alt="" class="max-w-full max-h-full object-contain transition-opacity duration-500" />
+      </div>
+      <div class="text-[11px] text-ink-500 mt-2 text-center">Step <span data-scroll-current>1</span> of {steps.length}</div>
+    </div>
+
+    <!-- Steps -->
+    <div class="lg:order-1 space-y-[60vh]">
+      {steps.map((s, i) => (
+        <article data-scroll-step={s.id} class="surface rounded-2xl p-6 shadow-soft" data-step-index={i}>
+          <div class="text-[11px] uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400 mb-2">Step {i + 1}</div>
+          <h4 class="font-serif text-2xl font-semibold tracking-tight mb-2">{s.heading}</h4>
+          <p class="text-ink-700 dark:text-ink-300 leading-relaxed">{s.body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <script type="application/json" data-scroll-graphics set:html={graphicsJson} />
+</section>
+
+<script>
+  const setupOne = async (root: HTMLElement) => {
+    if ((root as any).__scrollWired) return;
+    (root as any).__scrollWired = true;
+
+    const img = root.querySelector('[data-scroll-img]') as HTMLImageElement;
+    const counter = root.querySelector('[data-scroll-current]') as HTMLElement;
+    const graphics = JSON.parse(root.querySelector('[data-scroll-graphics]')?.textContent || '{}') as Record<string, string>;
+
+    const scrollama = (await import('scrollama')).default;
+    const scroller = scrollama();
+    scroller
+      .setup({
+        step: root.querySelectorAll('[data-scroll-step]'),
+        offset: 0.55,
+        progress: false,
+      })
+      .onStepEnter((response) => {
+        const el = response.element as HTMLElement;
+        const id = el.dataset.scrollStep!;
+        const idx = Number(el.dataset.stepIndex || '0');
+        counter.textContent = String(idx + 1);
+        if (graphics[id]) {
+          img.style.opacity = '0';
+          setTimeout(() => { img.src = graphics[id]; img.style.opacity = '1'; }, 200);
+        }
+        // Highlight active step card
+        root.querySelectorAll('[data-scroll-step]').forEach((s) => {
+          s.classList.toggle('ring-2', s === el);
+          s.classList.toggle('ring-accent-500', s === el);
+        });
+      });
+
+    window.addEventListener('resize', () => scroller.resize());
+  };
+
+  const setup = () => document.querySelectorAll('[data-scroll-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

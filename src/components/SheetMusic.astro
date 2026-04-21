@@ -1,0 +1,97 @@
+---
+// <SheetMusic /> — render MusicXML sheet music via OpenSheetMusicDisplay.
+//
+// MusicXML is the universal sheet music format (MuseScore, Finale, Sibelius,
+// IMSLP all export to it). Pass either an xml URL or an inline xmlString.
+//
+// Usage:
+//   <SheetMusic xml="/music/bach-cello.xml" title="Bach Cello Suite No. 1" />
+//   <SheetMusic xmlString={`<?xml version="1.0"...`} />
+
+interface Props {
+  xml?: string;
+  xmlString?: string;
+  title?: string;
+  zoom?: number;
+  height?: number;
+}
+const { xml, xmlString, title, zoom = 1, height = 360 } = Astro.props;
+const id = 'osmd-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-osmd-root data-xml={xml} data-zoom={zoom}>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </span>
+      <div>
+        <h3 class="font-serif text-sm font-semibold leading-none">{title ?? 'Sheet music'}</h3>
+        <p class="text-[10px] text-ink-500 mt-1">MusicXML · OpenSheetMusicDisplay</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1">
+      <button type="button" data-osmd-zoom-out class="h-7 w-7 rounded-md hover:bg-ink-100 dark:hover:bg-ink-800 text-ink-500" aria-label="Zoom out">−</button>
+      <button type="button" data-osmd-zoom-in class="h-7 w-7 rounded-md hover:bg-ink-100 dark:hover:bg-ink-800 text-ink-500" aria-label="Zoom in">+</button>
+    </div>
+  </header>
+
+  <div data-osmd-status class="px-5 py-3 text-xs text-ink-500 border-b border-ink-100 dark:border-ink-800/60">Loading MusicXML...</div>
+
+  <div class="px-5 py-5 overflow-auto scrollbar-thin bg-white dark:bg-ink-50" style={`max-height: ${height * 2}px; min-height: ${height}px;`}>
+    <div data-osmd-container id={id + '-canvas'}></div>
+    {xmlString && <script type="application/xml" set:html={xmlString} data-osmd-inline />}
+  </div>
+</section>
+
+<script>
+  const setupOne = async (root: HTMLElement) => {
+    if ((root as any).__osmdWired) return;
+    (root as any).__osmdWired = true;
+
+    const status = root.querySelector('[data-osmd-status]') as HTMLElement;
+    const container = root.querySelector('[data-osmd-container]') as HTMLElement;
+    const xmlUrl = root.dataset.xml;
+    const inlineXml = root.querySelector('[data-osmd-inline]')?.textContent ?? null;
+    let zoom = Number(root.dataset.zoom || '1');
+
+    try {
+      const { OpenSheetMusicDisplay } = await import('opensheetmusicdisplay');
+      const osmd = new OpenSheetMusicDisplay(container, {
+        autoResize: true,
+        drawTitle: false,
+        drawSubtitle: false,
+        backend: 'svg',
+      });
+      osmd.Zoom = zoom;
+
+      let xmlData: string;
+      if (inlineXml) {
+        xmlData = inlineXml;
+      } else if (xmlUrl) {
+        const res = await fetch(xmlUrl);
+        if (!res.ok) throw new Error(`Failed to fetch ${xmlUrl}: ${res.status}`);
+        xmlData = await res.text();
+      } else {
+        throw new Error('Provide either xml= or xmlString=');
+      }
+
+      await osmd.load(xmlData);
+      osmd.render();
+      status.textContent = '';
+      status.classList.add('hidden');
+
+      const zoomIn = root.querySelector('[data-osmd-zoom-in]');
+      const zoomOut = root.querySelector('[data-osmd-zoom-out]');
+      zoomIn?.addEventListener('click', () => { zoom = Math.min(zoom + 0.15, 3); osmd.Zoom = zoom; osmd.render(); });
+      zoomOut?.addEventListener('click', () => { zoom = Math.max(zoom - 0.15, 0.4); osmd.Zoom = zoom; osmd.render(); });
+    } catch (err: any) {
+      status.textContent = `Could not render sheet music: ${err?.message || err}`;
+      status.classList.add('text-rose-600', 'dark:text-rose-400');
+    }
+  };
+
+  const setup = () => document.querySelectorAll('[data-osmd-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

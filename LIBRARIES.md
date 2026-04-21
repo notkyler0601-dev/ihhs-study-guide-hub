@@ -482,6 +482,84 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 
 ---
 
+## 8e. Tier 7 components (AI, immersive 3D, collab, sensors, music, code playgrounds)
+
+Added 2026-04. Closes the gaps surfaced in the "futuristic toolkit" research pass: in-browser LLMs, declarative 3D, real-time collab, camera-based sensors, MusicXML/tab notation, full-Node sandboxes, and React-based math.
+
+### In-browser AI (WebLLM)
+
+100% client-side LLM inference via WebGPU. Models cache once in IndexedDB/OPFS, then run fully offline. Zero API keys, zero ongoing cost, zero data leaves the browser. Requires WebGPU (Chrome, Edge, Arc, Brave).
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<AITutor title="..." subject="..." />` | WebLLM | `@mlc-ai/web-llm` | Streaming chat tutor grounded in the surrounding guide's text. Picker for Llama 3.2 1B/3B, Qwen 2.5 1.5B, Phi 3.5 mini, Hermes 3. Suggested prompts (explain simply, quiz me, key takeaways, worked example, common mistakes). Stop button to interrupt generation. |
+| `<FloatingAITutor />` (auto-mounted in `GuideLayout`) | WebLLM | same | Bottom-right FAB on every guide opens a slide-in drawer containing the full `<AITutor>`. Cmd+/ keyboard shortcut. Hidden on `/signup`, `/login`, `/admin`. |
+| `<AIQuizGen count={5} subject="..." />` | WebLLM | same | One-click "generate fresh practice MCQs from this guide". Streams JSON, parses, renders the same interactive look as `<Quiz>`. |
+| `<AIExplain level="eli5\|eli15\|advanced\|caveman" topic="...">passage</AIExplain>` | WebLLM | same | Wrap any passage. Adds an "explain simpler" button with four reading levels (ELI5, ELI15, advanced, 🪨 caveman). |
+| (alt runtime, not yet wired) | Transformers.js | `@huggingface/transformers` | Hugging Face's WebGPU runtime. 100+ model architectures. Useful for non-chat tasks (embeddings, classifiers, ASR). |
+
+Engine wrapper lives in `src/lib/webllm.ts`. Singleton per tab. Switching models unloads the previous to free GPU memory. Auto-grabs guide context via `getGuideContext()`.
+
+### Declarative 3D (React Three Fiber)
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<R3FScene gltf="..." demo="knot" />` | React Three Fiber + drei + three | `@react-three/fiber`, `@react-three/drei`, `three`, `@types/three` | Declarative 3D in MDX. drei adds OrbitControls, environment maps, GLTF loader, Float wrapper, Stage, Bounds. Pass `gltf=` URL or pick a primitive (`cube`/`sphere`/`torus`/`knot`). Auto-rotate, contact shadows. |
+
+### Camera-based sensors (TensorFlow.js)
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<PoseMatch reference="warrior-2" />` | tfjs + pose-detection | `@tensorflow/tfjs`, `@tensorflow-models/pose-detection` | MoveNet 17-keypoint body skeleton overlay. Optional reference poses (`t-pose`, `warrior-2`, `arms-up`, `squat`) score live match % via joint angles. |
+| `<HandSign target="thumbs-up" />` | tfjs + hand-pose-detection | `@tensorflow-models/hand-pose-detection` | MediaPipe Hands 21-keypoint hand skeleton. Built-in gesture detection: `open`, `fist`, `thumbs-up`, `peace`, `point`. |
+
+### Real-time collab (Yjs)
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<StudyRoom roomId="..." />` | Yjs + y-webrtc | `yjs`, `y-webrtc` | Peer-to-peer shared notes textarea + chat + live participant counter. Auto-derives roomId from guide slug. Zero backend (uses Yjs's public WebRTC signaling servers). One-click invite copy. |
+
+### Music notation
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<SheetMusic xml="..." />` or `<SheetMusic xmlString="..." />` | OpenSheetMusicDisplay | `opensheetmusicdisplay` | Render any MusicXML file (the format MuseScore, Finale, Sibelius, IMSLP all use). Built-in zoom in/out. Major upgrade over abcjs. |
+| `<MiniScore notes={[...]} clef="treble" timeSignature="4/4" />` | VexFlow | `vexflow` | Programmatic notation for tiny inline examples. Note format: `"c#/4/q"`. Chords: `"(c/4 e/4 g/4)/h"`. |
+| `<Tab src="..." />` or `<Tab tex="..." />` | AlphaTab | `@coderline/alphatab` | Guitar/bass tablature + standard notation. Reads Guitar Pro files (.gp/.gp3-7) or AlphaTex. Built-in playback (▶ Play). |
+
+### Code playgrounds
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<NodeSandbox template="node" files={...} />` | Sandpack 2 (Nodebox) | `@codesandbox/sandpack-react` | Multi-file dev environment in-browser. Templates: `node`, `react`, `react-ts`, `vue`, `vite`, `astro`, `nextjs`, etc. Console + inline errors + hot reload. |
+
+### React math viz
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<MafsPlot fns={["x*x"]} movable />` | Mafs | `mafs` | Plot function expressions. Optional draggable point demo. Vectors, points, labels via props. Easier than raw D3 for math guides. |
+
+### Hardware simulation
+
+| Component | Library | source | Brief |
+|---|---|---|---|
+| `<Wokwi project="123456789" />` | Wokwi | iframe `wokwi.com/projects/<id>` | Embed an Arduino, ESP32, ESP8266, Raspberry Pi Pico, or STM32 simulation with peripherals (sensors, displays, motors). |
+
+### Scrollytelling
+
+| Component | Library | npm | Brief |
+|---|---|---|---|
+| `<Scrollytell steps={[...]} graphics={{...}} />` | scrollama (already installed) | `scrollama` | Pinned graphic on the right, scroll-triggered text steps on the left. Each step swaps the graphic (typically an image URL keyed by step id). Uses already-installed `scrollama`. |
+
+### Markdown sanitization (used by Tier 7 AI components)
+
+| Module | Library | npm | Brief |
+|---|---|---|---|
+| `import { marked } from 'marked'` | marked | `marked` | Streaming markdown to HTML. Used to render LLM output. |
+| `import DOMPurify from 'dompurify'` | DOMPurify | `dompurify`, `@types/dompurify` (dev) | XSS sanitizer. ALL LLM output passes through this before going into innerHTML. |
+
+---
+
 ## 9b. React integration
 
 Added 2026-04 to support React-only libraries (Recharts, Nivo, React Flow, Tremor, react-chrono, TipTap, etc.).

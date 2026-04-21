@@ -1,0 +1,223 @@
+---
+// <PoseMatch /> — live body-pose detection via TensorFlow.js MoveNet.
+//
+// Asks for camera permission, runs MoveNet on the video feed, draws the
+// 17-point skeleton overlay. Optionally compares against a "reference"
+// pose name and shows a similarity score.
+//
+// Usage:
+//   <PoseMatch />                                 // just visualize
+//   <PoseMatch reference="warrior-2" />           // built-in references
+//
+// Built-in references: 't-pose', 'warrior-2', 'arms-up', 'squat'.
+//
+// Privacy: video stays on the device. Nothing is uploaded.
+
+interface Props {
+  reference?: 't-pose' | 'warrior-2' | 'arms-up' | 'squat' | null;
+  width?: number;
+  height?: number;
+  title?: string;
+}
+const { reference = null, width = 640, height = 480, title = 'Pose practice' } = Astro.props;
+const id = 'pose-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-pose-root data-reference={reference ?? ''} data-width={width} data-height={height}>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v5M9 21l3-9 3 9M7 12h10"/></svg>
+      </span>
+      <div>
+        <h3 class="font-serif text-sm font-semibold leading-none">{title}</h3>
+        <p class="text-[10px] text-ink-500 mt-1">Camera stays on your device · MoveNet</p>
+      </div>
+    </div>
+    {reference && (
+      <span class="badge badge-accent">Target: {reference}</span>
+    )}
+  </header>
+
+  <div data-pose-prestart class="p-8 text-center">
+    <p class="text-sm text-ink-600 dark:text-ink-300 mb-4">Click below to enable your camera. Nothing is recorded or uploaded.</p>
+    <button data-pose-start type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium shadow-soft hover:shadow-lift">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 7l-7 5 7 5V7zM14 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/></svg>
+      Start camera
+    </button>
+  </div>
+
+  <div data-pose-stage class="hidden relative bg-ink-950" style={`aspect-ratio: ${width}/${height};`}>
+    <video data-pose-video playsinline muted class="absolute inset-0 w-full h-full object-cover" style="transform: scaleX(-1);"></video>
+    <canvas data-pose-canvas class="absolute inset-0 w-full h-full" style="transform: scaleX(-1);"></canvas>
+    <div data-pose-status class="absolute top-2 left-2 right-2 flex justify-between items-center text-xs">
+      <span class="px-2 py-1 rounded-md bg-black/60 text-white" data-pose-fps>0 fps</span>
+      {reference && <span class="px-2 py-1 rounded-md bg-accent-700/80 text-white" data-pose-score>—</span>}
+    </div>
+    <button data-pose-stop type="button" class="absolute bottom-3 right-3 inline-flex items-center justify-center h-9 w-9 rounded-full bg-rose-600 hover:bg-rose-500 text-white" aria-label="Stop camera">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+    </button>
+  </div>
+
+  <div data-pose-error class="hidden px-5 py-4 text-sm text-rose-600 dark:text-rose-400"></div>
+</section>
+
+<script>
+  // 17 keypoints: nose, l_eye, r_eye, l_ear, r_ear, l_shoulder, r_shoulder,
+  // l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip, l_knee, r_knee,
+  // l_ankle, r_ankle.
+  const SKELETON: [number, number][] = [
+    [5, 7], [7, 9], [6, 8], [8, 10],          // arms
+    [5, 6], [5, 11], [6, 12], [11, 12],       // torso
+    [11, 13], [13, 15], [12, 14], [14, 16],   // legs
+    [0, 1], [0, 2], [1, 3], [2, 4],           // face
+  ];
+
+  // Reference poses defined as approximate angle constraints.
+  // For each reference, we score how well the user matches some target joint angles.
+  type AngleSpec = { name: string; a: number; b: number; c: number; targetDeg: number; weight?: number };
+  const REFERENCES: Record<string, AngleSpec[]> = {
+    't-pose': [
+      { name: 'L shoulder', a: 7, b: 5, c: 11, targetDeg: 90 },
+      { name: 'R shoulder', a: 8, b: 6, c: 12, targetDeg: 90 },
+      { name: 'L elbow',    a: 5, b: 7, c: 9,  targetDeg: 180 },
+      { name: 'R elbow',    a: 6, b: 8, c: 10, targetDeg: 180 },
+    ],
+    'arms-up': [
+      { name: 'L shoulder up', a: 7, b: 5, c: 11, targetDeg: 170 },
+      { name: 'R shoulder up', a: 8, b: 6, c: 12, targetDeg: 170 },
+    ],
+    'warrior-2': [
+      { name: 'Front leg', a: 12, b: 14, c: 16, targetDeg: 90 },
+      { name: 'Back leg',  a: 11, b: 13, c: 15, targetDeg: 175 },
+      { name: 'L shoulder', a: 7, b: 5, c: 11, targetDeg: 90 },
+      { name: 'R shoulder', a: 8, b: 6, c: 12, targetDeg: 90 },
+    ],
+    'squat': [
+      { name: 'L knee', a: 11, b: 13, c: 15, targetDeg: 95 },
+      { name: 'R knee', a: 12, b: 14, c: 16, targetDeg: 95 },
+    ],
+  };
+
+  const angleAt = (kp: any[], a: number, b: number, c: number): number => {
+    const A = kp[a], B = kp[b], C = kp[c];
+    if (!A || !B || !C || A.score < 0.3 || B.score < 0.3 || C.score < 0.3) return NaN;
+    const v1x = A.x - B.x, v1y = A.y - B.y;
+    const v2x = C.x - B.x, v2y = C.y - B.y;
+    const dot = v1x * v2x + v1y * v2y;
+    const mag1 = Math.hypot(v1x, v1y), mag2 = Math.hypot(v2x, v2y);
+    if (!mag1 || !mag2) return NaN;
+    return Math.acos(Math.max(-1, Math.min(1, dot / (mag1 * mag2)))) * 180 / Math.PI;
+  };
+
+  const setupOne = (root: HTMLElement) => {
+    if ((root as any).__poseWired) return;
+    (root as any).__poseWired = true;
+
+    const ref = root.dataset.reference || null;
+    const startBtn = root.querySelector('[data-pose-start]') as HTMLButtonElement;
+    const stopBtn = root.querySelector('[data-pose-stop]') as HTMLButtonElement;
+    const prestart = root.querySelector('[data-pose-prestart]') as HTMLElement;
+    const stage = root.querySelector('[data-pose-stage]') as HTMLElement;
+    const errorEl = root.querySelector('[data-pose-error]') as HTMLElement;
+    const video = root.querySelector('[data-pose-video]') as HTMLVideoElement;
+    const canvas = root.querySelector('[data-pose-canvas]') as HTMLCanvasElement;
+    const fpsEl = root.querySelector('[data-pose-fps]') as HTMLElement;
+    const scoreEl = root.querySelector('[data-pose-score]') as HTMLElement | null;
+
+    let stream: MediaStream | null = null;
+    let detector: any = null;
+    let stopped = false;
+    let lastTs = performance.now();
+
+    const stop = () => {
+      stopped = true;
+      stream?.getTracks().forEach((t) => t.stop());
+      stream = null;
+      stage.classList.add('hidden');
+      prestart.classList.remove('hidden');
+    };
+    stopBtn.addEventListener('click', stop);
+
+    startBtn.addEventListener('click', async () => {
+      errorEl.classList.add('hidden');
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+        await video.play();
+
+        // Lazy-import TF.js + pose-detection
+        const tf = await import('@tensorflow/tfjs');
+        await import('@tensorflow/tfjs-backend-webgl');
+        await tf.setBackend('webgl');
+        await tf.ready();
+        const poseDetection = await import('@tensorflow-models/pose-detection');
+        detector = await poseDetection.createDetector(
+          poseDetection.SupportedModels.MoveNet,
+          { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
+        );
+
+        prestart.classList.add('hidden');
+        stage.classList.remove('hidden');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d')!;
+
+        stopped = false;
+        const loop = async () => {
+          if (stopped) return;
+          const poses = await detector.estimatePoses(video);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (poses[0]) {
+            const kp = poses[0].keypoints;
+            // Skeleton lines
+            ctx.strokeStyle = '#b91c1c';
+            ctx.lineWidth = 4;
+            SKELETON.forEach(([a, b]) => {
+              const A = kp[a], B = kp[b];
+              if (A && B && A.score > 0.3 && B.score > 0.3) {
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+              }
+            });
+            // Keypoint dots
+            ctx.fillStyle = '#fff';
+            kp.forEach((p: any) => {
+              if (p.score > 0.3) { ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill(); }
+            });
+            // Match score
+            if (ref && scoreEl && REFERENCES[ref]) {
+              const specs = REFERENCES[ref];
+              let total = 0, count = 0;
+              for (const s of specs) {
+                const got = angleAt(kp, s.a, s.b, s.c);
+                if (!isNaN(got)) {
+                  const err = Math.min(90, Math.abs(got - s.targetDeg));
+                  total += (1 - err / 90) * (s.weight ?? 1);
+                  count += (s.weight ?? 1);
+                }
+              }
+              const score = count > 0 ? Math.round((total / count) * 100) : 0;
+              scoreEl.textContent = `Match: ${score}%`;
+              scoreEl.style.background = score > 80 ? 'rgba(16,185,129,0.85)' : score > 50 ? 'rgba(245,158,11,0.85)' : 'rgba(225,29,72,0.85)';
+            }
+          }
+          // FPS
+          const now = performance.now();
+          const fps = 1000 / (now - lastTs);
+          lastTs = now;
+          fpsEl.textContent = `${fps.toFixed(0)} fps`;
+          requestAnimationFrame(loop);
+        };
+        loop();
+      } catch (err: any) {
+        stop();
+        errorEl.textContent = `Could not start: ${err?.message || err}`;
+        errorEl.classList.remove('hidden');
+      }
+    });
+  };
+
+  const setup = () => document.querySelectorAll('[data-pose-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

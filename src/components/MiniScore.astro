@@ -1,0 +1,110 @@
+---
+// <MiniScore /> — small programmatic music notation via VexFlow.
+//
+// For tiny inline examples (a single bar, a chord, a scale demonstration).
+// For full pieces use <SheetMusic xml="..." />.
+//
+// Usage:
+//   <MiniScore notes={["c/4/q", "d/4/q", "e/4/q", "f/4/q"]} clef="treble" timeSignature="4/4" />
+//   <MiniScore notes={["(c/4 e/4 g/4)/h", "(c/4 f/4 a/4)/h"]} timeSignature="4/4" />
+//
+// Note format: "<pitch>/<octave>/<duration>".
+//   pitch: c, c#, db, d, ..., b
+//   octave: 1-8 (4 = middle C)
+//   duration: w (whole), h (half), q (quarter), 8 (eighth), 16 (16th)
+// Chord: "(c/4 e/4 g/4)/h" wraps multiple pitches in parens with shared duration.
+
+interface Props {
+  notes: string[];
+  clef?: 'treble' | 'bass' | 'alto' | 'tenor';
+  timeSignature?: string;
+  keySignature?: string;
+  width?: number;
+  title?: string;
+}
+const {
+  notes,
+  clef = 'treble',
+  timeSignature = '4/4',
+  keySignature = 'C',
+  width = 480,
+  title,
+} = Astro.props;
+const id = 'vex-' + Math.random().toString(36).slice(2, 9);
+const config = JSON.stringify({ notes, clef, timeSignature, keySignature, width });
+---
+
+<section class="not-prose my-6 surface rounded-xl shadow-soft overflow-hidden" id={id} data-vex-root>
+  {title && (
+    <header class="px-4 py-2 text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 border-b border-ink-200 dark:border-ink-800">{title}</header>
+  )}
+  <div class="px-4 py-3 bg-white dark:bg-ink-50 overflow-x-auto scrollbar-thin">
+    <div data-vex-container></div>
+  </div>
+  <script type="application/json" data-vex-config set:html={config} />
+</section>
+
+<script>
+  const setupOne = async (root: HTMLElement) => {
+    if ((root as any).__vexWired) return;
+    (root as any).__vexWired = true;
+
+    const cfgEl = root.querySelector('[data-vex-config]');
+    const container = root.querySelector('[data-vex-container]') as HTMLElement;
+    const cfg = JSON.parse(cfgEl?.textContent || '{}') as {
+      notes: string[]; clef: string; timeSignature: string; keySignature: string; width: number;
+    };
+
+    try {
+      const Vex = await import('vexflow');
+      const VF = (Vex as any).Vex?.Flow ?? (Vex as any).Flow ?? Vex;
+      const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = VF;
+
+      container.innerHTML = '';
+      const renderer = new Renderer(container, Renderer.Backends.SVG);
+      renderer.resize(cfg.width, 140);
+      const ctx = renderer.getContext();
+      ctx.setFont('Inter', 11);
+
+      const stave = new Stave(10, 10, cfg.width - 20);
+      stave.addClef(cfg.clef).addTimeSignature(cfg.timeSignature);
+      if (cfg.keySignature && cfg.keySignature !== 'C') stave.addKeySignature(cfg.keySignature);
+      stave.setContext(ctx).draw();
+
+      // Parse notes. Support chord syntax "(c/4 e/4 g/4)/q" and accidentals like "c#/4/q".
+      const parsed = cfg.notes.map((spec) => {
+        let keys: string[];
+        let duration: string;
+        const chordMatch = spec.match(/^\(([^)]+)\)\/([whq168]+)$/);
+        if (chordMatch) {
+          keys = chordMatch[1].trim().split(/\s+/);
+          duration = chordMatch[2];
+        } else {
+          const parts = spec.split('/');
+          if (parts.length !== 3) throw new Error(`Bad note spec: ${spec}`);
+          keys = [parts[0] + '/' + parts[1]];
+          duration = parts[2];
+        }
+        const note = new StaveNote({ clef: cfg.clef, keys, duration });
+        keys.forEach((k, i) => {
+          const acc = k.match(/^[a-g](##|bb|#|b|n)/i);
+          if (acc) note.addModifier(new Accidental(acc[1]), i);
+        });
+        return note;
+      });
+
+      const beats = cfg.timeSignature.split('/').map(Number);
+      const voice = new Voice({ num_beats: beats[0] || 4, beat_value: beats[1] || 4 });
+      voice.setStrict(false).addTickables(parsed);
+      new Formatter().joinVoices([voice]).format([voice], cfg.width - 80);
+      voice.draw(ctx, stave);
+    } catch (err: any) {
+      container.innerHTML = `<div class="text-xs text-rose-600 p-3">VexFlow render failed: ${err?.message || err}</div>`;
+      console.error('[MiniScore] failed', err);
+    }
+  };
+
+  const setup = () => document.querySelectorAll('[data-vex-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

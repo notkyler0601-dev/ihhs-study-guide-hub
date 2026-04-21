@@ -1,0 +1,29 @@
+---
+// <R3FScene /> — declarative 3D scene via React Three Fiber + drei.
+//
+// Usage:
+//   <R3FScene gltf="https://example.com/model.glb" />
+//   <R3FScene demo="knot" />
+//   <R3FScene demo="sphere" height={420} background="#000" />
+
+import R3FSceneReact from './react/R3FScene';
+
+interface Props {
+  gltf?: string;
+  demo?: 'cube' | 'sphere' | 'torus' | 'knot';
+  background?: string;
+  noAutoRotate?: boolean;
+  height?: number | string;
+  title?: string;
+}
+const { title, ...rest } = Astro.props;
+---
+
+{title && (
+  <div class="not-prose flex items-center gap-2 mt-8 mb-2 text-xs uppercase tracking-[0.14em] font-semibold text-ink-500">
+    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    <span>{title}</span>
+  </div>
+)}
+
+<R3FSceneReact client:only="react" {...rest} />

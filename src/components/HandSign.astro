@@ -1,0 +1,191 @@
+---
+// <HandSign /> — live hand-pose detection via TensorFlow.js MediaPipe Hands.
+//
+// Streams the camera, runs hand detection, draws the 21-point hand skeleton.
+// Detects a few simple gestures via finger-extension heuristics: open palm,
+// fist, thumbs up, peace, point.
+//
+// Usage:
+//   <HandSign />                          // live skeleton + gesture name
+//   <HandSign target="thumbs-up" />       // adds a "match!" celebration
+//
+// Privacy: video stays on the device.
+
+interface Props {
+  target?: 'open' | 'fist' | 'thumbs-up' | 'peace' | 'point' | null;
+  width?: number;
+  height?: number;
+  title?: string;
+}
+const { target = null, width = 640, height = 480, title = 'Hand sign practice' } = Astro.props;
+const id = 'hand-' + Math.random().toString(36).slice(2, 9);
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-hand-root data-target={target ?? ''} data-width={width} data-height={height}>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300">✋</span>
+      <div>
+        <h3 class="font-serif text-sm font-semibold leading-none">{title}</h3>
+        <p class="text-[10px] text-ink-500 mt-1">Camera stays on your device · MediaPipe Hands</p>
+      </div>
+    </div>
+    {target && <span class="badge badge-accent">Make: {target}</span>}
+  </header>
+
+  <div data-hand-prestart class="p-8 text-center">
+    <p class="text-sm text-ink-600 dark:text-ink-300 mb-4">Click below to enable your camera. Nothing is recorded or uploaded.</p>
+    <button data-hand-start type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium shadow-soft hover:shadow-lift">
+      Start camera
+    </button>
+  </div>
+
+  <div data-hand-stage class="hidden relative bg-ink-950" style={`aspect-ratio: ${width}/${height};`}>
+    <video data-hand-video playsinline muted class="absolute inset-0 w-full h-full object-cover" style="transform: scaleX(-1);"></video>
+    <canvas data-hand-canvas class="absolute inset-0 w-full h-full" style="transform: scaleX(-1);"></canvas>
+    <div class="absolute top-2 left-2 right-2 flex justify-between items-center text-xs">
+      <span class="px-2 py-1 rounded-md bg-black/60 text-white" data-hand-fps>0 fps</span>
+      <span class="px-2 py-1 rounded-md bg-accent-700/80 text-white capitalize" data-hand-gesture>—</span>
+    </div>
+    <button data-hand-stop type="button" class="absolute bottom-3 right-3 inline-flex items-center justify-center h-9 w-9 rounded-full bg-rose-600 hover:bg-rose-500 text-white" aria-label="Stop camera">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+    </button>
+  </div>
+
+  <div data-hand-error class="hidden px-5 py-4 text-sm text-rose-600 dark:text-rose-400"></div>
+</section>
+
+<script>
+  // 21 keypoints per hand, indexed as in MediaPipe:
+  // 0 wrist, 1-4 thumb (CMC, MCP, IP, TIP),
+  // 5-8 index, 9-12 middle, 13-16 ring, 17-20 pinky (each: MCP, PIP, DIP, TIP).
+  const FINGER_BONES: [number, number][] = [
+    [0, 1], [1, 2], [2, 3], [3, 4],          // thumb
+    [0, 5], [5, 6], [6, 7], [7, 8],          // index
+    [0, 9], [9, 10], [10, 11], [11, 12],     // middle
+    [0, 13], [13, 14], [14, 15], [15, 16],   // ring
+    [0, 17], [17, 18], [18, 19], [19, 20],   // pinky
+    [5, 9], [9, 13], [13, 17],               // palm cross
+  ];
+
+  type KP = { x: number; y: number; score?: number };
+
+  const dist = (a: KP, b: KP) => Math.hypot(a.x - b.x, a.y - b.y);
+
+  const isFingerExtended = (kp: KP[], mcp: number, tip: number, wrist = 0): boolean => {
+    return dist(kp[tip], kp[wrist]) > dist(kp[mcp], kp[wrist]) * 1.4;
+  };
+
+  const isThumbExtended = (kp: KP[]): boolean => dist(kp[4], kp[0]) > dist(kp[2], kp[0]) * 1.2;
+
+  const detectGesture = (kp: KP[]): string => {
+    const thumb  = isThumbExtended(kp);
+    const index  = isFingerExtended(kp, 5, 8);
+    const middle = isFingerExtended(kp, 9, 12);
+    const ring   = isFingerExtended(kp, 13, 16);
+    const pinky  = isFingerExtended(kp, 17, 20);
+    const ext = [index, middle, ring, pinky].filter(Boolean).length;
+
+    if (thumb && ext === 0) return 'thumbs-up';
+    if (!thumb && index && middle && !ring && !pinky) return 'peace';
+    if (!thumb && index && !middle && !ring && !pinky) return 'point';
+    if (!thumb && ext === 0) return 'fist';
+    if (thumb && ext === 4) return 'open';
+    return 'unknown';
+  };
+
+  const setupOne = (root: HTMLElement) => {
+    if ((root as any).__handWired) return;
+    (root as any).__handWired = true;
+
+    const target = root.dataset.target || null;
+    const startBtn = root.querySelector('[data-hand-start]') as HTMLButtonElement;
+    const stopBtn = root.querySelector('[data-hand-stop]') as HTMLButtonElement;
+    const prestart = root.querySelector('[data-hand-prestart]') as HTMLElement;
+    const stage = root.querySelector('[data-hand-stage]') as HTMLElement;
+    const errorEl = root.querySelector('[data-hand-error]') as HTMLElement;
+    const video = root.querySelector('[data-hand-video]') as HTMLVideoElement;
+    const canvas = root.querySelector('[data-hand-canvas]') as HTMLCanvasElement;
+    const fpsEl = root.querySelector('[data-hand-fps]') as HTMLElement;
+    const gestureEl = root.querySelector('[data-hand-gesture]') as HTMLElement;
+
+    let stream: MediaStream | null = null;
+    let detector: any = null;
+    let stopped = false;
+    let lastTs = performance.now();
+
+    const stop = () => {
+      stopped = true;
+      stream?.getTracks().forEach((t) => t.stop());
+      stream = null;
+      stage.classList.add('hidden');
+      prestart.classList.remove('hidden');
+    };
+    stopBtn.addEventListener('click', stop);
+
+    startBtn.addEventListener('click', async () => {
+      errorEl.classList.add('hidden');
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+        await video.play();
+
+        const tf = await import('@tensorflow/tfjs');
+        await import('@tensorflow/tfjs-backend-webgl');
+        await tf.setBackend('webgl');
+        await tf.ready();
+        const handPose = await import('@tensorflow-models/hand-pose-detection');
+        detector = await handPose.createDetector(
+          handPose.SupportedModels.MediaPipeHands,
+          { runtime: 'tfjs', modelType: 'lite' }
+        );
+
+        prestart.classList.add('hidden');
+        stage.classList.remove('hidden');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d')!;
+
+        stopped = false;
+        const loop = async () => {
+          if (stopped) return;
+          const hands = await detector.estimateHands(video);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          if (hands[0]) {
+            const kp: KP[] = hands[0].keypoints;
+            ctx.strokeStyle = '#b91c1c';
+            ctx.lineWidth = 3;
+            FINGER_BONES.forEach(([a, b]) => {
+              ctx.beginPath(); ctx.moveTo(kp[a].x, kp[a].y); ctx.lineTo(kp[b].x, kp[b].y); ctx.stroke();
+            });
+            ctx.fillStyle = '#fff';
+            kp.forEach((p) => { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill(); });
+
+            const g = detectGesture(kp);
+            gestureEl.textContent = g.replace('-', ' ');
+            if (target) {
+              const match = g === target;
+              gestureEl.style.background = match ? 'rgba(16,185,129,0.85)' : 'rgba(120,113,108,0.85)';
+            }
+          } else {
+            gestureEl.textContent = 'show your hand';
+            gestureEl.style.background = 'rgba(120,113,108,0.85)';
+          }
+          const now = performance.now();
+          fpsEl.textContent = `${(1000 / (now - lastTs)).toFixed(0)} fps`;
+          lastTs = now;
+          requestAnimationFrame(loop);
+        };
+        loop();
+      } catch (err: any) {
+        stop();
+        errorEl.textContent = `Could not start: ${err?.message || err}`;
+        errorEl.classList.remove('hidden');
+      }
+    });
+  };
+
+  const setup = () => document.querySelectorAll('[data-hand-root]').forEach((el) => setupOne(el as HTMLElement));
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>
