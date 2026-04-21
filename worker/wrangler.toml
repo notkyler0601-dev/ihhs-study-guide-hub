@@ -6,14 +6,6 @@ workers_dev = true
 [ai]
 binding = "AI"
 
-# Per-IP rate limit: 20 requests per 60 seconds.
-# Namespace id is arbitrary but must be unique per account.
-[[unsafe.bindings]]
-name = "RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "2001"
-simple = { limit = 20, period = 60 }
-
 [vars]
 # Comma-separated whitelist of origins allowed to call the Worker.
 # Any *.vercel.app origin is also allowed automatically so preview deploys work.

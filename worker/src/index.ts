@@ -11,10 +11,27 @@ interface Env {
   AI: {
     run: (model: string, input: unknown) => Promise<ReadableStream | { response: string }>;
   };
-  RATE_LIMITER: { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
   ALLOWED_ORIGINS: string;
   MODEL: string;
 }
+
+// Best-effort in-memory rate limit. Persists only within a single Worker
+// isolate, which is fine for casual abuse. Swap for the Cloudflare
+// ratelimit binding later when we verify the right wrangler syntax.
+const hits = new Map<string, number[]>();
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 20;
+const checkRate = (key: string): boolean => {
+  const now = Date.now();
+  const arr = (hits.get(key) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  if (arr.length >= RATE_MAX) {
+    hits.set(key, arr);
+    return false;
+  }
+  arr.push(now);
+  hits.set(key, arr);
+  return true;
+};
 
 const VERCEL_PREVIEW_RE = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
@@ -65,8 +82,7 @@ export default {
     }
 
     const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
-    const { success } = await env.RATE_LIMITER.limit({ key: ip });
-    if (!success) {
+    if (!checkRate(ip)) {
       return json({ error: 'Too many requests, try again in a minute.' }, 429, cors);
     }
 
