@@ -1,6 +1,7 @@
 // IHHS AI tutor Worker.
-// POST /tutor  { messages: [{role, content}], guideTitle? }  -> SSE stream
-// Uses Cloudflare Workers AI (Llama 3.1 8B by default) and rate-limits per IP.
+// POST /tutor  { messages: [{role, content}], guideTitle?, guideContext? }
+// Returns an SSE stream from Cloudflare Workers AI (Llama 3.1 8B by default).
+// Per-IP rate limit handled in-process via checkRate().
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
