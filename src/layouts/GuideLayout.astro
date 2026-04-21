@@ -3,6 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import ReadingProgress from '../components/ReadingProgress.astro';
 import FloatingTimer from '../components/FloatingTimer.astro';
+import AITutor from '../components/AITutor.astro';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -65,6 +66,8 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
         <slot />
 
         <hr class="my-12 border-ink-200 dark:border-ink-800" />
+
+        <AITutor guideTitle={title} />
 
         <div class="not-prose flex items-center justify-between gap-4">
           {prev ? (
