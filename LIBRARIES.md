@@ -488,19 +488,9 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 
 Added 2026-04. Closes the gaps surfaced in the "futuristic toolkit" research pass: in-browser LLMs, declarative 3D, real-time collab, camera-based sensors, MusicXML/tab notation, full-Node sandboxes, and React-based math.
 
-### In-browser AI (WebLLM)
+### AI tutor
 
-100% client-side LLM inference via WebGPU. Models cache once in IndexedDB/OPFS, then run fully offline. Zero API keys, zero ongoing cost, zero data leaves the browser. Requires WebGPU (Chrome, Edge, Arc, Brave).
-
-| Component | Library | npm | Brief |
-|---|---|---|---|
-| `<AITutor title="..." subject="..." />` | WebLLM | `@mlc-ai/web-llm` | Streaming chat tutor grounded in the surrounding guide's text. Picker for Llama 3.2 1B/3B, Qwen 2.5 1.5B, Phi 3.5 mini, Hermes 3. Suggested prompts (explain simply, quiz me, key takeaways, worked example, common mistakes). Stop button to interrupt generation. |
-| `<FloatingAITutor />` (auto-mounted in `GuideLayout`) | WebLLM | same | Bottom-right FAB on every guide opens a slide-in drawer containing the full `<AITutor>`. Cmd+/ keyboard shortcut. Hidden on `/signup`, `/login`, `/admin`. |
-| `<AIQuizGen count={5} subject="..." />` | WebLLM | same | One-click "generate fresh practice MCQs from this guide". Streams JSON, parses, renders the same interactive look as `<Quiz>`. |
-| `<AIExplain level="eli5\|eli15\|advanced\|caveman" topic="...">passage</AIExplain>` | WebLLM | same | Wrap any passage. Adds an "explain simpler" button with four reading levels (ELI5, ELI15, advanced, 🪨 caveman). |
-| (alt runtime, not yet wired) | Transformers.js | `@huggingface/transformers` | Hugging Face's WebGPU runtime. 100+ model architectures. Useful for non-chat tasks (embeddings, classifiers, ASR). |
-
-Engine wrapper lives in `src/lib/webllm.ts`. Singleton per tab. Switching models unloads the previous to free GPU memory. Auto-grabs guide context via `getGuideContext()`.
+See `<AITutor>` in section 8 (Tier 3). Backed by a standalone Cloudflare Worker (`worker/`) that proxies to Workers AI (Llama 3.1 8B). The previous WebLLM/WebGPU implementation was removed in favor of a server-side path so the tutor works on iPads and weak Chromebooks without a multi-GB model download.
 
 ### Declarative 3D (React Three Fiber)
 
