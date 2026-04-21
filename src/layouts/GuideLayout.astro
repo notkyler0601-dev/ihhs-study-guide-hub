@@ -21,6 +21,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
 <BaseLayout title={title} description={description} showAurora={false}>
   <ReadingProgress />
   <FloatingTimer />
+  <AITutor guideTitle={title} />
 
   <article class="container-wide py-10 lg:py-14">
     <header class="max-w-3xl mb-10 stagger-fade">
@@ -66,8 +67,6 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
         <slot />
 
         <hr class="my-12 border-ink-200 dark:border-ink-800" />
-
-        <AITutor guideTitle={title} />
 
         <div class="not-prose flex items-center justify-between gap-4">
           {prev ? (

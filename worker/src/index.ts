@@ -59,7 +59,7 @@ export default {
       return json({ error: 'Too many requests, try again in a minute.' }, 429, cors);
     }
 
-    let body: { messages?: ChatMessage[]; guideTitle?: string };
+    let body: { messages?: ChatMessage[]; guideTitle?: string; guideContext?: string };
     try {
       body = await request.json();
     } catch {
@@ -81,9 +81,15 @@ export default {
       return json({ error: 'No messages' }, 400, cors);
     }
 
-    const system = body.guideTitle
-      ? `${SYSTEM_PROMPT}\n\nThe student is currently reading: "${String(body.guideTitle).slice(0, 120)}".`
-      : SYSTEM_PROMPT;
+    const parts = [SYSTEM_PROMPT];
+    if (body.guideTitle) {
+      parts.push(`The student is currently reading: "${String(body.guideTitle).slice(0, 120)}".`);
+    }
+    if (body.guideContext) {
+      const ctx = String(body.guideContext).slice(0, 3500);
+      parts.push(`Here is the guide they are looking at. Ground every answer in this text:\n\n${ctx}`);
+    }
+    const system = parts.join('\n\n');
 
     const result = await env.AI.run(env.MODEL ?? '@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'system', content: system }, ...trimmed],

@@ -1,74 +1,111 @@
 ---
-// Streaming chat tutor backed by a Cloudflare Worker (Workers AI).
-// Login-gated via currentUser(). Set PUBLIC_AI_TUTOR_URL to the Worker URL.
+// Floating bottom-right AI tutor. Chat + quick actions (explain simpler,
+// generate practice questions, summarize). Pulls the surrounding guide's
+// prose as context so answers stay grounded in what the student is reading.
+//
+// Login-gated via currentUser(). Requires PUBLIC_AI_TUTOR_URL pointing at
+// the Cloudflare Worker in worker/.
 interface Props {
   guideTitle?: string;
-  title?: string;
-  placeholder?: string;
 }
-const {
-  guideTitle,
-  title = 'Ask the tutor',
-  placeholder = 'Ask a question about this guide...',
-} = Astro.props;
-
-const id = 'tutor-' + Math.random().toString(36).slice(2, 9);
+const { guideTitle } = Astro.props;
 const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 ---
 
-<section
-  class="not-prose my-8 surface rounded-2xl p-6 shadow-soft"
+<div
+  class="no-print"
   data-tutor-root
-  id={id}
   data-tutor-endpoint={endpoint ?? ''}
   data-tutor-guide={guideTitle ?? ''}
 >
-  <header class="flex items-center justify-between gap-3 mb-4">
-    <div class="flex items-center gap-3">
-      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">AI</span>
-      <div>
-        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
-        <p class="text-xs text-ink-500 mt-1">Runs on Cloudflare Workers AI. Powered by Llama 3.1.</p>
-      </div>
-    </div>
-    <button type="button" data-tutor-reset class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Clear</button>
-  </header>
+  <button
+    type="button"
+    data-tutor-fab
+    aria-label="Open AI tutor"
+    class="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-accent-600 to-accent-800 text-white px-4 py-3 shadow-lift hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-accent-300/60"
+  >
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span class="text-sm font-medium">Ask tutor</span>
+  </button>
 
   <div
-    data-tutor-log
-    class="min-h-[120px] max-h-[420px] overflow-y-auto space-y-3 mb-4 text-sm leading-relaxed"
-    aria-live="polite"
-  ></div>
+    data-tutor-panel
+    class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[380px] md:w-[420px] max-h-[calc(100vh-2rem)] z-50 flex flex-col rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 shadow-lift overflow-hidden"
+    role="dialog"
+    aria-label="AI tutor"
+  >
+    <header class="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-200 dark:border-ink-800 bg-gradient-to-r from-accent-50 to-white dark:from-accent-950/40 dark:to-ink-950">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs font-serif font-semibold">AI</span>
+        <div>
+          <p class="text-sm font-semibold leading-none">Tutor</p>
+          <p class="text-[11px] text-ink-500 mt-1">Llama 3.1 via Cloudflare</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <button type="button" data-tutor-reset class="text-[11px] text-ink-500 hover:text-accent-700 dark:hover:text-accent-300 px-2 py-1 rounded hover:bg-ink-100 dark:hover:bg-ink-800">Clear</button>
+        <button type="button" data-tutor-close aria-label="Close tutor" class="p-1 rounded hover:bg-ink-100 dark:hover:bg-ink-800 text-ink-500">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </header>
 
-  <div data-tutor-gate class="hidden rounded-lg border border-dashed border-ink-200 dark:border-ink-700 p-4 text-sm text-ink-600 dark:text-ink-300">
-    <a href="/login" class="text-accent-700 dark:text-accent-300 underline">Log in</a>
-    or <a href="/signup" class="text-accent-700 dark:text-accent-300 underline">create a free account</a>
-    to chat with the tutor.
-  </div>
-
-  <div data-tutor-offline class="hidden rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-4 text-sm text-amber-900 dark:text-amber-200">
-    The tutor is not configured on this deployment. Ask a site admin to set
-    <code class="font-mono">PUBLIC_AI_TUTOR_URL</code>.
-  </div>
-
-  <form data-tutor-form class="flex items-end gap-2">
-    <label class="sr-only" for={`${id}-input`}>Question</label>
-    <textarea
-      id={`${id}-input`}
-      data-tutor-input
-      rows="2"
-      placeholder={placeholder}
-      class="flex-1 resize-none rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
-    ></textarea>
-    <button
-      type="submit"
-      data-tutor-send
-      class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent-600 text-white text-sm font-medium hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    <div
+      data-tutor-log
+      class="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm leading-relaxed min-h-[180px]"
+      aria-live="polite"
     >
-      Ask
-    </button>
-  </form>
-</section>
+      <div data-tutor-welcome class="text-ink-500 text-xs">
+        Ask about this guide, or use a shortcut below.
+      </div>
+    </div>
+
+    <div data-tutor-gate class="hidden m-3 rounded-lg border border-dashed border-ink-200 dark:border-ink-700 p-3 text-xs text-ink-600 dark:text-ink-300">
+      <a href="/login" class="text-accent-700 dark:text-accent-300 underline">Log in</a>
+      or <a href="/signup" class="text-accent-700 dark:text-accent-300 underline">sign up</a>
+      to chat with the tutor.
+    </div>
+
+    <div data-tutor-offline class="hidden m-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+      Tutor not configured. Set <code class="font-mono">PUBLIC_AI_TUTOR_URL</code>.
+    </div>
+
+    <div data-tutor-actions class="flex flex-wrap gap-1.5 px-3 pt-2 border-t border-ink-200 dark:border-ink-800">
+      <button type="button" data-tutor-action="simpler" class="tutor-chip">Explain simpler</button>
+      <button type="button" data-tutor-action="quiz" class="tutor-chip">Practice questions</button>
+      <button type="button" data-tutor-action="summary" class="tutor-chip">Key takeaways</button>
+    </div>
+
+    <form data-tutor-form class="flex items-end gap-2 p-3 border-t border-ink-100 dark:border-ink-800">
+      <label class="sr-only" for="tutor-input">Question</label>
+      <textarea
+        id="tutor-input"
+        data-tutor-input
+        rows="1"
+        placeholder="Ask anything about this guide..."
+        class="flex-1 resize-none rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400 max-h-24"
+      ></textarea>
+      <button
+        type="submit"
+        data-tutor-send
+        aria-label="Send"
+        class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-accent-600 text-white hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m5 12 14-7-7 14-2-5z"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<style is:global>
+  .tutor-chip {
+    @apply text-[11px] px-2.5 py-1 rounded-full border border-ink-200 dark:border-ink-700 text-ink-700 dark:text-ink-200 hover:border-accent-400 hover:text-accent-700 dark:hover:text-accent-300 transition-colors;
+  }
+</style>
 
 <script>
   import { currentUser } from '../lib/auth';
@@ -78,7 +115,6 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
   const escape = (s: string) =>
     s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
-  // Light markdown: **bold**, *italic*, `code`, paragraphs.
   const renderMarkdown = (src: string) => {
     const esc = escape(src);
     const withInline = esc
@@ -91,47 +127,80 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       .join('');
   };
 
-  const roots = document.querySelectorAll<HTMLElement>('[data-tutor-root]');
-  roots.forEach((root) => {
+  const getGuideContext = (maxChars = 3000): string => {
+    const prose = document.querySelector<HTMLElement>('article .prose');
+    if (!prose) return '';
+    const text = (prose.innerText || '').replace(/\s+/g, ' ').trim();
+    return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
+  };
+
+  const ACTION_PROMPTS: Record<string, string> = {
+    simpler: 'Explain the main ideas of this guide in simpler words, like you are talking to a middle school student. Use short sentences and one concrete analogy. Under 150 words.',
+    quiz: 'Generate 3 multiple-choice practice questions about this guide. Format each as:\n\n1. Question\n   A) choice\n   B) choice\n   C) choice\n   D) choice\n   **Answer:** X, one-sentence reason why.',
+    summary: 'Summarize this guide as 5 short numbered takeaways. Each under 20 words. No intro, just the list.',
+  };
+
+  const init = () => {
+    const root = document.querySelector<HTMLElement>('[data-tutor-root]');
+    if (!root) return;
+    if ((root as any).__tutorInit) return;
+    (root as any).__tutorInit = true;
+
     const endpoint = root.dataset.tutorEndpoint || '';
     const guideTitle = root.dataset.tutorGuide || '';
+    const fab = root.querySelector<HTMLButtonElement>('[data-tutor-fab]')!;
+    const panel = root.querySelector<HTMLElement>('[data-tutor-panel]')!;
+    const closeBtn = root.querySelector<HTMLButtonElement>('[data-tutor-close]')!;
     const log = root.querySelector<HTMLElement>('[data-tutor-log]')!;
+    const welcome = root.querySelector<HTMLElement>('[data-tutor-welcome]');
     const form = root.querySelector<HTMLFormElement>('[data-tutor-form]')!;
     const input = root.querySelector<HTMLTextAreaElement>('[data-tutor-input]')!;
     const sendBtn = root.querySelector<HTMLButtonElement>('[data-tutor-send]')!;
     const resetBtn = root.querySelector<HTMLButtonElement>('[data-tutor-reset]')!;
     const gate = root.querySelector<HTMLElement>('[data-tutor-gate]')!;
     const offline = root.querySelector<HTMLElement>('[data-tutor-offline]')!;
+    const actions = root.querySelector<HTMLElement>('[data-tutor-actions]')!;
 
-    const showGated = () => {
-      gate.classList.remove('hidden');
-      form.classList.add('hidden');
+    const open = () => {
+      panel.classList.remove('hidden');
+      fab.classList.add('hidden');
+      setTimeout(() => input.focus(), 50);
     };
-    const showOffline = () => {
-      offline.classList.remove('hidden');
-      form.classList.add('hidden');
+    const close = () => {
+      panel.classList.add('hidden');
+      fab.classList.remove('hidden');
     };
+
+    fab.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.classList.contains('hidden')) close();
+    });
 
     if (!endpoint) {
-      showOffline();
+      offline.classList.remove('hidden');
+      form.classList.add('hidden');
+      actions.classList.add('hidden');
       return;
     }
     if (!currentUser()) {
-      showGated();
+      gate.classList.remove('hidden');
+      form.classList.add('hidden');
+      actions.classList.add('hidden');
       return;
     }
 
     const history: Msg[] = [];
+    let sentContextOnce = false;
 
     const appendMessage = (role: Msg['role'], content: string): HTMLElement => {
+      if (welcome && !welcome.classList.contains('hidden')) welcome.classList.add('hidden');
       const wrap = document.createElement('div');
-      wrap.className = role === 'user'
-        ? 'flex justify-end'
-        : 'flex justify-start';
+      wrap.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
       const bubble = document.createElement('div');
       bubble.className = role === 'user'
-        ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-accent-600 text-white px-4 py-2'
-        : 'max-w-[80%] rounded-2xl rounded-bl-sm bg-ink-100 dark:bg-ink-800 text-ink-900 dark:text-ink-100 px-4 py-2';
+        ? 'max-w-[85%] rounded-2xl rounded-br-sm bg-accent-600 text-white px-3 py-2 text-sm'
+        : 'max-w-[85%] rounded-2xl rounded-bl-sm bg-ink-100 dark:bg-ink-800 text-ink-900 dark:text-ink-100 px-3 py-2 text-sm';
       bubble.innerHTML = renderMarkdown(content || '…');
       wrap.appendChild(bubble);
       log.appendChild(wrap);
@@ -142,7 +211,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     const setBusy = (busy: boolean) => {
       sendBtn.disabled = busy;
       input.disabled = busy;
-      sendBtn.textContent = busy ? 'Thinking' : 'Ask';
+      actions.querySelectorAll('button').forEach((b) => (b as HTMLButtonElement).disabled = busy);
     };
 
     const parseSSELine = (line: string): string | null => {
@@ -166,11 +235,21 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       let acc = '';
       setBusy(true);
 
+      const body: Record<string, unknown> = {
+        messages: history,
+        guideTitle: guideTitle || undefined,
+      };
+      if (!sentContextOnce) {
+        const ctx = getGuideContext();
+        if (ctx) body.guideContext = ctx;
+        sentContextOnce = true;
+      }
+
       try {
         const res = await fetch(`${endpoint.replace(/\/$/, '')}/tutor`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: history, guideTitle: guideTitle || undefined }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -200,8 +279,8 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
           }
         }
         history.push({ role: 'assistant', content: acc });
-      } catch (e) {
-        bubble.innerHTML = renderMarkdown(`*Network error. Try again.*`);
+      } catch {
+        bubble.innerHTML = renderMarkdown('*Network error. Try again.*');
       } finally {
         setBusy(false);
         input.focus();
@@ -225,8 +304,24 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 
     resetBtn.addEventListener('click', () => {
       history.length = 0;
+      sentContextOnce = false;
       log.innerHTML = '';
+      if (welcome) {
+        welcome.classList.remove('hidden');
+        log.appendChild(welcome);
+      }
       input.focus();
     });
-  });
+
+    actions.querySelectorAll<HTMLButtonElement>('[data-tutor-action]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.tutorAction ?? '';
+        const prompt = ACTION_PROMPTS[key];
+        if (prompt) ask(prompt);
+      });
+    });
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
 </script>
