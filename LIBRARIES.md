@@ -49,6 +49,7 @@ Tile provider: **OpenStreetMap** (free, no key, attribution required by the comp
 | Package | Version | Purpose |
 |---|---|---|
 | `@supabase/supabase-js` | latest | Supabase auth + Postgres client. Only used when `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` env vars are set. Powers cross-device account sync, `/request` submissions, and the `/admin/requests` inbox. Falls back to local-only mode when env vars are missing. See `SUPABASE_SETUP.md`. |
+| `ihhs-ai-tutor` Worker | n/a | Standalone Cloudflare Worker in `worker/` that proxies to Workers AI (Llama 3.1 8B). The `<AITutor>` component calls `${PUBLIC_AI_TUTOR_URL}/tutor` and streams the reply. Falls back to an "unconfigured" notice when env var is missing. See `worker/README.md`. |
 
 ## 4. Internal infrastructure (`src/lib/`)
 
@@ -118,7 +119,8 @@ Pre-existing subject-specific components. CDN script loads only when the compone
 | `<PhETSim sim="..." />` | PhET sims | iframe `phet.colorado.edu/sims/html/...` | Hundreds of pre-built simulations. |
 | `<PhysicsSandbox setup="..." />` | Matter.js 0.20.0 | `cdn.jsdelivr.net/npm/matter-js` | 2D rigid body physics. |
 | `<ChemStructure smiles="..." />` | SmilesDrawer 2.1.7 | `cdn.jsdelivr.net/npm/smiles-drawer` | Render molecules from SMILES strings. |
-| `<DNASequence sequence="..." />` | none (custom SVG/HTML) | n/a | DNA/RNA/protein with feature highlights. |
+| `<DNASequence sequence="..." />` | none (custom SVG/HTML) | n/a | DNA/RNA/protein with feature highlights and codon-to-amino-acid hover tooltips. |
+| `<AITutor guideTitle="..." />` | Cloudflare Workers AI (server-side) | n/a | Login-gated chat tutor. Streams SSE from `${PUBLIC_AI_TUTOR_URL}/tutor`. Shows a setup notice when env var is missing. |
 | `<Phylogeny newick="..." />` | phylotree.js 1.5.0 + d3 v7 + underscore 1.13.6 | `cdn.jsdelivr.net/npm/phylotree`, `d3js.org/d3.v7.min.js`, `cdn.jsdelivr.net/npm/underscore` | Evolutionary trees. |
 | `<CircuitSim starter="rc" />` | Falstad CircuitJS | iframe `www.falstad.com/circuit/circuitjs.html` | Drag-drop circuit simulator. |
 
@@ -486,19 +488,9 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 
 Added 2026-04. Closes the gaps surfaced in the "futuristic toolkit" research pass: in-browser LLMs, declarative 3D, real-time collab, camera-based sensors, MusicXML/tab notation, full-Node sandboxes, and React-based math.
 
-### In-browser AI (WebLLM)
+### AI tutor
 
-100% client-side LLM inference via WebGPU. Models cache once in IndexedDB/OPFS, then run fully offline. Zero API keys, zero ongoing cost, zero data leaves the browser. Requires WebGPU (Chrome, Edge, Arc, Brave).
-
-| Component | Library | npm | Brief |
-|---|---|---|---|
-| `<AITutor title="..." subject="..." />` | WebLLM | `@mlc-ai/web-llm` | Streaming chat tutor grounded in the surrounding guide's text. Picker for Llama 3.2 1B/3B, Qwen 2.5 1.5B, Phi 3.5 mini, Hermes 3. Suggested prompts (explain simply, quiz me, key takeaways, worked example, common mistakes). Stop button to interrupt generation. |
-| `<FloatingAITutor />` (auto-mounted in `GuideLayout`) | WebLLM | same | Bottom-right FAB on every guide opens a slide-in drawer containing the full `<AITutor>`. Cmd+/ keyboard shortcut. Hidden on `/signup`, `/login`, `/admin`. |
-| `<AIQuizGen count={5} subject="..." />` | WebLLM | same | One-click "generate fresh practice MCQs from this guide". Streams JSON, parses, renders the same interactive look as `<Quiz>`. |
-| `<AIExplain level="eli5\|eli15\|advanced\|caveman" topic="...">passage</AIExplain>` | WebLLM | same | Wrap any passage. Adds an "explain simpler" button with four reading levels (ELI5, ELI15, advanced, 🪨 caveman). |
-| (alt runtime, not yet wired) | Transformers.js | `@huggingface/transformers` | Hugging Face's WebGPU runtime. 100+ model architectures. Useful for non-chat tasks (embeddings, classifiers, ASR). |
-
-Engine wrapper lives in `src/lib/webllm.ts`. Singleton per tab. Switching models unloads the previous to free GPU memory. Auto-grabs guide context via `getGuideContext()`.
+See `<AITutor>` in section 8 (Tier 3). Backed by a standalone Cloudflare Worker (`worker/`) that proxies to Workers AI (Llama 3.1 8B). The previous WebLLM/WebGPU implementation was removed in favor of a server-side path so the tutor works on iPads and weak Chromebooks without a multi-GB model download.
 
 ### Declarative 3D (React Three Fiber)
 

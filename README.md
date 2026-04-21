@@ -254,7 +254,8 @@ The full catalog with usage docs lives in [`LIBRARIES.md`](./LIBRARIES.md). Quic
 | `<PhETSim sim="..." />` | PhET (iframe) | Embed any PhET simulation by id |
 | `<PhysicsSandbox setup="..." />` | Matter.js | 2D rigid-body physics scene |
 | `<ChemStructure smiles="..." />` | SmilesDrawer | Render molecules from SMILES |
-| `<DNASequence sequence="..." features={[...]} />` | Custom | DNA/RNA/protein with feature highlights |
+| `<DNASequence sequence="..." features={[...]} />` | Custom | DNA/RNA/protein with codon-to-amino-acid hover tooltips |
+| `<AITutor guideTitle="..." />` | Cloudflare Workers AI | Login-gated streaming chat tutor (see `worker/`) |
 | `<Phylogeny newick="..." />` | phylotree.js | Evolutionary tree |
 | `<CircuitSim starter="rc" />` | Falstad CircuitJS | Circuit simulator |
 
@@ -538,6 +539,23 @@ Trade-off: data lives on one device. To enable cross-device sync (so a classmate
 5. Replace the bodies of `src/lib/auth.ts` and `src/lib/storage.ts` with Supabase calls (the function signatures are designed to match — every consumer keeps working).
 
 The localStorage version is the perfect starting point: zero infrastructure, instant, private. Move to Supabase only when classmates start asking for cross-device sync.
+
+## Optional: enable the AI tutor
+
+`<AITutor>` is a login-gated chat component backed by a standalone Cloudflare Worker in `worker/` that proxies Workers AI. The free tier is about 10k Llama 3.1 8B requests per day.
+
+1. Deploy the Worker (see `worker/README.md`):
+   ```
+   cd worker && npm install && npx wrangler deploy
+   ```
+2. Copy the Worker URL Wrangler prints (e.g. `https://ihhs-ai-tutor.<you>.workers.dev`).
+3. In Vercel project settings, add:
+   ```
+   PUBLIC_AI_TUTOR_URL=https://ihhs-ai-tutor.<you>.workers.dev
+   ```
+4. Drop `<AITutor guideTitle={frontmatter.title} />` into any guide.
+
+Without the env var, the component renders a clear "not configured" notice instead of a broken chat box.
 
 ## License
 
