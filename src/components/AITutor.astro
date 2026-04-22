@@ -122,19 +122,19 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     outline-color: rgba(248, 113, 113, 0.55);
   }
 
-  /* The little floating action bar above a hovered block. */
+  /* The floating action bar above a hovered block. */
   [data-tutor-hover-menu] {
     position: absolute;
     z-index: 60;
     display: none;
     align-items: center;
-    gap: 4px;
-    padding: 4px;
+    gap: 6px;
+    padding: 6px;
     border-radius: 9999px;
     background: white;
     border: 1px solid rgb(228 228 231);
-    box-shadow: 0 8px 24px -8px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.06);
-    font: 500 11px/1 ui-sans-serif, system-ui, sans-serif;
+    box-shadow: 0 12px 32px -10px rgba(0,0,0,0.20), 0 2px 6px rgba(0,0,0,0.08);
+    font: 600 12px/1 ui-sans-serif, system-ui, sans-serif;
     color: rgb(63 63 70);
     pointer-events: auto;
     animation: tutorFadeIn 140ms ease-out;
@@ -149,13 +149,15 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
   [data-tutor-hover-menu] button {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 5px 10px;
+    gap: 6px;
+    padding: 8px 14px;
+    min-height: 32px;
     border-radius: 9999px;
     background: transparent;
     border: 0;
     color: inherit;
     cursor: pointer;
+    font-weight: 600;
     transition: background-color 120ms ease, color 120ms ease;
   }
   [data-tutor-hover-menu] button:hover {
@@ -165,6 +167,17 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
   .dark [data-tutor-hover-menu] button:hover {
     background: rgba(127, 29, 29, 0.45);
     color: rgb(254 226 226);
+  }
+
+  /* Invisible bridge below the menu so the cursor can travel from a hovered
+     block up into the menu without ever leaving a hover region. */
+  [data-tutor-hover-menu]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 14px;
   }
 
   @keyframes tutorFadeIn {
@@ -232,19 +245,20 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     const offline = root.querySelector<HTMLElement>('[data-tutor-offline]')!;
     const actions = root.querySelector<HTMLElement>('[data-tutor-actions]')!;
 
-    let tutorIsOpen = false;
-
+    // Tutor-open state lives on <html> so the document-level hover listeners
+    // (which may have been attached on a previous page and survived a view
+    // transition) can read fresh state instead of stale closure variables.
     const open = () => {
       panel.classList.remove('hidden');
       fab.classList.add('hidden');
-      tutorIsOpen = true;
+      document.documentElement.classList.add('tutor-is-open');
       setTimeout(() => input.focus(), 50);
     };
     const close = () => {
       panel.classList.add('hidden');
       fab.classList.remove('hidden');
-      tutorIsOpen = false;
-      hideHoverMenu();
+      document.documentElement.classList.remove('tutor-is-open');
+      hideHoverMenuGlobal();
     };
 
     fab.addEventListener('click', open);
@@ -401,114 +415,154 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       });
     });
 
-    /* ---------- Hover-to-explain ---------- */
-
-    let hoverEl: HTMLElement | null = null;
-    let hoverMenu: HTMLElement | null = null;
-
-    const buildMenu = (): HTMLElement => {
-      const m = document.createElement('div');
-      m.setAttribute('data-tutor-hover-menu', '');
-      m.setAttribute('role', 'toolbar');
-      m.setAttribute('aria-label', 'Re-explain this passage');
-      m.innerHTML = `
-        <button type="button" data-explain="simpler" title="Re-explain in simpler words">
-          <span aria-hidden="true">🧠</span><span>Simpler</span>
-        </button>
-        <button type="button" data-explain="caveman" title="Re-explain in caveman terms">
-          <span aria-hidden="true">🦴</span><span>Caveman</span>
-        </button>
-      `;
-      // Keep the menu visible while the cursor is on it.
-      m.addEventListener('mouseenter', () => { /* swallow */ });
-      m.addEventListener('mouseleave', () => { hideHoverMenu(); });
-      m.addEventListener('click', (e) => {
-        const btn = (e.target as HTMLElement).closest('button[data-explain]') as HTMLButtonElement | null;
-        if (!btn || !hoverEl) return;
-        const kind = btn.dataset.explain as 'simpler' | 'caveman';
-        const passage = (hoverEl.innerText || '').replace(/\s+/g, ' ').trim();
-        if (!passage) return;
-        const truncated = passage.length > 60 ? passage.slice(0, 60) + '...' : passage;
-        const label = kind === 'simpler'
-          ? `🧠 Explain simpler: "${truncated}"`
-          : `🦴 In caveman terms: "${truncated}"`;
-        const prompt = kind === 'simpler'
-          ? `Re-explain the passage below in really simple words, like you're talking to a 7th-grader who has never seen this material. Use one short concrete analogy. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`
-          : `Re-explain the passage below in caveman speak. Short blunt sentences. Tiny vocabulary. Example tone: "Sun hot. Plant eat sun. Plant make food." Be funny but keep the facts correct. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
-        hideHoverMenu();
-        ask(prompt, label);
-      });
-      document.body.appendChild(m);
-      return m;
+    // Register THIS page's ask/open with the document-global hover system.
+    // Re-assigning each navigation means stale closures from old pages are
+    // discarded instead of stacking up as dead listeners.
+    g_currentAsk = (prompt, label) => {
+      if (panel.classList.contains('hidden')) open();
+      ask(prompt, label);
     };
+  };
 
-    const positionMenu = (target: HTMLElement) => {
-      if (!hoverMenu) return;
-      const r = target.getBoundingClientRect();
-      // Make sure we have a width to subtract from.
-      hoverMenu.classList.add('is-open');
-      const mw = hoverMenu.offsetWidth || 160;
-      // Place at top-right of the block, just above it. Pinned to document
-      // (window.scroll offsets) so it scrolls naturally with the page.
-      const top = window.scrollY + r.top - 36;
-      const left = Math.max(8, window.scrollX + r.right - mw);
-      hoverMenu.style.top = `${Math.max(window.scrollY + 8, top)}px`;
-      hoverMenu.style.left = `${left}px`;
-    };
+  /* ---------- Hover-to-explain (document-global wiring, attached once) ----- */
+  // Lives outside init() so listeners aren't duplicated across view-transition
+  // navigations and so the gate is the live <html> class, not a stale closure
+  // variable. Also handles the "menu disappears before I can click" gap with
+  // a 220ms hide delay plus an invisible CSS bridge under the menu.
 
-    const showHoverMenu = (target: HTMLElement) => {
-      if (!hoverMenu) hoverMenu = buildMenu();
-      if (hoverEl && hoverEl !== target) hoverEl.classList.remove('tutor-explain-target');
-      hoverEl = target;
-      target.classList.add('tutor-explain-target');
-      positionMenu(target);
-    };
+  let g_hoverEl: HTMLElement | null = null;
+  let g_hoverMenu: HTMLElement | null = null;
+  let g_hideTimer: number | null = null;
+  // Re-assigned by each page's init() so the hover menu always routes to the
+  // current page's chat panel (not a stale one from a previous navigation).
+  let g_currentAsk: ((prompt: string, label?: string) => void) | null = null;
 
-    const hideHoverMenu = () => {
-      if (hoverEl) hoverEl.classList.remove('tutor-explain-target');
-      hoverEl = null;
-      if (hoverMenu) hoverMenu.classList.remove('is-open');
-    };
+  const cancelHide = () => {
+    if (g_hideTimer != null) { clearTimeout(g_hideTimer); g_hideTimer = null; }
+  };
 
-    // Skip if hovering inside the tutor itself or any "not-prose" widget.
-    const isEligible = (el: Element | null): el is HTMLElement => {
-      if (!el) return false;
-      if (!(el instanceof HTMLElement)) return false;
-      if (el.closest('[data-tutor-root]')) return false;
-      if (el.closest('.not-prose')) return false;
-      if (!el.closest('article .prose')) return false;
-      return true;
-    };
+  const hideHoverMenuGlobal = () => {
+    cancelHide();
+    if (g_hoverEl) g_hoverEl.classList.remove('tutor-explain-target');
+    g_hoverEl = null;
+    if (g_hoverMenu) g_hoverMenu.classList.remove('is-open');
+  };
+
+  const scheduleHide = () => {
+    cancelHide();
+    g_hideTimer = window.setTimeout(() => hideHoverMenuGlobal(), 220);
+  };
+
+  const buildHoverMenu = (): HTMLElement => {
+    const m = document.createElement('div');
+    m.setAttribute('data-tutor-hover-menu', '');
+    m.setAttribute('role', 'toolbar');
+    m.setAttribute('aria-label', 'Re-explain this passage');
+    m.innerHTML = `
+      <button type="button" data-explain="simpler" title="Re-explain in simpler words">
+        <span aria-hidden="true">🧠</span><span>Simpler</span>
+      </button>
+      <button type="button" data-explain="caveman" title="Re-explain in caveman terms">
+        <span aria-hidden="true">🦴</span><span>Caveman</span>
+      </button>
+    `;
+    m.addEventListener('mouseenter', cancelHide);
+    m.addEventListener('mouseleave', scheduleHide);
+    m.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('button[data-explain]') as HTMLButtonElement | null;
+      if (!btn || !g_hoverEl) return;
+      const kind = btn.dataset.explain as 'simpler' | 'caveman';
+      const passage = (g_hoverEl.innerText || '').replace(/\s+/g, ' ').trim();
+      if (!passage) return;
+      hideHoverMenuGlobal();
+      // No registered handler means the user isn't signed in (init() short-
+      // circuited before assigning g_currentAsk). The panel already shows the
+      // login gate so we don't need to do anything else here.
+      if (!g_currentAsk) return;
+      const truncated = passage.length > 60 ? passage.slice(0, 60) + '...' : passage;
+      const label = kind === 'simpler'
+        ? `🧠 Explain simpler: "${truncated}"`
+        : `🦴 In caveman terms: "${truncated}"`;
+      const prompt = kind === 'simpler'
+        ? `Re-explain the passage below in really simple words, like you're talking to a 7th-grader who has never seen this material. Use one short concrete analogy. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`
+        : `Re-explain the passage below in caveman speak. Short blunt sentences. Tiny vocabulary. Example tone: "Sun hot. Plant eat sun. Plant make food." Be funny but keep the facts correct. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
+      g_currentAsk(prompt, label);
+    });
+    document.body.appendChild(m);
+    return m;
+  };
+
+  const positionHoverMenu = (target: HTMLElement) => {
+    if (!g_hoverMenu) return;
+    g_hoverMenu.classList.add('is-open');
+    const r = target.getBoundingClientRect();
+    const mw = g_hoverMenu.offsetWidth || 200;
+    const mh = g_hoverMenu.offsetHeight || 40;
+    // Sit the menu so its bottom OVERLAPS the top of the block by 6px. That
+    // way moving the cursor up from the text never crosses an empty gap.
+    const overlap = 6;
+    const top = window.scrollY + r.top - mh + overlap;
+    const left = Math.max(8, window.scrollX + r.right - mw);
+    g_hoverMenu.style.top = `${Math.max(window.scrollY + 4, top)}px`;
+    g_hoverMenu.style.left = `${left}px`;
+  };
+
+  const showHoverMenu = (target: HTMLElement) => {
+    cancelHide();
+    if (!g_hoverMenu) g_hoverMenu = buildHoverMenu();
+    if (g_hoverEl && g_hoverEl !== target) g_hoverEl.classList.remove('tutor-explain-target');
+    g_hoverEl = target;
+    target.classList.add('tutor-explain-target');
+    positionHoverMenu(target);
+  };
+
+  const isEligibleHoverTarget = (el: Element | null): el is HTMLElement => {
+    if (!el) return false;
+    if (!(el instanceof HTMLElement)) return false;
+    if (el.closest('[data-tutor-root]')) return false;
+    if (el.closest('[data-tutor-hover-menu]')) return false;
+    if (el.closest('.not-prose')) return false;
+    if (!el.closest('article .prose')) return false;
+    return true;
+  };
+
+  const wireHoverGlobalOnce = () => {
+    const w = window as any;
+    if (w.__tutorHoverWired) return;
+    w.__tutorHoverWired = true;
 
     document.addEventListener('mouseover', (e) => {
-      if (!tutorIsOpen) return;
+      if (!document.documentElement.classList.contains('tutor-is-open')) return;
       const target = (e.target as HTMLElement | null)?.closest(HOVER_BLOCK_SELECTOR) as HTMLElement | null;
-      if (!isEligible(target)) return;
-      // Skip empty / very short blocks (e.g. one-word list items, just images)
+      if (!isEligibleHoverTarget(target)) return;
       const text = (target.innerText || '').trim();
       if (text.length < 20) return;
-      if (target === hoverEl) return;
+      if (target === g_hoverEl) {
+        cancelHide();
+        return;
+      }
       showHoverMenu(target);
     });
 
     document.addEventListener('mouseout', (e) => {
-      if (!tutorIsOpen || !hoverEl) return;
+      if (!g_hoverEl) return;
       const related = e.relatedTarget as HTMLElement | null;
-      // Stay open if cursor moved into the floating menu or stayed within the block.
-      if (related && (hoverEl.contains(related) || related.closest('[data-tutor-hover-menu]'))) return;
-      hideHoverMenu();
+      if (related && (g_hoverEl.contains(related) || related.closest('[data-tutor-hover-menu]'))) return;
+      // Don't yank it instantly: give the cursor time to land on the menu.
+      scheduleHide();
     });
 
-    // Reposition on scroll/resize so the menu tracks the block as the page moves.
+    // Reposition on scroll/resize so the menu tracks the block.
     let raf = 0;
     const reflow = () => {
-      if (!hoverEl || !hoverMenu?.classList.contains('is-open')) return;
+      if (!g_hoverEl || !g_hoverMenu?.classList.contains('is-open')) return;
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => positionMenu(hoverEl!));
+      raf = requestAnimationFrame(() => positionHoverMenu(g_hoverEl!));
     };
     window.addEventListener('scroll', reflow, { passive: true });
     window.addEventListener('resize', reflow);
   };
+  wireHoverGlobalOnce();
 
   init();
   document.addEventListener('astro:after-swap', init);
