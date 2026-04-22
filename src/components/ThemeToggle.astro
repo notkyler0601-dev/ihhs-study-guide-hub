@@ -22,9 +22,8 @@
     localStorage.setItem('theme', theme);
   };
   const initTheme = () => {
-    const stored = localStorage.getItem('theme');
-    const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(stored ?? (prefers ? 'dark' : 'light'));
+    // Default to light. Dark mode requires the user to explicitly pick it.
+    setTheme(localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
   };
   initTheme();
 

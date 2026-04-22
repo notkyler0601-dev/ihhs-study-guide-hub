@@ -31,11 +31,12 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <script is:inline>
-      // Prevent flash of light theme
+      // Default to light mode. Dark mode is opt-in via the theme toggle and
+      // only kicks in if the user has explicitly selected it before.
       (() => {
-        const stored = localStorage.getItem('theme');
-        const dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (dark) document.documentElement.classList.add('dark');
+        if (localStorage.getItem('theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
       })();
     </script>
     <ClientRouter />
