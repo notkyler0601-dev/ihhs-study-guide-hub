@@ -67,45 +67,79 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
   </button>
 </aside>
 
-<!-- LOCK-IN OVERLAY: covers the entire viewport when a work session is running. -->
-<div data-ft-lock class="hidden fixed inset-0 z-[100] bg-black text-white" role="dialog" aria-label="Lock-in mode">
-  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-    <div data-ft-lock-glow class="absolute -top-1/4 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full blur-3xl"
-         style="background: radial-gradient(circle, rgba(185,28,28,0.45), transparent 70%);"></div>
-  </div>
+<!-- LOCK-IN BAR: pinned to the top of the viewport during a work session.
+     The guide content stays fully visible and interactive underneath. -->
+<div data-ft-lock class="hidden fixed top-0 inset-x-0 z-[100] bg-ink-950/95 backdrop-blur-md border-b border-accent-700/60 text-white shadow-lift" role="banner" aria-label="Lock-in active">
+  <div class="container-wide flex items-center justify-between gap-4 py-2.5">
+    <!-- Left: lock badge + cycle -->
+    <div class="flex items-center gap-3 min-w-0">
+      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent-700/30 border border-accent-700 text-accent-300 text-[10px] uppercase tracking-[0.18em] font-bold">
+        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        Locked in
+      </span>
+      <span class="text-xs text-ink-400 hidden sm:inline">cycle <span data-ft-lock-cycle class="text-white font-semibold">1</span></span>
+    </div>
 
-  <div class="relative h-full flex flex-col items-center justify-center px-6">
-    <div class="text-[11px] uppercase tracking-[0.3em] text-accent-400 font-semibold">Locked in</div>
-    <div data-ft-lock-mode class="mt-1 text-sm text-ink-400">Lock in Twin🥀 · cycle <span data-ft-lock-cycle class="text-white font-semibold">1</span></div>
-
-    <div data-ft-lock-time
-         class="mt-8 font-serif text-[120px] sm:text-[160px] md:text-[200px] font-semibold tabular-nums leading-none gradient-text">
+    <!-- Center: big timer -->
+    <div data-ft-lock-time class="font-serif text-2xl sm:text-3xl font-semibold tabular-nums leading-none gradient-text">
       25:00
     </div>
 
-    <div class="mt-10 flex flex-col items-center gap-4 max-w-md">
-      <div class="text-xs text-ink-400 text-center">
-        Tabbed away: <span data-ft-lock-blurs class="text-rose-400 font-semibold tabular-nums">0</span>
-        <span class="opacity-50 mx-2">·</span>
-        Wake lock: <span data-ft-lock-wake class="text-emerald-400 font-semibold">checking…</span>
+    <!-- Right: stats + hold-to-end -->
+    <div class="flex items-center gap-3">
+      <div class="hidden md:flex flex-col items-end leading-tight">
+        <span class="text-[10px] text-ink-500 uppercase tracking-wider">Tabbed away</span>
+        <span data-ft-lock-blurs class="text-sm text-rose-400 font-semibold tabular-nums">0</span>
       </div>
-
+      <div class="hidden lg:flex flex-col items-end leading-tight">
+        <span class="text-[10px] text-ink-500 uppercase tracking-wider">Wake lock</span>
+        <span data-ft-lock-wake class="text-sm text-emerald-400 font-semibold">checking…</span>
+      </div>
       <button data-ft-lock-end type="button"
-        class="relative overflow-hidden px-6 py-3 rounded-full border border-ink-700 hover:border-rose-500 text-ink-300 hover:text-rose-400 text-sm font-medium transition-colors min-w-[200px]"
+        class="relative overflow-hidden px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-ink-700 hover:border-rose-500 text-ink-300 hover:text-rose-400 text-xs font-medium transition-colors"
         aria-label="Hold to end early">
         <span data-ft-lock-end-bar class="absolute inset-0 bg-rose-500/30 origin-left transition-transform"
               style="transform: scaleX(0); transition-duration: 200ms;"></span>
-        <span class="relative z-10">Hold to end early</span>
+        <span class="relative z-10 whitespace-nowrap">Hold to end</span>
       </button>
-
-      <p class="text-[11px] text-ink-500 text-center leading-relaxed">
-        Press <kbd class="px-1.5 py-0.5 rounded bg-ink-900 border border-ink-700 text-ink-300 text-[10px]">Esc</kbd>
-        to exit fullscreen but stay locked.<br/>
-        Hold the button above for 2 seconds to fully stop.
-      </p>
     </div>
   </div>
 </div>
+
+<style is:global>
+  /* While locked-in: dim the site header nav and footer so they feel
+     "off limits" without literally hiding them. The lock bar above also
+     pushes guide content down via a body padding shim. */
+  body.is-locked-in {
+    padding-top: 52px;
+  }
+  /* Hide the regular site header entirely while locked, so the lock bar
+     cleanly replaces it. Footer is dimmed but kept for context. */
+  body.is-locked-in header.glass {
+    display: none;
+  }
+  body.is-locked-in footer {
+    opacity: 0.35;
+    pointer-events: none;
+    filter: grayscale(0.4);
+  }
+  /* Brief "blocked" flash when user tries to click a disallowed link. */
+  @keyframes ftLockShake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-4px); }
+    40%      { transform: translateX(4px); }
+    60%      { transform: translateX(-3px); }
+    80%      { transform: translateX(3px); }
+  }
+  body.is-locked-in [data-ft-lock] {
+    animation: none;
+  }
+  body.is-locked-in [data-ft-lock].is-shaking {
+    animation: ftLockShake 280ms ease-in-out;
+  }
+</style>
 
 <script>
   type SavedState = {
@@ -268,6 +302,7 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
     const engageLock = async () => {
       state.lockEngaged = true;
       lockEl.classList.remove('hidden');
+      document.body.classList.add('is-locked-in');
       renderLock();
       try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch {}
       requestWakeLock();
@@ -276,10 +311,34 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
     const releaseLock = async () => {
       state.lockEngaged = false;
       lockEl.classList.add('hidden');
+      document.body.classList.remove('is-locked-in');
       try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
       releaseWakeLock();
       save(state);
     };
+
+    // Block any link click that would navigate off the current guide while
+    // locked. Same-page anchors (#section), the tutor, and in-content
+    // interactivity all keep working. The lock bar shakes briefly to signal
+    // the click was intentionally swallowed.
+    const onClickGuard = (e: MouseEvent) => {
+      if (!state.lockEngaged) return;
+      const a = (e.target as HTMLElement | null)?.closest('a');
+      if (!a) return;
+      // Allow same-pathname anchor jumps (e.g. table-of-contents links).
+      const href = a.getAttribute('href') || '';
+      if (!href || href.startsWith('#')) return;
+      try {
+        const dest = new URL(a.href, window.location.href);
+        if (dest.pathname === window.location.pathname) return;
+      } catch { /* fall through */ }
+      // External or cross-page link: block it.
+      e.preventDefault();
+      e.stopPropagation();
+      lockEl.classList.add('is-shaking');
+      setTimeout(() => lockEl.classList.remove('is-shaking'), 320);
+    };
+    document.addEventListener('click', onClickGuard, true);
 
     // Track tab/window blurs while locked. If they tab away, increment.
     const onVisibility = async () => {
