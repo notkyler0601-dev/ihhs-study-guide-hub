@@ -8,7 +8,7 @@ Built with [Astro](https://astro.build) + Tailwind + MDX. No backend, no databas
 
 - **Deep-dive guides** with learning objectives, glossary, worked examples, practice, quizzes, flashcards, mnemonics, and a printable cheat sheet
 - **Accounts** (no email needed) with personal dashboards, streak tracking, and per-user data
-- **Spaced repetition system** (SM-2 algorithm) — flashcards reschedule based on how well you know them
+- **Spaced repetition system** (SM-2 algorithm), so flashcards reschedule based on how well you know them
 - **Daily review queue** at `/review` showing every card due across all guides
 - **Progress dashboard** at `/dashboard` with streak, mastered cards, quiz averages, 30-day activity heatmap
 - **Interactive components**: multiple-choice quizzes with instant feedback and score tracking, flippable flashcards with SRS scheduling, collapsible Q&A
@@ -167,7 +167,7 @@ flowchart LR
 
 These load on demand only on guides that use them, so they don't slow down the rest of the site.
 
-### `<MapView markers={[...]}/>`  — Interactive maps (Leaflet)
+### `<MapView markers={[...]}/>`: Interactive maps (Leaflet)
 
 ```mdx
 <MapView
@@ -180,7 +180,7 @@ These load on demand only on guides that use them, so they don't slow down the r
 />
 ```
 
-### `<Timeline events={[...]}/>` — Scrollable interactive timeline (TimelineJS)
+### `<Timeline events={[...]}/>`: Scrollable interactive timeline (TimelineJS)
 
 ```mdx
 <Timeline
@@ -192,14 +192,14 @@ These load on demand only on guides that use them, so they don't slow down the r
 />
 ```
 
-### `<Molecule pdb="..."/>` — 3D molecule viewer (3Dmol.js)
+### `<Molecule pdb="..."/>`: 3D molecule viewer (3Dmol.js)
 
 ```mdx
 <Molecule pdb="1UBQ" style="cartoon" />     {/* PDB protein */}
 <Molecule cid="2244" style="stick" />        {/* PubChem CID, e.g. aspirin */}
 ```
 
-### `<Desmos expressions={[...]}/>`  — Graphing calculator
+### `<Desmos expressions={[...]}/>`: Graphing calculator
 
 ```mdx
 <Desmos expressions={["y = x^2", "y = 2x + 1"]} />
@@ -212,7 +212,7 @@ These load on demand only on guides that use them, so they don't slow down the r
 <GeoGebra materialId="abcd1234" />            {/* embed a published GeoGebra material */}
 ```
 
-### `<Graph setup={...}/>`  — DIY interactive math/physics (JSXGraph)
+### `<Graph setup={...}/>`: DIY interactive math/physics (JSXGraph)
 
 ```mdx
 <Graph setup={`
@@ -222,20 +222,20 @@ These load on demand only on guides that use them, so they don't slow down the r
 `} />
 ```
 
-### `<Whiteboard />` — In-page drawing canvas
+### `<Whiteboard />`: In-page drawing canvas
 
 ```mdx
 <Whiteboard prompt="Sketch the cross-section of a leaf." />
 ```
 Saves to `localStorage` so the sketch persists across visits.
 
-### `<CodeEditor language="..."/>` — Monaco (VS Code) editor
+### `<CodeEditor language="..."/>`: Monaco (VS Code) editor
 
 ```mdx
 <CodeEditor language="python" initial={`def hello():\n    print("hi")`} />
 ```
 
-### `<EquationEditor initial="..."/>`  — Visual equation editor (MathLive)
+### `<EquationEditor initial="..."/>`: Visual equation editor (MathLive)
 
 ```mdx
 <EquationEditor initial="\\frac{a}{b} + c" />
@@ -536,7 +536,7 @@ Trade-off: data lives on one device. To enable cross-device sync (so a classmate
    PUBLIC_SUPABASE_ANON_KEY=YOUR-ANON-KEY
    ```
 
-5. Replace the bodies of `src/lib/auth.ts` and `src/lib/storage.ts` with Supabase calls (the function signatures are designed to match — every consumer keeps working).
+5. Replace the bodies of `src/lib/auth.ts` and `src/lib/storage.ts` with Supabase calls (the function signatures are designed to match, so every consumer keeps working).
 
 The localStorage version is the perfect starting point: zero infrastructure, instant, private. Move to Supabase only when classmates start asking for cross-device sync.
 

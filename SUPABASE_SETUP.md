@@ -21,7 +21,7 @@ This hooks up cross-device sync for user accounts and makes `/request` submissio
    - **Project URL** (looks like `https://abc123xyz.supabase.co`)
    - **anon/public key** (a long `eyJ...` string)
 
-The anon key is safe to expose in the browser — Row-Level Security in our schema makes sure users can only touch their own data.
+The anon key is safe to expose in the browser, since Row-Level Security in our schema makes sure users can only touch their own data.
 
 ## Step 3: Run the SQL schema (30 sec)
 

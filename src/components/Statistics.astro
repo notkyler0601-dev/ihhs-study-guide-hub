@@ -54,7 +54,7 @@ const conf = JSON.stringify({ data, bins, unit });
     return { labels, counts };
   };
 
-  const fmt = (v: number, unit: string) => Number.isFinite(v) ? v.toFixed(2).replace(/\.?0+$/, '') + (unit ? ' ' + unit : '') : '—';
+  const fmt = (v: number, unit: string) => Number.isFinite(v) ? v.toFixed(2).replace(/\.?0+$/, '') + (unit ? ' ' + unit : '') : 'n/a';
 
   const init = async () => {
     const roots = document.querySelectorAll<HTMLElement>('[data-stat]:not([data-stat-ready])');

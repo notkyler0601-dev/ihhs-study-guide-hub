@@ -1,5 +1,5 @@
 ---
-// <PoseMatch /> — live body-pose detection via TensorFlow.js MoveNet.
+// <PoseMatch />: live body-pose detection via TensorFlow.js MoveNet.
 //
 // Asks for camera permission, runs MoveNet on the video feed, draws the
 // 17-point skeleton overlay. Optionally compares against a "reference"
@@ -52,7 +52,7 @@ const id = 'pose-' + Math.random().toString(36).slice(2, 9);
     <canvas data-pose-canvas class="absolute inset-0 w-full h-full" style="transform: scaleX(-1);"></canvas>
     <div data-pose-status class="absolute top-2 left-2 right-2 flex justify-between items-center text-xs">
       <span class="px-2 py-1 rounded-md bg-black/60 text-white" data-pose-fps>0 fps</span>
-      {reference && <span class="px-2 py-1 rounded-md bg-accent-700/80 text-white" data-pose-score>—</span>}
+      {reference && <span class="px-2 py-1 rounded-md bg-accent-700/80 text-white" data-pose-score>0%</span>}
     </div>
     <button data-pose-stop type="button" class="absolute bottom-3 right-3 inline-flex items-center justify-center h-9 w-9 rounded-full bg-rose-600 hover:bg-rose-500 text-white" aria-label="Stop camera">
       <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
