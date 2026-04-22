@@ -355,100 +355,31 @@ The verb agrees with the THING, so it's `molesta` for one thing or `molestan` fo
 
 ## Self-quiz
 
-Fifteen English-prompt questions where you pick the correct Spanish answer.
+Fifteen type-it-in questions. You get instant feedback after every answer: correct or wrong, with the right spelling shown either way.
 
-<Quiz
-  questions={[
-    {
-      q: "How do you say 'mischievous' (masculine)?",
-      choices: ["tímido", "travieso", "consentido", "obediente"],
-      answer: 1,
-      explain: "Travieso/a means mischievous. Tímido is shy, consentido is spoiled, obediente is obedient."
-    },
-    {
-      q: "How do you say 'playground' in Spanish?",
-      choices: ["el barrio", "el vecindario", "el patio de recreo", "los dibujos animados"],
-      answer: 2,
-      explain: "El patio de recreo is playground. El barrio and el vecindario both mean neighborhood. Los dibujos animados are cartoons."
-    },
-    {
-      q: "How do you say 'cartoons'?",
-      choices: ["los cuentos", "los dibujos animados", "los juguetes", "las siestas"],
-      answer: 1,
-      explain: "Los dibujos animados, literally 'the animated drawings.' Always plural."
-    },
-    {
-      q: "What does 'maleducado' mean?",
-      choices: ["mischievous", "shy", "rude", "spoiled"],
-      answer: 2,
-      explain: "Maleducado/a means rude. The opposite of bien educado (well-behaved)."
-    },
-    {
-      q: "What does 'el vecindario' mean?",
-      choices: ["story", "playground", "neighborhood", "neighbor"],
-      answer: 2,
-      explain: "El vecindario is neighborhood. El barrio means the same thing."
-    },
-    {
-      q: "What does 'cariñoso' mean?",
-      choices: ["curious", "shy", "spoiled", "affectionate"],
-      answer: 3,
-      explain: "Cariñoso/a means affectionate."
-    },
-    {
-      q: "Which of these is feminine?",
-      choices: ["el cuento", "el barrio", "la siesta", "el juguete"],
-      answer: 2,
-      explain: "La siesta is feminine. The other three are masculine."
-    },
-    {
-      q: "Pick the correct verb form: 'Yo ___ a menudo cuando era niño.' (jugar)",
-      choices: ["jugué", "jugaba", "juego", "juegué"],
-      answer: 1,
-      explain: "Jugaba (imperfect). The phrase 'a menudo' is an imperfect time marker, so the verb must be imperfect."
-    },
-    {
-      q: "Pick the correct verb form: 'Ayer mi hermano ___ con sus juguetes.' (jugar)",
-      choices: ["jugaba", "jugó", "jugué", "juegó"],
-      answer: 1,
-      explain: "Jugó (preterite). 'Ayer' (yesterday) is a one-time, completed action, so the verb is preterite. There's no spelling change in the él form, only in yo: jugué."
-    },
-    {
-      q: "What's the imperfect 'we' form (nosotros) of 'comer'?",
-      choices: ["comimos", "comíamos", "comemos", "comieramos"],
-      answer: 1,
-      explain: "Comíamos (note the accent on the í). The -er and -ir imperfect endings are -ía, -ías, -ía, -íamos, -íais, -ían."
-    },
-    {
-      q: "What's the imperfect 'I' form of 'ser'?",
-      choices: ["fui", "soy", "era", "iba"],
-      answer: 2,
-      explain: "Era. Ser is one of the three irregulars in the imperfect: era, eras, era, éramos, erais, eran. (Iba is the imperfect of ir.)"
-    },
-    {
-      q: "What's the yo form of 'tocar' in the preterite?",
-      choices: ["toqué", "tocé", "tocí", "toco"],
-      answer: 0,
-      explain: "Toqué. The c changes to qu before é to keep the hard 'k' sound."
-    },
-    {
-      q: "What's the yo form of 'llegar' in the preterite?",
-      choices: ["llegé", "lleggué", "llegué", "lleguí"],
-      answer: 2,
-      explain: "Llegué. The g changes to gu before é to keep the hard 'g' sound."
-    },
-    {
-      q: "What's the él/ella form of 'dormir' in the preterite?",
-      choices: ["dormió", "durmió", "dormí", "duermió"],
-      answer: 1,
-      explain: "Durmió. In the third person preterite of dormir, the o in the stem becomes u: durmió, durmieron."
-    },
-    {
-      q: "What's the ellos form of 'pedir' in the preterite?",
-      choices: ["pedieron", "pidieron", "pidaron", "pidiaron"],
-      answer: 1,
-      explain: "Pidieron. The e becomes i in the third person preterite of pedir (and sentirse, reírse, mentir)."
-    }
+<Callout type="tip" title="How it grades">
+Submits on Enter. Articles (el, la, los, las) are optional. Missing accents (á é í ó ú) are accepted but called out so you learn the proper spelling. Use the buttons below the input to type accented characters.
+</Callout>
+
+<TypingQuiz
+  title="Unit 7 self-quiz (15 questions)"
+  promptLabel="Type your answer in Spanish"
+  pairs={[
+    { en: "'mischievous' (masculine)", es: "travieso" },
+    { en: "'playground'", es: "el patio de recreo" },
+    { en: "'cartoons'", es: "los dibujos animados" },
+    { en: "'rude' (masculine)", es: "maleducado" },
+    { en: "'neighborhood'", es: "el vecindario", alt: ["el barrio"] },
+    { en: "'affectionate' (masculine)", es: "cariñoso" },
+    { en: "'nap'", es: "la siesta" },
+    { en: "Yo ___ a menudo cuando era niño. (jugar, imperfect)", es: "jugaba" },
+    { en: "Ayer mi hermano ___ con sus juguetes. (jugar, preterite él)", es: "jugó" },
+    { en: "Imperfect nosotros form of 'comer'", es: "comíamos" },
+    { en: "Imperfect yo form of 'ser'", es: "era" },
+    { en: "Preterite yo form of 'tocar'", es: "toqué" },
+    { en: "Preterite yo form of 'llegar'", es: "llegué" },
+    { en: "Preterite él/ella form of 'dormir'", es: "durmió" },
+    { en: "Preterite ellos form of 'pedir'", es: "pidieron" }
   ]}
 />
 

@@ -23,5 +23,19 @@ export default defineConfig({
   },
   vite: {
     ssr: { noExternal: ['mermaid'] },
+    // These TensorFlow packages pull in peer deps (@mediapipe/hands,
+    // @mediapipe/pose, @tensorflow/tfjs-backend-webgpu) that aren't installed.
+    // If Vite's dep scanner tries to pre-bundle them it blows up the whole
+    // scan, which silently hangs downstream imports like @supabase/supabase-js.
+    // Components that actually use these models lazy-import them at runtime
+    // on guide pages that opt in, so skipping the pre-bundle is fine.
+    optimizeDeps: {
+      exclude: [
+        '@tensorflow-models/hand-pose-detection',
+        '@tensorflow-models/pose-detection',
+        '@mediapipe/hands',
+        '@mediapipe/pose',
+      ],
+    },
   },
 });
