@@ -3,6 +3,11 @@
 // generate practice questions, summarize). Pulls the surrounding guide's
 // prose as context so answers stay grounded in what the student is reading.
 //
+// While the tutor panel is open, hovering a paragraph / list item /
+// blockquote / code block inside the guide shows a soft outline plus a
+// floating action bar with "Simpler" and "Caveman" buttons that re-explain
+// just that passage.
+//
 // Login-gated via currentUser(). Requires PUBLIC_AI_TUTOR_URL pointing at
 // the Cloudflare Worker in worker/.
 interface Props {
@@ -58,7 +63,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       aria-live="polite"
     >
       <div data-tutor-welcome class="text-ink-500 text-xs">
-        Ask about this guide, or use a shortcut below.
+        Ask about this guide, use a shortcut below, or hover any paragraph in the guide for one-click re-explains.
       </div>
     </div>
 
@@ -105,6 +110,67 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
   .tutor-chip {
     @apply text-[11px] px-2.5 py-1 rounded-full border border-ink-200 dark:border-ink-700 text-ink-700 dark:text-ink-200 hover:border-accent-400 hover:text-accent-700 dark:hover:text-accent-300 transition-colors;
   }
+
+  /* Hover-explain outline: applied to the prose block currently being hovered while the tutor is open. */
+  .tutor-explain-target {
+    outline: 2px dashed rgba(185, 28, 28, 0.55);
+    outline-offset: 4px;
+    border-radius: 6px;
+    transition: outline-color 120ms ease-out;
+  }
+  .dark .tutor-explain-target {
+    outline-color: rgba(248, 113, 113, 0.55);
+  }
+
+  /* The little floating action bar above a hovered block. */
+  [data-tutor-hover-menu] {
+    position: absolute;
+    z-index: 60;
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 9999px;
+    background: white;
+    border: 1px solid rgb(228 228 231);
+    box-shadow: 0 8px 24px -8px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.06);
+    font: 500 11px/1 ui-sans-serif, system-ui, sans-serif;
+    color: rgb(63 63 70);
+    pointer-events: auto;
+    animation: tutorFadeIn 140ms ease-out;
+  }
+  .dark [data-tutor-hover-menu] {
+    background: rgb(24 24 27);
+    border-color: rgb(63 63 70);
+    color: rgb(228 228 231);
+  }
+  [data-tutor-hover-menu].is-open { display: inline-flex; }
+
+  [data-tutor-hover-menu] button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 9999px;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+  [data-tutor-hover-menu] button:hover {
+    background: rgb(254 226 226);
+    color: rgb(127 29 29);
+  }
+  .dark [data-tutor-hover-menu] button:hover {
+    background: rgba(127, 29, 29, 0.45);
+    color: rgb(254 226 226);
+  }
+
+  @keyframes tutorFadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 </style>
 
 <script>
@@ -140,6 +206,11 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     summary: 'Summarize this guide as 5 short numbered takeaways. Each under 20 words. No intro, just the list.',
   };
 
+  // Selectors a prose block must match to be eligible for hover-to-explain.
+  // Lives inside <article class="...prose">, NOT inside .not-prose (which marks
+  // our interactive widgets like Quiz / Flashcards / Callouts).
+  const HOVER_BLOCK_SELECTOR = 'p, li, blockquote, pre';
+
   const init = () => {
     const root = document.querySelector<HTMLElement>('[data-tutor-root]');
     if (!root) return;
@@ -161,14 +232,19 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     const offline = root.querySelector<HTMLElement>('[data-tutor-offline]')!;
     const actions = root.querySelector<HTMLElement>('[data-tutor-actions]')!;
 
+    let tutorIsOpen = false;
+
     const open = () => {
       panel.classList.remove('hidden');
       fab.classList.add('hidden');
+      tutorIsOpen = true;
       setTimeout(() => input.focus(), 50);
     };
     const close = () => {
       panel.classList.add('hidden');
       fab.classList.remove('hidden');
+      tutorIsOpen = false;
+      hideHoverMenu();
     };
 
     fab.addEventListener('click', open);
@@ -228,9 +304,13 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       }
     };
 
-    const ask = async (question: string) => {
-      history.push({ role: 'user', content: question });
-      appendMessage('user', question);
+    // ask() sends `prompt` to the model. If `displayLabel` is provided it is
+    // shown as the user-side bubble in the chat log instead of the raw prompt
+    // (used by the hover-to-explain feature so the chat doesn't get cluttered
+    // with copy-pasted passages).
+    const ask = async (prompt: string, displayLabel?: string) => {
+      history.push({ role: 'user', content: prompt });
+      appendMessage('user', displayLabel ?? prompt);
       const bubble = appendMessage('assistant', '');
       let acc = '';
       setBusy(true);
@@ -283,7 +363,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
         bubble.innerHTML = renderMarkdown('*Network error. Try again.*');
       } finally {
         setBusy(false);
-        input.focus();
+        if (!input.disabled) input.focus();
       }
     };
 
@@ -320,6 +400,114 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
         if (prompt) ask(prompt);
       });
     });
+
+    /* ---------- Hover-to-explain ---------- */
+
+    let hoverEl: HTMLElement | null = null;
+    let hoverMenu: HTMLElement | null = null;
+
+    const buildMenu = (): HTMLElement => {
+      const m = document.createElement('div');
+      m.setAttribute('data-tutor-hover-menu', '');
+      m.setAttribute('role', 'toolbar');
+      m.setAttribute('aria-label', 'Re-explain this passage');
+      m.innerHTML = `
+        <button type="button" data-explain="simpler" title="Re-explain in simpler words">
+          <span aria-hidden="true">🧠</span><span>Simpler</span>
+        </button>
+        <button type="button" data-explain="caveman" title="Re-explain in caveman terms">
+          <span aria-hidden="true">🦴</span><span>Caveman</span>
+        </button>
+      `;
+      // Keep the menu visible while the cursor is on it.
+      m.addEventListener('mouseenter', () => { /* swallow */ });
+      m.addEventListener('mouseleave', () => { hideHoverMenu(); });
+      m.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('button[data-explain]') as HTMLButtonElement | null;
+        if (!btn || !hoverEl) return;
+        const kind = btn.dataset.explain as 'simpler' | 'caveman';
+        const passage = (hoverEl.innerText || '').replace(/\s+/g, ' ').trim();
+        if (!passage) return;
+        const truncated = passage.length > 60 ? passage.slice(0, 60) + '...' : passage;
+        const label = kind === 'simpler'
+          ? `🧠 Explain simpler: "${truncated}"`
+          : `🦴 In caveman terms: "${truncated}"`;
+        const prompt = kind === 'simpler'
+          ? `Re-explain the passage below in really simple words, like you're talking to a 7th-grader who has never seen this material. Use one short concrete analogy. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`
+          : `Re-explain the passage below in caveman speak. Short blunt sentences. Tiny vocabulary. Example tone: "Sun hot. Plant eat sun. Plant make food." Be funny but keep the facts correct. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
+        hideHoverMenu();
+        ask(prompt, label);
+      });
+      document.body.appendChild(m);
+      return m;
+    };
+
+    const positionMenu = (target: HTMLElement) => {
+      if (!hoverMenu) return;
+      const r = target.getBoundingClientRect();
+      // Make sure we have a width to subtract from.
+      hoverMenu.classList.add('is-open');
+      const mw = hoverMenu.offsetWidth || 160;
+      // Place at top-right of the block, just above it. Pinned to document
+      // (window.scroll offsets) so it scrolls naturally with the page.
+      const top = window.scrollY + r.top - 36;
+      const left = Math.max(8, window.scrollX + r.right - mw);
+      hoverMenu.style.top = `${Math.max(window.scrollY + 8, top)}px`;
+      hoverMenu.style.left = `${left}px`;
+    };
+
+    const showHoverMenu = (target: HTMLElement) => {
+      if (!hoverMenu) hoverMenu = buildMenu();
+      if (hoverEl && hoverEl !== target) hoverEl.classList.remove('tutor-explain-target');
+      hoverEl = target;
+      target.classList.add('tutor-explain-target');
+      positionMenu(target);
+    };
+
+    const hideHoverMenu = () => {
+      if (hoverEl) hoverEl.classList.remove('tutor-explain-target');
+      hoverEl = null;
+      if (hoverMenu) hoverMenu.classList.remove('is-open');
+    };
+
+    // Skip if hovering inside the tutor itself or any "not-prose" widget.
+    const isEligible = (el: Element | null): el is HTMLElement => {
+      if (!el) return false;
+      if (!(el instanceof HTMLElement)) return false;
+      if (el.closest('[data-tutor-root]')) return false;
+      if (el.closest('.not-prose')) return false;
+      if (!el.closest('article .prose')) return false;
+      return true;
+    };
+
+    document.addEventListener('mouseover', (e) => {
+      if (!tutorIsOpen) return;
+      const target = (e.target as HTMLElement | null)?.closest(HOVER_BLOCK_SELECTOR) as HTMLElement | null;
+      if (!isEligible(target)) return;
+      // Skip empty / very short blocks (e.g. one-word list items, just images)
+      const text = (target.innerText || '').trim();
+      if (text.length < 20) return;
+      if (target === hoverEl) return;
+      showHoverMenu(target);
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      if (!tutorIsOpen || !hoverEl) return;
+      const related = e.relatedTarget as HTMLElement | null;
+      // Stay open if cursor moved into the floating menu or stayed within the block.
+      if (related && (hoverEl.contains(related) || related.closest('[data-tutor-hover-menu]'))) return;
+      hideHoverMenu();
+    });
+
+    // Reposition on scroll/resize so the menu tracks the block as the page moves.
+    let raf = 0;
+    const reflow = () => {
+      if (!hoverEl || !hoverMenu?.classList.contains('is-open')) return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => positionMenu(hoverEl!));
+    };
+    window.addEventListener('scroll', reflow, { passive: true });
+    window.addEventListener('resize', reflow);
   };
 
   init();
