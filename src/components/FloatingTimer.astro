@@ -3,6 +3,11 @@
 // State persists in sessionStorage so it survives Astro View Transitions
 // navigation between guides. Collapsible to a tiny clock-only pill.
 //
+// Lock-in mode: clicking Start during a work session takes over the whole
+// window with a fullscreen focus overlay, requests a screen wake lock so the
+// display doesn't sleep, and counts how many times the user tabs away.
+// Stopping early requires a 2-second press-and-hold to add friction.
+//
 // Mounted globally from GuideLayout.astro, so guide authors don't need to
 // import or invoke it. To opt-out on a specific page, pass `floatingTimer={false}`
 // to BaseLayout (not yet wired in; add when needed).
@@ -40,6 +45,10 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
           <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
         </button>
       </div>
+      <label class="mt-2 flex items-center gap-1.5 text-[10px] text-ink-500 cursor-pointer select-none justify-center">
+        <input data-ft-lock-toggle type="checkbox" checked class="h-3 w-3 accent-accent-600" />
+        Lock screen on Start
+      </label>
       <div class="mt-1 text-[10px] text-center text-ink-500">Cycle <span data-ft-cycle class="font-semibold text-ink-900 dark:text-ink-50">1</span></div>
     </div>
   </div>
@@ -58,6 +67,46 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
   </button>
 </aside>
 
+<!-- LOCK-IN OVERLAY: covers the entire viewport when a work session is running. -->
+<div data-ft-lock class="hidden fixed inset-0 z-[100] bg-black text-white" role="dialog" aria-label="Lock-in mode">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div data-ft-lock-glow class="absolute -top-1/4 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full blur-3xl"
+         style="background: radial-gradient(circle, rgba(185,28,28,0.45), transparent 70%);"></div>
+  </div>
+
+  <div class="relative h-full flex flex-col items-center justify-center px-6">
+    <div class="text-[11px] uppercase tracking-[0.3em] text-accent-400 font-semibold">Locked in</div>
+    <div data-ft-lock-mode class="mt-1 text-sm text-ink-400">Lock in Twin🥀 · cycle <span data-ft-lock-cycle class="text-white font-semibold">1</span></div>
+
+    <div data-ft-lock-time
+         class="mt-8 font-serif text-[120px] sm:text-[160px] md:text-[200px] font-semibold tabular-nums leading-none gradient-text">
+      25:00
+    </div>
+
+    <div class="mt-10 flex flex-col items-center gap-4 max-w-md">
+      <div class="text-xs text-ink-400 text-center">
+        Tabbed away: <span data-ft-lock-blurs class="text-rose-400 font-semibold tabular-nums">0</span>
+        <span class="opacity-50 mx-2">·</span>
+        Wake lock: <span data-ft-lock-wake class="text-emerald-400 font-semibold">checking…</span>
+      </div>
+
+      <button data-ft-lock-end type="button"
+        class="relative overflow-hidden px-6 py-3 rounded-full border border-ink-700 hover:border-rose-500 text-ink-300 hover:text-rose-400 text-sm font-medium transition-colors min-w-[200px]"
+        aria-label="Hold to end early">
+        <span data-ft-lock-end-bar class="absolute inset-0 bg-rose-500/30 origin-left transition-transform"
+              style="transform: scaleX(0); transition-duration: 200ms;"></span>
+        <span class="relative z-10">Hold to end early</span>
+      </button>
+
+      <p class="text-[11px] text-ink-500 text-center leading-relaxed">
+        Press <kbd class="px-1.5 py-0.5 rounded bg-ink-900 border border-ink-700 text-ink-300 text-[10px]">Esc</kbd>
+        to exit fullscreen but stay locked.<br/>
+        Hold the button above for 2 seconds to fully stop.
+      </p>
+    </div>
+  </div>
+</div>
+
 <script>
   type SavedState = {
     mode: 'Lock in Twin🥀' | 'Short break' | 'Long break';
@@ -66,10 +115,14 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
     isRunning: boolean;
     lastTickAt: number;     // ms epoch
     visibility: 'expanded' | 'collapsed' | 'hidden';
+    lockEnabled: boolean;
+    lockEngaged: boolean;
+    blurCount: number;
   };
 
   const STORAGE_KEY = 'ihhs:floating-timer';
   const WORK_LABEL = 'Lock in Twin🥀';
+  const HOLD_MS = 2000;
 
   const init = () => {
     const root = document.getElementById('floating-timer') as HTMLElement | null;
@@ -88,6 +141,17 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
     const resetBtn = root.querySelector<HTMLButtonElement>('[data-ft-reset]')!;
     const collapseBtn = root.querySelector<HTMLButtonElement>('[data-ft-collapse]')!;
     const closeBtn = root.querySelector<HTMLButtonElement>('[data-ft-close]')!;
+    const lockToggleEl = root.querySelector<HTMLInputElement>('[data-ft-lock-toggle]')!;
+
+    // Lock overlay (sibling to the floating timer, query off document since
+    // we're using a fresh root via View Transitions).
+    const lockEl = document.querySelector<HTMLElement>('[data-ft-lock]')!;
+    const lockTimeEl = lockEl.querySelector<HTMLElement>('[data-ft-lock-time]')!;
+    const lockCycleEl = lockEl.querySelector<HTMLElement>('[data-ft-lock-cycle]')!;
+    const lockBlursEl = lockEl.querySelector<HTMLElement>('[data-ft-lock-blurs]')!;
+    const lockWakeEl = lockEl.querySelector<HTMLElement>('[data-ft-lock-wake]')!;
+    const lockEndBtn = lockEl.querySelector<HTMLButtonElement>('[data-ft-lock-end]')!;
+    const lockEndBar = lockEl.querySelector<HTMLElement>('[data-ft-lock-end-bar]')!;
 
     const fmt = (s: number) => {
       const sec = Math.max(0, Math.floor(s));
@@ -97,7 +161,14 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
     const load = (): SavedState => {
       try {
         const raw = sessionStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Backfill new fields if loading old saved state.
+          parsed.lockEnabled = parsed.lockEnabled ?? true;
+          parsed.lockEngaged = parsed.lockEngaged ?? false;
+          parsed.blurCount = parsed.blurCount ?? 0;
+          return parsed;
+        }
       } catch {}
       return {
         mode: WORK_LABEL,
@@ -106,6 +177,9 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
         isRunning: false,
         lastTickAt: Date.now(),
         visibility: 'expanded',
+        lockEnabled: true,
+        lockEngaged: false,
+        blurCount: 0,
       };
     };
     const save = (s: SavedState) => {
@@ -114,12 +188,13 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
 
     let state = load();
     let interval: ReturnType<typeof setInterval> | null = null;
+    let wakeLock: any = null;
 
-    // Apply elapsed time since last tick if we were running before navigation.
     if (state.isRunning) {
       const elapsed = (Date.now() - state.lastTickAt) / 1000;
       state.secondsLeft = Math.max(0, state.secondsLeft - elapsed);
     }
+    lockToggleEl.checked = state.lockEnabled;
 
     const setVisibility = (v: SavedState['visibility']) => {
       state.visibility = v;
@@ -131,6 +206,12 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       save(state);
     };
 
+    const renderLock = () => {
+      lockTimeEl.textContent = fmt(state.secondsLeft);
+      lockCycleEl.textContent = String(state.cycle);
+      lockBlursEl.textContent = String(state.blurCount);
+    };
+
     const render = () => {
       const t = fmt(state.secondsLeft);
       timeEl.textContent = t;
@@ -138,6 +219,7 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       modeEl.textContent = state.mode;
       cycleEl.textContent = String(state.cycle);
       toggleBtn.textContent = state.isRunning ? 'Pause' : (state.secondsLeft < secondsForMode(state.mode) ? 'Resume' : 'Start');
+      if (state.lockEngaged) renderLock();
     };
 
     const secondsForMode = (m: string) => m === WORK_LABEL ? conf.workMin * 60 : m === 'Long break' ? conf.longBreakMin * 60 : conf.shortBreakMin * 60;
@@ -158,13 +240,86 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       } catch {}
     };
 
+    /* ---------- Lock-in (fullscreen + wake lock + tab tracking) ---------- */
+    const requestWakeLock = async () => {
+      try {
+        const nav = navigator as any;
+        if (nav.wakeLock?.request) {
+          wakeLock = await nav.wakeLock.request('screen');
+          lockWakeEl.textContent = 'on';
+          lockWakeEl.classList.remove('text-rose-400'); lockWakeEl.classList.add('text-emerald-400');
+          wakeLock.addEventListener?.('release', () => {
+            lockWakeEl.textContent = 'released';
+          });
+        } else {
+          lockWakeEl.textContent = 'unsupported';
+          lockWakeEl.classList.remove('text-emerald-400'); lockWakeEl.classList.add('text-rose-400');
+        }
+      } catch {
+        lockWakeEl.textContent = 'denied';
+        lockWakeEl.classList.remove('text-emerald-400'); lockWakeEl.classList.add('text-rose-400');
+      }
+    };
+    const releaseWakeLock = async () => {
+      try { if (wakeLock) { await wakeLock.release(); } } catch {}
+      wakeLock = null;
+    };
+
+    const engageLock = async () => {
+      state.lockEngaged = true;
+      lockEl.classList.remove('hidden');
+      renderLock();
+      try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch {}
+      requestWakeLock();
+      save(state);
+    };
+    const releaseLock = async () => {
+      state.lockEngaged = false;
+      lockEl.classList.add('hidden');
+      try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
+      releaseWakeLock();
+      save(state);
+    };
+
+    // Track tab/window blurs while locked. If they tab away, increment.
+    const onVisibility = async () => {
+      if (!state.lockEngaged) return;
+      if (document.visibilityState === 'hidden') {
+        state.blurCount++;
+        renderLock();
+        save(state);
+      } else if (document.visibilityState === 'visible' && !wakeLock) {
+        // Browsers auto-release wake lock when tab is hidden; re-acquire.
+        requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    /* ---------- Hold-to-end ---------- */
+    let holdTimer: number | null = null;
+    const beginHold = (e: Event) => {
+      e.preventDefault();
+      lockEndBar.style.transitionDuration = `${HOLD_MS}ms`;
+      lockEndBar.style.transform = 'scaleX(1)';
+      holdTimer = window.setTimeout(() => { stop(); }, HOLD_MS);
+    };
+    const cancelHold = () => {
+      if (holdTimer != null) { clearTimeout(holdTimer); holdTimer = null; }
+      lockEndBar.style.transitionDuration = '180ms';
+      lockEndBar.style.transform = 'scaleX(0)';
+    };
+    lockEndBtn.addEventListener('mousedown', beginHold);
+    lockEndBtn.addEventListener('touchstart', beginHold, { passive: false });
+    lockEndBtn.addEventListener('mouseup', cancelHold);
+    lockEndBtn.addEventListener('mouseleave', cancelHold);
+    lockEndBtn.addEventListener('touchend', cancelHold);
+    lockEndBtn.addEventListener('touchcancel', cancelHold);
+    lockEndBtn.addEventListener('blur', cancelHold);
+
+    /* ---------- Timer engine ---------- */
     const advance = () => {
       if (state.mode === WORK_LABEL) {
-        if (state.cycle % conf.cyclesUntilLong === 0) {
-          state.mode = 'Long break';
-        } else {
-          state.mode = 'Short break';
-        }
+        state.mode = state.cycle % conf.cyclesUntilLong === 0 ? 'Long break' : 'Short break';
       } else {
         state.cycle++;
         state.mode = WORK_LABEL;
@@ -178,44 +333,70 @@ const conf = JSON.stringify({ workMin, shortBreakMin, longBreakMin, cyclesUntilL
       state.lastTickAt = now;
       state.secondsLeft -= elapsed;
       if (state.secondsLeft <= 0) {
+        const wasWork = state.mode === WORK_LABEL;
         stop();
         beep();
         advance();
+        // Don't auto-engage lock during a break; it's relax time.
+        if (!wasWork) { /* break ended; user clicks Start to lock in next work block */ }
       }
       render();
       save(state);
     };
 
-    const start = () => {
+    const start = async () => {
       if (interval) return;
       state.isRunning = true;
       state.lastTickAt = Date.now();
+      state.blurCount = 0;
       interval = setInterval(tick, 1000);
+      // Engage lock only for work sessions, only if user opted in.
+      if (state.lockEnabled && state.mode === WORK_LABEL) {
+        await engageLock();
+      }
       render(); save(state);
     };
-    const stop = () => {
+
+    const stop = async () => {
       if (interval) { clearInterval(interval); interval = null; }
       state.isRunning = false;
+      if (state.lockEngaged) await releaseLock();
       render(); save(state);
     };
 
     toggleBtn.addEventListener('click', () => state.isRunning ? stop() : start());
-    skipBtn.addEventListener('click', () => { stop(); advance(); render(); save(state); });
-    resetBtn.addEventListener('click', () => {
-      stop();
+    skipBtn.addEventListener('click', async () => { await stop(); advance(); render(); save(state); });
+    resetBtn.addEventListener('click', async () => {
+      await stop();
       state.cycle = 1;
       state.mode = WORK_LABEL;
       state.secondsLeft = conf.workMin * 60;
+      state.blurCount = 0;
       render(); save(state);
     });
     collapseBtn.addEventListener('click', () => setVisibility('collapsed'));
-    closeBtn.addEventListener('click', () => { stop(); setVisibility('hidden'); });
+    closeBtn.addEventListener('click', async () => { await stop(); setVisibility('hidden'); });
     pill.addEventListener('click', () => setVisibility('expanded'));
     show.addEventListener('click', () => setVisibility('expanded'));
+    lockToggleEl.addEventListener('change', () => {
+      state.lockEnabled = lockToggleEl.checked;
+      save(state);
+    });
 
     setVisibility(state.visibility);
     render();
-    if (state.isRunning) start();
+    if (state.isRunning) {
+      // Re-arm the interval after navigation.
+      interval = setInterval(tick, 1000);
+      // Re-show the overlay if we were locked, but DON'T try to re-enter
+      // fullscreen (browsers require a user gesture for that). User can
+      // press F11 / re-enter manually if they want.
+      if (state.lockEngaged && state.lockEnabled && state.mode === WORK_LABEL) {
+        lockEl.classList.remove('hidden');
+        renderLock();
+        requestWakeLock();
+      }
+    }
   };
   init();
   document.addEventListener('astro:after-swap', init);
