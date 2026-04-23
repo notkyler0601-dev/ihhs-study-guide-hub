@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const updated = '2026-04-23';
+---
+
+<BaseLayout title="Privacy" description="What this site collects, where it lives, and who it gets shared with (nobody).">
+  <section class="container-prose py-16 lg:py-20">
+    <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Privacy</div>
+    <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight mb-3">
+      Your stuff is <span class="gradient-text">your stuff</span>
+    </h1>
+    <p class="text-sm text-ink-500 mb-10">Last updated: {updated}</p>
+
+    <div class="prose dark:prose-invert">
+      <h2>The short version</h2>
+      <p>
+        I will never share any of your information with the school, its staff, your teachers,
+        the district, your parents, or anyone else. Not your account email, not your quiz scores,
+        not which guides you opened, not anything. Full stop.
+      </p>
+      <p>
+        I built this site, I run this site, and I have no relationship with the school. The school
+        does not own it, fund it, or have any access to it. The IHHS name is in the title because the
+        guides are made for IHHS students, not because the school is involved.
+      </p>
+
+      <h2>What gets stored, and where</h2>
+      <p>The site only stores what's needed to make the features work. Specifically:</p>
+      <ul>
+        <li><strong>Theme preference</strong> (light or dark), in your browser's localStorage.</li>
+        <li><strong>Reading progress</strong>: which guides you've opened and when, in localStorage.</li>
+        <li><strong>Flashcard scheduling</strong>: which cards you've reviewed and when they're due next, in localStorage.</li>
+        <li><strong>Quiz scores</strong>: how many you got right and on which guide, in localStorage.</li>
+        <li><strong>Streak count</strong>: how many days in a row you've studied, in localStorage.</li>
+      </ul>
+      <p>
+        All of that lives on <em>your device only</em>. If you clear your browser data, it's gone.
+        If you use a different device, it doesn't follow you.
+      </p>
+
+      <h2>If you create an account</h2>
+      <p>
+        Accounts are optional. If you make one, the same data above is also synced to a cloud
+        database (Supabase) so it follows you between devices. The only personal info attached
+        to your account is the email address you signed up with, used solely so you can log back
+        in. No name, no school ID, no anything else is collected.
+      </p>
+      <p>
+        Your email is never shared, never sold, never used for marketing, never used to message
+        you, and never given to the school under any circumstance. If the school asks me for a
+        list of users, the answer is no. If the school subpoenas it, I'll talk to a lawyer; the
+        answer probably stays no.
+      </p>
+
+      <h2>What is NOT collected</h2>
+      <ul>
+        <li>No analytics, no tracking pixels, no Google Analytics, no Meta Pixel, no anything.</li>
+        <li>No IP address logging beyond what the host (Vercel/Netlify/etc.) does for basic abuse prevention.</li>
+        <li>No third-party advertising. There are no ads, ever.</li>
+        <li>No browser fingerprinting.</li>
+        <li>No reading of your other tabs, other sites, or anything outside this site.</li>
+      </ul>
+
+      <h2>The AI tutor</h2>
+      <p>
+        When you chat with the tutor, the question you type plus the surrounding guide text gets
+        sent to a third-party AI provider (Cloudflare Workers AI / Llama 3.1) so it can write a
+        reply. I don't store the conversation. The AI provider sees the prompt long enough to
+        answer it; their privacy policy applies to that part. I don't tie tutor messages to your
+        account, and I don't read them.
+      </p>
+
+      <h2>Your rights</h2>
+      <ul>
+        <li>You can delete all your local data anytime by clearing site data in your browser.</li>
+        <li>If you have an account, you can email me and I'll delete it and everything attached, no questions asked.</li>
+        <li>You can use the site without an account and nothing leaves your browser.</li>
+      </ul>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If anything here changes, I'll update the "last updated" date at the top. The school
+        promise is not negotiable and will not change.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions? Talk to me directly. Don't go through the school.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
