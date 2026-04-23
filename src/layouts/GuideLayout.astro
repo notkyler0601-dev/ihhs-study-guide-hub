@@ -85,7 +85,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
       </div>
 
       <aside class="hidden lg:block">
-        <div class="sticky top-24 space-y-6">
+        <div class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto scrollbar-thin pr-2 -mr-2 space-y-6">
           <TableOfContents headings={headings} />
           <button
             type="button"
