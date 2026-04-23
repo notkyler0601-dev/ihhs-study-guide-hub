@@ -30,6 +30,7 @@ import TextAnnotate from '../../components/TextAnnotate.astro';
 import MindMap from '../../components/MindMap.astro';
 import WordCloud from '../../components/WordCloud.astro';
 import Hotspots from '../../components/Hotspots.astro';
+import GlobeTheatre3D from '../../components/GlobeTheatre3D.astro';
 import StepThrough from '../../components/StepThrough.astro';
 import Crossword from '../../components/Crossword.astro';
 import DragSort from '../../components/DragSort.astro';
@@ -788,23 +789,23 @@ Free public-domain readings of the full balcony scene are available on LibriVox.
 
 When the play first ran in 1597, it was performed at an open-air theater that looked nothing like a modern stage. The "balcony" was the **upper acting space** at the back of the stage. The audience surrounded the actors on three sides. The roof over the stage was painted with the sun, moon, and stars.
 
-Hover over each labeled spot below to see what role that part of the building played, and which scenes used it.
+Drag to rotate, scroll to zoom, click any pin to read what that part of the building did. Use the **Audience**, **Stage**, or **Bird's eye** buttons to jump to a preset view.
 
-<Hotspots
+<GlobeTheatre3D
   title="The Elizabethan stage that hosted the original production"
-  image="/globe-theatre.svg"
-  alt="Cross-section of an Elizabethan playhouse, showing the thrust stage, tiring house, upper acting space, heavens canopy, galleries, and yard."
-  mode="reveal"
-  spots={[
-    { x: 50, y: 22, label: "Flag", description: "A flag was raised above the playhouse on performance days. Color told Londoners the genre: black for tragedy (so a black flag would have flown for Romeo and Juliet)." },
-    { x: 50, y: 38, label: "Lord's room", description: "Premium seating directly above the stage. The most expensive seats faced the back of the actors' heads, but it let aristocrats be seen by the rest of the audience." },
-    { x: 50, y: 47, label: "Upper acting space", description: "Where Juliet appeared 'at the window.' The balcony scene was almost certainly staged here, with Romeo on the main stage below looking up." },
-    { x: 30, y: 50, label: "Heavens canopy", description: "Painted with sun, moon, and stars on the underside. Gods and angels could be lowered through trapdoors in the heavens on ropes." },
-    { x: 50, y: 75, label: "Trap door", description: "Opened in the stage floor for graves, ghosts, and underworld entrances. The tomb scene of Act 5 may have used this opening." },
-    { x: 30, y: 80, label: "Yard (groundlings)", description: "Standing-room only, one penny. Up to 800 people packed in around the thrust stage, often heckling actors and snacking on hazelnuts." },
-    { x: 12, y: 55, label: "Galleries", description: "Three covered tiers of seating around the perimeter, two pennies for a bench, three for a cushion." },
-    { x: 50, y: 62, label: "Thrust stage", description: "The main acting platform jutting into the audience. The brawls, duels, and most dialogue happened here." },
-    { x: 28, y: 55, label: "Pillars", description: "Two huge oak pillars (called Hercules and Atlas) held up the heavens. Actors used them to hide behind during sword-fight blocking." }
+  height={560}
+  fallbackImage="/globe-theatre.svg"
+  fallbackAlt="Cross-section of an Elizabethan playhouse, showing the thrust stage, tiring house, upper acting space, heavens canopy, galleries, and yard."
+  hotspots={[
+    { id: "flag",     label: "Flag",                position: [0, 7.4, -1],     flat: { x: 50, y: 22 }, description: "A flag was raised above the playhouse on performance days. Color told Londoners the genre: black for tragedy (so a black flag would have flown for Romeo and Juliet)." },
+    { id: "lordsRoom",label: "Lord's room",         position: [0, 3.7, -3.0],   flat: { x: 50, y: 38 }, description: "Premium seating directly above the stage. The most expensive seats faced the back of the actors' heads, but it let aristocrats be seen by the rest of the audience." },
+    { id: "balcony",  label: "Upper acting space",  position: [0, 2.7, -2.6],   flat: { x: 50, y: 47 }, description: "Where Juliet appeared 'at the window.' The balcony scene was almost certainly staged here, with Romeo on the main stage below looking up." },
+    { id: "heavens",  label: "Heavens canopy",      position: [-1.5, 4.6, -1],  flat: { x: 30, y: 50 }, description: "Painted with sun, moon, and stars on the underside. Gods and angels could be lowered through trapdoors in the heavens on ropes." },
+    { id: "trap",     label: "Trap door",           position: [0, 1.0, -1.2],   flat: { x: 50, y: 75 }, description: "Opened in the stage floor for graves, ghosts, and underworld entrances. The tomb scene of Act 5 may have used this opening." },
+    { id: "yard",     label: "Yard (groundlings)",  position: [-0.6, 0.4, 2.2], flat: { x: 30, y: 80 }, description: "Standing-room only, one penny. Up to 800 people packed in around the thrust stage, often heckling actors and snacking on hazelnuts." },
+    { id: "galleries",label: "Galleries",           position: [-5.3, 2.6, 1.8], flat: { x: 12, y: 55 }, description: "Three covered tiers of seating around the perimeter, two pennies for a bench, three for a cushion." },
+    { id: "stage",    label: "Thrust stage",        position: [1.6, 0.95, -0.8],flat: { x: 50, y: 62 }, description: "The main acting platform jutting into the audience. The brawls, duels, and most dialogue happened here." },
+    { id: "pillars",  label: "Pillars",             position: [-2.2, 2.7, -0.3],flat: { x: 28, y: 55 }, description: "Two huge oak pillars (called Hercules and Atlas) held up the heavens. Actors used them to hide behind during sword-fight blocking." }
   ]}
 />
 
