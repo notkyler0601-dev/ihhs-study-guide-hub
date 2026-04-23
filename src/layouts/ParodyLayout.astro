@@ -1,0 +1,72 @@
+---
+import SecretLayout from './SecretLayout.astro';
+import SatireBanner from '../components/SatireBanner.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  guide: CollectionEntry<'parody'>;
+}
+const { guide } = Astro.props;
+const { title, description, date, authors } = guide.data;
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<SecretLayout title={`${title} · Parody`} description={description}>
+  <SatireBanner />
+
+  <div data-secret-gate-redirect class="hidden text-center text-sm text-ink-500 py-20">
+    Redirecting...
+  </div>
+
+  <article data-secret-content class="container-prose py-10 lg:py-14">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 mb-4 text-xs text-ink-500">
+        <a href="/secret" class="hover:text-accent-700 dark:hover:text-accent-400 transition-colors">Secret library</a>
+        <span class="opacity-40">/</span>
+        <span>Parody</span>
+      </div>
+      <h1
+        class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.1] text-balance"
+        style="font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive; transform: rotate(-0.4deg);"
+      >
+        {title}
+      </h1>
+      <p class="mt-4 text-lg text-ink-600 dark:text-ink-300 leading-relaxed text-pretty">
+        {description}
+      </p>
+      <div class="mt-3 text-xs text-ink-500 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span>By {authors.join(', ')}</span>
+        <span>·</span>
+        <span>Published {fmt(date)}</span>
+        <span>·</span>
+        <span class="font-semibold text-amber-700 dark:text-amber-400">100% fake</span>
+      </div>
+    </header>
+
+    <div class="prose dark:prose-invert max-w-none">
+      <slot />
+    </div>
+
+    <footer class="mt-16 pt-6 border-t border-ink-200 dark:border-ink-800 text-center text-xs text-ink-500">
+      Reminder: every word above is a joke. Nothing is real or accurate. ·
+      <a href="/secret" class="text-accent-700 dark:text-accent-400 hover:underline">Back to the secret library</a>
+    </footer>
+  </article>
+</SecretLayout>
+
+<script>
+  import { isUnlocked } from '../lib/secret';
+
+  const gate = () => {
+    if (isUnlocked()) return;
+    const content = document.querySelector('[data-secret-content]') as HTMLElement | null;
+    const redir = document.querySelector('[data-secret-gate-redirect]') as HTMLElement | null;
+    if (content) content.classList.add('hidden');
+    if (redir) redir.classList.remove('hidden');
+    // Stash the requested URL so /secret can bounce us back after unlock.
+    sessionStorage.setItem('ihhs:secret:return', window.location.pathname);
+    window.location.replace('/secret');
+  };
+  gate();
+  document.addEventListener('astro:after-swap', gate);
+</script>

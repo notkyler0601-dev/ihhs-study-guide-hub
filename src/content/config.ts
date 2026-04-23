@@ -18,4 +18,17 @@ const guides = defineCollection({
   }),
 });
 
-export const collections = { guides };
+// Hidden parody collection. NOT cross-linked from /library, /subjects, the
+// home page, or the command palette. Only reachable via the password gate at
+// /secret. Source files live in src/content/parody/.
+const parody = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/parody' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    date: z.coerce.date(),
+    authors: z.array(z.string()).default(['IHHS']),
+  }),
+});
+
+export const collections = { guides, parody };

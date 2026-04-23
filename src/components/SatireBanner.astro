@@ -1,0 +1,17 @@
+---
+// Sticky impossible-to-miss banner for parody guides. Mounted at the very
+// top of <ParodyLayout> so a screenshot of any parody content also captures
+// the "this is satire" notice.
+---
+
+<div class="not-prose sticky top-0 z-30 border-b-2 border-amber-500 bg-amber-100 dark:bg-amber-900/60 text-amber-950 dark:text-amber-100"
+     style="background-image: repeating-linear-gradient(45deg, transparent 0 12px, rgba(0,0,0,0.04) 12px 14px);">
+  <div class="container-wide flex items-center gap-3 py-2 text-xs sm:text-sm font-semibold">
+    <span class="text-lg leading-none" aria-hidden="true">🤡</span>
+    <p class="flex-1 text-pretty">
+      <span class="uppercase tracking-[0.16em]">Satire</span> ·
+      Everything below is a joke. None of it is real, accurate, or meant to be taken seriously.
+      Don't cite it. Don't believe it. Don't screenshot out of context.
+    </p>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+---
+// Hand-drawn crayon-style SVG illustrations for parody guides.
+//
+// Built-in shapes: 'person', 'sun', 'house', 'cloud', 'arrow', 'tree',
+// 'bird', 'box', 'squiggle', 'star'. Pass a `caption` for kid-handwriting
+// style label below the drawing.
+//
+// The "crayon" look comes from a global SVG <feTurbulence> +
+// <feDisplacementMap> filter that warps every stroke, plus a hand-picked
+// crayon palette and chunky stroke widths.
+//
+// Usage:
+//   <Crayon shape="bird" color="red" caption="this is a bird (probably)" />
+//   <Crayon shape="arrow" caption="this part go boom" />
+interface Props {
+  shape?: 'person' | 'sun' | 'house' | 'cloud' | 'arrow' | 'tree' | 'bird' | 'box' | 'squiggle' | 'star';
+  color?: 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'brown' | 'black';
+  caption?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+const { shape = 'squiggle', color = 'red', caption, size = 'md' } = Astro.props;
+
+const palette: Record<string, string> = {
+  red: '#dc2626', blue: '#2563eb', green: '#16a34a', yellow: '#eab308',
+  purple: '#9333ea', orange: '#ea580c', brown: '#92400e', black: '#0a0a0a',
+};
+const stroke = palette[color];
+
+const sizeClass = { sm: 'w-32 h-32', md: 'w-48 h-48', lg: 'w-64 h-64' }[size];
+
+// Each shape is hand-drawn with intentionally crooked paths. The wobble
+// filter perturbs them further at render time.
+const shapeMarkup: Record<string, string> = {
+  person: `
+    <circle cx="50" cy="28" r="11" fill="none" />
+    <line x1="50" y1="40" x2="50" y2="68" />
+    <line x1="50" y1="48" x2="32" y2="58" />
+    <line x1="50" y1="48" x2="70" y2="56" />
+    <line x1="50" y1="68" x2="36" y2="86" />
+    <line x1="50" y1="68" x2="66" y2="88" />
+    <circle cx="46" cy="26" r="1.5" fill="${stroke}" stroke="none"/>
+    <circle cx="55" cy="27" r="1.5" fill="${stroke}" stroke="none"/>
+    <path d="M44 32 Q50 36 56 32" />
+  `,
+  sun: `
+    <circle cx="50" cy="50" r="18" fill="none" />
+    <line x1="50" y1="14" x2="50" y2="24" />
+    <line x1="50" y1="76" x2="50" y2="86" />
+    <line x1="14" y1="50" x2="24" y2="50" />
+    <line x1="76" y1="50" x2="86" y2="50" />
+    <line x1="22" y1="22" x2="30" y2="30" />
+    <line x1="70" y1="30" x2="78" y2="22" />
+    <line x1="22" y1="78" x2="30" y2="70" />
+    <line x1="70" y1="70" x2="78" y2="78" />
+  `,
+  house: `
+    <path d="M20 80 L20 50 L50 22 L80 50 L80 80 Z" fill="none" />
+    <rect x="42" y="58" width="16" height="22" fill="none" />
+    <rect x="58" y="50" width="14" height="12" fill="none" />
+    <line x1="65" y1="50" x2="65" y2="62" />
+  `,
+  cloud: `
+    <path d="M22 60 Q14 60 14 50 Q14 40 26 40 Q28 28 42 28 Q56 28 60 38 Q76 38 76 50 Q76 60 66 60 Z" fill="none" />
+  `,
+  arrow: `
+    <line x1="14" y1="50" x2="78" y2="50" />
+    <line x1="78" y1="50" x2="64" y2="38" />
+    <line x1="78" y1="50" x2="64" y2="62" />
+  `,
+  tree: `
+    <rect x="44" y="58" width="12" height="28" fill="none" />
+    <path d="M50 14 L26 58 L74 58 Z" fill="none" />
+    <path d="M50 30 L34 56 L66 56 Z" fill="none" />
+  `,
+  bird: `
+    <path d="M22 56 Q40 38 60 50 Q72 36 78 44 L72 50 Q70 60 56 60 Q40 64 22 56 Z" fill="none" />
+    <circle cx="62" cy="46" r="1.6" fill="${stroke}" stroke="none"/>
+    <line x1="68" y1="48" x2="76" y2="48" />
+    <line x1="38" y1="60" x2="34" y2="74" />
+    <line x1="48" y1="62" x2="46" y2="76" />
+  `,
+  box: `
+    <rect x="22" y="22" width="56" height="56" fill="none" />
+  `,
+  squiggle: `
+    <path d="M14 50 Q26 30 38 50 T62 50 T86 50" fill="none" />
+  `,
+  star: `
+    <path d="M50 16 L58 40 L84 40 L62 56 L70 80 L50 64 L30 80 L38 56 L16 40 L42 40 Z" fill="none" />
+  `,
+};
+const inner = shapeMarkup[shape];
+
+// Unique IDs so multiple Crayons on a page don't share filter state.
+const id = 'cr-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-6 inline-flex flex-col items-center gap-2 mx-auto">
+  <svg
+    viewBox="0 0 100 100"
+    class:list={['block', sizeClass]}
+    style={`stroke: ${stroke}; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; filter: url(#${id})`}
+    role="img"
+    aria-label={caption ?? shape}
+  >
+    <defs>
+      <filter id={id}>
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5" />
+        <feDisplacementMap in="SourceGraphic" scale="3" />
+      </filter>
+    </defs>
+    <g set:html={inner} />
+  </svg>
+  {caption && (
+    <figcaption
+      class="text-center text-base text-ink-700 dark:text-ink-200 max-w-[16rem]"
+      style="font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive; transform: rotate(-1.5deg);"
+    >
+      {caption}
+    </figcaption>
+  )}
+</figure>

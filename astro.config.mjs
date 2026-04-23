@@ -12,7 +12,10 @@ export default defineConfig({
   integrations: [mdx({
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
-  }), sitemap(), tailwind({ applyBaseStyles: false }), react()],
+  }), sitemap({
+    // Hidden /secret parody pages must not appear in the public sitemap.
+    filter: (page) => !page.includes('/secret'),
+  }), tailwind({ applyBaseStyles: false }), react()],
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],

@@ -1,0 +1,32 @@
+---
+// Parody-only callout that LOOKS like a citation box but contains an
+// obviously-wrong "fact" with a fake source. Use these to deliver the
+// joke beats inside a parody guide.
+//
+// Usage:
+//   <BadFact source="NASA, probably" certainty="100%">
+//     The moon is made of compressed cat hair.
+//   </BadFact>
+interface Props {
+  source?: string;
+  certainty?: string;
+  title?: string;
+}
+const { source = 'a guy on the bus, 2003', certainty = '100%', title = 'Verified Fact' } = Astro.props;
+---
+
+<aside class="not-prose my-6 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 p-4 shadow-soft relative overflow-hidden">
+  <div class="absolute -top-1 -right-1 rotate-12 bg-emerald-500 text-white text-[10px] font-mono font-bold tracking-widest px-3 py-1 rounded-bl-md shadow-lift">
+    ✓ {certainty} TRUE
+  </div>
+  <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] font-bold text-emerald-800 dark:text-emerald-200 mb-2">
+    <span class="text-base leading-none">🔬</span>
+    <span>{title}</span>
+  </div>
+  <div class="text-[1.05rem] leading-relaxed text-ink-900 dark:text-ink-50 font-medium">
+    <slot />
+  </div>
+  <p class="mt-3 text-[11px] italic text-emerald-700 dark:text-emerald-300">
+    Source: {source}
+  </p>
+</aside>
