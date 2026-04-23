@@ -20,26 +20,31 @@ interface Props {
 }
 
 // Three named camera positions players can jump between.
+// "Audience" is framed from outside and slightly above the cutaway so the
+// cross-section architecture is obvious at a glance, like a textbook diagram.
 const VIEWS = {
-  audience: { pos: [0, 1.6, 5.5] as [number, number, number], target: [0, 1.4, -1] as [number, number, number] },
-  stage:    { pos: [0, 1.8, -1.4] as [number, number, number], target: [0, 1.4, 4] as [number, number, number] },
-  bird:     { pos: [0, 11, 6] as [number, number, number],     target: [0, 0.5, -0.5] as [number, number, number] },
+  audience: { pos: [0, 6.5, 13] as [number, number, number],   target: [0, 1.5, -1] as [number, number, number] },
+  stage:    { pos: [0, 2.0, -1.4] as [number, number, number], target: [0, 1.4, 8] as [number, number, number] },
+  bird:     { pos: [0, 12, 7] as [number, number, number],     target: [0, 0.5, -0.5] as [number, number, number] },
 } as const;
 type ViewName = keyof typeof VIEWS;
 
 // ----- Building -----------------------------------------------------------
 
-// Cutaway angles: leave the front 90 degrees of the building open so
-// the camera (positioned at +Z) has an unobstructed view of the stage.
-// Cylinder theta CCW from +X: opening centered on +Z (theta = pi/2).
-const WALL_THETA_START = Math.PI * 0.75;   // 135 deg
-const WALL_THETA_LENGTH = Math.PI * 1.5;   // 270 deg of wall, 90 deg open
-// Ring direction is opposite (after -pi/2 X-rotation), so the start angle flips.
-const RING_THETA_START = Math.PI * 1.75;   // 315 deg
-const RING_THETA_LENGTH = Math.PI * 1.5;
-// Torus arc starts at theta=0 (no offset), and after the same X-rotation
-// the front of the world ends up at the unrendered tail of the arc.
-const ROOF_ARC = Math.PI * 1.5;
+// Cutaway angles: open the front 140 degrees of the building (centered on +Z,
+// which is the audience side) so the cross-section reads like a textbook diagram.
+// Wall covers the back 220 degrees only.
+const FRONT_OPEN_DEG = 140;
+const FRONT_OPEN = (FRONT_OPEN_DEG * Math.PI) / 180;
+const WALL_KEEP = Math.PI * 2 - FRONT_OPEN;
+// Cylinder theta is CCW from +X looking down. Opening centered on +Z (theta = pi/2).
+const WALL_THETA_START = Math.PI / 2 + FRONT_OPEN / 2;   // wall starts past the opening
+const WALL_THETA_LENGTH = WALL_KEEP;
+// Ring direction is opposite (after -pi/2 X-rotation), so opening centered on theta = 3pi/2.
+const RING_THETA_START = (3 * Math.PI) / 2 + FRONT_OPEN / 2;
+const RING_THETA_LENGTH = WALL_KEEP;
+// Torus arc starts at theta=0; after the X-rotation the cut-out tail falls on the front.
+const ROOF_ARC = WALL_KEEP;
 
 // The outer "wooden O": a cutaway polygonal cylinder. Front is open.
 function OuterWall() {
@@ -395,8 +400,8 @@ export default function GlobeTheatre3D({ height = 540, hotspots }: Props) {
           enableDamping
           dampingFactor={0.08}
           enablePan={false}
-          minDistance={3}
-          maxDistance={18}
+          minDistance={5}
+          maxDistance={22}
           minPolarAngle={Math.PI * 0.15}
           maxPolarAngle={Math.PI * 0.5}
           target={VIEWS.audience.target}
