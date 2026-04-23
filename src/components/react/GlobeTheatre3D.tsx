@@ -29,24 +29,35 @@ type ViewName = keyof typeof VIEWS;
 
 // ----- Building -----------------------------------------------------------
 
-// The outer "wooden O": an open-top, open-bottom polygonal cylinder.
-// Side material is brown timber; we use DoubleSide so the inside walls are visible.
+// Cutaway angles: leave the front 90 degrees of the building open so
+// the camera (positioned at +Z) has an unobstructed view of the stage.
+// Cylinder theta CCW from +X: opening centered on +Z (theta = pi/2).
+const WALL_THETA_START = Math.PI * 0.75;   // 135 deg
+const WALL_THETA_LENGTH = Math.PI * 1.5;   // 270 deg of wall, 90 deg open
+// Ring direction is opposite (after -pi/2 X-rotation), so the start angle flips.
+const RING_THETA_START = Math.PI * 1.75;   // 315 deg
+const RING_THETA_LENGTH = Math.PI * 1.5;
+// Torus arc starts at theta=0 (no offset), and after the same X-rotation
+// the front of the world ends up at the unrendered tail of the arc.
+const ROOF_ARC = Math.PI * 1.5;
+
+// The outer "wooden O": a cutaway polygonal cylinder. Front is open.
 function OuterWall() {
   return (
     <mesh position={[0, 2.5, 0]} receiveShadow>
-      <cylinderGeometry args={[6, 6, 5, 20, 1, true]} />
+      <cylinderGeometry args={[6, 6, 5, 24, 1, true, WALL_THETA_START, WALL_THETA_LENGTH]} />
       <meshStandardMaterial color="#a16207" roughness={0.9} side={THREE.DoubleSide} />
     </mesh>
   );
 }
 
-// Three horizontal accents marking the gallery floors.
+// Three horizontal accents marking the gallery floors. Cut to match the wall.
 function GalleryBands() {
   return (
     <>
       {[1.25, 2.5, 3.75].map((y) => (
         <mesh key={y} position={[0, y, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[5.4, 6.02, 32]} />
+          <ringGeometry args={[5.4, 6.02, 40, 1, RING_THETA_START, RING_THETA_LENGTH]} />
           <meshStandardMaterial color="#451a03" side={THREE.DoubleSide} />
         </mesh>
       ))}
@@ -64,11 +75,12 @@ function Yard() {
   );
 }
 
-// Thatched roof over the galleries (the back two-thirds of the ring).
+// Thatched roof over the galleries. Laid flat (rotated -pi/2 around X)
+// and arc-cut so the front matches the open wall.
 function ThatchedRoof() {
   return (
-    <mesh position={[0, 5.05, 0]} receiveShadow castShadow>
-      <torusGeometry args={[5.7, 0.55, 12, 32]} />
+    <mesh position={[0, 5.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow castShadow>
+      <torusGeometry args={[5.7, 0.45, 10, 36, ROOF_ARC]} />
       <meshStandardMaterial color="#713f12" roughness={1} />
     </mesh>
   );
