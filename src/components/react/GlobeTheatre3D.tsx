@@ -23,7 +23,7 @@ interface Props {
 // "Audience" is framed from outside and slightly above the cutaway so the
 // cross-section architecture is obvious at a glance, like a textbook diagram.
 const VIEWS = {
-  audience: { pos: [0, 6.5, 13] as [number, number, number],   target: [0, 1.5, -1] as [number, number, number] },
+  audience: { pos: [4, 5, 11] as [number, number, number],     target: [0, 1.6, -2] as [number, number, number] },
   stage:    { pos: [0, 2.0, -1.4] as [number, number, number], target: [0, 1.4, 8] as [number, number, number] },
   bird:     { pos: [0, 12, 7] as [number, number, number],     target: [0, 0.5, -0.5] as [number, number, number] },
 } as const;
@@ -31,10 +31,10 @@ type ViewName = keyof typeof VIEWS;
 
 // ----- Building -----------------------------------------------------------
 
-// Cutaway angles: open the front 140 degrees of the building (centered on +Z,
-// which is the audience side) so the cross-section reads like a textbook diagram.
-// Wall covers the back 220 degrees only.
-const FRONT_OPEN_DEG = 140;
+// Cutaway angles: open the front 220 degrees (more than a hemisphere) so only
+// a curved back wall remains behind the stage. This reads as a clean
+// architectural cross-section: stage and tiring house in a half-bowl.
+const FRONT_OPEN_DEG = 220;
 const FRONT_OPEN = (FRONT_OPEN_DEG * Math.PI) / 180;
 const WALL_KEEP = Math.PI * 2 - FRONT_OPEN;
 // Cylinder theta is CCW from +X looking down. Opening centered on +Z (theta = pi/2).
