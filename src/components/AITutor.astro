@@ -8,8 +8,8 @@
 // floating action bar with "Simpler" and "Caveman" buttons that re-explain
 // just that passage.
 //
-// Login-gated via currentUser(). Requires PUBLIC_AI_TUTOR_URL pointing at
-// the Cloudflare Worker in worker/.
+// Open to everyone, no account needed. Requires PUBLIC_AI_TUTOR_URL
+// pointing at the Cloudflare Worker in worker/.
 interface Props {
   guideTitle?: string;
 }
@@ -65,12 +65,6 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       <div data-tutor-welcome class="text-ink-500 text-xs">
         Ask about this guide, use a shortcut below, or hover any paragraph in the guide for one-click re-explains.
       </div>
-    </div>
-
-    <div data-tutor-gate class="hidden m-3 rounded-lg border border-dashed border-ink-200 dark:border-ink-700 p-3 text-xs text-ink-600 dark:text-ink-300">
-      <a href="/login" class="text-accent-700 dark:text-accent-300 underline">Log in</a>
-      or <a href="/signup" class="text-accent-700 dark:text-accent-300 underline">sign up</a>
-      to chat with the tutor.
     </div>
 
     <div data-tutor-offline class="hidden m-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-3 text-xs text-amber-900 dark:text-amber-200">
@@ -187,8 +181,6 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 </style>
 
 <script>
-  import { currentUser } from '../lib/auth';
-
   type Msg = { role: 'user' | 'assistant'; content: string };
 
   const escape = (s: string) =>
@@ -241,7 +233,6 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     const input = root.querySelector<HTMLTextAreaElement>('[data-tutor-input]')!;
     const sendBtn = root.querySelector<HTMLButtonElement>('[data-tutor-send]')!;
     const resetBtn = root.querySelector<HTMLButtonElement>('[data-tutor-reset]')!;
-    const gate = root.querySelector<HTMLElement>('[data-tutor-gate]')!;
     const offline = root.querySelector<HTMLElement>('[data-tutor-offline]')!;
     const actions = root.querySelector<HTMLElement>('[data-tutor-actions]')!;
 
@@ -269,12 +260,6 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 
     if (!endpoint) {
       offline.classList.remove('hidden');
-      form.classList.add('hidden');
-      actions.classList.add('hidden');
-      return;
-    }
-    if (!currentUser()) {
-      gate.classList.remove('hidden');
       form.classList.add('hidden');
       actions.classList.add('hidden');
       return;
@@ -475,9 +460,9 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       const passage = (g_hoverEl.innerText || '').replace(/\s+/g, ' ').trim();
       if (!passage) return;
       hideHoverMenuGlobal();
-      // No registered handler means the user isn't signed in (init() short-
-      // circuited before assigning g_currentAsk). The panel already shows the
-      // login gate so we don't need to do anything else here.
+      // No registered handler means init() bailed before wiring up (e.g. the
+      // tutor endpoint env var isn't set, so the panel is showing "Tutor not
+      // configured"). Nothing useful to do here.
       if (!g_currentAsk) return;
       const truncated = passage.length > 60 ? passage.slice(0, 60) + '...' : passage;
       const label = kind === 'simpler'
