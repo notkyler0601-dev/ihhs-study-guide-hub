@@ -491,7 +491,7 @@ src/
   styles/
     global.css
 public/
-  favicon.svg
+  ihhs-logo.png
 ```
 
 ## Accounts and data
@@ -559,4 +559,4 @@ Without the env var, the component renders a clear "not configured" notice inste
 
 ## License
 
-Built by IHHS students for IHHS students. Free to fork and adapt.
+Built by IHHS student for IHHS students. Free to fork and adapt.
