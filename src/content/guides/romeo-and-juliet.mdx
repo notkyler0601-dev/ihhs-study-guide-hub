@@ -25,6 +25,15 @@ import RechartsLine from '../../components/RechartsLine.astro';
 import DragMatch from '../../components/DragMatch.astro';
 import Scrollytelling from '../../components/Scrollytelling.astro';
 import Memorize from '../../components/Memorize.astro';
+import DocAnnotate from '../../components/DocAnnotate.astro';
+import TextAnnotate from '../../components/TextAnnotate.astro';
+import MindMap from '../../components/MindMap.astro';
+import WordCloud from '../../components/WordCloud.astro';
+import Hotspots from '../../components/Hotspots.astro';
+import StepThrough from '../../components/StepThrough.astro';
+import Crossword from '../../components/Crossword.astro';
+import DragSort from '../../components/DragSort.astro';
+import MatchPairs from '../../components/MatchPairs.astro';
 
 ## Learning objectives
 
@@ -67,6 +76,72 @@ A teen romance that only ends in death because the adults around them won't stop
 - <KeyTerm term="Catastrophe">The final disaster of a tragedy. The deaths of the title characters and the reconciliation of the families.</KeyTerm>
 - <KeyTerm term="Aubade">A poem about lovers parting at dawn. Act 3 Scene 5 ("Wilt thou be gone? It is not yet near day") is one of the most famous in English.</KeyTerm>
 - <KeyTerm term="Friar">A member of a Catholic religious order, in this play Friar Lawrence. Functions as Romeo's confessor, mentor, and pharmacist.</KeyTerm>
+
+### Vocab crossword
+
+A quick check on the glossary terms above. Click a clue, type your answer in the grid, then hit Check.
+
+<Crossword
+  title="Romeo and Juliet vocab"
+  words={[
+    { answer: "SONNET",       clue: "14-line poem in iambic pentameter; the lovers' first dialogue forms one" },
+    { answer: "OXYMORON",     clue: "Two contradictory words paired for effect (loving hate, heavy lightness)" },
+    { answer: "AUBADE",       clue: "Dawn-parting poem; Act 3 Scene 5 is a famous example" },
+    { answer: "FOIL",         clue: "Character who exists to highlight another by contrast" },
+    { answer: "SOLILOQUY",    clue: "Speech alone on stage that reveals the character's thoughts" },
+    { answer: "ASIDE",        clue: "Remark to the audience that other characters cannot hear" },
+    { answer: "VERONA",       clue: "Italian city the play is set in" },
+    { answer: "FRIAR",        clue: "Lawrence's role and title; brews the sleeping potion" },
+    { answer: "BLANK",        clue: "____ verse: unrhymed iambic pentameter" },
+    { answer: "FATE",         clue: "Star-crossed force the Prologue blames first" },
+    { answer: "PUN",          clue: "Wordplay using multiple meanings; Mercutio's signature" },
+    { answer: "IRONY",        clue: "When the audience knows what the character does not (dramatic ____)" }
+  ]}
+/>
+
+## The Prologue, close-read
+
+Shakespeare opens the play with a 14-line sonnet spoken by a Chorus. It tells you the setting, the characters, and the ending in 116 words. Read it once for sound, then look at the highlighted phrases below to see what each one is doing.
+
+<DocAnnotate
+  title="Prologue, spoken by the Chorus"
+  text={`Two households, both alike in dignity,
+In fair Verona, where we lay our scene,
+From ancient grudge break to new mutiny,
+Where civil blood makes civil hands unclean.
+From forth the fatal loins of these two foes
+A pair of star-cross'd lovers take their life;
+Whose misadventured piteous overthrows
+Do with their death bury their parents' strife.
+The fearful passage of their death-mark'd love,
+And the continuance of their parents' rage,
+Which, but their children's end, nought could remove,
+Is now the two hours' traffic of our stage;
+The which if you with patient ears attend,
+What here shall miss, our toil shall strive to mend.`}
+  annotations={[
+    { start: 84,  end: 98,  label: "Ancient grudge",    color: "#fee2e2", note: "The feud is older than anyone remembers. Shakespeare never tells you what started it, only that it is generational." },
+    { start: 126, end: 163, label: "Civil blood / civil hands", color: "#fef3c7", note: "A chiasmus: 'civil blood' and 'civil hands' mirror each other. Civic society is destroying itself. The repetition is the point." },
+    { start: 220, end: 239, label: "Star-cross'd lovers", color: "#dbeafe", note: "The cosmos itself is against them. This single phrase frames every later choice as already decided by fate." },
+    { start: 327, end: 342, label: "Parents' strife",    color: "#dcfce7", note: "Cause is named: the parents' fight is what the children's deaths must bury. Adults made the war. Children pay." },
+    { start: 373, end: 390, label: "Death-mark'd love",  color: "#f3e8ff", note: "Love and death are bonded from line one. Shakespeare refuses to let you read it as a happy story interrupted by tragedy." },
+    { start: 501, end: 519, label: "Two hours' traffic", color: "#fce7f3", note: "He tells you the running time of the play in the prologue. The whole tragedy will move at the speed of theater, not life." }
+  ]}
+/>
+
+<Callout type="insight" title="Why open with a spoiler">
+The Prologue announces the ending so the audience stops asking *what happens?* and starts asking *how does it happen?* Every scene becomes an exercise in watching characters walk into a future you already know. That is dramatic irony built into the architecture of the play.
+</Callout>
+
+### Annotate it yourself
+
+Pick a phrase in the Prologue below that struck you, select it with your cursor, and write your own note. Your highlights are saved on this device.
+
+<TextAnnotate
+  title="Your reading of the Prologue"
+  storageKey="rj-prologue"
+  text={`Two households, both alike in dignity, In fair Verona, where we lay our scene, From ancient grudge break to new mutiny, Where civil blood makes civil hands unclean. From forth the fatal loins of these two foes A pair of star-cross'd lovers take their life; Whose misadventured piteous overthrows Do with their death bury their parents' strife. The fearful passage of their death-mark'd love, And the continuance of their parents' rage, Which, but their children's end, nought could remove, Is now the two hours' traffic of our stage; The which if you with patient ears attend, What here shall miss, our toil shall strive to mend.`}
+/>
 
 ## The 5-day timeline
 
@@ -220,6 +295,25 @@ Trace each death back to its trigger and you can see the whole tragedy as a chai
 Every death in the play is a downstream consequence of the **feud**, not of love. If the houses had not been at war, the marriage would have reconciled them and the rest of the play would never have happened.
 </Callout>
 
+### Walk through the catastrophe, step by step
+
+The Sankey above shows the chain at a glance. Click through this sequence to see each link individually. Useful for essay outlines: each step is a paragraph topic.
+
+<StepThrough
+  title="The chain of consequence"
+  height={260}
+  steps={[
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 1</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">The feud exists</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">Capulets and Montagues have been brawling for generations. The Prince has just made a fresh threat: next disturbance, and someone hangs.</div></div>`, caption: `The play opens with this status quo already in place. Without it, nothing else happens.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 2</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">Romeo crashes the party</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">A Montague is masked at a Capulet feast. Tybalt spots him and is told by Lord Capulet to stand down. Tybalt vows revenge.</div></div>`, caption: `Tybalt's pride is now a loaded weapon waiting for an excuse to fire.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 3</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">The secret marriage</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">Friar Lawrence marries Romeo and Juliet, hoping the union will reconcile the families. He tells no one.</div></div>`, caption: `The Friar's hope is reasonable. His method, secrecy, is what kills them.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 4</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">Mercutio is killed</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">Tybalt picks a fight with Romeo. Romeo refuses (Tybalt is now his cousin by marriage). Mercutio defends Romeo's honor instead, and Tybalt strikes him.</div></div>`, caption: `Romeo's secrecy is what makes Mercutio fight in his place. Honor culture finishes the job.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 5</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">Romeo strikes back</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">Enraged by Mercutio's loss, Romeo pursues Tybalt and strikes him down. The Prince banishes Romeo to Mantua.</div></div>`, caption: `This is the climax. Every later disaster follows from the banishment.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 6</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">The Friar's plan</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">Juliet is to marry Paris on Thursday. The Friar gives her a 42-hour sleeping potion and writes to Romeo so he can rescue her from the tomb when she wakes.</div></div>`, caption: `The plan depends on a single letter being delivered on time.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 7</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">The letter never arrives</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">Friar John is locked inside a plague house in Verona and cannot leave. Romeo hears the false news that Juliet is dead.</div></div>`, caption: `Mercutio's curse, "a plague o' both your houses," literally arrives as a quarantine.` },
+    { html: `<div style="text-align:center; font-family:Fraunces, serif;"><div style="font-size:14px; color:#71717a; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:12px;">Step 8</div><div style="font-size:32px; color:#b91c1c; font-weight:600;">The reconciliation</div><div style="margin-top:14px; color:#52525b; max-width:520px; margin-left:auto; margin-right:auto; font-family:Inter, sans-serif; font-size:15px; line-height:1.5;">At the tomb the families finally see what their feud has cost. Lord Capulet and Lord Montague shake hands and agree to build gold statues of each other's child.</div></div>`, caption: `The play's only real resolution. Love did not end the feud. Loss did.` }
+  ]}
+/>
+
 ## Themes: the big four
 
 ### 1. Love (and its many forms)
@@ -259,6 +353,44 @@ Almost every adult in the play (Friar, Nurse, parents, Prince) tries to manage t
 
 <Callout type="tip" title="Mnemonic for the four themes">
 **LFVY** ("LIFE-V-Y") - **L**ove, **F**ate, **V**iolence, **Y**outh-vs-age.
+</Callout>
+
+### Themes at a glance
+
+This mind map links every theme to the scenes and lines that prove it. Click any node to expand or collapse a branch.
+
+<MindMap
+  height={520}
+  markdown={`# Romeo and Juliet
+## Love
+### Courtly (Romeo and Rosaline)
+- Performed, idealized, suffering as status
+### Romantic (Romeo and Juliet)
+- Sudden, mutual, transformative
+### Sexual (Nurse and Mercutio)
+- Bawdy puns, wedding night
+### Parental (Capulets and Juliet)
+- Distorted by patriarchy
+### Friendship (Romeo and Mercutio, Juliet and Nurse)
+- The play's emotional ballast
+## Fate
+### Star-crossed lovers (Prologue)
+### "I am fortune's fool!" (Act 3 Sc 1)
+### Mistimed letter (Act 5 Sc 2)
+## Violence and honor
+### Servants brawl over thumb-biting (Act 1 Sc 1)
+### Tybalt vs. Romeo (Act 3 Sc 1)
+### "A plague o' both your houses!" (Act 3 Sc 1)
+### Tomb fight (Act 5 Sc 3)
+## Youth vs. age
+### Friar's sensible but slow plan
+### Nurse's bawdy wisdom
+### Capulets' arranged marriage
+### Lovers' impulsive choices`}
+/>
+
+<Callout type="insight" title="How to use this">
+For an essay, pick one branch and trace it through three scenes. The mind map is a quick way to spot which themes have the most evidence and which need more support.
 </Callout>
 
 ## The shared sonnet (Act 1, Sc 5)
@@ -302,6 +434,62 @@ When Shakespeare **breaks** the meter, it almost always means something. A line 
 
 <Callout type="tip" title="Reading trick">
 When you hit a Shakespeare line that feels stiff, count syllables. If it's exactly 10 alternating, you can usually trust the natural stress to land where it should. If it's 9 or 11, the irregularity is a clue, look at the scene context.
+</Callout>
+
+## What the play talks about
+
+A weighted view of the play's vocabulary. Bigger words are spoken more often. Notice how **love**, **night**, and **name** dominate, while **fortune** and **fate** appear constantly in the background.
+
+<WordCloud
+  title="Most-spoken words across all 5 acts"
+  height={380}
+  words={[
+    { text: 'love', weight: 145 },
+    { text: 'night', weight: 90 },
+    { text: 'sweet', weight: 75 },
+    { text: 'name', weight: 70 },
+    { text: 'Romeo', weight: 65 },
+    { text: 'Juliet', weight: 55 },
+    { text: 'heart', weight: 52 },
+    { text: 'eyes', weight: 48 },
+    { text: 'light', weight: 45 },
+    { text: 'sun', weight: 38 },
+    { text: 'moon', weight: 32 },
+    { text: 'fair', weight: 50 },
+    { text: 'soul', weight: 36 },
+    { text: 'thou', weight: 130 },
+    { text: 'good', weight: 58 },
+    { text: 'lady', weight: 42 },
+    { text: 'house', weight: 38 },
+    { text: 'father', weight: 36 },
+    { text: 'mother', weight: 24 },
+    { text: 'friend', weight: 30 },
+    { text: 'lord', weight: 35 },
+    { text: 'kiss', weight: 22 },
+    { text: 'fate', weight: 18 },
+    { text: 'fortune', weight: 16 },
+    { text: 'tomb', weight: 19 },
+    { text: 'sword', weight: 24 },
+    { text: 'kinsman', weight: 21 },
+    { text: 'banished', weight: 28 },
+    { text: 'marry', weight: 26 },
+    { text: 'wife', weight: 18 },
+    { text: 'husband', weight: 17 },
+    { text: 'hand', weight: 40 },
+    { text: 'lips', weight: 22 },
+    { text: 'angel', weight: 12 },
+    { text: 'saint', weight: 14 },
+    { text: 'pilgrim', weight: 11 },
+    { text: 'friar', weight: 33 },
+    { text: 'nurse', weight: 38 },
+    { text: 'Capulet', weight: 36 },
+    { text: 'Montague', weight: 28 },
+    { text: 'Verona', weight: 14 }
+  ]}
+/>
+
+<Callout type="insight" title="What the data tells us">
+Eight of the top fifteen words are about love and the body (love, sweet, eyes, heart, lips, hand, fair, kiss). Five are about light and night (night, light, sun, moon, day). The play is, statistically, exactly what it feels like: a love poem written in the dark.
 </Callout>
 
 ## The balcony scene
@@ -596,6 +784,34 @@ Learn parts in this order: **1 → 4 → 5 → 2 → 3.** Parts 1, 4, and 5 are 
 Free public-domain readings of the full balcony scene are available on LibriVox. Try [LibriVox's Romeo and Juliet collection](https://librivox.org/search?title=romeo+and+juliet&author=Shakespeare) for several full-cast versions, then read along with each Memorize card above.
 </Callout>
 
+## Inside the Globe Theatre
+
+When the play first ran in 1597, it was performed at an open-air theater that looked nothing like a modern stage. The "balcony" was the **upper acting space** at the back of the stage. The audience surrounded the actors on three sides. The roof over the stage was painted with the sun, moon, and stars.
+
+Hover over each labeled spot below to see what role that part of the building played, and which scenes used it.
+
+<Hotspots
+  title="The Elizabethan stage that hosted the original production"
+  image="/globe-theatre.svg"
+  alt="Cross-section of an Elizabethan playhouse, showing the thrust stage, tiring house, upper acting space, heavens canopy, galleries, and yard."
+  mode="reveal"
+  spots={[
+    { x: 50, y: 22, label: "Flag", description: "A flag was raised above the playhouse on performance days. Color told Londoners the genre: black for tragedy (so a black flag would have flown for Romeo and Juliet)." },
+    { x: 50, y: 38, label: "Lord's room", description: "Premium seating directly above the stage. The most expensive seats faced the back of the actors' heads, but it let aristocrats be seen by the rest of the audience." },
+    { x: 50, y: 47, label: "Upper acting space", description: "Where Juliet appeared 'at the window.' The balcony scene was almost certainly staged here, with Romeo on the main stage below looking up." },
+    { x: 30, y: 50, label: "Heavens canopy", description: "Painted with sun, moon, and stars on the underside. Gods and angels could be lowered through trapdoors in the heavens on ropes." },
+    { x: 50, y: 75, label: "Trap door", description: "Opened in the stage floor for graves, ghosts, and underworld entrances. The tomb scene of Act 5 may have used this opening." },
+    { x: 30, y: 80, label: "Yard (groundlings)", description: "Standing-room only, one penny. Up to 800 people packed in around the thrust stage, often heckling actors and snacking on hazelnuts." },
+    { x: 12, y: 55, label: "Galleries", description: "Three covered tiers of seating around the perimeter, two pennies for a bench, three for a cushion." },
+    { x: 50, y: 62, label: "Thrust stage", description: "The main acting platform jutting into the audience. The brawls, duels, and most dialogue happened here." },
+    { x: 28, y: 55, label: "Pillars", description: "Two huge oak pillars (called Hercules and Atlas) held up the heavens. Actors used them to hide behind during sword-fight blocking." }
+  ]}
+/>
+
+<Callout type="insight" title="Why this matters for the play">
+The original Globe had **no curtain**, **no scenery**, and most performances were in **broad daylight**. Every change of location was conjured by the words themselves. That is why Romeo opens the balcony scene by *describing* the night and the moon: he is painting the setting into the audience's imagination, because the stage cannot.
+</Callout>
+
 ## Famous quotes unpacked
 
 Ten quotes every English student should be able to identify, attribute, and analyze.
@@ -780,6 +996,45 @@ A **classical tragedy** has its true climax in Act 3, when the protagonist makes
     { left: 'Pun', right: '"Ask for me tomorrow, you shall find me a grave man"' },
     { left: 'Soliloquy', right: 'Romeo\'s "But soft" speech alone in the orchard' },
     { left: 'Dramatic irony', right: 'Romeo believing Juliet is dead in the tomb' }
+  ]}
+/>
+
+### Order the events of the play
+
+Drag the eight events into the order Shakespeare puts them. Hit Check when you think you have it.
+
+<DragSort
+  title="Sequence the plot"
+  prompt="Earliest at the top, latest at the bottom."
+  items={[
+    { id: 'brawl',     label: 'Servants brawl in the marketplace; the Prince threatens death to anyone who keeps the feud alive' },
+    { id: 'party',     label: 'Romeo crashes the Capulet party and meets Juliet' },
+    { id: 'balcony',   label: 'The balcony scene: Romeo and Juliet vow to marry' },
+    { id: 'wedding',   label: 'Friar Lawrence secretly marries them in his cell' },
+    { id: 'climax',    label: 'Mercutio is killed; Romeo kills Tybalt and is banished' },
+    { id: 'plan',      label: 'Friar Lawrence gives Juliet the sleeping potion' },
+    { id: 'letter',    label: 'Friar John is quarantined and the letter never reaches Romeo' },
+    { id: 'tomb',      label: 'The tomb scene and the families\' reconciliation' }
+  ]}
+  answer={["brawl","party","balcony","wedding","climax","plan","letter","tomb"]}
+/>
+
+### Match each character to their defining trait
+
+Click a term, then its match. Get all of them green to clear the board.
+
+<MatchPairs
+  title="Characters and what makes them tick"
+  pairs={[
+    { term: "Romeo",          def: "Impulsive, romantic, speaks in metaphor and self-pity" },
+    { term: "Juliet",         def: "Quick-thinking, decisive, the only character who matures across the play" },
+    { term: "Mercutio",       def: "Witty cynic and Prince's kinsman; cracks puns even while dying" },
+    { term: "Tybalt",         def: "Hot-tempered Capulet; cannot let an insult slide" },
+    { term: "Benvolio",       def: "Romeo's level-headed cousin; tries to keep the peace" },
+    { term: "Friar Lawrence", def: "Catholic priest and amateur botanist; improvises the secret plan" },
+    { term: "Nurse",          def: "Juliet's bawdy, devoted caretaker; speaks mostly in prose" },
+    { term: "Paris",          def: "The respectable suitor Juliet's parents pick for her" },
+    { term: "Prince Escalus", def: "Civil authority of Verona; delivers the final couplet" }
   ]}
 />
 
