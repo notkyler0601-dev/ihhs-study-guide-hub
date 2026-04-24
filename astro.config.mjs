@@ -13,8 +13,8 @@ export default defineConfig({
     remarkPlugins: [remarkMath],
     rehypePlugins: [rehypeKatex],
   }), sitemap({
-    // Hidden /secret parody pages must not appear in the public sitemap.
-    filter: (page) => !page.includes('/secret'),
+    // Hidden gated pages must not appear in the public sitemap.
+    filter: (page) => !page.includes('/secret') && !/\/johnguide\/?$/i.test(page),
   }), tailwind({ applyBaseStyles: false }), react()],
   markdown: {
     remarkPlugins: [remarkMath],

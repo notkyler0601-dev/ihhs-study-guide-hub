@@ -1,0 +1,162 @@
+---
+// Standalone password-gated landing page.
+//
+// Reachable at /johnguide (case-insensitive on most hosts).
+// Hidden from the sitemap, robots, and pagefind via SecretLayout.
+//
+// CONFIG (edit the two constants below):
+//   DOC_URL              - The Google Doc URL the "Open the guide" button
+//                          opens in a new tab. Replace the placeholder.
+//   PASSWORD_HASH        - SHA-256 of the password. To rotate:
+//                            node -e "console.log(require('crypto').createHash('sha256').update('NEW_PASSWORD').digest('hex'))"
+//                          and paste the result here.
+//
+// SECURITY NOTE: this is a CLIENT-SIDE gate, not real encryption. Anyone
+// who views the page source after unlocking can read the doc URL and the
+// password hash. The gate stops casual visitors and keeps the URL out of
+// search engines, sitemaps, and the in-site search.
+import SecretLayout from '../layouts/SecretLayout.astro';
+
+// SHA-256("shubywubi")
+const PASSWORD_HASH = '6eb85a47c2add64b18edbe826c725bc08a6090d6086d823e5fdc98a352fa1842';
+
+const DOC_URL = 'https://docs.google.com/document/d/1DnFHJXHgZxyZENh2RbKMAxM2yUf3Wi2-1j00BGnlsLQ/edit?tab=t.0';
+
+const SESSION_KEY = 'ihhs:johnguide:unlocked';
+---
+
+<SecretLayout title="Restricted" description="Restricted area.">
+  <main class="flex-1 flex items-center justify-center px-4 py-16">
+    <div class="w-full max-w-md">
+      <!-- Locked view -->
+      <section data-locked-view>
+        <div class="mb-6 flex items-center justify-center">
+          <span class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-ink-900 dark:bg-ink-50 text-white dark:text-ink-900 shadow-lift">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+            </svg>
+          </span>
+        </div>
+        <h1 class="text-center font-serif text-2xl font-semibold tracking-tight">Restricted</h1>
+        <p class="mt-2 text-center text-sm text-ink-500 dark:text-ink-400">
+          Enter the password to continue.
+        </p>
+
+        <form data-unlock-form class="mt-6 surface rounded-2xl p-5 shadow-soft">
+          <label for="pw" class="sr-only">Password</label>
+          <input
+            id="pw"
+            type="password"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            placeholder="Password"
+            class="w-full bg-transparent border-b border-ink-200 dark:border-ink-800 px-1 py-2 text-base placeholder-ink-400 focus:outline-none focus:border-accent-500"
+          />
+          <p data-unlock-error class="hidden mt-3 text-sm text-rose-600 dark:text-rose-400">Wrong password.</p>
+          <button
+            type="submit"
+            class="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm py-2.5 transition-colors"
+          >
+            Unlock
+          </button>
+        </form>
+
+        <p class="mt-4 text-center text-xs text-ink-400">
+          <a href="/" class="hover:text-accent-700 dark:hover:text-accent-400">← Back to the main site</a>
+        </p>
+      </section>
+
+      <!-- Unlocked view -->
+      <section data-unlocked-view class="hidden text-center">
+        <div class="mb-6 flex items-center justify-center">
+          <span class="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-emerald-500 text-white shadow-lift">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 13l4 4L19 7"/>
+            </svg>
+          </span>
+        </div>
+        <h1 class="font-serif text-2xl font-semibold tracking-tight">Unlocked</h1>
+        <p class="mt-2 text-sm text-ink-500 dark:text-ink-400">
+          Click the button to open the guide in a new tab.
+        </p>
+        <a
+          data-doc-link
+          href={DOC_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm px-6 py-3 transition-colors"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3h7v7M10 14L21 3M21 14v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/>
+          </svg>
+          Open the guide
+        </a>
+        <div class="mt-6">
+          <button data-lock type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Lock</button>
+        </div>
+        <p class="mt-4 text-center text-xs text-ink-400">
+          <a href="/" class="hover:text-accent-700 dark:hover:text-accent-400">← Back to the main site</a>
+        </p>
+      </section>
+    </div>
+  </main>
+</SecretLayout>
+
+<script is:inline define:vars={{ PASSWORD_HASH, SESSION_KEY }}>
+  // SHA-256 in the browser via SubtleCrypto.
+  const sha256Hex = async (input) => {
+    const data = new TextEncoder().encode(input);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
+  const isUnlocked = () => sessionStorage.getItem(SESSION_KEY) === '1';
+  const setUnlocked = (v) => v ? sessionStorage.setItem(SESSION_KEY, '1') : sessionStorage.removeItem(SESSION_KEY);
+
+  const setup = () => {
+    const lockedView = document.querySelector('[data-locked-view]');
+    const unlockedView = document.querySelector('[data-unlocked-view]');
+    const form = document.querySelector('[data-unlock-form]');
+    const errEl = document.querySelector('[data-unlock-error]');
+    const lockBtn = document.querySelector('[data-lock]');
+    const input = document.querySelector('#pw');
+    if (!form || !input) return;
+
+    const showUnlocked = () => {
+      lockedView.classList.add('hidden');
+      unlockedView.classList.remove('hidden');
+    };
+    const showLocked = () => {
+      unlockedView.classList.add('hidden');
+      lockedView.classList.remove('hidden');
+      setTimeout(() => input.focus(), 50);
+    };
+
+    if (isUnlocked()) showUnlocked();
+    else setTimeout(() => input.focus(), 50);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errEl.classList.add('hidden');
+      const pw = input.value;
+      if (!pw) return;
+      const hash = await sha256Hex(pw);
+      if (hash === PASSWORD_HASH) {
+        setUnlocked(true);
+        input.value = '';
+        showUnlocked();
+      } else {
+        errEl.classList.remove('hidden');
+        input.select();
+      }
+    });
+
+    lockBtn?.addEventListener('click', () => {
+      setUnlocked(false);
+      showLocked();
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>
