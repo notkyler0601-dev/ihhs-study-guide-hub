@@ -1,0 +1,102 @@
+---
+// Typewriter text reveal using Typed.js. Single line or cycling array.
+//
+// Usage:
+//   <Typewriter text="But soft, what light through yonder window breaks?" />
+//   <Typewriter texts={["Line one^800", "Line two"]} loop />
+//
+// Props:
+//   text       single string to type (mutually exclusive with texts)
+//   texts      array of strings (cycles through if loop=true)
+//   speed      ms per character (default 55)
+//   backSpeed  ms per character when erasing (default 30)
+//   loop       cycle through texts forever (default false)
+//   startDelay ms before typing begins (default 250)
+//   showCursor blinking cursor (default true)
+//   variant    'h1' | 'h2' | 'h3' | 'p' | 'span' for outer tag (default 'span')
+//   className  extra Tailwind classes
+//
+// Inside `texts`, you can pause with `^800` (800ms pause).
+
+interface Props {
+  text?: string;
+  texts?: string[];
+  speed?: number;
+  backSpeed?: number;
+  loop?: boolean;
+  startDelay?: number;
+  showCursor?: boolean;
+  variant?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
+  className?: string;
+}
+const {
+  text,
+  texts,
+  speed = 55,
+  backSpeed = 30,
+  loop = false,
+  startDelay = 250,
+  showCursor = true,
+  variant = 'span',
+  className = '',
+} = Astro.props;
+
+const id = 'tw-' + Math.random().toString(36).slice(2, 9);
+const lineList = texts ?? (text ? [text] : ['']);
+const data = JSON.stringify({ strings: lineList, speed, backSpeed, loop, startDelay, showCursor });
+const Tag = variant;
+---
+
+<Tag class:list={[className]} data-typed-root data-typed-id={id} data-typed-config={data}>
+  <span id={id} class="typed-target"></span>
+</Tag>
+
+<style is:global>
+  .typed-cursor {
+    display: inline-block;
+    margin-left: 1px;
+    color: theme('colors.accent.600');
+    font-weight: 200;
+    animation: typedBlink 0.9s infinite;
+  }
+  .dark .typed-cursor { color: theme('colors.accent.400'); }
+  @keyframes typedBlink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+  }
+</style>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const initOne = async (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const id = root.dataset.typedId!;
+    const cfg = JSON.parse(root.dataset.typedConfig || '{}');
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const Typed: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js',
+      'Typed'
+    );
+
+    new Typed(`#${id}`, {
+      strings: cfg.strings,
+      typeSpeed: cfg.speed,
+      backSpeed: cfg.backSpeed,
+      loop: cfg.loop,
+      startDelay: cfg.startDelay,
+      showCursor: cfg.showCursor,
+      cursorChar: '|',
+      smartBackspace: true,
+    });
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-typed-root]').forEach(initOne);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

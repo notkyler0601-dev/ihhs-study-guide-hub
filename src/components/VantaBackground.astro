@@ -1,0 +1,108 @@
+---
+// Animated WebGL background using Vanta.js. Wraps any slot content with a
+// living atmospheric scene behind it (animated star net, fog, waves, etc).
+//
+// Usage:
+//   <VantaBackground type="net">
+//     <h1>Star-crossed lovers</h1>
+//   </VantaBackground>
+//
+// type: one of 'net' | 'fog' | 'waves' | 'globe' | 'halo' | 'topology' |
+//                'dots' | 'birds' | 'clouds' | 'rings' | 'ripple' | 'cells'
+// height: pixel height (default 'auto', expands to fit slot content with min 380px)
+// rounded: keep the rounded card look (default true)
+
+interface Props {
+  type?: 'net' | 'fog' | 'waves' | 'globe' | 'halo' | 'topology' | 'dots' | 'birds' | 'clouds' | 'rings' | 'ripple' | 'cells';
+  height?: number;
+  rounded?: boolean;
+}
+const { type = 'net', height, rounded = true } = Astro.props;
+const id = 'vanta-' + Math.random().toString(36).slice(2, 9);
+const minHeight = height ? `${height}px` : '380px';
+---
+
+<div
+  class:list={['not-prose my-6 relative overflow-hidden', rounded && 'rounded-2xl shadow-lift']}
+  data-vanta-root
+  data-vanta-type={type}
+  data-vanta-id={id}
+  style={`min-height: ${minHeight};`}
+>
+  <div id={id} class="absolute inset-0" aria-hidden="true"></div>
+  <div class="relative z-10 px-6 py-10 sm:px-10 sm:py-14">
+    <slot />
+  </div>
+</div>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  // Vanta is pinned to three.js r134.
+  const THREE_URL  = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js';
+  const VANTA_BASE = 'https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist';
+
+  const initOne = async (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const type = (root.dataset.vantaType ?? 'net').toLowerCase();
+    const id = root.dataset.vantaId!;
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    await loadScript(THREE_URL);
+    await waitForGlobal('THREE');
+    await loadScript(`${VANTA_BASE}/vanta.${type}.min.js`);
+    const VANTA: any = await waitForGlobal('VANTA');
+    const fnName = type.toUpperCase();
+    if (!VANTA[fnName]) {
+      console.warn(`Vanta effect "${type}" not available`);
+      return;
+    }
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const accent = isDark ? 0xf87171 : 0xb91c1c;        // red-400 / red-700
+    const bg     = isDark ? 0x09090b : 0xfafafa;        // ink-950 / ink-50
+
+    // Build a config that works for most effects; Vanta ignores unknown keys.
+    const cfg: Record<string, unknown> = {
+      el,
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.0,
+      minWidth: 200.0,
+      scale: 1.0,
+      scaleMobile: 1.0,
+      color: accent,
+      color2: accent,
+      backgroundColor: bg,
+      points: 12.0,
+      maxDistance: 22.0,
+      spacing: 17.0,
+      showDots: false,
+      THREE: (window as any).THREE,
+    };
+
+    const instance = VANTA[fnName](cfg);
+    (root as any).__vanta = instance;
+
+    // Re-init colors on theme toggle.
+    const observer = new MutationObserver(() => {
+      const nowDark = document.documentElement.classList.contains('dark');
+      try {
+        instance.setOptions({
+          color: nowDark ? 0xf87171 : 0xb91c1c,
+          backgroundColor: nowDark ? 0x09090b : 0xfafafa,
+        });
+      } catch { /* not all effects support setOptions */ }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-vanta-root]').forEach(initOne);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

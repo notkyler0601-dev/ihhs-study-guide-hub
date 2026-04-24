@@ -1,0 +1,246 @@
+---
+// Zdog: pseudo-3D vector pictograms with a hand-drawn rotating feel.
+// All shapes are built from primitives, no model files required.
+//
+// Usage:
+//   <Zdog shape="rose" caption="What's in a name?" />
+//   <Zdog shape="dagger" color="black" size={220} spin={false} />
+//
+// Available shapes: 'rose' | 'sun' | 'moon' | 'dagger' | 'heart' | 'hourglass' | 'star' | 'cup' | 'mask'
+
+interface Props {
+  shape?: 'rose' | 'sun' | 'moon' | 'dagger' | 'heart' | 'hourglass' | 'star' | 'cup' | 'mask';
+  color?: 'red' | 'black' | 'gold';
+  size?: number;
+  caption?: string;
+  spin?: boolean;
+}
+const { shape = 'rose', color = 'red', size = 220, caption, spin = true } = Astro.props;
+const id = 'zdog-' + Math.random().toString(36).slice(2, 9);
+const data = JSON.stringify({ shape, color, size, spin });
+---
+
+<figure class="not-prose my-6 mx-auto inline-flex flex-col items-center" data-zdog-root data-zdog-id={id} data-zdog-config={data}>
+  <canvas
+    id={id}
+    width={size}
+    height={size}
+    class="block"
+    style={`width: ${size}px; height: ${size}px;`}
+    aria-label={caption ?? `${shape} illustration`}
+  ></canvas>
+  {caption && (
+    <figcaption
+      class="mt-3 text-center text-base text-ink-700 dark:text-ink-200 max-w-[18rem]"
+      style="font-family: 'Fraunces', Georgia, serif; font-style: italic;"
+    >
+      {caption}
+    </figcaption>
+  )}
+</figure>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const PALETTE: Record<string, { primary: string; accent: string; dark: string }> = {
+    red:   { primary: '#b91c1c', accent: '#fca5a5', dark: '#7f1d1d' },
+    black: { primary: '#27272a', accent: '#71717a', dark: '#0a0a0a' },
+    gold:  { primary: '#ca8a04', accent: '#fde68a', dark: '#854d0e' },
+  };
+
+  const buildShape = (Zdog: any, illo: any, shape: string, color: string) => {
+    const c = PALETTE[color] ?? PALETTE.red;
+
+    switch (shape) {
+      case 'rose': {
+        // Stem (a thin green vertical line)
+        new Zdog.Shape({
+          addTo: illo, path: [{ x: 0, y: -10 }, { x: 0, y: 75 }],
+          color: '#16a34a', stroke: 5, closed: false,
+        });
+        // Single leaf on the stem (clearly leaf-shaped, not a ring)
+        new Zdog.Shape({
+          addTo: illo, color: '#16a34a', fill: true, stroke: 4,
+          path: [
+            { x: 0, y: 35 },
+            { bezier: [{ x: 18, y: 28 }, { x: 22, y: 38 }, { x: 0, y: 48 }] },
+          ],
+        });
+        // Bud base (dark inner cup)
+        new Zdog.Ellipse({
+          addTo: illo, diameter: 28, translate: { x: 0, y: -22, z: -2 },
+          color: c.dark, fill: true, stroke: 4,
+        });
+        // Outer petals (3 large rounded shapes)
+        for (let i = 0; i < 3; i++) {
+          const angle = (i / 3) * Zdog.TAU - Zdog.TAU / 4;
+          new Zdog.Ellipse({
+            addTo: illo, diameter: 30,
+            translate: { x: Math.cos(angle) * 9, y: -22 + Math.sin(angle) * 7, z: 0 },
+            color: c.primary, fill: true, stroke: 3,
+          });
+        }
+        // Inner petals (smaller, brighter pink)
+        for (let i = 0; i < 3; i++) {
+          const angle = (i / 3) * Zdog.TAU + Zdog.TAU / 6;
+          new Zdog.Ellipse({
+            addTo: illo, diameter: 18,
+            translate: { x: Math.cos(angle) * 5, y: -22 + Math.sin(angle) * 4, z: 6 },
+            color: c.accent, fill: true, stroke: 2,
+          });
+        }
+        // Center dot
+        new Zdog.Ellipse({
+          addTo: illo, diameter: 7, translate: { x: 0, y: -22, z: 12 },
+          color: c.dark, fill: true, stroke: 2,
+        });
+        return;
+      }
+      case 'sun': {
+        new Zdog.Ellipse({ addTo: illo, diameter: 60, color: c.primary, fill: true, stroke: 4 });
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Zdog.TAU;
+          new Zdog.Shape({
+            addTo: illo,
+            path: [{ x: Math.cos(a) * 40, y: Math.sin(a) * 40 }, { x: Math.cos(a) * 60, y: Math.sin(a) * 60 }],
+            color: c.primary, stroke: 4,
+          });
+        }
+        // smiley
+        new Zdog.Ellipse({ addTo: illo, diameter: 5, translate: { x: -10, y: -6, z: 1 }, color: c.dark, fill: true, stroke: 0 });
+        new Zdog.Ellipse({ addTo: illo, diameter: 5, translate: { x: 10, y: -6, z: 1 }, color: c.dark, fill: true, stroke: 0 });
+        new Zdog.Shape({ addTo: illo, path: [{ x: -10, y: 6, z: 1 }, { arc: [{ x: 0, y: 14, z: 1 }, { x: 10, y: 6, z: 1 }] }], color: c.dark, stroke: 3, closed: false });
+        return;
+      }
+      case 'moon': {
+        new Zdog.Ellipse({ addTo: illo, diameter: 70, color: '#fef3c7', fill: true, stroke: 4 });
+        new Zdog.Ellipse({ addTo: illo, diameter: 64, translate: { x: 20, z: 1 }, color: '#0a0a0a', fill: true, stroke: 0 });
+        // craters
+        new Zdog.Ellipse({ addTo: illo, diameter: 8, translate: { x: -22, y: -8, z: 2 }, color: c.dark, fill: true, stroke: 0 });
+        new Zdog.Ellipse({ addTo: illo, diameter: 5, translate: { x: -15, y: 12, z: 2 }, color: c.dark, fill: true, stroke: 0 });
+        return;
+      }
+      case 'dagger': {
+        // blade
+        new Zdog.Shape({
+          addTo: illo, color: '#a1a1aa', stroke: 8, fill: true,
+          path: [{ x: 0, y: -90 }, { x: 8, y: 30 }, { x: -8, y: 30 }],
+        });
+        // crossguard
+        new Zdog.Rect({ addTo: illo, width: 50, height: 8, translate: { y: 32 }, color: c.dark, fill: true, stroke: 2 });
+        // hilt
+        new Zdog.Rect({ addTo: illo, width: 14, height: 50, translate: { y: 60 }, color: c.primary, fill: true, stroke: 2 });
+        // pommel
+        new Zdog.Ellipse({ addTo: illo, diameter: 22, translate: { y: 88 }, color: c.dark, fill: true, stroke: 2 });
+        return;
+      }
+      case 'heart': {
+        new Zdog.Shape({
+          addTo: illo, color: c.primary, fill: true, stroke: 8,
+          path: [
+            { x: 0, y: 30 },
+            { bezier: [{ x: -50, y: -10 }, { x: -30, y: -50 }, { x: 0, y: -20 }] },
+            { bezier: [{ x: 30, y: -50 }, { x: 50, y: -10 }, { x: 0, y: 30 }] },
+          ],
+        });
+        // crack down the middle
+        new Zdog.Shape({
+          addTo: illo, color: '#fafafa', stroke: 3,
+          path: [{ x: 0, y: -22, z: 1 }, { x: 4, y: -10, z: 1 }, { x: -4, y: 4, z: 1 }, { x: 4, y: 16, z: 1 }, { x: 0, y: 28, z: 1 }],
+        });
+        return;
+      }
+      case 'hourglass': {
+        new Zdog.Shape({
+          addTo: illo, color: c.primary, stroke: 6, fill: true,
+          path: [{ x: -40, y: -50 }, { x: 40, y: -50 }, { x: 0, y: 0 }, { x: 40, y: 50 }, { x: -40, y: 50 }, { x: 0, y: 0 }],
+        });
+        // sand
+        new Zdog.Shape({
+          addTo: illo, color: '#fde68a', stroke: 0, fill: true,
+          path: [{ x: -20, y: -45 }, { x: 20, y: -45 }, { x: 0, y: -10 }],
+        });
+        new Zdog.Shape({
+          addTo: illo, color: '#fde68a', stroke: 0, fill: true,
+          path: [{ x: -32, y: 30 }, { x: 32, y: 30 }, { x: 0, y: 0 }],
+        });
+        return;
+      }
+      case 'star': {
+        const points: { x: number; y: number }[] = [];
+        for (let i = 0; i < 10; i++) {
+          const r = i % 2 === 0 ? 50 : 22;
+          const a = (i / 10) * Zdog.TAU - Zdog.TAU / 4;
+          points.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+        }
+        new Zdog.Shape({ addTo: illo, color: c.primary, stroke: 6, fill: true, path: points });
+        return;
+      }
+      case 'cup': {
+        new Zdog.Cylinder({ addTo: illo, diameter: 60, length: 70, color: c.primary, stroke: 4 });
+        new Zdog.Ellipse({ addTo: illo, diameter: 60, translate: { y: -35 }, rotate: { x: Zdog.TAU / 4 }, color: c.dark, fill: true, stroke: 0 });
+        new Zdog.Ellipse({ addTo: illo, diameter: 18, translate: { x: 38 }, color: c.primary, stroke: 8 });
+        return;
+      }
+      case 'mask': {
+        // tragedy + comedy mask hybrid (theater)
+        new Zdog.Shape({
+          addTo: illo, color: c.accent, fill: true, stroke: 6,
+          path: [
+            { x: -45, y: -30 },
+            { bezier: [{ x: -55, y: 20 }, { x: -20, y: 60 }, { x: 0, y: 60 }] },
+            { bezier: [{ x: 20, y: 60 }, { x: 55, y: 20 }, { x: 45, y: -30 }] },
+            { bezier: [{ x: 30, y: -55 }, { x: -30, y: -55 }, { x: -45, y: -30 }] },
+          ],
+        });
+        // eyes
+        new Zdog.Ellipse({ addTo: illo, diameter: 12, translate: { x: -16, y: -8, z: 1 }, color: c.dark, fill: true, stroke: 0 });
+        new Zdog.Ellipse({ addTo: illo, diameter: 12, translate: { x: 16, y: -8, z: 1 }, color: c.dark, fill: true, stroke: 0 });
+        // frown
+        new Zdog.Shape({
+          addTo: illo, color: c.dark, stroke: 4, closed: false,
+          path: [{ x: -16, y: 30, z: 1 }, { arc: [{ x: 0, y: 22, z: 1 }, { x: 16, y: 30, z: 1 }] }],
+        });
+        return;
+      }
+    }
+  };
+
+  const initOne = async (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const id = root.dataset.zdogId!;
+    const cfg = JSON.parse(root.dataset.zdogConfig || '{}');
+    const canvas = document.getElementById(id) as HTMLCanvasElement | null;
+    if (!canvas) return;
+
+    const Zdog: any = await importGlobal(
+      'https://unpkg.com/zdog@1.1.3/dist/zdog.dist.min.js',
+      'Zdog'
+    );
+
+    const illo = new Zdog.Illustration({
+      element: canvas,
+      dragRotate: true,
+      rotate: { x: -0.2 },
+      zoom: 1,
+    });
+
+    buildShape(Zdog, illo, cfg.shape, cfg.color);
+
+    const animate = () => {
+      if (cfg.spin && !illo.dragging) {
+        illo.rotate.y += 0.012;
+      }
+      illo.updateRenderGraph();
+      requestAnimationFrame(animate);
+    };
+    animate();
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-zdog-root]').forEach(initOne);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

@@ -552,6 +552,36 @@ See `<AITutor>` in section 8 (Tier 3). Backed by a standalone Cloudflare Worker 
 
 ---
 
+## 8f. Tier 8 components (atmospheric / wow-factor, lazy-loaded)
+
+Added 2026-04 alongside the Romeo and Juliet Act 2 quiz-prep guide. All four are programmatic (zero asset files needed) and CDN-loaded so they cost nothing on guides that don't import them.
+
+### Atmospheric backgrounds
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<VantaBackground type="..." >slot</VantaBackground>` | Vanta.js 0.5.24 + three.js r134 | `cdnjs.cloudflare.com/.../three.min.js`, `cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.<type>.min.js` | Animated WebGL atmospheric background wrapping any slot content. Types: `net`, `fog`, `waves`, `globe`, `halo`, `topology`, `dots`, `birds`, `clouds`, `rings`, `ripple`, `cells`. Auto-swaps colors on theme toggle. Loads only the requested effect file. |
+
+### Text reveal animations
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Typewriter text="..." />` or `<Typewriter texts={[...]} loop />` | Typed.js 2.1.0 | `cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js` | Character-by-character typewriter reveal with blinking cursor. Single line or cycling array. Reveal triggers when scrolled into view (IntersectionObserver). Variants: `h1`/`h2`/`h3`/`p`/`span`. Pause syntax: `"text^800"`. |
+
+### Particle fields
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Particles preset="..." >slot</Particles>` | tsparticles 3.7.1 (all bundle) | `cdn.jsdelivr.net/npm/@tsparticles/all@3.7.1/tsparticles.all.bundle.min.js` | Animated particle background. Built-in presets: `stars`, `snow`, `petals`, `fire`, `fireworks`, `links`, `bubbles`, `triangles`, `confetti`. The `petals` preset uses pentagon shapes drifting bottom-right (themed for the balcony scene). Wraps slot content with a dark gradient backdrop. |
+
+### Pseudo-3D pictograms
+
+| Component | Library | CDN | Brief |
+|---|---|---|---|
+| `<Zdog shape="..." />` | Zdog 1.1.3 | `unpkg.com/zdog@1.1.3/dist/zdog.dist.min.js` | Hand-built pseudo-3D vector icons that auto-rotate (drag to interact). Built-in shapes: `rose`, `sun`, `moon`, `dagger`, `heart`, `hourglass`, `star`, `cup`, `mask`. Colors: `red` (default), `black`, `gold`. Optional caption renders in italic serif. No model files needed. |
+
+---
+
 ## 9b. React integration
 
 Added 2026-04 to support React-only libraries (Recharts, Nivo, React Flow, Tremor, react-chrono, TipTap, etc.).

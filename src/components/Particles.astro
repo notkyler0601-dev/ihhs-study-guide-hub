@@ -1,0 +1,195 @@
+---
+// Particle effect background using tsparticles. Supports built-in presets
+// (stars, snow, fire, fireworks, links, bubbles, triangles, confetti) plus
+// a custom 'petals' preset themed for the Romeo & Juliet balcony scene.
+//
+// Usage:
+//   <Particles preset="stars">
+//     <h2>Star-crossed lovers</h2>
+//   </Particles>
+//
+// Props:
+//   preset    one of the names above. Default 'stars'.
+//   height    minHeight for the container in px. Default 380.
+//   density   override particle count. Default depends on preset.
+//   rounded   keep rounded card look. Default true.
+
+interface Props {
+  preset?: 'stars' | 'snow' | 'petals' | 'fire' | 'fireworks' | 'links' | 'bubbles' | 'triangles' | 'confetti';
+  height?: number;
+  density?: number;
+  rounded?: boolean;
+}
+const { preset = 'stars', height = 380, density, rounded = true } = Astro.props;
+const id = 'particles-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div
+  class:list={['not-prose my-6 relative overflow-hidden', rounded && 'rounded-2xl shadow-lift']}
+  data-particles-root
+  data-particles-preset={preset}
+  data-particles-id={id}
+  data-particles-density={density ?? ''}
+  style={`min-height: ${height}px; background: linear-gradient(135deg, #18181b 0%, #09090b 100%);`}
+>
+  <div id={id} class="absolute inset-0" aria-hidden="true"></div>
+  <div class="relative z-10 px-6 py-10 sm:px-10 sm:py-14 text-white">
+    <slot />
+  </div>
+</div>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const buildOptions = (preset: string, density?: number) => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const accent = isDark ? '#f87171' : '#b91c1c';
+
+    const common = {
+      fpsLimit: 60,
+      detectRetina: true,
+      background: { color: 'transparent' },
+      fullScreen: { enable: false },
+    };
+
+    switch (preset) {
+      case 'stars':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 120, density: { enable: true } },
+            color:  { value: ['#ffffff', '#fde68a', accent] },
+            shape:  { type: 'circle' },
+            opacity: { value: { min: 0.2, max: 1 }, animation: { enable: true, speed: 0.6, sync: false } },
+            size:   { value: { min: 0.4, max: 2 } },
+            move:   { enable: true, speed: 0.15, direction: 'none', random: true, outModes: 'out' },
+          },
+        };
+      case 'snow':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 90 },
+            color:  { value: '#ffffff' },
+            shape:  { type: 'circle' },
+            opacity: { value: 0.85 },
+            size:   { value: { min: 1, max: 3 } },
+            move:   { enable: true, speed: 1.2, direction: 'bottom', drift: 0.4, outModes: { default: 'out' } },
+          },
+        };
+      case 'petals':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 40 },
+            color:  { value: [accent, '#fca5a5', '#fecaca', '#f87171'] },
+            shape:  { type: 'polygon', options: { polygon: { sides: 5 } } },
+            opacity: { value: { min: 0.5, max: 0.95 } },
+            size:   { value: { min: 4, max: 9 } },
+            rotate: { value: { min: 0, max: 360 }, animation: { enable: true, speed: 12, sync: false } },
+            move:   { enable: true, speed: 1.4, direction: 'bottom-right', drift: 1.2, outModes: { default: 'out' } },
+          },
+        };
+      case 'fire':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 50 },
+            color:  { value: ['#fb923c', '#f97316', '#dc2626', '#facc15'] },
+            shape:  { type: 'circle' },
+            opacity: { value: { min: 0.3, max: 0.9 } },
+            size:   { value: { min: 1, max: 5 } },
+            move:   { enable: true, speed: 3, direction: 'top', outModes: { default: 'out' } },
+          },
+        };
+      case 'fireworks':
+        return {
+          ...common,
+          emitters: { position: { x: 50, y: 100 }, rate: { delay: 0.4, quantity: 1 } },
+          particles: {
+            number: { value: 0 },
+            color:  { value: [accent, '#fde68a', '#22d3ee', '#a78bfa'] },
+            shape:  { type: 'circle' },
+            opacity: { value: 1, animation: { enable: true, speed: 0.5, startValue: 'max', destroy: 'min' } },
+            size:   { value: 2 },
+            life:   { duration: { sync: true, value: 1.6 }, count: 1 },
+            move:   { enable: true, gravity: { enable: true, acceleration: 9 }, speed: { min: 8, max: 14 }, outModes: 'destroy' },
+          },
+        };
+      case 'links':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 70 },
+            color:  { value: accent },
+            shape:  { type: 'circle' },
+            opacity: { value: 0.7 },
+            size:   { value: 2 },
+            links:  { enable: true, distance: 140, color: accent, opacity: 0.35, width: 1 },
+            move:   { enable: true, speed: 1, outModes: 'bounce' },
+          },
+        };
+      case 'bubbles':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 40 },
+            color:  { value: accent },
+            shape:  { type: 'circle' },
+            opacity: { value: 0.5 },
+            size:   { value: { min: 4, max: 18 } },
+            move:   { enable: true, speed: 1.5, direction: 'top', outModes: 'out' },
+          },
+        };
+      case 'triangles':
+        return {
+          ...common,
+          particles: {
+            number: { value: density ?? 60 },
+            color:  { value: accent },
+            shape:  { type: 'triangle' },
+            opacity: { value: 0.4 },
+            size:   { value: { min: 2, max: 6 } },
+            links:  { enable: true, distance: 160, color: accent, opacity: 0.2 },
+            move:   { enable: true, speed: 0.8, outModes: 'bounce' },
+          },
+        };
+      case 'confetti':
+      default:
+        return {
+          ...common,
+          emitters: { position: { x: 50, y: 0 }, rate: { delay: 0.06, quantity: 5 } },
+          particles: {
+            number: { value: 0 },
+            color:  { value: [accent, '#fde68a', '#22d3ee', '#a78bfa', '#22c55e'] },
+            shape:  { type: ['circle', 'square'] },
+            opacity: { value: 1 },
+            size:   { value: { min: 2, max: 5 } },
+            life:   { duration: { sync: false, value: 4 }, count: 1 },
+            move:   { enable: true, gravity: { enable: true, acceleration: 10 }, speed: { min: 6, max: 12 }, drift: { min: -2, max: 2 }, decay: 0.04, outModes: 'destroy' },
+          },
+        };
+    }
+  };
+
+  const initOne = async (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    const id = root.dataset.particlesId!;
+    const preset = root.dataset.particlesPreset ?? 'stars';
+    const density = root.dataset.particlesDensity ? Number(root.dataset.particlesDensity) : undefined;
+
+    const tsParticles: any = await importGlobal(
+      'https://cdn.jsdelivr.net/npm/@tsparticles/all@3.7.1/tsparticles.all.bundle.min.js',
+      'tsParticles'
+    );
+
+    await tsParticles.load({ id, options: buildOptions(preset, density) });
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-particles-root]').forEach(initOne);
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
