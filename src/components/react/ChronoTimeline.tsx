@@ -19,6 +19,7 @@ export default function ChronoTimeline({ items, mode = 'VERTICAL_ALTERNATING', h
       <Chrono
         items={items}
         mode={mode}
+        disableToolbar
         theme={{
           primary: '#b91c1c',
           secondary: '#fee2e2',

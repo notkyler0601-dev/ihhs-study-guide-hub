@@ -1,6 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   placeholder?: string;
@@ -11,6 +11,8 @@ interface Props {
 
 export default function RichTextEditor({ placeholder, storageKey, initial = '', height = '260px' }: Props) {
   const stored = storageKey && typeof window !== 'undefined' ? window.localStorage.getItem('rte:' + storageKey) : null;
+  const [isEmpty, setIsEmpty] = useState(true);
+
   const editor = useEditor({
     extensions: [StarterKit],
     content: stored || initial,
@@ -21,7 +23,11 @@ export default function RichTextEditor({ placeholder, storageKey, initial = '', 
       },
     },
     onUpdate: ({ editor }) => {
+      setIsEmpty(editor.isEmpty);
       if (storageKey) window.localStorage.setItem('rte:' + storageKey, editor.getHTML());
+    },
+    onCreate: ({ editor }) => {
+      setIsEmpty(editor.isEmpty);
     },
   });
 
@@ -42,7 +48,14 @@ export default function RichTextEditor({ placeholder, storageKey, initial = '', 
         <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnCls(editor.isActive('blockquote'))}>Quote</button>
         <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={btnCls(editor.isActive('codeBlock'))}>Code</button>
       </div>
-      <EditorContent editor={editor} placeholder={placeholder} />
+      <div className="relative">
+        {isEmpty && placeholder && (
+          <div className="pointer-events-none absolute top-0 left-0 right-0 px-2 py-2 text-sm italic text-ink-400 dark:text-ink-500 leading-relaxed">
+            {placeholder}
+          </div>
+        )}
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }

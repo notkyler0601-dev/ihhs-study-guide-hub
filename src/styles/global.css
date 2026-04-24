@@ -138,6 +138,11 @@
   background: theme('colors.accent.50');
   padding: 0.75rem 1.25rem;
   border-radius: 0 0.5rem 0.5rem 0;
+  quotes: none;
+}
+.prose :where(blockquote p):not(:where([class~="not-prose"] *))::before,
+.prose :where(blockquote p):not(:where([class~="not-prose"] *))::after {
+  content: none;
 }
 .dark .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
   background: rgba(127, 29, 29, 0.25);
@@ -191,4 +196,17 @@
 @media print {
   .no-print { display: none !important; }
   body { background: white !important; }
+}
+
+/* Containment: react-chrono and other React-aria/vanilla-extract popovers
+   sometimes leak portal markup directly under <body> with cryptic
+   _xxx hashed class names and width: 0. Force them off-screen. */
+body > div[class^="_4"]:not([id]):not(.glass):not(.surface) {
+  position: absolute !important;
+  left: -10000px !important;
+  top: -10000px !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }

@@ -17,6 +17,47 @@ const conf = JSON.stringify({ type, color, strokeWidth, padding, iterations, del
 <span data-rn data-conf={conf}><slot /></span>
 
 <script>
+  // Module-scoped registry so resize listeners are attached only once
+  // and shared across all RoughNotation instances on the page.
+  const REGISTRY: { annotation: any; root: HTMLElement; shown: boolean }[] = [];
+  let listenersAttached = false;
+  let scheduleTimer: number | null = null;
+
+  const scheduleReposition = () => {
+    if (scheduleTimer != null) clearTimeout(scheduleTimer);
+    scheduleTimer = window.setTimeout(() => {
+      // Hide+re-show every visible annotation to recapture target positions.
+      REGISTRY.forEach((item) => {
+        if (!item.shown) return;
+        if (!item.root.isConnected) return;
+        try {
+          item.annotation.hide();
+          item.annotation.show();
+        } catch { /* swallow */ }
+      });
+    }, 250);
+  };
+
+  const attachGlobalListeners = () => {
+    if (listenersAttached) return;
+    listenersAttached = true;
+    window.addEventListener('resize', scheduleReposition);
+    window.addEventListener('load', scheduleReposition);
+    document.addEventListener('astro:after-swap', () => {
+      // Drop disconnected annotations on navigation.
+      for (let i = REGISTRY.length - 1; i >= 0; i--) {
+        if (!REGISTRY[i].root.isConnected) {
+          try { REGISTRY[i].annotation.remove(); } catch {}
+          REGISTRY.splice(i, 1);
+        }
+      }
+    });
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(scheduleReposition);
+      ro.observe(document.body);
+    }
+  };
+
   const init = async () => {
     const roots = document.querySelectorAll<HTMLElement>('[data-rn]:not([data-rn-ready])');
     if (roots.length === 0) return;
@@ -29,19 +70,29 @@ const conf = JSON.stringify({ type, color, strokeWidth, padding, iterations, del
       return;
     }
 
+    attachGlobalListeners();
+
     roots.forEach((root) => {
       root.dataset.rnReady = '1';
       const conf = JSON.parse(root.dataset.conf || '{}');
-      const annotation = RN.annotate(root, conf);
-      // Show when scrolled into view, not immediately
+      // multiline: true is critical so wrapping inline text gets one annotation
+      // per line instead of a single bounding box across lines.
+      const annotation = RN.annotate(root, { ...conf, multiline: true });
+      const item = { annotation, root, shown: false };
+      REGISTRY.push(item);
+
       const obs = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            annotation.show();
+            // Small delay so any in-flight layout shifts (Vanta canvas, Typewriter)
+            // settle before we capture the target's bounding rect.
+            window.setTimeout(() => {
+              try { annotation.show(); item.shown = true; } catch {}
+            }, 300);
             obs.unobserve(e.target);
           }
         });
-      }, { threshold: 0.5 });
+      }, { threshold: 0.3 });
       obs.observe(root);
     });
   };
