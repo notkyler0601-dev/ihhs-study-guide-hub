@@ -18,7 +18,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 ---
 
 <div
-  class="no-print"
+  class="no-print tutor-widget"
   data-tutor-root
   data-tutor-endpoint={endpoint ?? ''}
   data-tutor-guide={guideTitle ?? ''}
@@ -27,70 +27,93 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
     type="button"
     data-tutor-fab
     aria-label="Open AI tutor"
-    class="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-accent-600 to-accent-800 text-white px-4 py-3 shadow-lift hover:scale-[1.03] transition-transform focus:outline-none focus:ring-4 focus:ring-accent-300/60"
+    class="tutor-fab"
   >
-    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>
-    <span class="text-sm font-medium">Ask tutor</span>
+    <span class="tutor-fab-ring" aria-hidden="true"></span>
+    <span class="tutor-fab-core">
+      <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2 9 9l-7 3 7 3 3 7 3-7 7-3-7-3z"/>
+      </svg>
+    </span>
+    <span class="tutor-fab-label">
+      <span class="tutor-fab-label-top">AI TUTOR</span>
+      <span class="tutor-fab-label-bot">ready</span>
+    </span>
   </button>
 
   <div
     data-tutor-panel
-    class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[380px] md:w-[420px] max-h-[calc(100vh-2rem)] z-50 flex flex-col rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 shadow-lift overflow-hidden"
+    class="tutor-panel hidden"
     role="dialog"
     aria-label="AI tutor"
   >
-    <header class="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-200 dark:border-ink-800 bg-gradient-to-r from-accent-50 to-white dark:from-accent-950/40 dark:to-ink-950">
-      <div class="flex items-center gap-2.5">
-        <span class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs font-serif font-semibold">AI</span>
-        <div>
-          <p class="text-sm font-semibold leading-none">Tutor</p>
-          <p class="text-[11px] text-ink-500 mt-1">Llama 3.1 via Cloudflare</p>
+    <span class="tutor-corner tutor-corner-tl" aria-hidden="true"></span>
+    <span class="tutor-corner tutor-corner-tr" aria-hidden="true"></span>
+    <span class="tutor-corner tutor-corner-bl" aria-hidden="true"></span>
+    <span class="tutor-corner tutor-corner-br" aria-hidden="true"></span>
+
+    <header class="tutor-head">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="tutor-crest" aria-hidden="true">
+          <span class="tutor-crest-pulse"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 9 9l-7 3 7 3 3 7 3-7 7-3-7-3z"/>
+          </svg>
+        </span>
+        <div class="min-w-0">
+          <p class="tutor-head-title">AI · TUTOR</p>
+          <p class="tutor-head-meta">LLaMA&nbsp;3.1&nbsp;·&nbsp;CF&nbsp;Edge</p>
         </div>
       </div>
       <div class="flex items-center gap-1">
-        <button type="button" data-tutor-reset class="text-[11px] text-ink-500 hover:text-accent-700 dark:hover:text-accent-300 px-2 py-1 rounded hover:bg-ink-100 dark:hover:bg-ink-800">Clear</button>
-        <button type="button" data-tutor-close aria-label="Close tutor" class="p-1 rounded hover:bg-ink-100 dark:hover:bg-ink-800 text-ink-500">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <button type="button" data-tutor-reset class="tutor-head-btn" aria-label="Clear conversation">CLR</button>
+        <button type="button" data-tutor-close aria-label="Close tutor" class="tutor-head-btn">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
     </header>
 
     <div
       data-tutor-log
-      class="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm leading-relaxed min-h-[180px]"
+      class="tutor-log"
       aria-live="polite"
     >
-      <div data-tutor-welcome class="text-ink-500 text-xs">
-        Ask about this guide, use a shortcut below, or hover any paragraph in the guide for one-click re-explains.
+      <div data-tutor-welcome class="tutor-welcome">
+        <span class="tutor-welcome-tag">//&nbsp;ready</span>
+        <span>Ask about this guide, tap a shortcut, or hover any paragraph to re-explain it.</span>
       </div>
     </div>
 
-    <div data-tutor-offline class="hidden m-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-3 text-xs text-amber-900 dark:text-amber-200">
-      Tutor not configured. Set <code class="font-mono">PUBLIC_AI_TUTOR_URL</code>.
+    <div data-tutor-offline class="tutor-alert hidden">
+      Tutor offline. <code class="font-mono">PUBLIC_AI_TUTOR_URL</code> not configured.
     </div>
 
-    <div data-tutor-actions class="flex flex-wrap gap-1.5 px-3 pt-2 border-t border-ink-200 dark:border-ink-800">
-      <button type="button" data-tutor-action="simpler" class="tutor-chip">Explain simpler</button>
-      <button type="button" data-tutor-action="quiz" class="tutor-chip">Practice questions</button>
-      <button type="button" data-tutor-action="summary" class="tutor-chip">Key takeaways</button>
+    <div data-tutor-actions class="tutor-actions">
+      <button type="button" data-tutor-action="simpler" class="tutor-chip">
+        <span class="tutor-chip-dot"></span>Explain simpler
+      </button>
+      <button type="button" data-tutor-action="quiz" class="tutor-chip">
+        <span class="tutor-chip-dot"></span>Practice questions
+      </button>
+      <button type="button" data-tutor-action="summary" class="tutor-chip">
+        <span class="tutor-chip-dot"></span>Key takeaways
+      </button>
     </div>
 
-    <form data-tutor-form class="flex items-end gap-2 p-3 border-t border-ink-100 dark:border-ink-800">
+    <form data-tutor-form class="tutor-form">
       <label class="sr-only" for="tutor-input">Question</label>
       <textarea
         id="tutor-input"
         data-tutor-input
         rows="1"
-        placeholder="Ask anything about this guide..."
-        class="flex-1 resize-none rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400 max-h-24"
+        placeholder="> transmit query..."
+        class="tutor-input"
       ></textarea>
       <button
         type="submit"
         data-tutor-send
         aria-label="Send"
-        class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-accent-600 text-white hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="tutor-send"
       >
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m5 12 14-7-7 14-2-5z"/>
@@ -101,9 +124,283 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
 </div>
 
 <style is:global>
-  .tutor-chip {
-    @apply text-[11px] px-2.5 py-1 rounded-full border border-ink-200 dark:border-ink-700 text-ink-700 dark:text-ink-200 hover:border-accent-400 hover:text-accent-700 dark:hover:text-accent-300 transition-colors;
+  /* ---------- Futuristic AI tutor ---------- */
+  .tutor-widget {
+    --tutor-accent: 220 38 38;        /* red-600 */
+    --tutor-accent-glow: 239 68 68;   /* red-500 */
+    --tutor-bg: 255 255 255;
+    --tutor-ink: 24 24 27;
+    --tutor-edge: 228 228 231;
   }
+  .dark .tutor-widget {
+    --tutor-bg: 9 9 11;               /* near-black */
+    --tutor-ink: 244 244 245;
+    --tutor-edge: 39 39 42;
+  }
+
+  /* FAB --------------------------------------------------------------- */
+  .tutor-fab {
+    position: fixed; right: 20px; bottom: 20px; z-index: 40;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 16px 10px 10px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgb(var(--tutor-ink)) 0%, rgb(40 20 22) 60%, rgb(var(--tutor-accent)) 100%);
+    color: white;
+    border: 1px solid rgba(var(--tutor-accent-glow), 0.55);
+    box-shadow:
+      0 0 0 1px rgba(var(--tutor-accent), 0.25),
+      0 10px 40px -8px rgba(var(--tutor-accent), 0.5),
+      0 0 28px -4px rgba(var(--tutor-accent-glow), 0.35);
+    cursor: pointer;
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .tutor-fab:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow:
+      0 0 0 1px rgba(var(--tutor-accent), 0.4),
+      0 14px 48px -6px rgba(var(--tutor-accent), 0.6),
+      0 0 44px -4px rgba(var(--tutor-accent-glow), 0.55);
+  }
+  .tutor-fab:focus-visible {
+    outline: 2px solid rgba(var(--tutor-accent-glow), 0.9);
+    outline-offset: 3px;
+  }
+  .tutor-fab-ring {
+    position: absolute; inset: -6px; border-radius: 9999px;
+    border: 1px solid rgba(var(--tutor-accent-glow), 0.5);
+    animation: tutor-ring 2.6s ease-out infinite;
+    pointer-events: none;
+  }
+  .tutor-fab-core {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 34px; width: 34px; border-radius: 9999px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgb(254 226 226);
+    backdrop-filter: blur(6px);
+  }
+  .tutor-fab-label { display: inline-flex; flex-direction: column; line-height: 1; gap: 3px; }
+  .tutor-fab-label-top { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .tutor-fab-label-bot {
+    font-size: 10px; letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.75);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    position: relative; padding-left: 9px;
+  }
+  .tutor-fab-label-bot::before {
+    content: ''; position: absolute; left: 0; top: 50%;
+    height: 6px; width: 6px; margin-top: -3px; border-radius: 9999px;
+    background: rgb(74 222 128);
+    box-shadow: 0 0 10px rgb(74 222 128);
+    animation: tutor-pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes tutor-ring {
+    0%   { transform: scale(1);    opacity: 0.7; }
+    70%  { transform: scale(1.25); opacity: 0;   }
+    100% { transform: scale(1.25); opacity: 0;   }
+  }
+  @keyframes tutor-pulse {
+    0%, 100% { opacity: 1;   transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.78); }
+  }
+
+  /* Panel ------------------------------------------------------------- */
+  .tutor-panel {
+    position: fixed; z-index: 50;
+    right: 16px; bottom: 16px; left: 16px;
+    max-height: calc(100vh - 2rem);
+    display: flex; flex-direction: column;
+    border-radius: 18px; overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgba(var(--tutor-accent), 0.14), transparent 60%),
+      linear-gradient(180deg, rgba(var(--tutor-bg), 0.85), rgba(var(--tutor-bg), 0.92));
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    border: 1px solid rgba(var(--tutor-accent-glow), 0.28);
+    color: rgb(var(--tutor-ink));
+    box-shadow:
+      0 0 0 1px rgba(var(--tutor-accent), 0.08),
+      0 30px 80px -20px rgba(0,0,0,0.45),
+      0 0 60px -12px rgba(var(--tutor-accent-glow), 0.2);
+    animation: tutor-panel-in 180ms cubic-bezier(.2,.8,.2,1);
+  }
+  @media (min-width: 640px) {
+    .tutor-panel { left: auto; width: 400px; }
+  }
+  @media (min-width: 768px) {
+    .tutor-panel { width: 440px; }
+  }
+  @keyframes tutor-panel-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1);    }
+  }
+
+  /* HUD corner brackets */
+  .tutor-corner {
+    position: absolute; width: 14px; height: 14px; pointer-events: none;
+    border-color: rgba(var(--tutor-accent-glow), 0.7);
+  }
+  .tutor-corner-tl { top: 8px;    left: 8px;    border-top: 2px solid; border-left: 2px solid;    border-top-left-radius: 4px; }
+  .tutor-corner-tr { top: 8px;    right: 8px;   border-top: 2px solid; border-right: 2px solid;   border-top-right-radius: 4px; }
+  .tutor-corner-bl { bottom: 8px; left: 8px;    border-bottom: 2px solid; border-left: 2px solid; border-bottom-left-radius: 4px; }
+  .tutor-corner-br { bottom: 8px; right: 8px;   border-bottom: 2px solid; border-right: 2px solid;border-bottom-right-radius: 4px; }
+
+  /* Header ------------------------------------------------------------ */
+  .tutor-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(var(--tutor-edge), 0.9);
+    background: linear-gradient(90deg, rgba(var(--tutor-accent), 0.08), transparent 60%);
+  }
+  .tutor-crest {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 34px; width: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, rgb(var(--tutor-accent)), rgb(127 29 29));
+    color: white;
+    box-shadow: 0 0 16px -2px rgba(var(--tutor-accent-glow), 0.7), inset 0 0 0 1px rgba(255,255,255,0.18);
+  }
+  .tutor-crest svg { width: 16px; height: 16px; }
+  .tutor-crest-pulse {
+    position: absolute; inset: -3px; border-radius: 12px;
+    border: 1px solid rgba(var(--tutor-accent-glow), 0.6);
+    animation: tutor-ring 2.4s ease-out infinite;
+  }
+  .tutor-head-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    line-height: 1;
+    color: rgb(var(--tutor-ink));
+  }
+  .tutor-head-meta {
+    margin-top: 5px; font-size: 10px; letter-spacing: 0.14em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgba(113, 113, 122, 0.9);
+  }
+  .dark .tutor-head-meta { color: rgba(161, 161, 170, 0.85); }
+  .tutor-head-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 28px; height: 26px; padding: 0 7px;
+    border-radius: 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgba(113, 113, 122, 0.95);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+  .tutor-head-btn:hover {
+    color: rgb(var(--tutor-accent));
+    border-color: rgba(var(--tutor-accent-glow), 0.45);
+    background: rgba(var(--tutor-accent), 0.06);
+  }
+  .dark .tutor-head-btn { color: rgba(161,161,170,0.9); }
+  .dark .tutor-head-btn:hover {
+    color: rgb(254 202 202);
+    background: rgba(var(--tutor-accent), 0.14);
+  }
+
+  /* Log --------------------------------------------------------------- */
+  .tutor-log {
+    flex: 1; overflow-y: auto;
+    padding: 14px 16px; min-height: 180px;
+    display: flex; flex-direction: column; gap: 10px;
+    font-size: 13.5px; line-height: 1.55;
+    background:
+      linear-gradient(transparent 95%, rgba(var(--tutor-edge), 0.6) 95%) 0 0 / 100% 28px,
+      transparent;
+  }
+  .tutor-welcome {
+    font-size: 12px; color: rgba(113,113,122,0.9);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .dark .tutor-welcome { color: rgba(161,161,170,0.85); }
+  .tutor-welcome-tag {
+    font-size: 10px; letter-spacing: 0.18em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgb(var(--tutor-accent));
+  }
+
+  /* Alert ------------------------------------------------------------- */
+  .tutor-alert {
+    margin: 10px 14px; padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px dashed rgba(var(--tutor-accent-glow), 0.45);
+    background: rgba(var(--tutor-accent), 0.06);
+    font-size: 11px; letter-spacing: 0.04em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgb(var(--tutor-accent));
+  }
+  .dark .tutor-alert { color: rgb(252 165 165); }
+
+  /* Actions ----------------------------------------------------------- */
+  .tutor-actions {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 10px 12px 6px;
+    border-top: 1px solid rgba(var(--tutor-edge), 0.75);
+  }
+  .tutor-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border-radius: 9999px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    color: rgb(63 63 70);
+    background: rgba(var(--tutor-bg), 0.6);
+    border: 1px solid rgba(var(--tutor-edge), 0.95);
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .dark .tutor-chip { color: rgb(212 212 216); background: rgba(24,24,27,0.5); }
+  .tutor-chip:hover {
+    color: white;
+    background: rgb(var(--tutor-accent));
+    border-color: rgb(var(--tutor-accent));
+    box-shadow: 0 0 14px -2px rgba(var(--tutor-accent-glow), 0.6);
+  }
+  .tutor-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+  .tutor-chip-dot {
+    display: inline-block; height: 6px; width: 6px; border-radius: 9999px;
+    background: rgb(var(--tutor-accent));
+    box-shadow: 0 0 6px rgb(var(--tutor-accent-glow));
+  }
+  .tutor-chip:hover .tutor-chip-dot { background: white; box-shadow: 0 0 8px white; }
+
+  /* Form -------------------------------------------------------------- */
+  .tutor-form {
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid rgba(var(--tutor-edge), 0.6);
+  }
+  .tutor-input {
+    flex: 1; resize: none; max-height: 96px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(var(--tutor-edge), 0.95);
+    background: rgba(var(--tutor-bg), 0.85);
+    color: rgb(var(--tutor-ink));
+    font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    outline: none;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+  }
+  .tutor-input:focus {
+    border-color: rgba(var(--tutor-accent-glow), 0.7);
+    box-shadow: 0 0 0 3px rgba(var(--tutor-accent), 0.18);
+  }
+  .tutor-input::placeholder { color: rgba(113,113,122,0.75); }
+  .dark .tutor-input { background: rgba(24,24,27,0.7); }
+  .tutor-send {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 36px; width: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, rgb(var(--tutor-accent)), rgb(127 29 29));
+    color: white; border: 0; cursor: pointer;
+    box-shadow: 0 6px 16px -4px rgba(var(--tutor-accent), 0.5);
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+  }
+  .tutor-send:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -6px rgba(var(--tutor-accent-glow), 0.7); }
+  .tutor-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
   /* Hover-explain outline: applied to the prose block currently being hovered while the tutor is open. */
   .tutor-explain-target {
