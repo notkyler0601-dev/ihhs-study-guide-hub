@@ -122,7 +122,7 @@ export default {
     const result = await env.AI.run(env.MODEL ?? '@cf/google/gemma-4-26b-a4b-it', {
       messages: [{ role: 'system', content: system }, ...trimmed],
       stream: true,
-      max_tokens: 512,
+      max_tokens: 1024,
     });
 
     if (!(result instanceof ReadableStream)) {
