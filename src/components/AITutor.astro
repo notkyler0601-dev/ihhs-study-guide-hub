@@ -547,7 +547,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
         : `🦴 In caveman terms: "${truncated}"`;
       const prompt = kind === 'simpler'
         ? `Re-explain the passage below in really simple words, like you're talking to a 7th-grader who has never seen this material. Use one short concrete analogy. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`
-        : `Re-explain the passage below in caveman speak. Tiny vocabulary, short blunt sentences, mostly one syllable. Subject, verb, object. Like this: "Sun hot. Plant eat sun. Plant make food." Match that style for the whole reply. Keep the facts correct. 60 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
+        : `Rewrite the passage below using ultra-short telegraphic English sentences. Two to four words per sentence. Mostly one-syllable words. Drop articles like "the", "a", "an". Drop linking verbs where possible. Use simple present tense. Subject, verb, object. No connectives like "because", "however", "therefore". Example output style for a science topic: "Sun hot. Plant drink sun. Plant make food. Food help plant grow." Match this style for the whole reply. Keep the facts correct. 60 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
       g_currentAsk(prompt, label);
     });
     document.body.appendChild(m);
