@@ -544,7 +544,7 @@ The localStorage version is the perfect starting point: zero infrastructure, ins
 
 ## Optional: enable the AI tutor
 
-`<AITutor>` is a login-gated chat component backed by a standalone Cloudflare Worker in `worker/` that proxies Workers AI. The free tier is about 10k Llama 3.1 8B requests per day.
+`<AITutor>` is a login-gated chat component backed by a standalone Cloudflare Worker in `worker/` that proxies Workers AI. The default model is Google Gemma 4 26B A4B (MoE, 26B total / 4B active, 256K context). Quota and pricing vary by model, see [Cloudflare's pricing page](https://developers.cloudflare.com/workers-ai/platform/pricing/) for current limits.
 
 1. Deploy the Worker (see `worker/README.md`):
    ```

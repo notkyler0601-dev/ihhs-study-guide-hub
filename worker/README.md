@@ -1,13 +1,15 @@
 # ihhs-ai-tutor (Cloudflare Worker)
 
 Tiny Cloudflare Worker that proxies student questions to Workers AI
-(Llama 3.1 8B by default) and streams the reply back as SSE.
+(Google Gemma 4 26B A4B by default) and streams the reply back as SSE.
 
 ## Why a Worker and not a Vercel function
 
-Workers AI is free up to ~10k requests per day on the free plan and
-runs the model on Cloudflare's edge network with no cold start. No keys
-to rotate, no per-token billing.
+Workers AI runs the model on Cloudflare's edge network with no cold
+start. No keys to rotate, no per-token billing on our side. Free-tier
+quota varies by model, see
+https://developers.cloudflare.com/workers-ai/platform/pricing/ for the
+current limits on Gemma 4 26B.
 
 ## Deploy
 
@@ -51,6 +53,9 @@ Change it or add staging origins as needed.
 
 ## Swap the model
 
-Set `MODEL` in `wrangler.toml` to any Workers AI chat model id, for
-example `@cf/meta/llama-3.3-70b-instruct-fp8-fast` for higher quality
-(slower, counts more against quota).
+Set `MODEL` in `wrangler.toml` to any Workers AI chat model id. Cheap
+fallback: `@cf/meta/llama-3.1-8b-instruct`. Higher quality alternatives:
+`@cf/meta/llama-3.3-70b-instruct-fp8-fast` or `@cf/openai/gpt-oss-120b`.
+The current default `@cf/google/gemma-4-26b-a4b-it` is an MoE with 26B
+total / 4B active parameters, 256K context window, and tool-calling
+support.

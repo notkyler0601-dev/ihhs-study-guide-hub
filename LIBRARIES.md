@@ -49,7 +49,7 @@ Tile provider: **OpenStreetMap** (free, no key, attribution required by the comp
 | Package | Version | Purpose |
 |---|---|---|
 | `@supabase/supabase-js` | latest | Supabase auth + Postgres client. Only used when `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` env vars are set. Powers cross-device account sync, `/request` submissions, and the `/admin/requests` inbox. Falls back to local-only mode when env vars are missing. See `SUPABASE_SETUP.md`. |
-| `ihhs-ai-tutor` Worker | n/a | Standalone Cloudflare Worker in `worker/` that proxies to Workers AI (Llama 3.1 8B). The `<AITutor>` component calls `${PUBLIC_AI_TUTOR_URL}/tutor` and streams the reply. Falls back to an "unconfigured" notice when env var is missing. See `worker/README.md`. |
+| `ihhs-ai-tutor` Worker | n/a | Standalone Cloudflare Worker in `worker/` that proxies to Workers AI (Google Gemma 4 26B A4B by default). The `<AITutor>` component calls `${PUBLIC_AI_TUTOR_URL}/tutor` and streams the reply. Falls back to an "unconfigured" notice when env var is missing. See `worker/README.md`. |
 
 ## 4. Internal infrastructure (`src/lib/`)
 
@@ -740,7 +740,7 @@ Added 2026-04. Closes the gaps surfaced in the "futuristic toolkit" research pas
 
 ### AI tutor
 
-See `<AITutor>` in section 8 (Tier 3). Backed by a standalone Cloudflare Worker (`worker/`) that proxies to Workers AI (Llama 3.1 8B). The previous WebLLM/WebGPU implementation was removed in favor of a server-side path so the tutor works on iPads and weak Chromebooks without a multi-GB model download.
+See `<AITutor>` in section 8 (Tier 3). Backed by a standalone Cloudflare Worker (`worker/`) that proxies to Workers AI (Google Gemma 4 26B A4B by default; MoE with 26B total / 4B active parameters and a 256K context window). The previous WebLLM/WebGPU implementation was removed in favor of a server-side path so the tutor works on iPads and weak Chromebooks without a multi-GB model download.
 
 ### Declarative 3D (React Three Fiber)
 

@@ -1,5 +1,5 @@
 // IHHS AI tutor Worker.
-// POST /tutor -> SSE stream from Cloudflare Workers AI (Llama 3.1 8B).
+// POST /tutor -> SSE stream from Cloudflare Workers AI (Gemma 4 26B A4B).
 // Body: { messages: [{role, content}], guideTitle?, guideContext? }
 // Per-IP rate limit handled in-process via checkRate().
 
@@ -119,7 +119,7 @@ export default {
     }
     const system = parts.join('\n\n');
 
-    const result = await env.AI.run(env.MODEL ?? '@cf/meta/llama-3.1-8b-instruct', {
+    const result = await env.AI.run(env.MODEL ?? '@cf/google/gemma-4-26b-a4b-it', {
       messages: [{ role: 'system', content: system }, ...trimmed],
       stream: true,
       max_tokens: 512,
