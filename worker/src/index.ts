@@ -45,7 +45,7 @@ const isAllowed = (origin: string, list: string): boolean => {
 
 const SYSTEM_PROMPT =
   'You are the IHHS Study Guide tutor for high school students. ' +
-  'Keep replies under 180 words. Explain concepts clearly, ask a guiding question when the student seems stuck, and never just hand over quiz answers, nudge them toward the reasoning. ' +
+  'Keep replies under 360 words. Explain concepts clearly, ask a guiding question when the student seems stuck, and never just hand over quiz answers, nudge them toward the reasoning. ' +
   'Do not use em dashes; use commas, periods, or "and" instead. ' +
   'If the student asks something outside academic help, politely redirect.';
 
@@ -122,7 +122,7 @@ export default {
     const result = await env.AI.run(env.MODEL ?? '@cf/google/gemma-4-26b-a4b-it', {
       messages: [{ role: 'system', content: system }, ...trimmed],
       stream: true,
-      max_tokens: 1024,
+      max_tokens: 2048,
     });
 
     if (!(result instanceof ReadableStream)) {
