@@ -544,7 +544,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       const truncated = passage.length > 60 ? passage.slice(0, 60) + '...' : passage;
       const label = kind === 'simpler'
         ? `🧠 Explain simpler: "${truncated}"`
-        : `🦴 In caveman terms: "${truncated}"`;
+        : `🦴 Caveman: "${truncated}"`;
       const prompt = kind === 'simpler'
         ? `Re-explain the passage below in really simple words, like you're talking to a 7th-grader who has never seen this material. Use one short concrete analogy. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`
         : `Rewrite the passage below using ultra-short telegraphic English sentences. Two to four words per sentence. Mostly one-syllable words. Drop articles like "the", "a", "an". Drop linking verbs where possible. Use simple present tense. Subject, verb, object. No connectives like "because", "however", "therefore". Example output style for a science topic: "Sun hot. Plant drink sun. Plant make food. Food help plant grow." Match this style for the whole reply. Keep the facts correct. 60 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
