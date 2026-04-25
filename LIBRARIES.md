@@ -534,6 +534,8 @@ All entries cross-checked against the catalog above to avoid duplicates. AI, AR,
 | **wtf_wikipedia** | `wtf_wikipedia` | MIT | Parse any Wikipedia article from the browser — text, infoboxes, categories. |
 | **wikipedia** | `wikipedia` | MIT | Cleaner REST wrapper for Wikipedia summaries, "on this day," geo-search. |
 | **inkjs** | `inkjs` | MIT | JS port of Inkle's Ink scripting language. Branching-narrative interactive fiction (engine behind *80 Days*). |
+| **`<SpeechQuiz>`** (component, built 2026-04-25) | Web Speech API (`SpeechRecognition`) | n/a | Mic-driven speaking quiz. Student SAYS the answer aloud, browser recognizes it (configurable BCP-47 `lang`, default `es-ES`), system grades each item with edit-distance tolerance for ASR fuzziness. Includes typed-answer fallback for browsers without SpeechRecognition (Firefox / older Safari). Per-item retry, "drill the misses" mode, infinite repeat. Used by `spanish-imperfect-regular`. Generic for any language. Source: `src/components/SpeechQuiz.astro`. |
+| **`<ImperfectConjugator>`** (component, built 2026-04-25) | Custom + `@formkit/auto-animate` | n/a | Live Spanish imperfect-tense conjugator. Type any infinitive; auto-detects -ar / -er / -ir family, drops the ending, and renders all six conjugated forms with per-letter highlighting on the ending. Flags the three irregulars (`ir`, `ser`, `ver`) explicitly and rejects non-Spanish infinitives. Used by `spanish-imperfect-regular`. Source: `src/components/ImperfectConjugator.astro`. |
 
 ### Part 2E — Advanced: code, CS, theory
 

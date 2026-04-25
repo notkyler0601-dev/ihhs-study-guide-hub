@@ -1,0 +1,345 @@
+---
+title: "Spanish Regular Imperfect Tense"
+description: "Master the regular imperfect tense in Spanish: the two ending families, when to use it, and a speaking quiz that grades your pronunciation in real time."
+subject: "Spanish"
+categories: ["Languages"]
+estimatedTime: 25
+date: 2026-04-25
+tags: ["spanish", "grammar", "imperfect", "conjugation", "verbs"]
+authors: ["IHHS"]
+---
+
+import Callout from '../../components/Callout.astro';
+import KeyTerm from '../../components/KeyTerm.astro';
+import Collapsible from '../../components/Collapsible.astro';
+import Flashcards from '../../components/Flashcards.astro';
+import RoughNotation from '../../components/RoughNotation.astro';
+import VantaBackground from '../../components/VantaBackground.astro';
+import Typewriter from '../../components/Typewriter.astro';
+import Particles from '../../components/Particles.astro';
+import Memorize from '../../components/Memorize.astro';
+import DragSort from '../../components/DragSort.astro';
+import StepThrough from '../../components/StepThrough.astro';
+import Zdog from '../../components/Zdog.astro';
+import ImperfectConjugator from '../../components/ImperfectConjugator.astro';
+import SpeechQuiz from '../../components/SpeechQuiz.astro';
+
+<VantaBackground type="waves" height={320}>
+  <div class="text-center">
+    <div class="text-xs uppercase tracking-[0.24em] font-semibold text-white/80 mb-3">El Imperfecto</div>
+    <Typewriter
+      variant="h1"
+      text="Cuando era niño, hablaba español todos los días."
+      speed={45}
+      className="font-serif text-3xl sm:text-4xl text-white leading-snug"
+    />
+    <div class="mt-4 text-sm text-white/80 italic">When I was a child, I used to speak Spanish every day.</div>
+  </div>
+</VantaBackground>
+
+## Learning objectives
+
+By the end of this guide you will be able to:
+
+- Identify any regular Spanish verb's conjugation family (`-ar`, `-er`, or `-ir`)
+- Conjugate any regular verb in the imperfect for all six grammatical persons
+- Recognize the trigger words that signal the imperfect tense in a sentence
+- Pronounce all six forms of any regular imperfect conjugation, graded by your microphone
+- Distinguish the imperfect (ongoing, repeated past) from the preterite (single, completed past)
+
+## TL;DR
+
+The Spanish **imperfect** tense describes <RoughNotation type="underline" color="#b91c1c">repeated, habitual, or ongoing</RoughNotation> actions in the past. To form it, you drop the infinitive's last two letters and add one of two ending sets: the `-ar` set or the shared `-er` / `-ir` set. There are only **three irregulars** in the entire tense (`ir`, `ser`, `ver`), and this guide focuses on the regulars.
+
+<Callout type="insight" title="The whole tense in one sentence">
+  Drop `-ar` and add **aba, abas, aba, ábamos, abais, aban**. Drop `-er` or `-ir` and add **ía, ías, ía, íamos, íais, ían**. That is the entire regular imperfect tense.
+</Callout>
+
+## Glossary
+
+- <KeyTerm term="imperfecto">The Spanish past tense for ongoing, repeated, or habitual actions. Translates to English "used to ___" or "was ___ing".</KeyTerm>
+- <KeyTerm term="pretérito">The Spanish past tense for single, completed actions at a specific moment. Translates to English simple past, "I ___ed".</KeyTerm>
+- <KeyTerm term="infinitivo">The unconjugated dictionary form of a verb. In Spanish, every infinitive ends in `-ar`, `-er`, or `-ir`.</KeyTerm>
+- <KeyTerm term="raíz (stem)">What is left of an infinitive after you drop the final `-ar`, `-er`, or `-ir`. For `hablar`, the stem is `habl-`.</KeyTerm>
+- <KeyTerm term="terminación (ending)">The conjugated suffix you attach to the stem. The imperfect has six per family, one per grammatical person.</KeyTerm>
+- <KeyTerm term="conjugar">To attach the right ending to a stem so the verb agrees with its subject (yo, tú, él, nosotros, vosotros, ellos).</KeyTerm>
+
+## Imperfect vs preterite, the big idea
+
+Spanish has two simple past tenses, and choosing between them is the single hardest grammar decision in the language. The rule is easier than students think.
+
+<StepThrough
+  title="Imperfect or preterite? A 3-second test"
+  steps={[
+    {
+      caption: 'Was it repeated, habitual, or in progress? If yes, use the IMPERFECT. Trigger phrases: "every day", "always", "when I was a child", "while", "used to".',
+      html: '<div class="grid place-items-center text-center p-6"><div class="text-5xl mb-3">🔁</div><div class="font-serif text-2xl text-accent-700 dark:text-accent-400 mb-2">Imperfecto</div><div class="font-serif italic text-lg text-ink-700 dark:text-ink-200 mt-2">"Cuando era niño, jugaba al fútbol."</div><div class="text-sm text-ink-500 mt-1">When I was a child, I used to play soccer.</div></div>',
+    },
+    {
+      caption: 'Was it a single, completed event? If yes, use the PRETERITE. Trigger phrases: "yesterday", "last week", "at 3pm", "two times", "suddenly".',
+      html: '<div class="grid place-items-center text-center p-6"><div class="text-5xl mb-3">📍</div><div class="font-serif text-2xl text-accent-700 dark:text-accent-400 mb-2">Pretérito</div><div class="font-serif italic text-lg text-ink-700 dark:text-ink-200 mt-2">"Ayer jugué al fútbol con mis amigos."</div><div class="text-sm text-ink-500 mt-1">Yesterday I played soccer with my friends.</div></div>',
+    },
+    {
+      caption: 'When both happen in one sentence, the imperfect is the BACKGROUND and the preterite is the EVENT that interrupts it.',
+      html: '<div class="grid place-items-center text-center p-6"><div class="text-5xl mb-3">🎬</div><div class="font-serif text-2xl text-accent-700 dark:text-accent-400 mb-2">Background + Event</div><div class="font-serif italic text-lg text-ink-700 dark:text-ink-200 mt-2">Yo <span class="text-accent-700 dark:text-accent-400 font-semibold">caminaba</span> cuando <span class="text-amber-600 dark:text-amber-400 font-semibold">sonó</span> el teléfono.</div><div class="text-sm text-ink-500 mt-1">I was walking when the phone rang.</div></div>',
+    },
+  ]}
+/>
+
+## The two ending families
+
+Every regular Spanish verb falls into exactly one of two imperfect conjugation patterns. The pattern is decided by the last two letters of the infinitive.
+
+### Pattern 1: `-ar` verbs
+
+<RoughNotation type="box" color="#b91c1c" padding={10}>
+For any verb ending in `-ar`, drop the `-ar` and add: **aba, abas, aba, ábamos, abais, aban**.
+</RoughNotation>
+
+| Pronoun | Ending | Example with `hablar` (to speak) |
+|---|---|---|
+| yo | **-aba** | habl**aba** (I used to speak) |
+| tú | **-abas** | habl**abas** (you used to speak) |
+| él / ella / usted | **-aba** | habl**aba** (he/she/you used to speak) |
+| nosotros | **-ábamos** | habl**ábamos** (we used to speak) |
+| vosotros | **-abais** | habl**abais** (you all used to speak) |
+| ellos / ellas / ustedes | **-aban** | habl**aban** (they/you all used to speak) |
+
+<Callout type="warning" title="Watch the stress mark on nosotros">
+  The `nosotros` form is the **only** `-ar` imperfect ending with a written accent: <RoughNotation type="circle" color="#b91c1c" padding={4}>ábamos</RoughNotation>. Without the accent, the stress would shift to the wrong syllable.
+</Callout>
+
+### Pattern 2: `-er` and `-ir` verbs (shared)
+
+<RoughNotation type="box" color="#b91c1c" padding={10}>
+For any verb ending in `-er` or `-ir`, drop the `-er` or `-ir` and add: **ía, ías, ía, íamos, íais, ían**.
+</RoughNotation>
+
+The two families share the same endings, so once you know one, you know both.
+
+| Pronoun | Ending | `comer` (to eat) | `vivir` (to live) |
+|---|---|---|---|
+| yo | **-ía** | com**ía** | viv**ía** |
+| tú | **-ías** | com**ías** | viv**ías** |
+| él / ella / usted | **-ía** | com**ía** | viv**ía** |
+| nosotros | **-íamos** | com**íamos** | viv**íamos** |
+| vosotros | **-íais** | com**íais** | viv**íais** |
+| ellos / ellas / ustedes | **-ían** | com**ían** | viv**ían** |
+
+<Callout type="insight" title="Every `-er` / `-ir` ending has an accent">
+  Unlike the `-ar` set, **all six** `-er` / `-ir` imperfect endings carry a written accent on the `í`. Forget the accent, and the word becomes ungrammatical.
+</Callout>
+
+## Conjugation Lab
+
+Type any regular Spanish infinitive below. The lab detects the `-ar`, `-er`, or `-ir` family, drops the ending, and applies the right pattern across all six persons.
+
+<ImperfectConjugator initial="hablar" />
+
+<Callout type="tip" title="Test the system">
+  Try the three irregular verbs (`ir`, `ser`, `ver`) to see how the lab flags them, or type a verb that does not end in `-ar`, `-er`, or `-ir` to see the error path.
+</Callout>
+
+## When to use the imperfect
+
+The imperfect tense follows a small set of trigger words and phrases. Spotting one of these in a sentence is your green light to use the imperfect.
+
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 my-6 not-prose">
+  <div class="text-center p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+    <Zdog shape="hourglass" color="red" caption="siempre (always)" size={120} />
+  </div>
+  <div class="text-center p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+    <Zdog shape="sun" color="red" caption="todos los días (every day)" size={120} />
+  </div>
+  <div class="text-center p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+    <Zdog shape="moon" color="red" caption="cuando era niño (as a child)" size={120} />
+  </div>
+  <div class="text-center p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+    <Zdog shape="star" color="red" caption="muchas veces (many times)" size={120} />
+  </div>
+  <div class="text-center p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+    <Zdog shape="heart" color="red" caption="a menudo (often)" size={120} />
+  </div>
+  <div class="text-center p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900">
+    <Zdog shape="cup" color="red" caption="mientras (while)" size={120} />
+  </div>
+</div>
+
+| Spanish trigger | English equivalent | What it signals |
+|---|---|---|
+| **siempre** | always | Habitual action |
+| **todos los días** | every day | Recurring action |
+| **cuando era niño / niña** | when I was a child | Past habitual state |
+| **muchas veces** | many times | Repeated action |
+| **a menudo** | often | Frequency without a specific count |
+| **mientras** | while | Two ongoing actions in parallel |
+| **de niño / de joven** | as a child / as a young person | Past life stage |
+| **los lunes** (any weekday) | on Mondays | Habitual weekly schedule |
+
+## Worked example: `vivir`
+
+<StepThrough
+  title="Conjugating vivir step by step"
+  steps={[
+    {
+      caption: 'Step 1, identify the family. vivir ends in -ir, so it follows the er/ir pattern.',
+      html: '<div class="text-center p-6"><div class="font-mono text-4xl mb-3">vivir</div><div class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400">family: -ir</div></div>',
+    },
+    {
+      caption: 'Step 2, drop the ending. Remove -ir to get the stem viv-.',
+      html: '<div class="text-center p-6"><div class="font-mono text-4xl mb-3">viv<span class="text-ink-400 line-through">ir</span></div><div class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400">stem: viv-</div></div>',
+    },
+    {
+      caption: 'Step 3, add the er/ir endings: ía, ías, ía, íamos, íais, ían.',
+      html: '<div class="p-6 grid grid-cols-2 gap-3 text-base max-w-md mx-auto"><div class="font-mono">yo viv<span class="text-accent-700 dark:text-accent-400 font-semibold">ía</span></div><div class="font-mono">nosotros viv<span class="text-accent-700 dark:text-accent-400 font-semibold">íamos</span></div><div class="font-mono">tú viv<span class="text-accent-700 dark:text-accent-400 font-semibold">ías</span></div><div class="font-mono">vosotros viv<span class="text-accent-700 dark:text-accent-400 font-semibold">íais</span></div><div class="font-mono">él viv<span class="text-accent-700 dark:text-accent-400 font-semibold">ía</span></div><div class="font-mono">ellos viv<span class="text-accent-700 dark:text-accent-400 font-semibold">ían</span></div></div>',
+    },
+  ]}
+/>
+
+## Practice
+
+<Collapsible question="Conjugate caminar (to walk) in the imperfect for nosotros.">
+  **caminábamos**. Drop `-ar` to get the stem `camin-`, then add the `-ar` nosotros ending `-ábamos`. Note the stress mark.
+</Collapsible>
+
+<Collapsible question="Conjugate aprender (to learn) in the imperfect for ellos.">
+  **aprendían**. Drop `-er` to get the stem `aprend-`, then add the shared er/ir ellos ending `-ían`.
+</Collapsible>
+
+<Collapsible question="Conjugate escribir (to write) in the imperfect for yo.">
+  **escribía**. Drop `-ir` to get the stem `escrib-`, then add the shared er/ir yo ending `-ía`.
+</Collapsible>
+
+<Collapsible question="Translate: 'They used to drink coffee every morning.'">
+  **Ellos bebían café cada mañana.** The trigger phrase is "every morning", which signals habitual action, so the imperfect of `beber` is required.
+</Collapsible>
+
+<Collapsible question="Translate: 'We were studying while she sang.'">
+  **Nosotros estudiábamos mientras ella cantaba.** Two ongoing actions in parallel both take the imperfect; `mientras` is the giveaway.
+</Collapsible>
+
+## Order the conjugation
+
+Drag the six forms of `hablar` into the correct order, from `yo` to `ellos`.
+
+<DragSort
+  title="hablar in order"
+  prompt="From yo through ellos / ellas / ustedes."
+  items={[
+    { id: 'yo',  label: 'hablaba (yo)' },
+    { id: 'tu',  label: 'hablabas (tú)' },
+    { id: 'el',  label: 'hablaba (él / ella / usted)' },
+    { id: 'nos', label: 'hablábamos (nosotros)' },
+    { id: 'vos', label: 'hablabais (vosotros)' },
+    { id: 'ell', label: 'hablaban (ellos / ellas / ustedes)' },
+  ]}
+  answer={['yo', 'tu', 'el', 'nos', 'vos', 'ell']}
+/>
+
+## Quiz
+
+For each prompt, click the microphone and **say** the correct imperfect form out loud in Spanish. The system grades each answer the moment you finish speaking. You can retry as many times as you want, and at the end you can drill only the ones you missed.
+
+<Callout type="tip" title="Best results">
+  Use Chrome or Edge with your microphone enabled. The first time you click the mic, your browser will ask for microphone permission. If you cannot use a microphone, expand the "Type instead" panel under the mic.
+</Callout>
+
+<SpeechQuiz
+  title="Speaking quiz: regular imperfect"
+  promptLabel="Say the imperfect form of"
+  items={[
+    { prompt: 'yo + hablar',       answer: 'hablaba',     hint: '-ar verb, yo ending' },
+    { prompt: 'tú + hablar',       answer: 'hablabas',    hint: '-ar verb, tú ending' },
+    { prompt: 'ella + hablar',     answer: 'hablaba',     hint: '-ar verb, él/ella/usted ending' },
+    { prompt: 'nosotros + hablar', answer: 'hablábamos',  hint: '-ar verb, nosotros ending, mind the accent' },
+    { prompt: 'vosotros + hablar', answer: 'hablabais',   hint: '-ar verb, vosotros ending' },
+    { prompt: 'ellos + hablar',    answer: 'hablaban',    hint: '-ar verb, ellos/ellas/ustedes ending' },
+    { prompt: 'yo + comer',        answer: 'comía',       hint: '-er verb, yo ending' },
+    { prompt: 'tú + comer',        answer: 'comías',      hint: '-er verb, tú ending' },
+    { prompt: 'él + comer',        answer: 'comía',       hint: '-er verb, él/ella/usted ending' },
+    { prompt: 'nosotros + comer',  answer: 'comíamos',    hint: '-er verb, nosotros ending' },
+    { prompt: 'vosotros + comer',  answer: 'comíais',     hint: '-er verb, vosotros ending' },
+    { prompt: 'ellos + comer',     answer: 'comían',      hint: '-er verb, ellos/ellas/ustedes ending' },
+    { prompt: 'yo + vivir',        answer: 'vivía',       hint: '-ir verb, yo ending' },
+    { prompt: 'tú + vivir',        answer: 'vivías',      hint: '-ir verb, tú ending' },
+    { prompt: 'usted + vivir',     answer: 'vivía',       hint: '-ir verb, él/ella/usted ending' },
+    { prompt: 'nosotros + vivir',  answer: 'vivíamos',    hint: '-ir verb, nosotros ending' },
+    { prompt: 'vosotros + vivir',  answer: 'vivíais',     hint: '-ir verb, vosotros ending' },
+    { prompt: 'ellas + vivir',     answer: 'vivían',      hint: '-ir verb, ellos/ellas/ustedes ending' },
+  ]}
+/>
+
+## Flashcards
+
+A traditional flip-card deck for the 12 endings plus a few sample conjugations. Sign in to track your spaced repetition across devices.
+
+<Flashcards
+  title="Imperfect endings and sample conjugations"
+  cards={[
+    { front: '-ar imperfect, yo', back: '-aba' },
+    { front: '-ar imperfect, tú', back: '-abas' },
+    { front: '-ar imperfect, él / ella / usted', back: '-aba' },
+    { front: '-ar imperfect, nosotros', back: '-ábamos (note the accent)' },
+    { front: '-ar imperfect, vosotros', back: '-abais' },
+    { front: '-ar imperfect, ellos / ellas / ustedes', back: '-aban' },
+    { front: '-er / -ir imperfect, yo', back: '-ía' },
+    { front: '-er / -ir imperfect, tú', back: '-ías' },
+    { front: '-er / -ir imperfect, él / ella / usted', back: '-ía' },
+    { front: '-er / -ir imperfect, nosotros', back: '-íamos' },
+    { front: '-er / -ir imperfect, vosotros', back: '-íais' },
+    { front: '-er / -ir imperfect, ellos / ellas / ustedes', back: '-ían' },
+    { front: 'hablar (yo, imperfect)', back: 'hablaba' },
+    { front: 'comer (nosotros, imperfect)', back: 'comíamos' },
+    { front: 'vivir (ellos, imperfect)', back: 'vivían' },
+    { front: 'estudiar (tú, imperfect)', back: 'estudiabas' },
+  ]}
+/>
+
+## Memorize the rule
+
+Train yourself to recall the rule cold, with no prompts. Use the cloze and cold-recall modes to lock the pattern into long-term memory.
+
+<Memorize
+  title="The regular imperfect rule"
+  text="Para los verbos que terminan en -ar, quita la terminación y agrega aba, abas, aba, ábamos, abais, aban. Para los verbos que terminan en -er o -ir, quita la terminación y agrega ía, ías, ía, íamos, íais, ían. Solo hay tres irregulares: ir, ser, ver."
+/>
+
+## Heads-up: only three irregulars
+
+<Callout type="warning" title="Out of scope today, but worth noting">
+  The Spanish imperfect has only **three** irregular verbs in the entire tense: `ir`, `ser`, and `ver`. Every other verb in the language follows the patterns on this page exactly. The three irregulars deserve their own focused study session.
+</Callout>
+
+## Mnemonics
+
+- **"-ar wears a B, -er and -ir wear a stripe"**: every `-ar` imperfect ending has a `b` in it (a**b**a, a**b**as, ...). Every `-er` / `-ir` imperfect ending has a written accent on the `í`.
+- **"Only nosotros gets the hat"**: in the `-ar` family, only the `nosotros` form has an accent (ábamos). Everywhere else in `-ar`, no accent.
+- **"-er and -ir are twins"**: they share their endings exactly. Memorize one, and you know both.
+
+## Common pitfalls
+
+<Callout type="warning" title="The five mistakes that lose points on tests">
+  1. **Forgetting the accent on `-ar` nosotros**: `hablábamos`, not `hablabamos`.
+  2. **Forgetting the accent on every `-er` / `-ir` ending**: `comía`, not `comia`.
+  3. **Mixing the families**: `-ar` verbs do NOT take `-ía` endings. Check the infinitive ending first, every time.
+  4. **Confusing yo and él / ella / usted**: in both ending sets, these two forms are identical (`hablaba`, `comía`). Context tells you who is speaking.
+  5. **Using preterite when the trigger word screams imperfect**: if you see `siempre`, `todos los días`, or `cuando era niño`, do not even consider the preterite.
+</Callout>
+
+## Cheat sheet
+
+| | `-ar` (drop `-ar`) | `-er` / `-ir` (drop `-er` / `-ir`) |
+|---|---|---|
+| **yo** | -aba | -ía |
+| **tú** | -abas | -ías |
+| **él / ella / usted** | -aba | -ía |
+| **nosotros** | -**á**bamos | -**í**amos |
+| **vosotros** | -abais | -**í**ais |
+| **ellos / ellas / ustedes** | -aban | -**í**an |
+
+<Particles preset="petals">
+  <div class="text-center text-white py-12">
+    <div class="font-serif text-2xl italic mb-2">"Cuando estudiabas, aprendías. Cuando aprendías, vivías."</div>
+    <div class="text-sm text-white/80">When you used to study, you used to learn. When you used to learn, you used to live.</div>
+  </div>
+</Particles>

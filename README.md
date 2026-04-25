@@ -298,6 +298,8 @@ The full catalog with usage docs lives in [`LIBRARIES.md`](./LIBRARIES.md). Quic
 | `<IPAKeyboard />` | Custom | Type IPA symbols |
 | `<TextAnnotate text="..." />` | Custom | Reader-side annotations (saved locally) |
 | `<DiffView before="..." after="..." />` | diff2html | Compare drafts or translations |
+| `<SpeechQuiz items={[...]} lang="es-ES" />` | Web Speech API | Mic-graded speaking quiz with retry and "drill misses" mode |
+| `<ImperfectConjugator initial="hablar" />` | Custom | Live Spanish imperfect conjugator with auto-detected -ar/-er/-ir family |
 
 **Music and arts**
 

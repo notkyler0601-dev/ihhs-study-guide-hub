@@ -1,0 +1,271 @@
+---
+// Interactive lab for the Spanish regular imperfect tense.
+// Type any infinitive (hablar, comer, vivir, ...) and watch all six
+// conjugated forms slide in. Detects -ar / -er / -ir endings, applies
+// the correct ending set, and highlights the ending letters in red.
+//
+// Verbs that aren't regular -ar / -er / -ir produce a friendly note.
+// Three irregulars (ir, ser, ver) are explicitly flagged.
+//
+// Usage:
+//   <ImperfectConjugator />
+//   <ImperfectConjugator initial="hablar" />
+
+interface Props {
+  initial?: string;
+  title?: string;
+}
+const { initial = 'hablar', title = 'Conjugation Lab' } = Astro.props;
+const id = 'ic-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ initial });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-ic data-conf={conf}>
+  <header class="mb-4 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white text-xs">⚙</span>
+      {title}
+    </span>
+    <span class="text-xs text-ink-500 italic">Type any regular Spanish infinitive</span>
+  </header>
+
+  <!-- Verb input -->
+  <div class="mb-5">
+    <label class="block text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">Infinitive</label>
+    <div class="relative">
+      <input
+        data-ic-input
+        type="text"
+        value={initial}
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        placeholder="hablar, comer, vivir..."
+        class="w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-4 py-3 text-2xl font-mono tracking-wide focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+      />
+      <span data-ic-family class="absolute right-3 top-1/2 -translate-y-1/2 text-xs uppercase font-semibold tracking-[0.16em] text-ink-400 pointer-events-none"></span>
+    </div>
+    <div class="mt-2 flex flex-wrap gap-1.5">
+      <span class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mr-1">Try</span>
+      {['hablar', 'caminar', 'estudiar', 'comer', 'beber', 'vivir', 'escribir'].map((v) => (
+        <button data-ic-suggest={v} type="button" class="h-7 px-2 rounded-md border border-ink-200 dark:border-ink-700 hover:border-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/30 font-mono text-xs text-ink-700 dark:text-ink-300">
+          {v}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Status message (irregular warnings, etc) -->
+  <div data-ic-status class="hidden mb-4 p-3 rounded-lg border-l-4 text-sm"></div>
+
+  <!-- Stem + ending breakdown -->
+  <div data-ic-breakdown class="hidden mb-5 p-4 rounded-lg bg-ink-50 dark:bg-ink-900/60 border border-ink-200 dark:border-ink-800">
+    <div class="flex items-baseline gap-3 flex-wrap">
+      <span class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500">Step 1</span>
+      <span class="font-mono text-base">Drop the ending:</span>
+      <span class="font-mono text-2xl">
+        <span data-ic-stem class="text-ink-900 dark:text-ink-50"></span><span data-ic-drop class="text-ink-400 line-through"></span>
+      </span>
+    </div>
+    <div class="mt-2 flex items-baseline gap-3 flex-wrap">
+      <span class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500">Step 2</span>
+      <span class="font-mono text-base">Add the imperfect endings for</span>
+      <span data-ic-family-tag class="px-2 py-0.5 rounded-md bg-accent-700 dark:bg-accent-600 text-white font-mono text-xs uppercase tracking-wider"></span>
+    </div>
+  </div>
+
+  <!-- Conjugation grid -->
+  <div data-ic-grid class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+  <!-- Sample sentence -->
+  <div data-ic-sample class="hidden mt-5 p-4 rounded-xl border border-accent-200 dark:border-accent-800 bg-gradient-to-br from-accent-50 to-white dark:from-accent-900/20 dark:to-ink-900">
+    <div class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400 mb-2">Sample sentence</div>
+    <div data-ic-sample-text class="font-serif text-lg italic text-ink-900 dark:text-ink-50"></div>
+    <div data-ic-sample-trans class="mt-1 text-sm text-ink-600 dark:text-ink-300"></div>
+  </div>
+</section>
+
+<script>
+  type Conf = { initial: string };
+  type Family = 'ar' | 'er' | 'ir';
+
+  const ENDINGS: Record<Family, string[]> = {
+    ar: ['aba', 'abas', 'aba', 'ábamos', 'abais', 'aban'],
+    er: ['ía', 'ías', 'ía', 'íamos', 'íais', 'ían'],
+    ir: ['ía', 'ías', 'ía', 'íamos', 'íais', 'ían'],
+  };
+  const PRONOUNS = ['yo', 'tú', 'él / ella / usted', 'nosotros', 'vosotros', 'ellos / ellas / ustedes'];
+  // Three irregulars (ir, ser, ver) are out of scope for this lab; flag them clearly.
+  const IRREGULARS: Record<string, string[]> = {
+    ir:  ['iba', 'ibas', 'iba', 'íbamos', 'ibais', 'iban'],
+    ser: ['era', 'eras', 'era', 'éramos', 'erais', 'eran'],
+    ver: ['veía', 'veías', 'veía', 'veíamos', 'veíais', 'veían'],
+  };
+
+  // Pre-built English translations for the suggested infinitives.
+  const SAMPLES: Record<string, { en: string; subject: number }> = {
+    hablar:    { en: 'I used to speak Spanish every day.',   subject: 0 },
+    caminar:   { en: 'We used to walk to school.',           subject: 3 },
+    estudiar:  { en: 'They were studying in the library.',   subject: 5 },
+    comer:     { en: 'You used to eat lunch with us.',       subject: 1 },
+    beber:     { en: 'She drank coffee every morning.',      subject: 2 },
+    vivir:     { en: 'We were living in Madrid back then.',  subject: 3 },
+    escribir:  { en: 'They wrote letters to each other.',    subject: 5 },
+  };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[c]));
+
+  const detectFamily = (verb: string): Family | null => {
+    const v = verb.trim().toLowerCase();
+    if (v.endsWith('ar')) return 'ar';
+    if (v.endsWith('er')) return 'er';
+    if (v.endsWith('ir')) return 'ir';
+    return null;
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-ic]:not([data-ic-ready])').forEach((root) => {
+      root.dataset.icReady = '1';
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+
+      const input = root.querySelector<HTMLInputElement>('[data-ic-input]')!;
+      const familyTag = root.querySelector<HTMLElement>('[data-ic-family]')!;
+      const familyTagBox = root.querySelector<HTMLElement>('[data-ic-family-tag]')!;
+      const statusEl = root.querySelector<HTMLElement>('[data-ic-status]')!;
+      const breakdownEl = root.querySelector<HTMLElement>('[data-ic-breakdown]')!;
+      const stemEl = root.querySelector<HTMLElement>('[data-ic-stem]')!;
+      const dropEl = root.querySelector<HTMLElement>('[data-ic-drop]')!;
+      const gridEl = root.querySelector<HTMLElement>('[data-ic-grid]')!;
+      const sampleEl = root.querySelector<HTMLElement>('[data-ic-sample]')!;
+      const sampleText = root.querySelector<HTMLElement>('[data-ic-sample-text]')!;
+      const sampleTrans = root.querySelector<HTMLElement>('[data-ic-sample-trans]')!;
+
+      let autoAnimate: ((el: HTMLElement) => void) | null = null;
+      const enableAutoAnimate = async () => {
+        try {
+          const mod: any = await import('@formkit/auto-animate');
+          autoAnimate = mod.default ?? mod.autoAnimate;
+          if (autoAnimate) autoAnimate(gridEl);
+        } catch { /* gracefully degrade if missing */ }
+      };
+      enableAutoAnimate();
+
+      const setStatus = (msg: string, kind: 'irregular' | 'invalid' | 'hide') => {
+        if (kind === 'hide') {
+          statusEl.classList.add('hidden');
+          return;
+        }
+        statusEl.classList.remove('hidden');
+        statusEl.className = 'mb-4 p-3 rounded-lg border-l-4 text-sm ' + (
+          kind === 'irregular'
+            ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200'
+            : 'border-rose-400 bg-rose-50 dark:bg-rose-900/30 text-rose-800 dark:text-rose-200'
+        );
+        statusEl.innerHTML = msg;
+      };
+
+      const renderForms = (verb: string) => {
+        verb = verb.trim().toLowerCase();
+        if (!verb) {
+          breakdownEl.classList.add('hidden');
+          gridEl.classList.add('hidden');
+          sampleEl.classList.add('hidden');
+          familyTag.textContent = '';
+          setStatus('', 'hide');
+          return;
+        }
+
+        // Irregular flag
+        if (IRREGULARS[verb]) {
+          familyTag.textContent = 'irregular';
+          familyTag.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs uppercase font-semibold tracking-[0.16em] text-amber-600 dark:text-amber-400 pointer-events-none';
+          const forms = IRREGULARS[verb];
+          setStatus(
+            `<strong>${escapeHtml(verb)}</strong> is one of the three imperfect irregulars. The endings below are the actual forms, not the regular pattern.`,
+            'irregular'
+          );
+          breakdownEl.classList.add('hidden');
+          gridEl.classList.remove('hidden');
+          sampleEl.classList.add('hidden');
+          gridEl.innerHTML = '';
+          PRONOUNS.forEach((p, i) => {
+            const cell = document.createElement('div');
+            cell.className = 'flex items-baseline gap-3 px-4 py-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-900/20';
+            cell.innerHTML = `
+              <span class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 min-w-[7rem]">${escapeHtml(p)}</span>
+              <span class="font-mono text-xl text-ink-900 dark:text-ink-50">${escapeHtml(forms[i])}</span>
+            `;
+            gridEl.appendChild(cell);
+          });
+          return;
+        }
+
+        const family = detectFamily(verb);
+        if (!family) {
+          familyTag.textContent = 'invalid';
+          familyTag.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs uppercase font-semibold tracking-[0.16em] text-rose-500 pointer-events-none';
+          setStatus(
+            `<strong>${escapeHtml(verb)}</strong> does not end in <code>-ar</code>, <code>-er</code>, or <code>-ir</code>. Spanish infinitives must.`,
+            'invalid'
+          );
+          breakdownEl.classList.add('hidden');
+          gridEl.classList.add('hidden');
+          sampleEl.classList.add('hidden');
+          return;
+        }
+
+        setStatus('', 'hide');
+        familyTag.textContent = `-${family}`;
+        familyTag.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs uppercase font-semibold tracking-[0.16em] text-accent-700 dark:text-accent-400 pointer-events-none';
+        familyTagBox.textContent = `-${family}`;
+
+        const stem = verb.slice(0, -2);
+        stemEl.textContent = stem;
+        dropEl.textContent = verb.slice(-2);
+        breakdownEl.classList.remove('hidden');
+        gridEl.classList.remove('hidden');
+        gridEl.innerHTML = '';
+
+        ENDINGS[family].forEach((ending, i) => {
+          const cell = document.createElement('div');
+          cell.className = 'flex items-baseline gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 hover:border-accent-400 dark:hover:border-accent-600 transition-colors';
+          cell.innerHTML = `
+            <span class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 min-w-[7rem]">${escapeHtml(PRONOUNS[i])}</span>
+            <span class="font-mono text-xl">
+              <span class="text-ink-900 dark:text-ink-50">${escapeHtml(stem)}</span><span class="text-accent-700 dark:text-accent-400 font-semibold">${escapeHtml(ending)}</span>
+            </span>
+          `;
+          gridEl.appendChild(cell);
+        });
+
+        // Sample sentence (only for verbs we have an English translation for)
+        const sample = SAMPLES[verb];
+        if (sample) {
+          const conjugated = stem + ENDINGS[family][sample.subject];
+          const subjectWord = ['Yo', 'Tú', 'Ella', 'Nosotros', 'Vosotros', 'Ellos'][sample.subject];
+          sampleText.innerHTML = `${escapeHtml(subjectWord)} <span class="text-accent-700 dark:text-accent-400 font-semibold">${escapeHtml(conjugated)}</span>${verb === 'hablar' ? ' español todos los días.' : verb === 'caminar' ? ' a la escuela.' : verb === 'estudiar' ? ' en la biblioteca.' : verb === 'comer' ? ' el almuerzo con nosotros.' : verb === 'beber' ? ' café cada mañana.' : verb === 'vivir' ? ' en Madrid en aquel entonces.' : verb === 'escribir' ? ' cartas el uno al otro.' : '...'}`;
+          sampleTrans.textContent = sample.en;
+          sampleEl.classList.remove('hidden');
+        } else {
+          sampleEl.classList.add('hidden');
+        }
+      };
+
+      input.addEventListener('input', () => renderForms(input.value));
+
+      root.querySelectorAll<HTMLButtonElement>('[data-ic-suggest]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const v = btn.getAttribute('data-ic-suggest') ?? '';
+          input.value = v;
+          renderForms(v);
+        });
+      });
+
+      renderForms(input.value);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

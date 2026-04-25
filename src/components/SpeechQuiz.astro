@@ -1,0 +1,456 @@
+---
+// Speech-graded quiz. Shows a prompt (e.g., "yo + hablar — imperfect"),
+// student presses the mic button and SAYS the answer in Spanish (or any
+// language). The Web Speech API recognizes it, the system grades it
+// against the expected answer (and any alts), and feedback is given
+// after each question. Repeatable infinitely with a "drill the misses"
+// mode for pieces the student kept missing.
+//
+// Items: [{ prompt, answer, alt?, hint? }] where alt is acceptable variants.
+//
+// Falls back to a "Type your answer" input on browsers without
+// SpeechRecognition (Firefox, older Safari) so the quiz still works.
+
+interface Item {
+  prompt: string;
+  answer: string;
+  alt?: string[];
+  hint?: string;
+}
+interface Props {
+  title?: string;
+  items: Item[];
+  lang?: string;             // BCP-47 tag, default 'es-ES'
+  promptLabel?: string;      // text above the prompt
+}
+const {
+  title = 'Speaking quiz',
+  items,
+  lang = 'es-ES',
+  promptLabel = 'Say the imperfect form of',
+} = Astro.props;
+
+const id = 'sq-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ items, lang, promptLabel });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-sq data-conf={conf}>
+  <header class="mb-4 flex items-center justify-between gap-3 flex-wrap">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 dark:bg-accent-600 text-white text-xs">🎙</span>
+      {title}
+    </span>
+    <span class="text-xs text-ink-500">
+      Q <span data-sq-pos>1</span> / <span data-sq-total>{items.length}</span>
+      <span class="ml-3">Score <span data-sq-score class="font-semibold text-emerald-700 dark:text-emerald-400">0</span></span>
+    </span>
+  </header>
+
+  <!-- Compatibility notice (shown only when SpeechRecognition is missing) -->
+  <div data-sq-notice class="hidden mb-3 p-3 rounded-lg border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-900/30 text-sm text-amber-800 dark:text-amber-200">
+    Your browser does not support speech recognition. Use Chrome or Edge for the spoken quiz, or type your answer below.
+  </div>
+
+  <!-- Question state -->
+  <div data-sq-question>
+    <div class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">{promptLabel}</div>
+    <div data-sq-prompt class="font-serif text-3xl text-ink-900 dark:text-ink-50 mb-2 break-words">...</div>
+    <div data-sq-hint class="hidden text-xs text-ink-500 italic mb-4"></div>
+
+    <div class="flex flex-col items-center gap-3 my-6">
+      <button
+        data-sq-mic
+        type="button"
+        aria-label="Hold to speak the answer"
+        class="relative inline-flex items-center justify-center h-20 w-20 rounded-full bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-3xl shadow-soft transition-transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-accent-500/30"
+      >
+        <span data-sq-mic-icon>🎙</span>
+        <span data-sq-pulse class="hidden absolute inset-0 rounded-full bg-accent-500/40 animate-ping"></span>
+      </button>
+      <div data-sq-status class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500">Click the mic, then speak</div>
+      <div data-sq-heard class="font-mono text-sm text-ink-700 dark:text-ink-300 min-h-[1.25rem]"></div>
+    </div>
+
+    <!-- Type fallback (always available) -->
+    <details class="mt-4 group">
+      <summary class="cursor-pointer text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400 list-none flex items-center gap-2">
+        <span class="inline-block transition-transform group-open:rotate-90">▸</span>
+        <span>Cannot use the mic? Type instead.</span>
+      </summary>
+      <div class="mt-3 flex gap-2">
+        <input
+          data-sq-type
+          type="text"
+          placeholder="Type the answer..."
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          class="flex-1 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+        />
+        <button data-sq-type-submit type="button" class="px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-800 dark:bg-ink-200 dark:hover:bg-white dark:text-ink-900 text-white text-sm font-medium">
+          Grade
+        </button>
+      </div>
+    </details>
+
+    <div class="mt-4 flex items-center justify-between gap-3 pt-3 border-t border-ink-200 dark:border-ink-800">
+      <button data-sq-skip type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">I don't know</button>
+      <button data-sq-reveal type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400">Reveal answer</button>
+    </div>
+  </div>
+
+  <!-- Per-question feedback -->
+  <div data-sq-feedback class="hidden mt-5 p-4 rounded-xl border-l-4">
+    <div data-sq-feedback-title class="font-serif text-lg font-semibold mb-2"></div>
+    <div data-sq-feedback-detail class="font-mono text-sm leading-7 mb-3"></div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <button data-sq-retry type="button" class="px-3 py-2 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 dark:hover:border-accent-400 text-sm font-medium">
+        ↻ Retry
+      </button>
+      <button data-sq-next type="button" class="ml-auto px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">
+        Next →
+      </button>
+    </div>
+  </div>
+
+  <!-- Final results screen -->
+  <div data-sq-results class="hidden">
+    <div class="text-center mb-4">
+      <div class="text-xs uppercase tracking-[0.18em] font-semibold text-ink-500 mb-2">Quiz complete</div>
+      <div class="font-serif text-5xl font-semibold gradient-text mb-1"><span data-sq-final-score>0</span> / <span data-sq-final-total>0</span></div>
+      <div class="text-sm text-ink-600 dark:text-ink-300" data-sq-final-msg></div>
+    </div>
+    <div data-sq-missed class="bg-ink-50 dark:bg-ink-900/60 rounded-lg p-4 mb-4 max-h-72 overflow-y-auto"></div>
+    <div class="flex items-center justify-center gap-2 flex-wrap">
+      <button data-sq-restart type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Try again (all)</button>
+      <button data-sq-restart-missed type="button" class="hidden px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium">Drill the misses only</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Item = { prompt: string; answer: string; alt?: string[]; hint?: string };
+  type Conf = { items: Item[]; lang: string; promptLabel: string };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[c]));
+
+  const stripDiacritics = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  const stripPunctuation = (s: string) => s.replace(/[.,;:!?¿¡"'`]/g, '');
+
+  // Lenient: lowercase, strip diacritics, strip punctuation, collapse whitespace.
+  const canon = (s: string) =>
+    stripPunctuation(stripDiacritics(s.toLowerCase().trim())).replace(/\s+/g, ' ');
+
+  // Simple Levenshtein for "close enough" feedback messages.
+  const editDistance = (a: string, b: string): number => {
+    if (a === b) return 0;
+    const m = a.length, n = b.length;
+    if (!m) return n;
+    if (!n) return m;
+    let prev = new Array(n + 1).fill(0).map((_, i) => i);
+    let curr = new Array(n + 1).fill(0);
+    for (let i = 1; i <= m; i++) {
+      curr[0] = i;
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+      }
+      [prev, curr] = [curr, prev];
+    }
+    return prev[n];
+  };
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-sq]:not([data-sq-ready])').forEach((root) => {
+      root.dataset.sqReady = '1';
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+
+      const promptEl = root.querySelector<HTMLElement>('[data-sq-prompt]')!;
+      const hintEl = root.querySelector<HTMLElement>('[data-sq-hint]')!;
+      const noticeEl = root.querySelector<HTMLElement>('[data-sq-notice]')!;
+      const micBtn = root.querySelector<HTMLButtonElement>('[data-sq-mic]')!;
+      const micIcon = root.querySelector<HTMLElement>('[data-sq-mic-icon]')!;
+      const pulseEl = root.querySelector<HTMLElement>('[data-sq-pulse]')!;
+      const statusEl = root.querySelector<HTMLElement>('[data-sq-status]')!;
+      const heardEl = root.querySelector<HTMLElement>('[data-sq-heard]')!;
+      const typeInput = root.querySelector<HTMLInputElement>('[data-sq-type]')!;
+      const typeSubmit = root.querySelector<HTMLButtonElement>('[data-sq-type-submit]')!;
+      const skipBtn = root.querySelector<HTMLButtonElement>('[data-sq-skip]')!;
+      const revealBtn = root.querySelector<HTMLButtonElement>('[data-sq-reveal]')!;
+      const retryBtn = root.querySelector<HTMLButtonElement>('[data-sq-retry]')!;
+      const nextBtn = root.querySelector<HTMLButtonElement>('[data-sq-next]')!;
+      const restartBtn = root.querySelector<HTMLButtonElement>('[data-sq-restart]')!;
+      const restartMissedBtn = root.querySelector<HTMLButtonElement>('[data-sq-restart-missed]')!;
+      const questionEl = root.querySelector<HTMLElement>('[data-sq-question]')!;
+      const feedbackEl = root.querySelector<HTMLElement>('[data-sq-feedback]')!;
+      const feedbackTitle = root.querySelector<HTMLElement>('[data-sq-feedback-title]')!;
+      const feedbackDetail = root.querySelector<HTMLElement>('[data-sq-feedback-detail]')!;
+      const resultsEl = root.querySelector<HTMLElement>('[data-sq-results]')!;
+      const finalScoreEl = root.querySelector<HTMLElement>('[data-sq-final-score]')!;
+      const finalTotalEl = root.querySelector<HTMLElement>('[data-sq-final-total]')!;
+      const finalMsgEl = root.querySelector<HTMLElement>('[data-sq-final-msg]')!;
+      const missedEl = root.querySelector<HTMLElement>('[data-sq-missed]')!;
+      const posEl = root.querySelector<HTMLElement>('[data-sq-pos]')!;
+      const totalEl = root.querySelector<HTMLElement>('[data-sq-total]')!;
+      const scoreEl = root.querySelector<HTMLElement>('[data-sq-score]')!;
+
+      let baseItems: Item[] = conf.items;
+      let items: Item[] = baseItems;
+      let order: number[] = [];
+      let pos = 0;
+      let score = 0;
+      let scoredThisQuestion = false;
+      let missed: Item[] = [];
+
+      // SpeechRecognition setup, with fallback if unavailable.
+      const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const hasSR = !!SR;
+      let recognition: any = null;
+      let isListening = false;
+      if (!hasSR) {
+        noticeEl.classList.remove('hidden');
+        micBtn.disabled = true;
+        micBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        recognition = new SR();
+        recognition.lang = conf.lang;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 5;
+        recognition.continuous = false;
+      }
+
+      const isCorrect = (user: string, item: Item): boolean => {
+        const u = canon(user);
+        if (!u) return false;
+        const variants = [item.answer, ...(item.alt ?? [])].map(canon);
+        for (const v of variants) {
+          if (u === v) return true;
+          // Allow "yo hablaba" when answer is "hablaba" (subject pronoun spoken too).
+          if (u.endsWith(' ' + v)) return true;
+          if (v.endsWith(' ' + u)) return true;
+          // Speech recognition is fuzzy. Accept if edit distance is small relative to length.
+          const tol = Math.max(1, Math.floor(v.length / 6));
+          if (editDistance(u, v) <= tol) return true;
+        }
+        return false;
+      };
+
+      const setStatus = (text: string, color: 'idle' | 'listening' | 'done' = 'idle') => {
+        statusEl.textContent = text;
+        statusEl.className = 'text-xs uppercase tracking-[0.16em] font-semibold ' + (
+          color === 'listening' ? 'text-accent-700 dark:text-accent-400' :
+          color === 'done' ? 'text-emerald-700 dark:text-emerald-400' :
+          'text-ink-500'
+        );
+      };
+
+      const setListening = (on: boolean) => {
+        isListening = on;
+        if (on) {
+          pulseEl.classList.remove('hidden');
+          micIcon.textContent = '◉';
+          micBtn.classList.add('ring-4', 'ring-accent-500/40');
+          setStatus('Listening...', 'listening');
+        } else {
+          pulseEl.classList.add('hidden');
+          micIcon.textContent = '🎙';
+          micBtn.classList.remove('ring-4', 'ring-accent-500/40');
+        }
+      };
+
+      const renderQuestion = () => {
+        const item = items[order[pos]];
+        promptEl.textContent = item.prompt;
+        if (item.hint) {
+          hintEl.textContent = item.hint;
+          hintEl.classList.remove('hidden');
+        } else {
+          hintEl.classList.add('hidden');
+        }
+        heardEl.textContent = '';
+        typeInput.value = '';
+        scoredThisQuestion = false;
+        posEl.textContent = String(pos + 1);
+        questionEl.classList.remove('hidden');
+        feedbackEl.classList.add('hidden');
+        resultsEl.classList.add('hidden');
+        setStatus(hasSR ? 'Click the mic, then speak' : 'Type your answer below');
+      };
+
+      const renderFeedback = (user: string, item: Item, correct: boolean) => {
+        questionEl.classList.add('hidden');
+        feedbackEl.classList.remove('hidden');
+        const baseCls = 'mt-5 p-4 rounded-xl border-l-4 ';
+        feedbackEl.className = baseCls + (correct
+          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30'
+          : 'border-rose-500 bg-rose-50 dark:bg-rose-900/30');
+        feedbackTitle.className = 'font-serif text-lg font-semibold mb-2 ' +
+          (correct ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300');
+
+        if (correct) {
+          const exact = user.trim().toLowerCase() === item.answer.trim().toLowerCase();
+          feedbackTitle.textContent = exact ? '✓ ¡Perfecto!' : '✓ Close enough, watch the accents.';
+          feedbackDetail.innerHTML = `
+            <div>You said:&nbsp;<span class="text-emerald-700 dark:text-emerald-300">${escapeHtml(user || '(nothing)')}</span></div>
+            <div class="mt-1">Answer:&nbsp;&nbsp;<strong class="text-emerald-700 dark:text-emerald-300">${escapeHtml(item.answer)}</strong></div>
+          `;
+        } else {
+          feedbackTitle.textContent = user.trim() ? '✗ Not quite.' : '✗ Skipped.';
+          feedbackDetail.innerHTML = `
+            <div>You said:&nbsp;<span class="text-rose-700 dark:text-rose-300">${escapeHtml(user || '(nothing)')}</span></div>
+            <div class="mt-1">Answer:&nbsp;&nbsp;<strong class="text-rose-700 dark:text-rose-300">${escapeHtml(item.answer)}</strong></div>
+          `;
+        }
+        nextBtn.focus();
+      };
+
+      const grade = (user: string) => {
+        const item = items[order[pos]];
+        const correct = isCorrect(user, item);
+        if (!scoredThisQuestion) {
+          scoredThisQuestion = true;
+          if (correct) {
+            score++;
+            scoreEl.textContent = String(score);
+          } else {
+            missed.push(item);
+          }
+        }
+        renderFeedback(user, item, correct);
+      };
+
+      const advance = () => {
+        pos++;
+        if (pos >= order.length) renderResults();
+        else renderQuestion();
+      };
+
+      const renderResults = () => {
+        questionEl.classList.add('hidden');
+        feedbackEl.classList.add('hidden');
+        resultsEl.classList.remove('hidden');
+        finalScoreEl.textContent = String(score);
+        finalTotalEl.textContent = String(order.length);
+        const pct = Math.round((score / order.length) * 100);
+        finalMsgEl.textContent = pct === 100 ? '¡Perfecto! Flawless run.'
+          : pct >= 80 ? `${pct}% correct. Solid grasp, drill the misses to lock it in.`
+          : pct >= 50 ? `${pct}% correct. Good start. Drill the misses and try again.`
+          : `${pct}% correct. Re-read the conjugation rules, then try again.`;
+
+        if (missed.length > 0) {
+          missedEl.innerHTML = '<div class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">Forms you missed</div>'
+            + missed.map((m) => `<div class="flex justify-between gap-3 py-1.5 border-b border-ink-200 dark:border-ink-800 last:border-0"><span class="text-ink-700 dark:text-ink-300">${escapeHtml(m.prompt)}</span><span class="font-mono text-accent-700 dark:text-accent-400">${escapeHtml(m.answer)}</span></div>`).join('');
+          restartMissedBtn.classList.remove('hidden');
+        } else {
+          missedEl.innerHTML = '<div class="text-emerald-700 dark:text-emerald-400 font-medium text-center">No misses. ¡Increíble!</div>';
+          restartMissedBtn.classList.add('hidden');
+        }
+      };
+
+      const restart = (onlyMissed: boolean) => {
+        items = onlyMissed ? [...missed] : baseItems;
+        order = items.map((_, i) => i).sort(() => Math.random() - 0.5);
+        pos = 0;
+        score = 0;
+        missed = [];
+        scoreEl.textContent = '0';
+        totalEl.textContent = String(order.length);
+        renderQuestion();
+      };
+
+      // Wire up SpeechRecognition events
+      if (hasSR) {
+        recognition.onstart = () => setListening(true);
+        recognition.onend = () => setListening(false);
+        recognition.onerror = (e: any) => {
+          setListening(false);
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            setStatus('Microphone blocked. Allow access in site settings.', 'idle');
+          } else if (e.error === 'no-speech') {
+            setStatus('No speech detected. Try again.', 'idle');
+          } else {
+            setStatus(`Error: ${e.error}. Try again.`, 'idle');
+          }
+        };
+        recognition.onresult = (e: any) => {
+          let transcript = '';
+          for (let i = 0; i < e.results.length; i++) {
+            transcript += e.results[i][0].transcript;
+          }
+          heardEl.textContent = `Heard: "${transcript}"`;
+          if (e.results[e.results.length - 1].isFinal) {
+            // Try the top alternatives until one matches; show top alternative if none match.
+            const item = items[order[pos]];
+            const alts: string[] = [];
+            for (let k = 0; k < e.results[e.results.length - 1].length; k++) {
+              alts.push(e.results[e.results.length - 1][k].transcript);
+            }
+            const winner = alts.find((a) => isCorrect(a, item)) ?? alts[0];
+            grade(winner);
+          }
+        };
+      }
+
+      micBtn.addEventListener('click', () => {
+        if (!hasSR || !recognition) return;
+        if (isListening) {
+          try { recognition.stop(); } catch {}
+          return;
+        }
+        heardEl.textContent = '';
+        try {
+          recognition.start();
+        } catch (err) {
+          // Already started; ignore.
+        }
+      });
+
+      typeSubmit.addEventListener('click', () => {
+        const v = typeInput.value;
+        if (!v.trim()) return;
+        grade(v);
+      });
+      typeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          typeSubmit.click();
+        }
+      });
+
+      skipBtn.addEventListener('click', () => {
+        if (isListening) try { recognition.stop(); } catch {}
+        grade('');
+      });
+
+      revealBtn.addEventListener('click', () => {
+        if (isListening) try { recognition.stop(); } catch {}
+        const item = items[order[pos]];
+        if (!scoredThisQuestion) {
+          scoredThisQuestion = true;
+          missed.push(item);
+        }
+        renderFeedback('', item, false);
+      });
+
+      retryBtn.addEventListener('click', () => {
+        // Stay on the same question, let them try again. Score is already locked in.
+        feedbackEl.classList.add('hidden');
+        questionEl.classList.remove('hidden');
+        heardEl.textContent = '';
+        typeInput.value = '';
+        setStatus(hasSR ? 'Click the mic, then speak' : 'Type your answer below');
+      });
+
+      nextBtn.addEventListener('click', advance);
+
+      restartBtn.addEventListener('click', () => restart(false));
+      restartMissedBtn.addEventListener('click', () => restart(true));
+
+      restart(false);
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
