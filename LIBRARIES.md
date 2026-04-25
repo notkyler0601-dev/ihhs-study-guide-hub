@@ -354,7 +354,7 @@ Built specifically to make learning more visual: animations, hand-drawn aestheti
 
 ---
 
-## 8g. Tier 9 components (proposed additions, not yet installed)
+## 8g. Tier 9 libraries (installed 2026-04, components pending)
 
 Added 2026-04 from a cross-site research pass. Two parts:
 
@@ -362,6 +362,10 @@ Added 2026-04 from a cross-site research pass. Two parts:
 - **Part 2 — Advanced Subject-Specific Additions** push specific subjects into research-grade territory.
 
 All entries cross-checked against the catalog above to avoid duplicates. AI, AR, and VR libraries intentionally excluded per project direction.
+
+**Status:** All npm-available libraries below are **installed in `package.json`** but Astro components have not been built yet. When authoring a guide that needs one, build a wrapper component in `src/components/` following the lazy-load pattern in section 11, then move the row up into the appropriate Tier 3–8 section.
+
+**Not installed (see "Skipped during install" subsection below):** `@theatre/studio` and `hydra-synth` (AGPL flagged), `@recogito/text-annotator-js` (404 on npm), plus all iframe-only / CDN-only / GitHub-source-only entries.
 
 ### Part 1A — Universal: highest-leverage wins
 
@@ -576,6 +580,21 @@ If you only add 10 libraries from this tier, prioritize these (cross-site impact
 | Cesium ion streaming | Free tier 5GB / 100GB monthly (CesiumJS itself Apache-2.0) |
 
 All other Tier 9 libraries: MIT, Apache-2.0, BSD-2, BSD-3, or zlib. Fully permissive.
+
+### Tier 9 — skipped during install
+
+Catalogued but not in `package.json`. Reasons:
+
+| Library | Reason | If you want it |
+|---|---|---|
+| `@theatre/studio` | AGPL-3.0 (viral copyleft) | `npm i @theatre/studio` and accept the licensing implications |
+| `hydra-synth` | AGPL-3.0 (viral copyleft) | `npm i hydra-synth` and accept the licensing implications |
+| `@recogito/text-annotator-js` | 404 on npm under that name | Use `@annotorious/annotorious` (already installed) or check the recogito GitHub for the current package name |
+| `@strudel.cycles/core`, `@strudel.cycles/web` | Package renamed | Already installed as `@strudel/core` + `@strudel/web` |
+| `@mojs/player`, `@mojs/timeline`, `@dimforge/rapier3d-simd`, `pdbe-molstar`, `rcsb-molstar`, `@vfx-js/core`, `fluid-canvas` | Existence on npm not confirmed; omitted to keep batch installs clean | Try `npm i <name>` individually |
+| All iframe-only entries (WebGPU-Ocean, JFLAP, JSLinux, Quirk, NetLogo, Ray-Optics, Saharan/Oimo demos) | Embed via `<iframe>`, no JS package needed | Use the iframe URL listed in the table |
+| All CDN-only entries (Penrose+Bloom, CindyJS, Polypad, LYGIA) | Load via `loadScript` helper from a CDN, no npm package | Use the CDN URL listed in the table |
+| GitHub-source-only entries (brainchop, brain2print, Manim.js, flapjs, WebGL Mandelbrot/Julia explorers) | No npm package; clone from GitHub if needed | Vendor the source into `public/vendor/` or `src/lib/` |
 
 ### Tier 9 — deliberately excluded
 
