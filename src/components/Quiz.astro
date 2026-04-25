@@ -16,7 +16,7 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
 <section class:list={['not-prose my-8 surface rounded-2xl p-6 shadow-soft']} data-quiz-root id={id} data-quiz-total={questions.length}>
   <header class="flex items-center justify-between gap-3 mb-5">
     <div class="flex items-center gap-3">
-      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">Q</span>
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">Q</span>
       <div>
         <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
         <p class="text-xs text-ink-500 mt-1"><span data-quiz-progress>0</span> of {questions.length} answered</p>
