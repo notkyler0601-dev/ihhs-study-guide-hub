@@ -354,6 +354,235 @@ Built specifically to make learning more visual: animations, hand-drawn aestheti
 
 ---
 
+## 8g. Tier 9 components (proposed additions, not yet installed)
+
+Added 2026-04 from a cross-site research pass. Two parts:
+
+- **Part 1 — Universal Enhancements** apply to every guide regardless of subject.
+- **Part 2 — Advanced Subject-Specific Additions** push specific subjects into research-grade territory.
+
+All entries cross-checked against the catalog above to avoid duplicates. AI, AR, and VR libraries intentionally excluded per project direction.
+
+### Part 1A — Universal: highest-leverage wins
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **tocbot** | `tocbot` | MIT | Auto-generates a floating table of contents from any guide's `<h2>`/`<h3>` headings with live scrollspy highlighting. Every long guide becomes navigable. |
+| **reading-time** | `reading-time` | MIT | Accurate "6 min read" badge on every guide. Tiny (~2KB), works on any markdown/MDX input. |
+| **medium-zoom** | `medium-zoom` | MIT | Click any `<img>` for a smooth Medium-style fullscreen zoom with escape/click-outside to dismiss. |
+| **cmdk** | `cmdk` | MIT | Cmd/Ctrl+K command palette (Vercel / Linear / Raycast style). Jump to any guide, quiz, flashcard deck, or setting from anywhere. |
+| **react-wrap-balancer** | `react-wrap-balancer` | MIT | Auto-balances multi-line headlines so they never leave a one-word widow on the last line. |
+| **Sonner** | `sonner` | MIT | Modern toast notifications. Use for quiz-saved, card-rated, guide-bookmarked, login-successful. |
+| **react-hotkeys-hook** | `react-hotkeys-hook` | MIT | Keyboard shortcuts: J/K to navigate quiz questions, Space to flip flashcards, / to focus search, ? for shortcut help. |
+| **jsPDF + html2canvas** | `jspdf`, `html2canvas` | MIT | Client-side "Export this guide as PDF". Works on anything in the DOM. No server needed. |
+| **html-to-image** | `html-to-image` | MIT | "Save this quiz result as PNG" alternative to jsPDF/html2canvas. |
+
+### Part 1B — Universal: visual polish
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **Atropos** | `atropos` | MIT | 3D parallax hover effect for cards. Guide index, flashcards, callout cards gain Apple-product-page depth on tilt. |
+| **vanilla-tilt.js** | `vanilla-tilt` | MIT | Lighter alternative — subtle 3D tilt on any element. |
+| **Splitting.js** | `splitting` | MIT | Splits text into per-character/word/line spans so GSAP, motion, or Typed.js can animate each piece. |
+| **SplitType** | `split-type` | MIT | Lighter alternative to Splitting.js from the Webflow team. |
+| **blurhash** | `blurhash`, `react-blurhash` | MIT | Tiny (~20-char) hash → blurred placeholder while the full image loads. Images on slow Chromebooks stop popping in. |
+| **Embla Carousel** | `embla-carousel`, `embla-carousel-react` | MIT | Touch/drag carousel with perfect physics. Image galleries, step-by-step sequences. |
+| **Swiper** | `swiper` | MIT | Carousel alternative with more built-in effects (cards, cube, coverflow, parallax). |
+| **fitty** | `fitty` | MIT | Auto-scales text to fill its container. Hero titles, callout quotes, responsive headlines. |
+| **party.js** | `party-js` | MIT | Particle burst effects beyond confetti — sparkles, coins, stars, hearts, custom shapes. |
+| **mo.js (mojs)** | `@mojs/core`, `@mojs/player`, `@mojs/timeline` | MIT | Motion-graphics library for burst shapes, ripples, swirls. Production-grade microinteractions. |
+| **anime.js** | `animejs` | MIT | 6KB timeline animation library. Lighter than GSAP for simple cases. |
+| **VFX-JS** | `@vfx-js/core` | MIT | WebGL filter effects on `<img>`, `<video>`, even `<h1>` text. Liquid displacement, hero effects. |
+| **fluid-canvas** | `fluid-canvas` | MIT | Drop-in React component using the Pavel Dobryakov fluid sim as a page background. |
+
+### Part 1C — Universal: interaction and feedback
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **howler.js** | `howler` | MIT | Cross-browser audio with preloading, sprite support, Web Audio fallback. Correct/incorrect sounds, page-turn whoosh, flip click. |
+| **use-sound** | `use-sound` | MIT | React hook wrapper around Howler. One-liner sound effects. |
+| **@use-gesture/react** | `@use-gesture/react` | MIT | Drag, pinch, scroll, wheel, hover, move gestures with one unified React hook API. |
+| **react-spring** | `@react-spring/web` | MIT | Spring-physics animation. Bouncy, damped, physically-natural motion. |
+| **interact.js** | `interactjs` | MIT | Multi-touch drag, resize, rotate with inertia, snapping, restrictions. |
+| **Moveable** | `react-moveable`, `moveable` | MIT | Drag, resize, warp, rotate, scale, origin, pinch on any element with visual handles. |
+| **Shepherd.js** | `shepherd.js` | MIT | Guided tours for first-time onboarding. |
+| **driver.js** | `driver.js` | MIT | Lighter alternative to Shepherd — pure JS, no framework dependency. |
+
+### Part 1D — Universal: accessibility and component foundations
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **Radix UI primitives** | `@radix-ui/react-*` | MIT | Unstyled, accessible headless components (Dialog, Dropdown, Popover, Tabs, Accordion, Toast, Tooltip, Toggle). Industry standard. |
+| **Ariakit** | `@ariakit/react` | MIT | Alternative to Radix — smaller bundle, covers Combobox, Menubar. |
+| **Headless UI** | `@headlessui/react` | MIT | Tailwind-native alternative to Radix. Smaller surface area. |
+| **vaul** | `vaul` | MIT | Native-feeling drawer (bottom sheet on mobile, side drawer on desktop). For footnotes, references, settings, help panels. |
+| **focus-trap** | `focus-trap`, `focus-trap-react` | MIT | Lock keyboard focus inside modals and drawers. Accessibility requirement. |
+| **Downshift** | `downshift` | MIT | Accessible combobox/autocomplete primitive. Search suggestions, term lookup, tag filters. |
+| **Floating UI** | `@floating-ui/dom`, `@floating-ui/react` | MIT | The positioning engine under Tippy. Custom popovers, range-sliders-with-bubbles, smart anchored positioning. |
+
+### Part 1E — Universal: navigation and reading experience
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **nprogress** | `nprogress` | MIT | YouTube-style thin progress bar at the top during Astro view transitions. |
+| **react-top-loading-bar** | `react-top-loading-bar` | MIT | React-native alternative to nprogress with customizable color/height. |
+| **Quicklink** | `quicklink` | Apache-2.0 | From Google Chrome Labs. Prefetches in-viewport links during idle time. |
+
+### Part 1F — Universal: export, share, capture
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **qr-code-styling** | `qr-code-styling` | MIT | Fancy stylized QR codes (logo inside, rounded dots, gradient colors). "Scan to continue on your phone" button. |
+| **qrcode** | `qrcode` | MIT | Minimal, no-frills QR alternative. |
+| **file-saver** | `file-saver` | MIT | Trigger file downloads from blobs. Pair with jsPDF / html-to-image for export buttons. |
+| **clipboard-copy** | `clipboard-copy` | MIT | One-liner "copy" buttons. |
+| **copy-to-clipboard** | `copy-to-clipboard` | MIT | Alternative one-liner copy library. |
+| **satori** | `satori` | MPL-2.0 | JSX → SVG renderer from Vercel. Generate open-graph social share images for every guide at build time. |
+
+### Part 1G — Universal: content formatting
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **linkifyjs** | `linkifyjs`, `linkify-react` | MIT | Auto-detect URLs, emails, @mentions, #hashtags in any text and turn them into real links. |
+| **remark-gfm** | `remark-gfm` | MIT | GitHub Flavored Markdown: task lists, autolinks, strikethrough, tables, footnotes. |
+| **rehype-pretty-code** | `rehype-pretty-code` | MIT | VS Code–quality syntax highlighting in MDX code blocks using Shiki. Line numbers, line highlights, diffs. |
+| **shiki** | `shiki` | MIT | TextMate-grammar syntax highlighter. Engine behind rehype-pretty-code. |
+| **date-fns** | `date-fns` | MIT | Tree-shakeable date formatting. Timelines, "last updated," event dates, streaks. |
+| **dayjs** | `dayjs` | MIT | 2KB alternative with moment-compatible API. |
+
+### Part 1H — Universal: extra animation options
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **@motionone/dom** | `@motionone/dom` | MIT | Motion One — vanilla JS core behind motion's React integration. Tiny (3.8KB), Web Animations API. |
+| **Lax.js** | `lax.js` | MIT | Scroll-driven CSS transformations with a different API from GSAP ScrollTrigger. |
+| **@formkit/auto-animate** | `@formkit/auto-animate` | MIT | 2.5KB hook that animates any list on add/remove/reorder with zero config. |
+
+### Part 1I — Universal: pen input and sketch
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **perfect-freehand** | `perfect-freehand` | MIT | 3KB pressure-sensitive freehand stroke algorithm (used by tldraw). Calligraphy, handwriting, sketching. |
+| **signature_pad** | `signature_pad` | MIT | Simpler variable-width bezier pen tool. Lightweight alternative to perfect-freehand. |
+| **rough.js** | `roughjs` | MIT | Hand-drawn-look SVG/Canvas primitives. Underlying library for arbitrary sketchy diagrams. |
+
+### Part 2A — Advanced: graphics and 3D (next-generation rendering)
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **three.js WebGPU renderer + TSL** | `three` (subpaths `three/webgpu`, `three/tsl`) | MIT | New WebGPU backend. TSL (Three Shading Language) lets authors write shaders as JS graph nodes that auto-compile to WGSL/GLSL. |
+| **@react-three/postprocessing** | `postprocessing`, `@react-three/postprocessing` | zlib | Bloom, depth of field, SSAO, god rays, film grain, vignette. Biggest aesthetic upgrade to every R3F scene. |
+| **Rapier 3D** | `@dimforge/rapier3d-compat`, `@dimforge/rapier3d-simd` | Apache-2.0 | Rust 3D physics compiled to WASM. Rigid bodies, collisions, joints, springs, ragdolls. Fills the 3D gap left by Matter.js. |
+| **WebGPU-Ocean** | iframe `matsuoka-601/WebGPU-Ocean` | MIT | Real-time 3D fluid simulation, 100k–300k particles on the GPU. Drag spheres through water. |
+| **WebGL Fluid Simulation** | `PavelDoGreat/WebGL-Fluid-Simulation`, `react-webgl-fluid` | MIT | The famous 2D fluid sim. Swipe-interactive, parameter-tweakable. Navier–Stokes intuition. |
+| **Luma Web** | `@lumaai/luma-web` | MIT (renderer); Luma TOS for captures | Photoreal Gaussian Splat renderer inside three.js. Walk through real phone-captured places. |
+| **Gaussian Splats 3D** | `@mkkellogg/gaussian-splats-3d`, `gsplat` | MIT | Pure-JS three.js / WebGL2 Gaussian Splatting. Loads `.ply`, `.splat`, `.ksplat`. Self-hostable alternative to Luma. |
+| **PixiJS v8** | `pixi.js` | MIT | 2D rendering engine that auto-picks WebGPU/WebGL2/Canvas. Tens of thousands of sprites at 60fps. |
+| **Phaser 4** | `phaser` | MIT | Full 2D game framework on PixiJS-class rendering. Vocab games, algorithm games, interactive fiction. |
+| **three-mesh-bvh** | `three-mesh-bvh` | MIT | BVH acceleration for three.js raycasting. Hundreds of times faster. Required for 1M-triangle interactive picking. |
+| **LYGIA** | CDN `https://lygia.xyz/resolve.js` | Prosperity / Patron dual | Massive GLSL/WGSL/HLSL shader library — noise, SDFs, lighting, color. License fine for IHHS (noncommercial OK). |
+| **Theatre.js** | `@theatre/core`, `@theatre/studio` | Apache-2.0 (core), AGPL-3.0 (studio) | After Effects in the browser. Visual timeline editor that animates any property on any 3D or DOM element. |
+| **Saharan / Oimo.io demos** | iframes from `oimo.io` | MIT | WebGPU physics showcases: water droplets, cloth, fluffy balls, MLS-MPM. |
+
+### Part 2B — Advanced: scientific computing
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **Mol\*** | `molstar`, `pdbe-molstar`, `rcsb-molstar` | MIT | Modern successor to 3Dmol.js. Used by RCSB PDB and AlphaFold DB. Mesoscale Explorer handles tens of millions of atoms. |
+| **Niivue** | `@niivue/niivue` | BSD-2 | WebGL2/WebGPU medical image viewer. NIfTI, DICOM, GIfTI, tractography. 30+ formats. |
+| **brainchop** | `neuroneural/brainchop` | MIT | Browser-based neural network for brain MRI segmentation. Pair with Niivue. |
+| **brain2print** | `niivue/brain2print` | MIT | Segment and export a 3D-printable brain mesh from an MRI — all in the browser. |
+| **igv.js** | `igv` | MIT | Embeddable Integrative Genomics Viewer. Loads BAM/CRAM/BigWig/VCF. |
+| **JBrowse 2** | `@jbrowse/react-linear-genome-view2` | Apache-2.0 | Modern genome browser with synteny views and a wider plugin ecosystem than igv.js. |
+| **Cornerstone3D** | `@cornerstonejs/core`, `@cornerstonejs/tools` | MIT | DICOM rendering, multi-planar reconstruction, 3D volumes, segmentation. The library behind OHIF. |
+| **VTK.js** | `@kitware/vtk.js` | BSD-3 | Scientific visualization: marching cubes, volume rendering, vector fields. WebGL and WebGPU. |
+| **Quirk** | iframe `algassert.com/quirk`; source `Strilanc/Quirk` | Apache-2.0 | Drag-and-drop quantum circuit simulator. Build entanglement, run Grover's. |
+| **NetLogo Web** | iframe `netlogoweb.org` | BSD-2 | Browser-only agent-based modeling. Wolf-Sheep, Schelling segregation, traffic. |
+| **CesiumJS** | `cesium` | Apache-2.0 | Production-grade WGS84 3D globe. Real terrain, 3D city tiles, time-dynamic data. |
+| **CindyJS** | CDN `https://cindyjs.org/dist/latest/Cindy.js` | Apache-2.0 | Browser port of Cinderella. CindyLab: electrostatics, springs, orbits. CindyGL: GPU wave interference, electromagnetic fields. |
+| **Ray-Optics Simulation** | iframe `phydemo.app/ray-optics`; source `ricktu288/ray-optics` | Apache-2.0 | 2D geometric optics: mirrors, lenses, gratings, custom equation surfaces. |
+
+### Part 2C — Advanced: math
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **Penrose + Bloom** | CDN `https://penrose.cs.cmu.edu/bloom.min.js` | MIT | CMU research project. Declarative math → publication-grade diagrams. Bloom adds interactivity (drag a point, optimizer re-solves). |
+| **Algebrite** | `algebrite` | MIT | Computer algebra in TS: simplify, expand, factor, integrate, differentiate, matrices, tensors. |
+| **nerdamer** | `nerdamer` | MIT | Alternative CAS with a cleaner API. Pair with Algebrite for edge-case coverage. |
+| **@mathigon/fermat** | `@mathigon/fermat` | MIT | Number theory, combinatorics, complex numbers, matrices, regression, statistics. |
+| **@mathigon/euclid** | `@mathigon/euclid` | MIT | Geometry primitives from the Mathigon team. |
+| **Manim.js** | `JazonJiao/Manim.js` | MIT | JS port of 3Blue1Brown's Manim. Declarative animation of math concepts. |
+| **p5.teach** | Processing Foundation library | MIT | Animated LaTeX (MathJax + anime.js) on top of p5.js. |
+| **Blockly** | `blockly` | Apache-2.0 | Google's visual programming library — Scratch-style blocks emit real JS or Python. |
+| **JFLAP Web** | iframe `memoalv/jflapweb` | Freeware (educational use OK) | Build finite automata, PDAs, Turing machines in the browser. |
+| **flapjs** | `flapjs/FLAPJS-WebApp` | MIT | MIT-licensed JFLAP successor. |
+| **Polypad (Mathigon)** | CDN `https://static.mathigon.org/api/polypad-en-v5.x.x.js` | Non-commercial educational only | Virtual manipulatives: algebra tiles, fraction bars, balance scales, polyhedra, geoboards. |
+| **WebGL Mandelbrot/Julia explorers** | `michurin/fast-online-mandelbrot-set-explorer` | MIT | Real-time fragment-shader fractal zooms with Julia-from-Mandelbrot mode. |
+
+### Part 2D — Advanced: literature, language, annotation
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **Annotorious v3** | `@annotorious/annotorious` | BSD-3 | Modern W3C Web Annotation library. Draw polygons on images. Integrates with OpenSeadragon. |
+| **@recogito/text-annotator-js** | `@recogito/text-annotator-js` | BSD-3 | Hover-to-annotate inline text. Standards-compliant annotation data. |
+| **compromise** | `compromise` | MIT | 250KB browser NLP: POS tagging, NER, conjugation, pluralization, dates, contractions, sentiment. `compromise/two` adds Spanish/French/German. |
+| **wink-nlp** | `wink-nlp`, `wink-eng-lite-web-model` | MIT | 650KB NLP with stronger POS tagger and pattern support. |
+| **wtf_wikipedia** | `wtf_wikipedia` | MIT | Parse any Wikipedia article from the browser — text, infoboxes, categories. |
+| **wikipedia** | `wikipedia` | MIT | Cleaner REST wrapper for Wikipedia summaries, "on this day," geo-search. |
+| **inkjs** | `inkjs` | MIT | JS port of Inkle's Ink scripting language. Branching-narrative interactive fiction (engine behind *80 Days*). |
+
+### Part 2E — Advanced: code, CS, theory
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **v86** | `v86` | BSD-2 | Full x86 PC emulator with x86-to-WASM JIT. Boots Linux, Windows 95/98/2000, MS-DOS, FreeDOS, ReactOS, Haiku. |
+| **JSLinux** | iframe `bellard.org/jslinux` | Freeware (not OSI) | Fabrice Bellard's 64-bit x86 and RISC-V emulator. Runs Fedora and Windows NT 4. |
+
+### Part 2F — Advanced: music
+
+| Library | npm / CDN | License | Brief |
+|---|---|---|---|
+| **Strudel** | `@strudel.cycles/core`, `@strudel.cycles/web` | MIT | Browser TidalCycles. Live-coded pattern music. Music theory as code. |
+| **Hydra-synth** | `hydra-synth` | AGPL-3.0 | Live-codable WebGL video synth with mic, webcam, MIDI inputs. AGPL flagged. |
+| **WEBMIDI.js** | `webmidi` | Apache-2.0 | Friendly wrapper around the Web MIDI API. Plug in a physical keyboard, have AlphaTab's cursor follow. |
+
+### Tier 9 — top picks
+
+If you only add 10 libraries from this tier, prioritize these (cross-site impact):
+
+1. **tocbot** — every long guide becomes navigable
+2. **medium-zoom** — every image becomes interactive
+3. **Sonner** — every async action gets delightful feedback
+4. **cmdk** — global jump-anywhere shortcut
+5. **@react-three/postprocessing** — instant visual upgrade across every 3D scene
+6. **Mol\*** — transforms bio and chem guides
+7. **CesiumJS** — transforms history and geography guides
+8. **Penrose + Bloom** — nothing like it exists on the web
+9. **Rapier 3D** — unlocks real 3D physics
+10. **jsPDF + html-to-image** — "save this as PDF" on every page
+
+### Tier 9 — licensing flags summary
+
+| Library | Flag |
+|---|---|
+| Theatre.js (`@theatre/studio`) | AGPL-3.0 |
+| Hydra-synth | AGPL-3.0 |
+| satori | MPL-2.0 (file-level copyleft only) |
+| LYGIA | Prosperity / Patron (noncommercial OK) |
+| Polypad | Non-commercial educational only |
+| JFLAP Web | Freeware, not OSI (iframe only) |
+| JSLinux | Freeware, not OSI (iframe only) |
+| Luma captures | Luma TOS (renderer itself MIT) |
+| Cesium ion streaming | Free tier 5GB / 100GB monthly (CesiumJS itself Apache-2.0) |
+
+All other Tier 9 libraries: MIT, Apache-2.0, BSD-2, BSD-3, or zlib. Fully permissive.
+
+### Tier 9 — deliberately excluded
+
+Considered but not recommended because the existing catalog already covers them: AOS / ScrollReveal (GSAP + scrollama), Barba.js (Astro View Transitions + Lenis), Fuse.js / MiniSearch / FlexSearch (Pagefind), Yet-another-react-lightbox / Fancybox / GLightbox (PhotoSwipe), react-hot-toast (Sonner is the modern choice), Locomotive Scroll (Lenis), Plyr / Video.js (react-player + Mux), Tilt.js (vanilla-tilt is the maintained version), Popper.js (Floating UI is the successor).
+
+---
+
 ## 9. External services and data sources
 
 These are accessed by the above components but worth listing separately.
