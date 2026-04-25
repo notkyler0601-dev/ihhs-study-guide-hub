@@ -295,8 +295,16 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       if (!payload || payload === '[DONE]') return null;
       try {
         const obj = JSON.parse(payload);
+        // Legacy Workers AI text generation models (Llama 3.1, etc.).
         if (typeof obj.response === 'string') return obj.response;
         if (typeof obj.delta === 'string') return obj.delta;
+        // OpenAI-compatible chat completions (Gemma 4, gpt-oss, llama-4, etc.).
+        const choice = Array.isArray(obj.choices) ? obj.choices[0] : null;
+        if (choice) {
+          if (typeof choice.delta?.content === 'string') return choice.delta.content;
+          if (typeof choice.message?.content === 'string') return choice.message.content;
+          if (typeof choice.text === 'string') return choice.text;
+        }
         return null;
       } catch {
         return null;
