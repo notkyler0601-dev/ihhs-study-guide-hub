@@ -561,4 +561,6 @@ Without the env var, the component renders a clear "not configured" notice inste
 
 ## License
 
-Built by IHHS student for IHHS students. Free to fork and adapt.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for the full text.
+
+Built by an IHHS student for IHHS students. Free to fork and adapt.
