@@ -427,9 +427,17 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
       } catch {
         bubble.innerHTML = renderMarkdown('*Network error. Try again.*');
       } finally {
-        // Drop the streaming pulse and replace the cursor with the final text.
+        // Drop the streaming pulse and finalize the bubble. If the stream
+        // closed without sending any content (model refused, safety filter,
+        // empty stop reason, etc.), don't leave the typing dots animating
+        // forever, replace them with a fallback so the user knows the
+        // request finished.
         bubble.classList.remove('tutor-streaming');
-        if (acc) bubble.innerHTML = renderMarkdown(acc);
+        if (acc) {
+          bubble.innerHTML = renderMarkdown(acc);
+        } else if (bubble.querySelector('.tutor-typing-dots')) {
+          bubble.innerHTML = renderMarkdown('*No reply came back. Try again, or rephrase the question.*');
+        }
         setBusy(false);
         if (!input.disabled) input.focus();
       }
@@ -539,7 +547,7 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
         : `🦴 In caveman terms: "${truncated}"`;
       const prompt = kind === 'simpler'
         ? `Re-explain the passage below in really simple words, like you're talking to a 7th-grader who has never seen this material. Use one short concrete analogy. 100 words maximum.\n\nPassage:\n"""\n${passage}\n"""`
-        : `Re-explain the passage below in caveman speak ONLY. Stay in caveman voice for the entire response, do not break character even once. Use the fewest words possible. Tiny vocabulary, mostly one syllable. Subject, verb, object. No words like "because", "therefore", "however", "so". No introductions, no conclusions, no apologies. Example tone exactly: "Sun hot. Plant eat sun. Plant make food. Food make plant grow." Keep the facts correct but strip every unnecessary word. 60 words maximum. Just the caveman explanation, nothing else.\n\nPassage:\n"""\n${passage}\n"""`;
+        : `Re-explain the passage below in caveman speak. Tiny vocabulary, short blunt sentences, mostly one syllable. Subject, verb, object. Like this: "Sun hot. Plant eat sun. Plant make food." Match that style for the whole reply. Keep the facts correct. 60 words maximum.\n\nPassage:\n"""\n${passage}\n"""`;
       g_currentAsk(prompt, label);
     });
     document.body.appendChild(m);
