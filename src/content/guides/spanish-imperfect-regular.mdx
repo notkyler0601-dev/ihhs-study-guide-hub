@@ -12,6 +12,7 @@ authors: ["IHHS"]
 import Callout from '../../components/Callout.astro';
 import KeyTerm from '../../components/KeyTerm.astro';
 import Collapsible from '../../components/Collapsible.astro';
+import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
 import RoughNotation from '../../components/RoughNotation.astro';
 import VantaBackground from '../../components/VantaBackground.astro';
@@ -237,6 +238,86 @@ Drag the six forms of `hablar` into the correct order, from `yo` to `ellos`.
 />
 
 ## Quiz
+
+Multiple choice. Pick the right form, the right pattern, or the right tense. Reset and re-take as often as you want.
+
+<Quiz
+  title="Regular imperfect, multiple choice"
+  questions={[
+    {
+      q: 'Which is the correct yo form of hablar in the imperfect?',
+      choices: ['hablaba', 'hablé', 'hablo', 'habló'],
+      answer: 0,
+      explain: 'Drop -ar from hablar to get the stem habl-, then add the -ar yo ending -aba.',
+    },
+    {
+      q: 'Which is the only -ar imperfect ending that carries a written accent?',
+      choices: ['-aba (yo)', '-abas (tú)', '-ábamos (nosotros)', '-aban (ellos)'],
+      answer: 2,
+      explain: 'Only the -ar nosotros form has an accent on the á. Every other -ar ending is unaccented.',
+    },
+    {
+      q: 'Verbs ending in -ir follow which imperfect pattern?',
+      choices: [
+        'The -ar pattern (aba, abas, ...)',
+        'The -er pattern (ía, ías, ...)',
+        'Their own unique -ir pattern',
+        'No fixed pattern, every -ir verb is irregular',
+      ],
+      answer: 1,
+      explain: '-ir verbs share endings with -er verbs in the imperfect: ía, ías, ía, íamos, íais, ían.',
+    },
+    {
+      q: 'How many regular -er / -ir imperfect endings carry a written accent on the í?',
+      choices: ['Zero', 'Only nosotros', 'Only nosotros and vosotros', 'All six'],
+      answer: 3,
+      explain: 'Every single -er / -ir imperfect ending is accented on the í: ía, ías, ía, íamos, íais, ían.',
+    },
+    {
+      q: 'Which trigger phrase signals the imperfect tense?',
+      choices: ['ayer', 'una vez', 'cuando era niño', 'a las tres en punto'],
+      answer: 2,
+      explain: '"Cuando era niño" describes a habitual past state. "Ayer", "una vez", and "a las tres" all point to single completed events, which take the preterite.',
+    },
+    {
+      q: 'Translate to Spanish: "We were living in Madrid."',
+      choices: ['Vivimos en Madrid', 'Vivíamos en Madrid', 'Vivíais en Madrid', 'Vivieron en Madrid'],
+      answer: 1,
+      explain: 'Drop -ir from vivir to get viv-, then add the nosotros -er/-ir imperfect ending -íamos.',
+    },
+    {
+      q: 'Which form is NOT a regular imperfect ending?',
+      choices: ['-aban', '-íais', '-aron', '-ábamos'],
+      answer: 2,
+      explain: '-aron is a preterite ending (ellos hablaron), not imperfect. The imperfect ellos form for -ar is -aban.',
+    },
+    {
+      q: 'In the imperfect, which two grammatical persons share an identical conjugated form?',
+      choices: ['yo and tú', 'yo and él / ella / usted', 'nosotros and vosotros', 'tú and ellos'],
+      answer: 1,
+      explain: 'In both ending sets, yo and él / ella / usted are spelled the same (hablaba / hablaba, comía / comía). Context tells you which subject is meant.',
+    },
+    {
+      q: 'Which of these verbs is irregular in the imperfect?',
+      choices: ['comer', 'hablar', 'ser', 'vivir'],
+      answer: 2,
+      explain: 'Only ir, ser, and ver are irregular in the imperfect. Comer, hablar, and vivir all follow the regular patterns covered in this guide.',
+    },
+    {
+      q: '¿Cómo se dice "they used to study every day" en español?',
+      choices: [
+        'Estudiaron todos los días',
+        'Estudian todos los días',
+        'Estudiaban todos los días',
+        'Estudiarán todos los días',
+      ],
+      answer: 2,
+      explain: 'The trigger "todos los días" plus a habitual past meaning forces the imperfect. Drop -ar from estudiar, then add the -ar ellos ending -aban.',
+    },
+  ]}
+/>
+
+## Speaking quiz
 
 For each prompt, click the microphone and **say** the correct imperfect form out loud in Spanish. The system grades each answer the moment you finish speaking. You can retry as many times as you want, and at the end you can drill only the ones you missed.
 
