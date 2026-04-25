@@ -152,12 +152,16 @@ const id = 'cards-' + Math.random().toString(36).slice(2, 9);
     const render = () => {
       const c = cards[order[pos]];
       flipped = false;
+      // Smooth transition: unflip + fade out, swap content while invisible, fade back in.
+      flipBtn.style.transition = 'transform 0.5s ease, opacity 0.25s ease';
       flipBtn.style.transform = 'rotateY(0deg)';
+      flipBtn.style.opacity = '0';
       setTimeout(() => {
         frontEl.textContent = c.front;
         backEl.textContent = c.back;
         if (mode === 'srs') updateIntervalLabels(order[pos]);
-      }, 150);
+        flipBtn.style.opacity = '1';
+      }, 250);
       posEl.textContent = String(pos + 1);
       // Hide ratings until flipped (in srs mode)
       if (mode === 'srs') {
