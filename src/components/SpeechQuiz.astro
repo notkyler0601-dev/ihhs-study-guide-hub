@@ -366,12 +366,33 @@ const conf = JSON.stringify({ items, lang, promptLabel });
         recognition.onend = () => setListening(false);
         recognition.onerror = (e: any) => {
           setListening(false);
+          // Auto-expand the typed-answer panel on any failure that isn't a
+          // simple "no speech" or permission issue, so the student has a
+          // clear path forward instead of getting stuck.
+          const openTypedFallback = () => {
+            const details = root.querySelector<HTMLDetailsElement>('details');
+            if (details) details.open = true;
+            // Focus the typed input so they can start immediately.
+            setTimeout(() => typeInput.focus(), 50);
+          };
           if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-            setStatus('Microphone blocked. Allow access in site settings.', 'idle');
+            setStatus('Microphone blocked. Allow access in site settings, or type your answer below.', 'idle');
+            openTypedFallback();
           } else if (e.error === 'no-speech') {
-            setStatus('No speech detected. Try again.', 'idle');
+            setStatus('No speech detected. Try again, or type your answer.', 'idle');
+          } else if (e.error === 'network') {
+            // Chrome / Edge speech recognition routes audio through Google
+            // servers. School networks, VPNs, and some regions block this.
+            setStatus('Cannot reach the speech recognition service. Type your answer instead, or try a different network.', 'idle');
+            openTypedFallback();
+          } else if (e.error === 'audio-capture') {
+            setStatus('No microphone detected. Type your answer below.', 'idle');
+            openTypedFallback();
+          } else if (e.error === 'aborted') {
+            setStatus('Recording cancelled.', 'idle');
           } else {
-            setStatus(`Error: ${e.error}. Try again.`, 'idle');
+            setStatus(`Speech error: ${e.error}. Type your answer instead.`, 'idle');
+            openTypedFallback();
           }
         };
         recognition.onresult = (e: any) => {
