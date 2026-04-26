@@ -4,10 +4,12 @@
 // quick-insert buttons for accented characters. Repeatable as many times as
 // they want, with an optional "drill missed only" mode.
 //
-// pairs: [{ en, es, alt? }] where alt is an array of acceptable variants.
+// pairs: [{ en, es, alt?, explain? }] where alt is an array of acceptable
+// variants and explain is an optional one-sentence rule reminder shown
+// only when the student gets the question wrong.
 // You can also separate variants with ' / ' inside es itself, e.g.
 // "el muñeco / la muñeca" accepts either form.
-interface Pair { en: string; es: string; alt?: string[]; }
+interface Pair { en: string; es: string; alt?: string[]; explain?: string; }
 interface Props {
   title?: string;
   pairs: Pair[];
@@ -100,7 +102,7 @@ const conf = JSON.stringify({ pairs, accents, promptLabel, acceptArticles, caseS
 </section>
 
 <script>
-  type Pair = { en: string; es: string; alt?: string[] };
+  type Pair = { en: string; es: string; alt?: string[]; explain?: string };
   type Conf = {
     pairs: Pair[];
     accents: string[];
@@ -242,9 +244,13 @@ const conf = JSON.stringify({ pairs, accents, promptLabel, acceptArticles, caseS
         } else {
           feedbackTitle.textContent = user.trim() ? '✗ Not quite.' : '✗ Skipped.';
           const diff = renderDiff(user || '', answer);
+          const explainHtml = pair.explain
+            ? `<div class="mt-3 pt-3 border-t border-rose-300 dark:border-rose-700/60 font-sans text-sm leading-relaxed text-rose-800 dark:text-rose-200">${escapeHtml(pair.explain)}</div>`
+            : '';
           feedbackDetail.innerHTML = `
             <div>You wrote:&nbsp;&nbsp;<span>${diff.userHtml}</span></div>
             <div class="mt-1">Correct:&nbsp;&nbsp;&nbsp;&nbsp;<span>${diff.corrHtml}</span></div>
+            ${explainHtml}
           `;
         }
         nextBtn.focus();
