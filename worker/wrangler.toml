@@ -10,4 +10,4 @@ binding = "AI"
 # Comma-separated whitelist of origins allowed to call the Worker.
 # Any *.vercel.app origin is also allowed automatically so preview deploys work.
 ALLOWED_ORIGINS = "https://ihsgh.org,https://www.ihsgh.org,http://localhost:4321"
-MODEL = "@cf/google/gemma-4-26b-a4b-it"
+MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
