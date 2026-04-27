@@ -120,26 +120,57 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
   };
   trackOpen();
   document.addEventListener('astro:after-swap', trackOpen);
-  const init = async () => {
+  // Render every mermaid block on the page using the current dark/light theme.
+  // The original mermaid source is stashed on each wrapper as data-mermaid-source
+  // so a theme toggle can re-render in place without losing the code.
+  const renderAllMermaid = async () => {
     const isDark = document.documentElement.classList.contains('dark');
-    mermaid.initialize({ startOnLoad: false, theme: isDark ? 'dark' : 'default', securityLevel: 'loose', fontFamily: 'Inter, sans-serif' });
-    // Shiki adds data-language to the <pre>; find mermaid blocks that way (and also the legacy class-based selector).
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: isDark ? 'dark' : 'default',
+      securityLevel: 'loose',
+      fontFamily: 'Inter, sans-serif',
+    });
+
+    // First pass: turn any unrendered <pre> blocks into wrappers that remember their source.
     const blocks = document.querySelectorAll('pre[data-language="mermaid"], pre > code.language-mermaid');
-    for (const [i, el] of Array.from(blocks).entries()) {
-      const pre = el.tagName === 'PRE' ? el : el.parentElement;
-      const code = pre?.textContent ?? '';
+    Array.from(blocks).forEach((el) => {
+      const pre = (el.tagName === 'PRE' ? el : el.parentElement) as HTMLElement | null;
+      if (!pre) return;
+      const code = pre.textContent ?? '';
+      const wrap = document.createElement('div');
+      wrap.className = 'mermaid-rendered my-6 flex justify-center surface rounded-xl p-6 overflow-x-auto';
+      wrap.setAttribute('data-mermaid-source', code);
+      pre.replaceWith(wrap);
+    });
+
+    // Second pass: render (or re-render) every wrapper with the current theme.
+    const wraps = document.querySelectorAll<HTMLElement>('.mermaid-rendered[data-mermaid-source]');
+    for (const [i, wrap] of Array.from(wraps).entries()) {
+      const code = wrap.getAttribute('data-mermaid-source') ?? '';
       const id = `mermaid-${Date.now()}-${i}`;
       try {
         const { svg } = await mermaid.render(id, code);
-        const wrap = document.createElement('div');
-        wrap.className = 'mermaid-rendered my-6 flex justify-center surface rounded-xl p-6 overflow-x-auto';
         wrap.innerHTML = svg;
-        pre?.replaceWith(wrap);
       } catch (e) {
         console.warn('Mermaid render failed', e);
       }
     }
   };
-  init();
-  document.addEventListener('astro:after-swap', init);
+
+  renderAllMermaid();
+  document.addEventListener('astro:after-swap', renderAllMermaid);
+
+  // Re-render whenever the dark class toggles on <html>, so diagrams follow
+  // the current theme instead of being stuck in the palette they first
+  // rendered with (which was the cause of the "chart turns all black" bug).
+  let mermaidThemeTimer: number | null = null;
+  const themeObserver = new MutationObserver(() => {
+    if (mermaidThemeTimer != null) clearTimeout(mermaidThemeTimer);
+    // Debounce: theme toggles can fire several class mutations in a row.
+    mermaidThemeTimer = window.setTimeout(() => {
+      void renderAllMermaid();
+    }, 80);
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 </script>
