@@ -358,6 +358,10 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
           if (typeof choice.message?.content === 'string') return choice.message.content;
           if (typeof choice.text === 'string') return choice.text;
           if (typeof choice.delta?.text === 'string') return choice.delta.text;
+          // Reasoning models (Gemma 4 26B, etc.) stream thinking tokens in
+          // delta.reasoning. Treat them as visible output so the student sees
+          // the model's working when no separate content stream arrives.
+          if (typeof choice.delta?.reasoning === 'string') return choice.delta.reasoning;
         }
         // Other shapes seen on Cloudflare Workers AI.
         if (typeof obj.content === 'string') return obj.content;
