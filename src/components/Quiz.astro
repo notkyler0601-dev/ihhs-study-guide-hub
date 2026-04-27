@@ -8,50 +8,70 @@ interface Question {
 interface Props {
   title?: string;
   questions: Question[];
+  // Optional alternate question sets. When provided, a "New quiz" button
+  // appears next to Reset; clicking it swaps to a randomly chosen bank
+  // (different from the current one) and clears all state.
+  extraBanks?: Question[][];
 }
-const { title = 'Self-quiz', questions } = Astro.props;
+const { title = 'Self-quiz', questions, extraBanks = [] } = Astro.props;
 const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
+const banks: Question[][] = [questions, ...extraBanks];
+const hasMultipleBanks = banks.length > 1;
 ---
 
-<section class:list={['not-prose my-8 surface rounded-2xl p-6 shadow-soft']} data-quiz-root id={id} data-quiz-total={questions.length}>
+<section class:list={['not-prose my-8 surface rounded-2xl p-6 shadow-soft']} data-quiz-root id={id} data-quiz-bank-count={banks.length}>
   <header class="flex items-center justify-between gap-3 mb-5">
     <div class="flex items-center gap-3">
       <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">Q</span>
       <div>
         <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
-        <p class="text-xs text-ink-500 mt-1"><span data-quiz-progress>0</span> of {questions.length} answered</p>
+        <p class="text-xs text-ink-500 mt-1">
+          <span data-quiz-progress>0</span> of <span data-quiz-total>{questions.length}</span> answered
+          {hasMultipleBanks && (
+            <span class="ml-1 text-ink-400">· quiz <span data-quiz-bank-label>1</span> / {banks.length}</span>
+          )}
+        </p>
       </div>
     </div>
-    <button data-quiz-reset type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Reset</button>
+    <div class="flex items-center gap-3">
+      {hasMultipleBanks && (
+        <button data-quiz-new type="button" class="text-xs font-semibold text-accent-700 hover:text-accent-800 dark:text-accent-400 dark:hover:text-accent-300">
+          ↻ New quiz
+        </button>
+      )}
+      <button data-quiz-reset type="button" class="text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Reset</button>
+    </div>
   </header>
 
-  <ol class="space-y-6">
-    {questions.map((q, i) => (
-      <li data-question-idx={i} data-answer={q.answer}>
-        <div class="flex items-start gap-3 mb-3">
-          <span class="text-xs font-mono text-ink-400 mt-1">{String(i + 1).padStart(2, '0')}</span>
-          <p class="font-medium text-ink-900 dark:text-ink-100 text-pretty">{q.q}</p>
-        </div>
-        <div class="space-y-2 ml-7">
-          {q.choices.map((c, ci) => (
-            <button
-              type="button"
-              data-choice={ci}
-              class="quiz-choice w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm"
-            >
-              <span class="quiz-marker mt-0.5 inline-flex items-center justify-center h-5 w-5 rounded-full border border-ink-300 dark:border-ink-700 text-[10px] font-mono">{String.fromCharCode(65 + ci)}</span>
-              <span class="flex-1">{c}</span>
-            </button>
-          ))}
-        </div>
-        {q.explain && (
-          <div class="quiz-explain hidden ml-7 mt-3 px-4 py-3 rounded-lg bg-ink-50 dark:bg-ink-900/60 border border-ink-200 dark:border-ink-800 text-sm text-ink-700 dark:text-ink-300">
-            <span class="font-semibold text-accent-700 dark:text-accent-300">Why: </span>{q.explain}
+  {banks.map((bankQuestions, bankIdx) => (
+    <ol data-quiz-bank data-quiz-bank-idx={bankIdx} class:list={['space-y-6', bankIdx === 0 ? '' : 'hidden']}>
+      {bankQuestions.map((q, i) => (
+        <li data-question-idx={i} data-answer={q.answer}>
+          <div class="flex items-start gap-3 mb-3">
+            <span class="text-xs font-mono text-ink-400 mt-1">{String(i + 1).padStart(2, '0')}</span>
+            <p class="font-medium text-ink-900 dark:text-ink-100 text-pretty">{q.q}</p>
           </div>
-        )}
-      </li>
-    ))}
-  </ol>
+          <div class="space-y-2 ml-7">
+            {q.choices.map((c, ci) => (
+              <button
+                type="button"
+                data-choice={ci}
+                class="quiz-choice w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm"
+              >
+                <span class="quiz-marker mt-0.5 inline-flex items-center justify-center h-5 w-5 rounded-full border border-ink-300 dark:border-ink-700 text-[10px] font-mono">{String.fromCharCode(65 + ci)}</span>
+                <span class="flex-1">{c}</span>
+              </button>
+            ))}
+          </div>
+          {q.explain && (
+            <div class="quiz-explain hidden ml-7 mt-3 px-4 py-3 rounded-lg bg-ink-50 dark:bg-ink-900/60 border border-ink-200 dark:border-ink-800 text-sm text-ink-700 dark:text-ink-300">
+              <span class="font-semibold text-accent-700 dark:text-accent-300">Why: </span>{q.explain}
+            </div>
+          )}
+        </li>
+      ))}
+    </ol>
+  ))}
 
   <div data-quiz-result class="hidden mt-6 p-4 rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-900/40 dark:to-ink-900 border border-accent-200 dark:border-accent-800 text-center">
     <div class="font-serif text-2xl font-semibold gradient-text" data-quiz-score></div>
@@ -65,30 +85,42 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
   import { fireConfetti } from '../lib/confetti';
 
   const setupOne = (root: HTMLElement) => {
-    const total = Number(root.dataset.quizTotal || '0');
-    const questions = root.querySelectorAll('[data-question-idx]');
-    const progressEl = root.querySelector('[data-quiz-progress]');
-    const resultEl = root.querySelector('[data-quiz-result]');
-    const scoreEl = root.querySelector('[data-quiz-score]');
-    const msgEl = root.querySelector('[data-quiz-message]');
-    const resetBtn = root.querySelector('[data-quiz-reset]');
+    const banks = Array.from(root.querySelectorAll<HTMLOListElement>('[data-quiz-bank]'));
+    if (banks.length === 0) return;
+
+    const bankCount = banks.length;
+    const progressEl = root.querySelector<HTMLElement>('[data-quiz-progress]')!;
+    const totalEl = root.querySelector<HTMLElement>('[data-quiz-total]')!;
+    const bankLabelEl = root.querySelector<HTMLElement>('[data-quiz-bank-label]');
+    const resultEl = root.querySelector<HTMLElement>('[data-quiz-result]')!;
+    const scoreEl = root.querySelector<HTMLElement>('[data-quiz-score]')!;
+    const msgEl = root.querySelector<HTMLElement>('[data-quiz-message]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-quiz-reset]');
+    const newBtn = root.querySelector<HTMLButtonElement>('[data-quiz-new]');
+
+    let activeBankIdx = 0;
     const state = new Map<number, number>();
 
+    const activeBank = () => banks[activeBankIdx];
+    const activeQuestions = () => activeBank().querySelectorAll<HTMLElement>('[data-question-idx]');
+
     const updateResult = () => {
-      progressEl!.textContent = String(state.size);
-      if (state.size !== total) { resultEl!.classList.add('hidden'); return; }
+      const qs = activeQuestions();
+      const total = qs.length;
+      progressEl.textContent = String(state.size);
+      if (state.size !== total) { resultEl.classList.add('hidden'); return; }
       let correct = 0;
       state.forEach((picked, i) => {
-        const q = questions[i] as HTMLElement;
+        const q = qs[i];
         if (picked === Number(q.dataset.answer)) correct++;
       });
       const pct = Math.round((correct / total) * 100);
-      scoreEl!.textContent = `${correct} / ${total} · ${pct}%`;
-      msgEl!.textContent = pct === 100 ? 'Flawless. You own this material.'
+      scoreEl.textContent = `${correct} / ${total} · ${pct}%`;
+      msgEl.textContent = pct === 100 ? 'Flawless. You own this material.'
         : pct >= 80 ? 'Strong grasp, review the misses and you are set.'
         : pct >= 50 ? 'Solid foundation, revisit the missed concepts.'
         : 'Re-read the section and try again. You have got this.';
-      resultEl!.classList.remove('hidden');
+      resultEl.classList.remove('hidden');
 
       // Celebrate a perfect score with confetti.
       if (pct === 100) void fireConfetti('cannons');
@@ -102,18 +134,16 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
       }
     };
 
-    questions.forEach((qElNode, qi) => {
-      const qEl = qElNode as HTMLElement;
+    const wireQuestion = (qEl: HTMLElement) => {
       const correctIdx = Number(qEl.dataset.answer);
-      const choices = qEl.querySelectorAll('.quiz-choice');
+      const qi = Number(qEl.dataset.questionIdx);
+      const choices = qEl.querySelectorAll<HTMLButtonElement>('.quiz-choice');
       const explain = qEl.querySelector('.quiz-explain');
-      choices.forEach((btnNode, ci) => {
-        const btn = btnNode as HTMLButtonElement;
+      choices.forEach((btn, ci) => {
         btn.addEventListener('click', () => {
           if (state.has(qi)) return;
           state.set(qi, ci);
-          choices.forEach((bNode, bi) => {
-            const b = bNode as HTMLButtonElement;
+          choices.forEach((b, bi) => {
             const marker = b.querySelector('.quiz-marker')!;
             b.disabled = true;
             if (bi === correctIdx) {
@@ -130,15 +160,18 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
           updateResult();
         });
       });
+    };
+
+    // Wire every bank up front so a bank swap just shows already-listening DOM.
+    banks.forEach((bank) => {
+      bank.querySelectorAll<HTMLElement>('[data-question-idx]').forEach(wireQuestion);
     });
 
-    resetBtn?.addEventListener('click', () => {
+    const resetActive = () => {
       state.clear();
-      questions.forEach((qElNode) => {
-        const qEl = qElNode as HTMLElement;
-        const choices = qEl.querySelectorAll('.quiz-choice');
-        choices.forEach((bNode) => {
-          const b = bNode as HTMLButtonElement;
+      activeQuestions().forEach((qEl) => {
+        const choices = qEl.querySelectorAll<HTMLButtonElement>('.quiz-choice');
+        choices.forEach((b) => {
           b.disabled = false;
           b.className = 'quiz-choice w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm';
           const marker = b.querySelector('.quiz-marker')!;
@@ -146,13 +179,39 @@ const id = 'quiz-' + Math.random().toString(36).slice(2, 9);
         });
         qEl.querySelector('.quiz-explain')?.classList.add('hidden');
       });
-      progressEl!.textContent = '0';
-      resultEl!.classList.add('hidden');
+      progressEl.textContent = '0';
+      totalEl.textContent = String(activeQuestions().length);
+      resultEl.classList.add('hidden');
+    };
+
+    const swapToBank = (idx: number) => {
+      banks[activeBankIdx].classList.add('hidden');
+      activeBankIdx = idx;
+      banks[activeBankIdx].classList.remove('hidden');
+      if (bankLabelEl) bankLabelEl.textContent = String(idx + 1);
+      resetActive();
+    };
+
+    resetBtn?.addEventListener('click', resetActive);
+
+    newBtn?.addEventListener('click', () => {
+      if (bankCount < 2) return;
+      // Pick a random bank that isn't the current one.
+      let next = activeBankIdx;
+      while (next === activeBankIdx) {
+        next = Math.floor(Math.random() * bankCount);
+      }
+      swapToBank(next);
     });
   };
 
   const setup = () => {
-    document.querySelectorAll('[data-quiz-root]').forEach((el) => setupOne(el as HTMLElement));
+    document.querySelectorAll('[data-quiz-root]').forEach((el) => {
+      const root = el as HTMLElement;
+      if ((root as any).__quizInit) return;
+      (root as any).__quizInit = true;
+      setupOne(root);
+    });
   };
   setup();
   document.addEventListener('astro:after-swap', setup);

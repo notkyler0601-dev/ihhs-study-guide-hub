@@ -330,6 +330,168 @@ A **pedigree** is a family tree that tracks a trait across generations. The Ohio
       explain: "There are 4³ = 64 possible codons. 61 code for amino acids (most amino acids have multiple codons) and 3 are stop codons."
     }
   ]}
+  extraBanks={[
+    [
+      {
+        q: "In RNA, adenine pairs with which base?",
+        choices: ["Uracil", "Thymine", "Cytosine", "Guanine"],
+        answer: 0,
+        explain: "RNA uses uracil (U) instead of thymine (T). A-U in RNA, A-T in DNA."
+      },
+      {
+        q: "Two parents are heterozygous (Ff) for cystic fibrosis (recessive). What fraction of children are NOT affected?",
+        choices: ["1/4", "3/4", "1/2", "1"],
+        answer: 1,
+        explain: "Ff × Ff gives 1 FF : 2 Ff : 1 ff. The 3/4 with at least one F allele are unaffected."
+      },
+      {
+        q: "Which molecule carries the genetic message from the nucleus to the ribosome?",
+        choices: ["DNA", "tRNA", "mRNA", "rRNA"],
+        answer: 2,
+        explain: "Messenger RNA (mRNA) is transcribed from DNA in the nucleus and travels to ribosomes to be translated into protein."
+      },
+      {
+        q: "DNA polymerase's main job during replication is to:",
+        choices: ["Unzip the helix", "Stabilize single strands", "Glue Okazaki fragments", "Add complementary nucleotides to the new strand"],
+        answer: 3,
+        explain: "Polymerase reads the template strand and adds matching bases (A-T, G-C) to build the new strand."
+      },
+      {
+        q: "A mutation that inserts a single extra base into a coding gene is called a:",
+        choices: ["Frameshift mutation", "Silent mutation", "Nonsense mutation", "Missense mutation"],
+        answer: 0,
+        explain: "An insertion shifts the reading frame for every codon downstream, usually destroying the protein."
+      }
+    ],
+    [
+      {
+        q: "Which is NOT a base found in DNA?",
+        choices: ["Adenine", "Uracil", "Cytosine", "Thymine"],
+        answer: 1,
+        explain: "Uracil belongs to RNA. DNA uses adenine, thymine, cytosine, and guanine."
+      },
+      {
+        q: "A man with type AB blood and a woman with type O blood have a child. What blood types are possible for the child?",
+        choices: ["A or B only", "AB only", "O only", "A, B, AB, or O"],
+        answer: 0,
+        explain: "AB parent contributes A or B. O parent contributes O. Child genotypes: AO (type A) or BO (type B)."
+      },
+      {
+        q: "A mother is XᴮXᵇ (color-blind carrier) and the father is XᴮY (normal). What percent of their sons will be color-blind?",
+        choices: ["0%", "25%", "50%", "100%"],
+        answer: 2,
+        explain: "Sons inherit Y from dad and X from mom. Half get Xᴮ (normal), half get Xᵇ (color-blind)."
+      },
+      {
+        q: "Sickle cell anemia is caused by a single base change that swaps one amino acid in hemoglobin. This is a:",
+        choices: ["Frameshift mutation", "Silent mutation", "Nonsense mutation", "Missense mutation"],
+        answer: 3,
+        explain: "Missense = a base change that produces a different amino acid. Sickle cell is the classic example."
+      },
+      {
+        q: "Which enzyme unwinds the DNA double helix at the start of replication?",
+        choices: ["Helicase", "DNA polymerase", "Ligase", "RNA polymerase"],
+        answer: 0,
+        explain: "Helicase breaks the hydrogen bonds between base pairs and separates the two strands."
+      }
+    ],
+    [
+      {
+        q: "If the DNA template strand reads 3'-TAC-5', the mRNA codon transcribed from it is:",
+        choices: ["UAC", "ATG", "AUG", "GTA"],
+        answer: 2,
+        explain: "Transcription is antiparallel and uses U instead of T. Template TAC → mRNA AUG (the start codon)."
+      },
+      {
+        q: "What does the codon AUG do in translation?",
+        choices: ["Stop translation", "Code for methionine and start translation", "Code for phenylalanine", "Code for tryptophan"],
+        answer: 1,
+        explain: "AUG is the start codon and codes for methionine. Every protein begins with methionine."
+      },
+      {
+        q: "If a Punnett cross is TT × tt, what fraction of offspring show the dominant phenotype (T is dominant)?",
+        choices: ["0%", "25%", "50%", "100%"],
+        answer: 3,
+        explain: "All offspring are Tt heterozygotes, which show the dominant phenotype."
+      },
+      {
+        q: "On a pedigree, a filled (solid) square represents:",
+        choices: ["An affected male", "An unaffected male", "An affected female", "A carrier"],
+        answer: 0,
+        explain: "Square = male, circle = female. Filled = affected, half-filled = carrier, empty = unaffected."
+      },
+      {
+        q: "Which of these is a STOP codon?",
+        choices: ["AUG", "GCA", "UAA", "AAA"],
+        answer: 2,
+        explain: "UAA, UAG, and UGA are the three stop codons that terminate translation."
+      }
+    ],
+    [
+      {
+        q: "How many chromosomes are in a normal human gamete (sperm or egg)?",
+        choices: ["23", "46", "92", "24"],
+        answer: 0,
+        explain: "Gametes are haploid (n = 23). They fuse at fertilization to restore the diploid number 46."
+      },
+      {
+        q: "When a heterozygote (Aa) self-fertilizes, what fraction of offspring are homozygous (AA or aa)?",
+        choices: ["1/2", "1/4", "3/4", "1"],
+        answer: 0,
+        explain: "Aa × Aa gives 1 AA : 2 Aa : 1 aa. The homozygotes (AA + aa) total 2/4 = 1/2."
+      },
+      {
+        q: "On a pedigree, a trait that skips a generation is most likely:",
+        choices: ["Dominant", "Recessive", "Codominant", "X-linked dominant"],
+        answer: 1,
+        explain: "Recessive traits hide in heterozygous carriers and only appear when two carriers have a homozygous-recessive child."
+      },
+      {
+        q: "Which best describes incomplete dominance?",
+        choices: ["Both alleles fully expressed", "One allele dominates the other", "Heterozygotes show a blended phenotype", "Neither allele is expressed"],
+        answer: 2,
+        explain: "Red flower × white flower → pink flower is the classic example. Neither allele is fully dominant; the heterozygote is intermediate."
+      },
+      {
+        q: "If the original DNA is ATCG and a mutation changes it to ATTG, this is a:",
+        choices: ["Frameshift", "Substitution (point mutation)", "Insertion", "Deletion"],
+        answer: 1,
+        explain: "Replacing one base with another (C → T here) is a substitution. The reading frame stays intact."
+      }
+    ],
+    [
+      {
+        q: "Sex-linked traits in humans are usually carried on which chromosome?",
+        choices: ["Chromosome 1", "Chromosome 21", "X chromosome", "Y chromosome"],
+        answer: 2,
+        explain: "Most known sex-linked traits (color blindness, hemophilia) are X-linked because the Y chromosome carries very few genes."
+      },
+      {
+        q: "A homozygous dominant parent (BB) crosses with a heterozygote (Bb). What percent of offspring show the dominant phenotype?",
+        choices: ["25%", "50%", "75%", "100%"],
+        answer: 3,
+        explain: "BB × Bb gives 1/2 BB and 1/2 Bb. Both genotypes show the dominant phenotype."
+      },
+      {
+        q: "What does the term 'phenotype' refer to?",
+        choices: ["The observable physical trait", "The genetic makeup", "A pair of alleles", "The chromosome number"],
+        answer: 0,
+        explain: "Phenotype = what you see (eye color, height). Genotype = the alleles you carry (BB, Bb, bb)."
+      },
+      {
+        q: "RNA polymerase synthesizes which type of nucleic acid during transcription?",
+        choices: ["DNA", "mRNA", "tRNA", "rRNA"],
+        answer: 1,
+        explain: "RNA polymerase reads a DNA template and produces mRNA, which is then translated into protein."
+      },
+      {
+        q: "If a mother is XᴬXᵃ (carrier) and the father is XᴬY, what percent of daughters will be carriers?",
+        choices: ["0%", "25%", "50%", "100%"],
+        answer: 2,
+        explain: "Daughters get Xᴬ from dad. Half get Xᴬ from mom (homozygous normal); half get Xᵃ from mom (carrier)."
+      }
+    ]
+  ]}
 />
 
 ---
@@ -546,6 +708,168 @@ If $q^2 = 0.16$ (16% of the population is homozygous recessive), then:
       answer: 1,
       explain: "q² = 0.3² = 0.09 (or 9%). The Hardy-Weinberg equation gives genotype frequencies directly from allele frequencies."
     }
+  ]}
+  extraBanks={[
+    [
+      {
+        q: "Vestigial structures like the human appendix or whale pelvic bones are evidence of:",
+        choices: ["Mutation rate", "Genetic drift", "Convergent evolution", "Common ancestry"],
+        answer: 3,
+        explain: "Vestigial structures are leftovers from an ancestor that used them. They reveal a shared evolutionary past."
+      },
+      {
+        q: "Which scientist is credited with proposing natural selection as the mechanism of evolution?",
+        choices: ["Charles Darwin", "Gregor Mendel", "James Watson", "Carl Linnaeus"],
+        answer: 0,
+        explain: "Darwin (and independently Wallace) published the theory of natural selection in 1859."
+      },
+      {
+        q: "A hurricane wipes out 80% of an island lizard population at random. The surviving allele frequencies are most affected by:",
+        choices: ["Natural selection", "Migration", "Genetic drift", "Mutation"],
+        answer: 2,
+        explain: "Random survival, not fitness, drives the change. That's the bottleneck variant of genetic drift."
+      },
+      {
+        q: "Two distantly related species' embryos look nearly identical in early development. This is evidence of:",
+        choices: ["Convergent evolution", "Common ancestry", "Coevolution", "Genetic drift"],
+        answer: 1,
+        explain: "Shared embryonic stages suggest a shared ancestor that had those features."
+      },
+      {
+        q: "Antibiotic resistance evolving in bacterial populations exposed to penicillin is a real-time example of:",
+        choices: ["Goal-directed adaptation", "Mutation only", "Genetic drift", "Natural selection"],
+        answer: 3,
+        explain: "Resistant individuals survive and reproduce, non-resistant ones don't. Allele frequencies shift each generation."
+      }
+    ],
+    [
+      {
+        q: "On a phylogenetic tree, the points where branches split apart are called:",
+        choices: ["Tips", "Nodes", "Roots", "Clades"],
+        answer: 1,
+        explain: "Each node represents a most recent common ancestor of the lineages that branch from it."
+      },
+      {
+        q: "If the dominant allele frequency p = 0.6 in a Hardy-Weinberg population, what fraction is homozygous dominant (p²)?",
+        choices: ["0.6", "0.84", "0.16", "0.36"],
+        answer: 3,
+        explain: "p² = 0.6² = 0.36, or 36% of the population."
+      },
+      {
+        q: "Bat wings and bird wings have different bone arrangements but serve the same function. They are:",
+        choices: ["Analogous structures", "Homologous structures", "Vestigial structures", "Coevolved structures"],
+        answer: 0,
+        explain: "Same function, different evolutionary origin = analogous (convergent evolution)."
+      },
+      {
+        q: "In evolutionary biology, 'fitness' refers to:",
+        choices: ["Physical strength", "Lifespan", "Reproductive success", "Body size"],
+        answer: 2,
+        explain: "Fitness = how many offspring an individual leaves to the next generation, not how athletic it looks."
+      },
+      {
+        q: "Hardy-Weinberg equilibrium requires which condition?",
+        choices: ["Active natural selection", "No mutations, no migration, no selection, large random-mating population", "Small population size", "Asexual reproduction only"],
+        answer: 1,
+        explain: "All five conditions must hold for allele frequencies to stay constant. If any one breaks, the population is evolving."
+      }
+    ],
+    [
+      {
+        q: "When a single ancestral species splits and rapidly diversifies into multiple new species filling different niches, this is called:",
+        choices: ["Convergent evolution", "Coevolution", "Speciation", "Adaptive radiation"],
+        answer: 3,
+        explain: "Galápagos finches are the textbook example: one ancestor, many beak shapes, many islands, many species."
+      },
+      {
+        q: "Which of these events happened most recently on the geologic timeline?",
+        choices: ["Mass extinction of dinosaurs (Cretaceous-Paleogene)", "Cambrian explosion", "Origin of photosynthesis", "Origin of multicellular life"],
+        answer: 0,
+        explain: "Dinosaur extinction happened 66 million years ago. The other events are hundreds of millions to billions of years older."
+      },
+      {
+        q: "A new finch species evolving on each Galápagos island is an example of:",
+        choices: ["Genetic drift only", "Convergent evolution", "Coevolution", "Adaptive radiation"],
+        answer: 3,
+        explain: "Adaptive radiation: one ancestor, many descendants, each adapted to a different environment."
+      },
+      {
+        q: "Two animals both have backbones, four-chambered hearts, and produce milk. They are most likely:",
+        choices: ["Identical species", "Closely related (probably both mammals)", "Distantly related", "Unrelated"],
+        answer: 1,
+        explain: "Multiple shared derived traits point to recent common ancestry. These three traits define mammals."
+      },
+      {
+        q: "What does 'survival of the fittest' really mean?",
+        choices: ["The strongest survive", "The smartest survive", "Those best suited to the current environment reproduce most", "Only the fastest survive"],
+        answer: 2,
+        explain: "Fitness is about leaving offspring, not athletic ability. The 'best fit' depends entirely on the environment."
+      }
+    ],
+    [
+      {
+        q: "Humans and chimpanzees share roughly 98% of their DNA. This is strong evidence of:",
+        choices: ["Convergent evolution", "Mutation rate", "Genetic drift", "Common ancestry"],
+        answer: 3,
+        explain: "Shared DNA at this level is only explained by descent from a recent common ancestor."
+      },
+      {
+        q: "What is a population bottleneck?",
+        choices: ["A species going extinct", "A drastic drop in population size that lowers genetic diversity", "A population splitting in two", "An increase in mutation rate"],
+        answer: 1,
+        explain: "A bottleneck removes most alleles from the gene pool by chance, leaving the survivors less diverse than the original population."
+      },
+      {
+        q: "Fossils found in deeper layers of undisturbed sedimentary rock are usually:",
+        choices: ["Younger than fossils above them", "The same age as fossils above them", "Older than fossils above them", "From a different planet"],
+        answer: 2,
+        explain: "Sediment deposits in layers over time. Deeper rock = older deposits = older fossils."
+      },
+      {
+        q: "If any Hardy-Weinberg condition is broken, the population is:",
+        choices: ["Evolving", "In stable equilibrium", "Going extinct", "Speciating"],
+        answer: 0,
+        explain: "Evolution = change in allele frequency. Any broken condition (mutation, selection, migration, drift, non-random mating) shifts frequencies."
+      },
+      {
+        q: "Which provides the strongest evidence that two organisms share a common ancestor?",
+        choices: ["Similar appearance", "Same habitat", "Same diet", "Similar DNA sequences and shared genes"],
+        answer: 3,
+        explain: "Genetic data is the most reliable evidence. Two species can look alike from convergent evolution but their DNA reveals true ancestry."
+      }
+    ],
+    [
+      {
+        q: "Why do antibiotic-resistant bacteria become more common in hospitals?",
+        choices: ["Hospitals create new mutations", "Bacteria choose to resist antibiotics", "Antibiotics kill non-resistant bacteria, leaving resistant ones to reproduce", "Patients become immune"],
+        answer: 2,
+        explain: "Selection by antibiotics is the textbook example of natural selection in action."
+      },
+      {
+        q: "On a phylogenetic tree, two species that share a more recent common ancestor are:",
+        choices: ["More closely related", "Less closely related", "The same species", "Convergently evolved"],
+        answer: 0,
+        explain: "Recency of the shared ancestor measures how closely two species are related, not the position on the page."
+      },
+      {
+        q: "What major scientific concept was missing from Darwin's original theory of evolution?",
+        choices: ["Observations of variation in populations", "The idea of selection", "The struggle for survival", "A mechanism of inheritance (genetics)"],
+        answer: 3,
+        explain: "Darwin didn't know about Mendel's work or DNA. The 'modern synthesis' combined Darwin's natural selection with genetics in the 20th century."
+      },
+      {
+        q: "If p = 0.7 in a Hardy-Weinberg population, what is the recessive allele frequency q?",
+        choices: ["0.7", "0.3", "0.49", "0.09"],
+        answer: 1,
+        explain: "p + q = 1. So q = 1 - 0.7 = 0.3."
+      },
+      {
+        q: "Coevolution is best illustrated by:",
+        choices: ["Two unrelated species evolving similar wings", "A population reduced to a few individuals", "Flowering plants and their pollinators evolving together over time", "Bacteria evolving antibiotic resistance"],
+        answer: 2,
+        explain: "Coevolution = two species evolving in response to each other. Flowers and pollinators are the textbook case."
+      }
+    ]
   ]}
 />
 
@@ -836,6 +1160,213 @@ Atmospheric CO₂ has gone from ~280 ppm (pre-industrial) to over 420 ppm today,
       answer: 1,
       explain: "Plants need nitrogen to make proteins and nucleic acids. They can't fix N2 themselves; they depend entirely on bacteria to convert atmospheric nitrogen into a usable form."
     }
+  ]}
+  extraBanks={[
+    [
+      {
+        q: "Which is the correct order of ecological organization, from smallest to largest?",
+        choices: [
+          "Population, community, ecosystem, biome, biosphere",
+          "Community, population, ecosystem, biome, biosphere",
+          "Population, community, biome, ecosystem, biosphere",
+          "Biome, ecosystem, community, population, biosphere"
+        ],
+        answer: 0,
+        explain: "Population (one species) → community (multiple species) → ecosystem (community + abiotic) → biome (regional climate type) → biosphere (all life on Earth)."
+      },
+      {
+        q: "In the food chain grass → grasshopper → frog → snake → hawk, the hawk is the:",
+        choices: ["Producer", "Primary consumer", "Secondary consumer", "Quaternary consumer"],
+        answer: 3,
+        explain: "Count from the producer up: grass (producer), grasshopper (1°), frog (2°), snake (3°), hawk (4° / quaternary)."
+      },
+      {
+        q: "Which best describes mutualism?",
+        choices: [
+          "One species benefits, the other is harmed",
+          "Both species benefit",
+          "One species benefits, the other is unaffected",
+          "Both species are harmed"
+        ],
+        answer: 1,
+        explain: "+/+ interaction. Bees get nectar, flowers get pollinated. Both win."
+      },
+      {
+        q: "What process converts atmospheric N₂ into a form plants can absorb from the soil?",
+        choices: ["Photosynthesis", "Decomposition", "Nitrogen fixation", "Cellular respiration"],
+        answer: 2,
+        explain: "Nitrogen-fixing bacteria (like Rhizobium in legume roots) turn N₂ into ammonia / nitrate, which plants can take up."
+      },
+      {
+        q: "Which biome has the highest biodiversity on Earth?",
+        choices: ["Tropical rainforest", "Tundra", "Desert", "Temperate grassland"],
+        answer: 0,
+        explain: "Year-round warmth, abundant rainfall, and stable conditions support enormous species diversity in tropical rainforests."
+      }
+    ],
+    [
+      {
+        q: "When the snowshoe hare population grows, the lynx population grows shortly after, then the hare population crashes. This is an example of:",
+        choices: ["Mutualism", "Parasitism", "Predator-prey dynamics", "Commensalism"],
+        answer: 2,
+        explain: "Classic oscillating cycle: more prey → more predators → predators overhunt → prey crash → predators starve → cycle restarts."
+      },
+      {
+        q: "Decomposers play which essential role in ecosystems?",
+        choices: [
+          "Producing energy from sunlight",
+          "Returning nutrients to the soil for producers to reuse",
+          "Hunting top predators",
+          "Pollinating plants"
+        ],
+        answer: 1,
+        explain: "Without decomposers (bacteria, fungi), nutrients stay locked in dead matter and the cycle stalls."
+      },
+      {
+        q: "Burning fossil fuels releases carbon into the atmosphere mainly as:",
+        choices: ["Methane", "Oxygen", "Nitrogen oxides", "Carbon dioxide"],
+        answer: 3,
+        explain: "Combustion of hydrocarbons produces CO₂ and water vapor. Rising atmospheric CO₂ drives climate change."
+      },
+      {
+        q: "A population sitting at carrying capacity has a long-term growth rate of approximately:",
+        choices: ["Zero", "Negative", "Maximum", "Doubling per generation"],
+        answer: 0,
+        explain: "Births and deaths balance. Logistic growth flattens at K (carrying capacity)."
+      },
+      {
+        q: "Which interaction is parasitism (+/-)?",
+        choices: [
+          "A bee pollinating a flower",
+          "A remora hitching a ride on a shark without harming it",
+          "A tapeworm living in a dog's intestine",
+          "Two oak trees competing for sunlight"
+        ],
+        answer: 2,
+        explain: "Tapeworm benefits, dog is harmed. Pollination is +/+, remora is +/0, competition is -/-."
+      }
+    ],
+    [
+      {
+        q: "A producer level captures 10,000 kcal of light energy. About how much reaches the tertiary (3°) consumer?",
+        choices: ["100 kcal", "10 kcal", "1,000 kcal", "1 kcal"],
+        answer: 1,
+        explain: "10% rule applied three times: 10,000 → 1,000 → 100 → 10. Most energy is lost as heat at each step."
+      },
+      {
+        q: "The water cycle is driven primarily by:",
+        choices: ["Decomposition", "Photosynthesis", "Volcanic activity", "Solar energy and gravity"],
+        answer: 3,
+        explain: "Sun heats water → evaporation. Gravity returns it as precipitation. Plants and animals contribute small amounts via transpiration and respiration."
+      },
+      {
+        q: "Permafrost, lichens, and very low precipitation describe which biome?",
+        choices: ["Tundra", "Taiga", "Tropical rainforest", "Savanna"],
+        answer: 0,
+        explain: "The Arctic tundra is too cold for trees; ground stays frozen year-round below the surface."
+      },
+      {
+        q: "Which is a density-DEPENDENT factor that limits populations?",
+        choices: ["Drought", "Forest fire", "Disease spread", "Volcanic eruption"],
+        answer: 2,
+        explain: "Disease spreads more easily in dense populations, so its impact depends on density. Weather and disasters affect populations regardless of density."
+      },
+      {
+        q: "Removing a keystone species from an ecosystem typically causes:",
+        choices: [
+          "No noticeable change",
+          "Major changes throughout the food web",
+          "Only the keystone's prey to thrive briefly",
+          "An immediate increase in producer biomass"
+        ],
+        answer: 1,
+        explain: "Keystones have an outsized effect: removing wolves from Yellowstone changed everything from elk numbers to river paths."
+      }
+    ],
+    [
+      {
+        q: "Which gas makes up about 78% of Earth's atmosphere but cannot be used directly by plants?",
+        choices: ["Carbon dioxide", "Oxygen", "Methane", "Nitrogen"],
+        answer: 3,
+        explain: "Atmospheric N₂ has a triple bond plants can't break. They need bacteria to fix it into ammonia or nitrate first."
+      },
+      {
+        q: "What is a 'niche' in ecology?",
+        choices: [
+          "The role and resource use of a species in its environment",
+          "The physical place where a species lives",
+          "A taxonomic group",
+          "Another word for habitat"
+        ],
+        answer: 0,
+        explain: "Habitat = address (where it lives). Niche = job (what it does, what it eats, when it's active, how it interacts)."
+      },
+      {
+        q: "If a wolf population in a forest decreases sharply, the deer population they prey on will most likely:",
+        choices: ["Decrease", "Stay the same", "Increase, then crash from overgrazing", "Become extinct"],
+        answer: 2,
+        explain: "Without predators, deer multiply, then run out of food and crash. Classic boom-bust cycle."
+      },
+      {
+        q: "Which of these is a primary producer?",
+        choices: ["Mushroom", "Algae", "Earthworm", "Hawk"],
+        answer: 1,
+        explain: "Algae photosynthesize. Mushrooms are decomposers, earthworms are detritivores, hawks are top consumers."
+      },
+      {
+        q: "Habitat fragmentation harms wildlife mainly because it:",
+        choices: [
+          "Increases mutation rates",
+          "Improves pollination",
+          "Eliminates all predators",
+          "Reduces gene flow and isolates small populations"
+        ],
+        answer: 3,
+        explain: "Roads and farms cut habitats into small islands. Small isolated populations lose genetic diversity and risk drift / inbreeding."
+      }
+    ],
+    [
+      {
+        q: "Which process is NOT part of the carbon cycle?",
+        choices: ["Photosynthesis", "Cellular respiration", "Nitrogen fixation", "Combustion"],
+        answer: 2,
+        explain: "Nitrogen fixation is the nitrogen cycle. Photosynthesis pulls CO₂ out of the air; respiration and combustion put it back."
+      },
+      {
+        q: "An invasive species typically thrives in a new environment because:",
+        choices: [
+          "It has no natural predators in the new environment",
+          "It is more intelligent than native species",
+          "It mutates faster than native species",
+          "It can reproduce without genetic material"
+        ],
+        answer: 0,
+        explain: "Invasives left their predators, parasites, and competitors behind. They explode in numbers and outcompete natives."
+      },
+      {
+        q: "Which ecosystem service is provided primarily by bees?",
+        choices: ["Decomposition", "Soil aeration", "Predator control", "Pollination"],
+        answer: 3,
+        explain: "Bees pollinate roughly a third of human food crops. Without them, fruit, nut, and vegetable yields collapse."
+      },
+      {
+        q: "Two species of squirrels compete for the same nuts in the same forest. Their interaction is best described as:",
+        choices: ["Mutualism", "Competition", "Predation", "Commensalism"],
+        answer: 1,
+        explain: "Both species suffer when they share a limiting resource. -/- interaction."
+      },
+      {
+        q: "Acid rain is caused primarily by:",
+        choices: [
+          "Excess CO₂ emissions",
+          "Methane emissions from livestock",
+          "Sulfur and nitrogen oxide emissions from burning fossil fuels",
+          "Plastic pollution in oceans"
+        ],
+        answer: 2,
+        explain: "SO₂ and NOₓ from coal plants and vehicles react with water vapor in clouds to form sulfuric and nitric acid."
+      }
+    ]
   ]}
 />
 
@@ -1162,6 +1693,308 @@ They are **the same chemistry, run in reverse**. Plants do photosynthesis to STO
       answer: 1,
       explain: "Fermentation produces only 2 ATP from glucose because it stops after glycolysis. Without oxygen, there's no final electron acceptor for the ETC, so cells can't run stages 2-3."
     }
+  ]}
+  extraBanks={[
+    [
+      {
+        q: "Which organelle makes ATP in animal cells?",
+        choices: ["Chloroplast", "Mitochondrion", "Ribosome", "Lysosome"],
+        answer: 1,
+        explain: "Mitochondria run cellular respiration, producing ~30-32 ATP per glucose."
+      },
+      {
+        q: "What does the cell membrane primarily regulate?",
+        choices: ["DNA replication", "Protein folding", "Energy storage", "What enters and exits the cell"],
+        answer: 3,
+        explain: "Selective permeability is the membrane's main job. Phospholipid bilayer + transport proteins control flow."
+      },
+      {
+        q: "During interphase, what is the cell doing?",
+        choices: [
+          "Growing, copying DNA, and preparing for division",
+          "Splitting into two cells",
+          "Lining chromosomes up at the equator",
+          "Pulling sister chromatids apart"
+        ],
+        answer: 0,
+        explain: "Interphase is the long G1 → S → G2 stretch before mitosis even starts. DNA replication happens in S phase."
+      },
+      {
+        q: "Crossing over occurs during which stage of meiosis?",
+        choices: ["Anaphase II", "Metaphase II", "Prophase I", "Telophase II"],
+        answer: 2,
+        explain: "Homologous chromosomes pair up and exchange segments during prophase I, creating new genetic combinations."
+      },
+      {
+        q: "What is the main waste product of the light reactions of photosynthesis?",
+        choices: ["Glucose", "Oxygen", "ATP", "Carbon dioxide"],
+        answer: 1,
+        explain: "Splitting water molecules releases O₂ as a byproduct. Earth's atmospheric oxygen comes from photosynthesis."
+      },
+      {
+        q: "Roughly how many ATP does aerobic respiration produce per glucose molecule?",
+        choices: ["2 ATP", "4 ATP", "16 ATP", "About 30 to 32 ATP"],
+        answer: 3,
+        explain: "Glycolysis (2) + Krebs (2) + ETC and oxidative phosphorylation (~26-28) ≈ 30-32 total."
+      },
+      {
+        q: "When cells divide uncontrollably and lose normal regulation, this can lead to:",
+        choices: ["Cancer", "Apoptosis", "Differentiation", "Mitosis being skipped"],
+        answer: 0,
+        explain: "Cancer = unchecked cell division. Mutations in tumor suppressor or proto-oncogenes break the cell-cycle brakes."
+      }
+    ],
+    [
+      {
+        q: "Which transport process across a membrane requires ATP?",
+        choices: ["Osmosis", "Facilitated diffusion", "Active transport", "Simple diffusion"],
+        answer: 2,
+        explain: "Active transport moves molecules against their concentration gradient, which costs energy."
+      },
+      {
+        q: "Where does glycolysis take place in the cell?",
+        choices: ["Cytoplasm", "Mitochondrial matrix", "Inner mitochondrial membrane", "Nucleus"],
+        answer: 0,
+        explain: "Glycolysis happens in the cytoplasm. Pyruvate then enters the mitochondrion for stages 2 and 3."
+      },
+      {
+        q: "Which organelle is sometimes called the 'suicide sac' because it digests damaged cell parts?",
+        choices: ["Ribosome", "Chloroplast", "Endoplasmic reticulum", "Lysosome"],
+        answer: 3,
+        explain: "Lysosomes contain digestive enzymes. They break down worn organelles, foreign invaders, and even the cell itself during apoptosis."
+      },
+      {
+        q: "How does meiosis differ from mitosis?",
+        choices: [
+          "It produces 2 cells instead of 4",
+          "It produces 4 genetically unique haploid cells",
+          "It does not involve DNA replication",
+          "It happens only in prokaryotes"
+        ],
+        answer: 1,
+        explain: "Mitosis: 1 → 2 identical diploid cells. Meiosis: 1 → 4 unique haploid cells (gametes)."
+      },
+      {
+        q: "The Calvin cycle uses which inputs to make sugar?",
+        choices: [
+          "Oxygen and ATP",
+          "Glucose and water",
+          "CO₂, ATP, and NADPH",
+          "Light and chlorophyll directly"
+        ],
+        answer: 2,
+        explain: "Calvin cycle is light-independent. It pulls in CO₂ and uses the ATP and NADPH made by the light reactions to build sugar."
+      },
+      {
+        q: "Why do plants do photosynthesis?",
+        choices: [
+          "To store energy from sunlight in glucose",
+          "To release ATP from glucose",
+          "To make oxygen from carbon dioxide and proteins",
+          "To produce nitrogen for the soil"
+        ],
+        answer: 0,
+        explain: "Photosynthesis converts light energy into chemical energy stored in glucose. Plants then run respiration to release that energy as ATP."
+      },
+      {
+        q: "Cancer is fundamentally a disease of:",
+        choices: ["Old age only", "Bacteria", "The immune system only", "Uncontrolled cell division"],
+        answer: 3,
+        explain: "Mutations break the cell cycle's checkpoints. Cells divide when they shouldn't, forming a tumor."
+      }
+    ],
+    [
+      {
+        q: "Which two organelles are responsible for converting energy in cells?",
+        choices: [
+          "Nucleus and ribosome",
+          "Chloroplast and mitochondrion",
+          "Lysosome and Golgi apparatus",
+          "Endoplasmic reticulum and vacuole"
+        ],
+        answer: 1,
+        explain: "Chloroplasts capture light and store energy in glucose. Mitochondria release that energy as ATP."
+      },
+      {
+        q: "What does ATP stand for?",
+        choices: [
+          "Adenine triphosphate",
+          "Adenosine diphosphate",
+          "Acetyl thiamine phosphate",
+          "Adenosine triphosphate"
+        ],
+        answer: 3,
+        explain: "Adenosine = adenine + ribose. Three phosphate groups make ATP a high-energy molecule (the cell's energy currency)."
+      },
+      {
+        q: "If an animal cell is placed in a hypertonic solution (more solute outside), water will:",
+        choices: ["Move out of the cell, shriveling it", "Move into the cell, swelling it", "Stay still", "Reverse direction repeatedly"],
+        answer: 0,
+        explain: "Water moves toward higher solute concentration. Outside hypertonic = water leaves the cell."
+      },
+      {
+        q: "During which phase of mitosis do chromosomes line up at the metaphase plate?",
+        choices: ["Prophase", "Anaphase", "Metaphase", "Telophase"],
+        answer: 2,
+        explain: "Metaphase plate = the imaginary line at the cell's center where chromosomes line up. The name gives it away."
+      },
+      {
+        q: "What is the role of NADPH in photosynthesis?",
+        choices: [
+          "Captures light energy directly",
+          "Carries high-energy electrons from the light reactions to the Calvin cycle",
+          "Splits water molecules",
+          "Transports glucose to the cytoplasm"
+        ],
+        answer: 1,
+        explain: "NADPH is a reduced electron carrier. Light reactions make it; Calvin cycle uses it to reduce CO₂ into sugar."
+      },
+      {
+        q: "In the electron transport chain, oxygen acts as the:",
+        choices: ["Energy source", "Initial electron donor", "Carbon source", "Final electron acceptor"],
+        answer: 3,
+        explain: "Electrons flow down the ETC and combine with O₂ and protons at the end to form H₂O. Without O₂, the chain stalls."
+      },
+      {
+        q: "Apoptosis is best described as:",
+        choices: [
+          "Uncontrolled cell growth",
+          "DNA replication",
+          "Programmed cell death that removes damaged or unneeded cells",
+          "Movement of organelles"
+        ],
+        answer: 2,
+        explain: "Apoptosis is a controlled, scheduled self-destruction. It shapes development (e.g., separating fingers in embryos) and removes precancerous cells."
+      }
+    ],
+    [
+      {
+        q: "Which of these is NOT found in animal cells?",
+        choices: ["Mitochondrion", "Nucleus", "Golgi apparatus", "Cell wall"],
+        answer: 3,
+        explain: "Cell walls are in plants, fungi, and bacteria. Animal cells have only a flexible plasma membrane."
+      },
+      {
+        q: "What does mitosis produce from one parent cell?",
+        choices: [
+          "Two genetically identical diploid daughter cells",
+          "Four genetically unique haploid cells",
+          "One large cell",
+          "Sex cells (gametes) only"
+        ],
+        answer: 0,
+        explain: "Mitosis maintains chromosome count. Both daughters are clones of the parent. Used for growth and tissue repair."
+      },
+      {
+        q: "When a cell breaks down glucose, the first stage is:",
+        choices: ["Krebs cycle", "Glycolysis", "Electron transport chain", "Fermentation"],
+        answer: 1,
+        explain: "Glycolysis splits glucose (6C) into two pyruvates (3C each) in the cytoplasm. It happens whether or not oxygen is present."
+      },
+      {
+        q: "Which pigment captures light energy in chloroplasts?",
+        choices: ["Hemoglobin", "Carotene only", "Chlorophyll", "Melanin"],
+        answer: 2,
+        explain: "Chlorophyll absorbs red and blue light, reflects green (which is why leaves look green)."
+      },
+      {
+        q: "What's the role of a carrier protein in facilitated diffusion?",
+        choices: [
+          "It uses ATP to actively pump molecules",
+          "It consumes the molecules",
+          "It blocks transport",
+          "It helps molecules cross the membrane down their gradient without using ATP"
+        ],
+        answer: 3,
+        explain: "Facilitated diffusion is passive. Carrier proteins just provide a pathway through the lipid bilayer for polar / large molecules."
+      },
+      {
+        q: "Which respiration stage produces lots of NADH and FADH₂ but only 2 ATP directly?",
+        choices: ["Glycolysis", "Krebs cycle", "Electron transport chain", "Fermentation"],
+        answer: 1,
+        explain: "Krebs makes 2 ATP, 6 NADH, and 2 FADH₂ per glucose. The electron carriers go on to make most of the cell's ATP at the ETC."
+      },
+      {
+        q: "Mitosis ensures that:",
+        choices: [
+          "Each daughter cell has the same chromosome number as the parent",
+          "Each daughter cell has half the chromosomes of the parent",
+          "New genetic combinations are generated",
+          "Only sex cells are made"
+        ],
+        answer: 0,
+        explain: "Mitosis is an exact copying process. Diploid parent → two diploid daughters with identical DNA."
+      }
+    ],
+    [
+      {
+        q: "Which structure houses ribosomes that synthesize proteins destined for export from the cell?",
+        choices: ["Smooth ER", "Golgi apparatus", "Rough ER", "Lysosome"],
+        answer: 2,
+        explain: "Rough ER is studded with ribosomes. Proteins made there are folded, packaged, and shipped via vesicles to the Golgi."
+      },
+      {
+        q: "Which equation summarizes cellular respiration?",
+        choices: [
+          "CO₂ + H₂O → C₆H₁₂O₆ + O₂",
+          "C₆H₁₂O₆ + O₂ → CO₂ + H₂O + sunlight",
+          "C₆H₁₂O₆ → 2 CO₂ + 2 ATP only",
+          "C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + ATP"
+        ],
+        answer: 3,
+        explain: "Glucose + oxygen → carbon dioxide + water + energy (ATP). Photosynthesis is the reverse reaction."
+      },
+      {
+        q: "Osmosis specifically refers to:",
+        choices: [
+          "The diffusion of water across a semi-permeable membrane",
+          "The active transport of ions",
+          "The breakdown of glucose",
+          "The replication of DNA"
+        ],
+        answer: 0,
+        explain: "Osmosis is a special case of diffusion: water moving toward higher solute concentration through a membrane."
+      },
+      {
+        q: "Telomeres are located:",
+        choices: [
+          "In the middle of chromosomes",
+          "At the ends of chromosomes",
+          "In the cytoplasm",
+          "In the mitochondria"
+        ],
+        answer: 1,
+        explain: "Telomeres cap chromosome ends and protect them from degrading. They shorten with each division, contributing to aging."
+      },
+      {
+        q: "Which process produces 4 genetically unique cells with HALF the chromosomes of the parent?",
+        choices: ["Mitosis", "Binary fission", "Meiosis", "Apoptosis"],
+        answer: 2,
+        explain: "Meiosis is how gametes are made: one diploid parent produces four haploid sex cells, each genetically unique."
+      },
+      {
+        q: "In the light reactions, water is split to provide:",
+        choices: [
+          "Electrons for the photosystem and oxygen as a byproduct",
+          "Sugar molecules",
+          "Carbon for the Calvin cycle",
+          "ATP only"
+        ],
+        answer: 0,
+        explain: "Photolysis: 2 H₂O → 4 H⁺ + 4 e⁻ + O₂. The electrons replace ones lost from chlorophyll; the O₂ leaves as waste."
+      },
+      {
+        q: "Why do muscle cells produce lactic acid during intense exercise?",
+        choices: [
+          "Because they want to slow down",
+          "Because oxygen is limited, so they switch to fermentation to recycle NAD⁺",
+          "Because lactic acid stores energy for later",
+          "Because the muscle cells are dying"
+        ],
+        answer: 1,
+        explain: "Without enough O₂, the ETC stalls. Cells convert pyruvate to lactate to regenerate NAD⁺ so glycolysis can keep making 2 ATP per glucose."
+      }
+    ]
   ]}
 />
 
