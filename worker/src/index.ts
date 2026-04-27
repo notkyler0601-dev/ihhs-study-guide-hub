@@ -124,7 +124,7 @@ export default {
     }
     const system = parts.join('\n\n');
 
-    const result = await env.AI.run(env.MODEL ?? '@cf/google/gemma-4-26b-a4b-it', {
+    const result = await env.AI.run(env.MODEL ?? '@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [{ role: 'system', content: system }, ...trimmed],
       stream: true,
       max_tokens: 2048,
