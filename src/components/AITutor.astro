@@ -259,9 +259,9 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
   };
 
   const ACTION_PROMPTS: Record<string, string> = {
-    simpler: 'Explain the main idea of this guide in middle-school words. One short paragraph plus one concrete analogy. Under 90 words. No preamble.',
-    quiz: 'Write 3 multiple-choice questions about this guide. Format strictly as:\n\n1. Question\n   A) choice\n   B) choice\n   C) choice\n   D) choice\n   **Answer:** X, one short reason.\n\nNo intro, no outro.',
-    summary: '5 numbered takeaways from this guide. Each under 15 words, **bold** the keyword. No intro, just the list.',
+    simpler: 'Explain the main ideas of this guide in middle-school words. Use short paragraphs and at least one concrete analogy. Cover the most important concepts; do not skip key ideas just to be brief. No preamble.',
+    quiz: 'Write 5 multiple-choice questions about this guide. Format strictly as:\n\n1. Question\n   A) choice\n   B) choice\n   C) choice\n   D) choice\n   **Answer:** X. One sentence explaining why.\n\nNo intro, no outro.',
+    summary: 'Give 5 to 7 numbered takeaways from this guide. Each one short but complete; **bold** the keyword. No intro, just the list.',
   };
 
   // Selectors a prose block must match to be eligible for hover-to-explain.
