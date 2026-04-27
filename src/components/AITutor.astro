@@ -357,9 +357,23 @@ const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
           if (typeof choice.delta?.content === 'string') return choice.delta.content;
           if (typeof choice.message?.content === 'string') return choice.message.content;
           if (typeof choice.text === 'string') return choice.text;
+          if (typeof choice.delta?.text === 'string') return choice.delta.text;
         }
+        // Some models nest content one level deeper.
+        if (typeof obj.content === 'string') return obj.content;
+        if (typeof obj.text === 'string') return obj.text;
+        if (typeof obj.message?.content === 'string') return obj.message.content;
+        // Generic last resort: any top-level string field.
+        for (const v of Object.values(obj)) {
+          if (typeof v === 'string' && v.length > 0 && v !== 'stop' && v !== 'length' && v !== 'assistant') {
+            console.warn('[AITutor] using fallback string field from chunk:', obj);
+            return v;
+          }
+        }
+        console.warn('[AITutor] unrecognized SSE chunk:', obj);
         return null;
       } catch {
+        console.warn('[AITutor] non-JSON SSE payload:', payload);
         return null;
       }
     };
