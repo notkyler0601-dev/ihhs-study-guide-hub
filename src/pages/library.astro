@@ -4,7 +4,14 @@ import GuideCard from '../components/GuideCard.astro';
 import { getCollection } from 'astro:content';
 
 const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  .sort((a, b) => {
+    // Coming-soon guides always sort to the bottom of the library, so the
+    // shipped guides appear first regardless of date.
+    if (a.data.comingSoon !== b.data.comingSoon) {
+      return a.data.comingSoon ? 1 : -1;
+    }
+    return b.data.date.valueOf() - a.data.date.valueOf();
+  });
 
 // Collect every subject label across primary + categories so the filter covers all of them.
 const subjectSet = new Set<string>();
@@ -62,6 +69,7 @@ const subjects = [...subjectSet].sort();
             estimatedTime={g.data.estimatedTime}
             tags={g.data.tags}
             date={g.data.date}
+            comingSoon={g.data.comingSoon}
           />
         </div>
       ))}

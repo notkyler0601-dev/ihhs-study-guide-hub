@@ -15,6 +15,11 @@ const guides = defineCollection({
     authors: z.array(z.string()).default(['IHHS']),
     cover: z.string().optional(),
     draft: z.boolean().default(false),
+    // Marks a guide as a teaser / placeholder. It still appears in the
+    // library and can be opened, but the card shows a "Coming Soon" badge
+    // with a dimmed, non-pulsing visual treatment, and these guides sort
+    // to the bottom of the library after every shipped guide.
+    comingSoon: z.boolean().default(false),
   }),
 });
 
