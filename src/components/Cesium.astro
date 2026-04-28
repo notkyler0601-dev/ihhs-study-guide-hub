@@ -206,10 +206,12 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         controller.enableRotate = true;
         controller.enableTilt = true;
         controller.enableTranslate = true;
-        // The minimum zoom default (1.0m) prevents flying through the surface.
-        // Bumping it slightly avoids the "stuck zooming in but nothing happens"
-        // feeling some users hit when the camera is already very close.
-        controller.minimumZoomDistance = 100000; // 100 km from surface
+        // Let students fly down to street level on a marked city. Cesium's
+        // built-in default is 1.0 m which is fine but lets you push slightly
+        // past the surface; 10 m gives the same near-ground feel with a
+        // small safety buffer. Maximum is 50,000 km so you can pull all the
+        // way back to a "Earth from deep space" view but not get lost.
+        controller.minimumZoomDistance = 10; // 10 m from surface (street level)
         controller.maximumZoomDistance = 50000000; // 50,000 km out
 
         // Stash the viewer on the root for tests / debugging.
