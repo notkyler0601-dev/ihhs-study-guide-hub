@@ -1,0 +1,240 @@
+---
+// Floating "Read aloud" control for guide pages. Uses the browser's
+// native SpeechSynthesis API (no external library, no audio files).
+// Activates only when the visitor has opted in via /settings.
+//
+// Position: bottom-left FAB (the bottom-right is taken by AITutor).
+// Behavior:
+//   - Click play -> reads the article body from the top in chunks.
+//   - Click pause -> pauses. Click play again -> resumes.
+//   - Click stop -> cancels and resets.
+//   - Voice picker auto-prefers an English voice; can be changed via
+//     a dropdown in the expanded panel.
+//
+// Respects prefers-reduced-motion (no pulse, instant transitions) and
+// hides itself entirely when SpeechSynthesis isn't available.
+---
+
+<div data-readaloud-root class="hidden">
+  <button
+    data-readaloud-fab
+    type="button"
+    aria-label="Open read-aloud controls"
+    class="fixed bottom-5 left-5 z-40 inline-flex items-center gap-2 rounded-full bg-ink-800 hover:bg-ink-900 dark:bg-ink-200 dark:hover:bg-white dark:text-ink-900 text-white px-4 py-3 shadow-lift transition-transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-ink-500/40"
+  >
+    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5 6 9H2v6h4l5 4V5zM19 12c0-1.77-1-3.29-2.5-4.03"/>
+      <path d="M19 12c0-1.77-1-3.29-2.5-4.03M22.5 12c0-3.54-1.91-6.62-4.75-8.27"/>
+    </svg>
+    <span class="text-sm font-medium">Read aloud</span>
+  </button>
+
+  <div
+    data-readaloud-panel
+    class="hidden fixed bottom-5 left-5 z-50 w-[300px] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-950 shadow-lift overflow-hidden"
+    role="dialog"
+    aria-label="Read aloud controls"
+  >
+    <header class="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-200 dark:border-ink-800">
+      <span class="font-serif text-sm font-semibold flex items-center gap-2">
+        <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-ink-800 dark:bg-ink-200 dark:text-ink-900 text-white text-xs">🔊</span>
+        Read aloud
+      </span>
+      <button data-readaloud-close type="button" aria-label="Close" class="p-1 rounded hover:bg-ink-100 dark:hover:bg-ink-800 text-ink-500">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+
+    <div class="p-4 space-y-3">
+      <div data-readaloud-status class="text-xs text-ink-500 dark:text-ink-400">Ready.</div>
+
+      <div class="flex items-center gap-2">
+        <button data-readaloud-play type="button" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+        <button data-readaloud-pause type="button" class="hidden flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-ink-700 hover:bg-ink-800 dark:bg-ink-200 dark:hover:bg-white dark:text-ink-900 text-white text-sm font-medium">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          Pause
+        </button>
+        <button data-readaloud-stop type="button" class="px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-700 hover:border-rose-400 hover:text-rose-500 text-sm font-medium" aria-label="Stop">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1">Voice</label>
+        <select data-readaloud-voice class="w-full px-2 py-1.5 rounded-md border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 text-sm focus:outline-none focus:border-accent-500"></select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <label class="block">
+          <span class="block text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1">Rate <span data-readaloud-rate-label class="font-normal text-ink-400">1.0x</span></span>
+          <input data-readaloud-rate type="range" min="0.5" max="2" step="0.1" value="1" class="w-full accent-accent-700" />
+        </label>
+        <label class="block">
+          <span class="block text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-1">Pitch <span data-readaloud-pitch-label class="font-normal text-ink-400">1.0</span></span>
+          <input data-readaloud-pitch type="range" min="0.5" max="2" step="0.1" value="1" class="w-full accent-accent-700" />
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Only mounts on guide pages where ReadAloud was rendered. Self-disables
+  // if the user hasn't toggled on the feature in /settings.
+  const setupReadAloud = () => {
+    const root = document.querySelector<HTMLElement>('[data-readaloud-root]');
+    if (!root) return;
+    if ((root as any).__raInit) return;
+    (root as any).__raInit = true;
+
+    // Feature gate: visitor must have opted in on /settings.
+    if (localStorage.getItem('a11y:read-aloud') !== '1') return;
+    // Hard requirement: SpeechSynthesis must exist.
+    if (!('speechSynthesis' in window)) return;
+    root.classList.remove('hidden');
+
+    const fab = root.querySelector<HTMLButtonElement>('[data-readaloud-fab]')!;
+    const panel = root.querySelector<HTMLElement>('[data-readaloud-panel]')!;
+    const closeBtn = root.querySelector<HTMLButtonElement>('[data-readaloud-close]')!;
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-readaloud-play]')!;
+    const pauseBtn = root.querySelector<HTMLButtonElement>('[data-readaloud-pause]')!;
+    const stopBtn = root.querySelector<HTMLButtonElement>('[data-readaloud-stop]')!;
+    const status = root.querySelector<HTMLElement>('[data-readaloud-status]')!;
+    const voiceSel = root.querySelector<HTMLSelectElement>('[data-readaloud-voice]')!;
+    const rateInput = root.querySelector<HTMLInputElement>('[data-readaloud-rate]')!;
+    const pitchInput = root.querySelector<HTMLInputElement>('[data-readaloud-pitch]')!;
+    const rateLabel = root.querySelector<HTMLElement>('[data-readaloud-rate-label]')!;
+    const pitchLabel = root.querySelector<HTMLElement>('[data-readaloud-pitch-label]')!;
+
+    const open = () => { panel.classList.remove('hidden'); fab.classList.add('hidden'); };
+    const close = () => { panel.classList.add('hidden'); fab.classList.remove('hidden'); };
+    fab.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+
+    let voices: SpeechSynthesisVoice[] = [];
+    const populateVoices = () => {
+      voices = window.speechSynthesis.getVoices();
+      voiceSel.innerHTML = '';
+      // Prefer English voices first, then everything else.
+      const sorted = [...voices].sort((a, b) => {
+        const aE = a.lang.startsWith('en') ? 0 : 1;
+        const bE = b.lang.startsWith('en') ? 0 : 1;
+        if (aE !== bE) return aE - bE;
+        return a.name.localeCompare(b.name);
+      });
+      sorted.forEach((v) => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})`;
+        voiceSel.appendChild(opt);
+      });
+      // Restore previously chosen voice if present.
+      const saved = localStorage.getItem('a11y:read-aloud-voice');
+      if (saved && sorted.some((v) => v.name === saved)) voiceSel.value = saved;
+    };
+    populateVoices();
+    if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    voiceSel.addEventListener('change', () => {
+      localStorage.setItem('a11y:read-aloud-voice', voiceSel.value);
+    });
+    rateInput.addEventListener('input', () => {
+      rateLabel.textContent = `${parseFloat(rateInput.value).toFixed(1)}x`;
+    });
+    pitchInput.addEventListener('input', () => {
+      pitchLabel.textContent = parseFloat(pitchInput.value).toFixed(1);
+    });
+
+    // Pull readable text from the article body. We grab block-level
+    // elements in order so the speech reads paragraphs in document
+    // order (skipping interactive widgets, code blocks, scripts).
+    const collectText = (): string[] => {
+      const article = document.querySelector('article') ?? document.querySelector('main');
+      if (!article) return [];
+      const blocks = article.querySelectorAll('p, h1, h2, h3, h4, li, blockquote');
+      const chunks: string[] = [];
+      blocks.forEach((b) => {
+        // Skip blocks inside interactive components or quizzes/flashcards.
+        if (b.closest('[data-quiz-root], [data-cards-root], [data-tq], [data-sq], [data-readaloud-root], [data-tutor-root], [data-step], pre, code')) return;
+        const t = (b.textContent ?? '').trim();
+        if (t.length === 0) return;
+        chunks.push(t);
+      });
+      return chunks;
+    };
+
+    let queue: string[] = [];
+    let queueIdx = 0;
+    let current: SpeechSynthesisUtterance | null = null;
+
+    const speakNext = () => {
+      if (queueIdx >= queue.length) {
+        status.textContent = 'Finished.';
+        playBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+        return;
+      }
+      const text = queue[queueIdx++];
+      current = new SpeechSynthesisUtterance(text);
+      const voice = voices.find((v) => v.name === voiceSel.value);
+      if (voice) current.voice = voice;
+      current.rate = parseFloat(rateInput.value);
+      current.pitch = parseFloat(pitchInput.value);
+      current.onend = () => speakNext();
+      current.onerror = (e) => {
+        if ((e as any).error === 'canceled' || (e as any).error === 'interrupted') return;
+        status.textContent = `Speech error: ${(e as any).error ?? 'unknown'}.`;
+        playBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+      };
+      window.speechSynthesis.speak(current);
+      status.textContent = `Reading paragraph ${queueIdx} of ${queue.length}...`;
+    };
+
+    playBtn.addEventListener('click', () => {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      } else {
+        // Fresh start: build the queue from current article content.
+        window.speechSynthesis.cancel();
+        queue = collectText();
+        queueIdx = 0;
+        if (queue.length === 0) {
+          status.textContent = 'Nothing readable on this page.';
+          return;
+        }
+        speakNext();
+      }
+      playBtn.classList.add('hidden');
+      pauseBtn.classList.remove('hidden');
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      window.speechSynthesis.pause();
+      playBtn.classList.remove('hidden');
+      pauseBtn.classList.add('hidden');
+      status.textContent = 'Paused.';
+    });
+
+    stopBtn.addEventListener('click', () => {
+      window.speechSynthesis.cancel();
+      queue = [];
+      queueIdx = 0;
+      playBtn.classList.remove('hidden');
+      pauseBtn.classList.add('hidden');
+      status.textContent = 'Stopped.';
+    });
+
+    // Make sure speech stops when leaving the guide.
+    document.addEventListener('astro:before-swap', () => {
+      window.speechSynthesis.cancel();
+    });
+  };
+  setupReadAloud();
+  document.addEventListener('astro:after-swap', setupReadAloud);
+</script>

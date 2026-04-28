@@ -4,6 +4,7 @@ import TableOfContents from '../components/TableOfContents.astro';
 import ReadingProgress from '../components/ReadingProgress.astro';
 import FloatingTimer from '../components/FloatingTimer.astro';
 import AITutor from '../components/AITutor.astro';
+import ReadAloud from '../components/ReadAloud.astro';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -22,6 +23,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
   <ReadingProgress />
   <FloatingTimer />
   <AITutor guideTitle={title} />
+  <ReadAloud />
 
   <article class="container-wide py-10 lg:py-14">
     <header class="max-w-3xl mb-10 stagger-fade">

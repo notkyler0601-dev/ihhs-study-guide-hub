@@ -37,8 +37,27 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
         if (localStorage.getItem('theme') === 'dark') {
           document.documentElement.classList.add('dark');
         }
+        // Apply persisted accessibility preferences before paint so there's
+        // no flash of the wrong font.
+        if (localStorage.getItem('a11y:dyslexia-font') === '1') {
+          document.documentElement.classList.add('a11y-dyslexia-font');
+        }
+        if (localStorage.getItem('a11y:reduce-motion') === '1') {
+          document.documentElement.classList.add('a11y-reduce-motion');
+        }
       })();
     </script>
+    <script type="speculationrules" is:inline set:html={JSON.stringify({
+      prerender: [
+        { where: { href_matches: '/guides/*' }, eagerness: 'moderate' },
+        { where: { href_matches: '/dashboard' }, eagerness: 'moderate' },
+        { where: { href_matches: '/library' }, eagerness: 'moderate' },
+        { where: { href_matches: '/review' }, eagerness: 'moderate' }
+      ],
+      prefetch: [
+        { where: { href_matches: '/*' }, eagerness: 'conservative' }
+      ]
+    })} />
     <ClientRouter />
   </head>
   <body class="min-h-screen flex flex-col">

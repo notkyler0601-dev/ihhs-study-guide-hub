@@ -2,70 +2,141 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Settings" description="Edit your account profile.">
-  <div id="auth-gate" class="container-prose py-20 text-center">
-    <div class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-xl mb-4">⏳</div>
-    <p class="text-ink-500">Loading...</p>
-  </div>
-
-  <div id="auth-required" class="hidden container-prose py-20 text-center">
-    <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight mb-3">Sign up to manage your profile</h1>
-    <p class="text-ink-600 dark:text-ink-300 mb-6">Settings live inside your account.</p>
-    <div class="flex items-center justify-center gap-3">
-      <a href="/signup?next=/settings" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">Create account</a>
-      <a href="/login?next=/settings" class="inline-flex items-center px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">Log in</a>
-    </div>
-  </div>
-
-  <div id="settings-root" class="hidden container-prose py-12 lg:py-16">
-    <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Account</div>
+<BaseLayout title="Settings" description="Edit your account profile and accessibility preferences.">
+  <div class="container-prose py-12 lg:py-16">
+    <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Preferences</div>
     <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight mb-8">
       <span class="gradient-text">Settings</span>
     </h1>
 
+    <!-- Accessibility settings, available to everyone (signed in or not) since
+         these are device preferences, not account settings. -->
     <section class="surface rounded-2xl p-6 mb-6">
-      <h2 class="font-serif text-xl font-semibold mb-1">Profile</h2>
-      <p class="text-sm text-ink-500 dark:text-ink-400 mb-5">This is the name shown to you (and synced across your devices when signed in).</p>
+      <h2 class="font-serif text-xl font-semibold mb-1">Accessibility</h2>
+      <p class="text-sm text-ink-500 dark:text-ink-400 mb-5">Saved on this device. No account required.</p>
 
-      <form id="profile-form" class="space-y-4">
-        <div>
-          <label for="display-name" class="block text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Display name</label>
+      <div class="space-y-4">
+        <label class="flex items-start gap-3 cursor-pointer group">
           <input
-            id="display-name"
-            type="text"
-            maxlength="40"
-            required
-            class="w-full px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 focus:outline-none focus:border-accent-500 dark:focus:border-accent-500"
+            type="checkbox"
+            id="a11y-dyslexia"
+            class="mt-1 h-5 w-5 rounded border-ink-300 dark:border-ink-700 text-accent-700 focus:ring-accent-500"
           />
-        </div>
+          <span class="flex-1">
+            <span class="block font-medium text-ink-900 dark:text-ink-50">Dyslexia-friendly font</span>
+            <span class="block text-sm text-ink-500 dark:text-ink-400 mt-0.5">Switch the whole site to OpenDyslexic, a typeface designed for easier reading. The first toggle downloads the font (~50KB).</span>
+          </span>
+        </label>
 
-        <div>
-          <label class="block text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Username</label>
-          <div id="username-readonly" class="px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40 text-ink-500 text-sm"></div>
-          <p class="text-xs text-ink-400 mt-1">Usernames cannot be changed.</p>
-        </div>
+        <label class="flex items-start gap-3 cursor-pointer group">
+          <input
+            type="checkbox"
+            id="a11y-reduce-motion"
+            class="mt-1 h-5 w-5 rounded border-ink-300 dark:border-ink-700 text-accent-700 focus:ring-accent-500"
+          />
+          <span class="flex-1">
+            <span class="block font-medium text-ink-900 dark:text-ink-50">Reduce motion</span>
+            <span class="block text-sm text-ink-500 dark:text-ink-400 mt-0.5">Disable animations across the site (transitions, scroll effects, particle backgrounds, the AI tutor pulse). Useful for motion sensitivity or low-power devices.</span>
+          </span>
+        </label>
 
-        <div class="flex items-center gap-3 pt-2">
-          <button
-            type="submit"
-            id="save-btn"
-            class="inline-flex items-center px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all disabled:opacity-50"
-          >Save changes</button>
-          <span id="save-status" class="text-xs text-ink-500"></span>
-        </div>
-      </form>
+        <label class="flex items-start gap-3 cursor-pointer group">
+          <input
+            type="checkbox"
+            id="a11y-readaloud"
+            class="mt-1 h-5 w-5 rounded border-ink-300 dark:border-ink-700 text-accent-700 focus:ring-accent-500"
+          />
+          <span class="flex-1">
+            <span class="block font-medium text-ink-900 dark:text-ink-50">Read-aloud button on guides</span>
+            <span class="block text-sm text-ink-500 dark:text-ink-400 mt-0.5">Show a floating "🔊 Read aloud" control on each guide that reads the text using your browser's built-in voice. Off by default since some browsers vary in voice quality.</span>
+          </span>
+        </label>
+      </div>
     </section>
 
-    <p class="text-xs text-ink-400">
-      Want to change someone else's display name? Only that person can do it from their own account, on their own device.
-    </p>
+    <!-- Auth-aware sections below -->
+    <div id="auth-gate" class="text-center py-10">
+      <div class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-xl mb-4">⏳</div>
+      <p class="text-ink-500">Loading account...</p>
+    </div>
+
+    <div id="auth-required" class="hidden text-center py-10 surface rounded-2xl">
+      <h2 class="font-serif text-2xl font-semibold tracking-tight mb-3">Sign up to manage your profile</h2>
+      <p class="text-ink-600 dark:text-ink-300 mb-5">Profile settings live inside your account.</p>
+      <div class="flex items-center justify-center gap-3">
+        <a href="/signup?next=/settings" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">Create account</a>
+        <a href="/login?next=/settings" class="inline-flex items-center px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">Log in</a>
+      </div>
+    </div>
+
+    <div id="settings-root" class="hidden">
+      <section class="surface rounded-2xl p-6 mb-6">
+        <h2 class="font-serif text-xl font-semibold mb-1">Profile</h2>
+        <p class="text-sm text-ink-500 dark:text-ink-400 mb-5">This is the name shown to you (and synced across your devices when signed in).</p>
+
+        <form id="profile-form" class="space-y-4">
+          <div>
+            <label for="display-name" class="block text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Display name</label>
+            <input
+              id="display-name"
+              type="text"
+              maxlength="40"
+              required
+              class="w-full px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 focus:outline-none focus:border-accent-500 dark:focus:border-accent-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 mb-1.5">Username</label>
+            <div id="username-readonly" class="px-3 py-2 rounded-lg border border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40 text-ink-500 text-sm"></div>
+            <p class="text-xs text-ink-400 mt-1">Usernames cannot be changed.</p>
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              id="save-btn"
+              class="inline-flex items-center px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all disabled:opacity-50"
+            >Save changes</button>
+            <span id="save-status" class="text-xs text-ink-500"></span>
+          </div>
+        </form>
+      </section>
+
+      <p class="text-xs text-ink-400">
+        Want to change someone else's display name? Only that person can do it from their own account, on their own device.
+      </p>
+    </div>
   </div>
 </BaseLayout>
 
 <script>
   import { currentUser, updateProfile, onAuthChange } from '../lib/auth';
 
+  // Accessibility toggles work for everyone (signed in or not). Each
+  // toggle reads + writes its own localStorage key, and adds/removes
+  // a class on <html> so global.css can target it.
+  const wireA11yToggle = (id: string, key: string, htmlClass?: string) => {
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    if (!el) return;
+    el.checked = localStorage.getItem(key) === '1';
+    el.addEventListener('change', () => {
+      if (el.checked) {
+        localStorage.setItem(key, '1');
+        if (htmlClass) document.documentElement.classList.add(htmlClass);
+      } else {
+        localStorage.removeItem(key);
+        if (htmlClass) document.documentElement.classList.remove(htmlClass);
+      }
+    });
+  };
+
   const setup = () => {
+    // Run accessibility wiring on every navigation, regardless of auth state.
+    wireA11yToggle('a11y-dyslexia', 'a11y:dyslexia-font', 'a11y-dyslexia-font');
+    wireA11yToggle('a11y-reduce-motion', 'a11y:reduce-motion', 'a11y-reduce-motion');
+    wireA11yToggle('a11y-readaloud', 'a11y:read-aloud');
+
     const gate = document.getElementById('auth-gate');
     const required = document.getElementById('auth-required');
     const root = document.getElementById('settings-root');

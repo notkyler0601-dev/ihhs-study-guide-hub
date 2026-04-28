@@ -1,4 +1,9 @@
 @import 'katex/dist/katex.min.css';
+/* OpenDyslexic font: opt-in via the accessibility toggle on /settings.
+   The @font-face declaration is registered globally but the actual font
+   file is only fetched when the .a11y-dyslexia-font class is applied. */
+@import '@fontsource/opendyslexic/400.css';
+@import '@fontsource/opendyslexic/700.css';
 
 @tailwind base;
 @tailwind components;
@@ -196,6 +201,42 @@
 @media print {
   .no-print { display: none !important; }
   body { background: white !important; }
+}
+
+/* Accessibility: reduce motion. Either the user's system preference OR
+   our explicit toggle on /settings will activate this. We collapse all
+   transitions and animations to a single frame so layout still works
+   but nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.a11y-reduce-motion *, .a11y-reduce-motion *::before, .a11y-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Accessibility: dyslexia-friendly font. Activated via the toggle on
+   /settings. Falls back to the system font if OpenDyslexic isn't loaded. */
+.a11y-dyslexia-font,
+.a11y-dyslexia-font body,
+.a11y-dyslexia-font input,
+.a11y-dyslexia-font textarea,
+.a11y-dyslexia-font button {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Inter', system-ui, sans-serif !important;
+}
+.a11y-dyslexia-font .font-serif,
+.a11y-dyslexia-font h1,
+.a11y-dyslexia-font h2,
+.a11y-dyslexia-font h3,
+.a11y-dyslexia-font h4 {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Fraunces', Georgia, serif !important;
 }
 
 /* Containment: react-chrono and other React-aria/vanilla-extract popovers

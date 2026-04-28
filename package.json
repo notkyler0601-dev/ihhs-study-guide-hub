@@ -31,6 +31,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@floating-ui/dom": "^1.7.6",
     "@floating-ui/react": "^0.27.19",
+    "@fontsource/opendyslexic": "^5.2.5",
     "@formkit/auto-animate": "^0.9.0",
     "@gsap/react": "^2.1.2",
     "@headlessui/react": "^2.2.10",
