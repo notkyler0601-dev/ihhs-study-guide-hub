@@ -76,7 +76,7 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
   <div data-cesium-mount class="relative w-full bg-ink-950" style={`min-height:${height}px; height:${height}px;`}></div>
   {!token && (
     <div class="px-5 py-3 border-t border-ink-200 dark:border-ink-800 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-900 dark:text-amber-200">
-      Cesium Ion access token not configured. Showing the public WGS84 globe with Natural Earth imagery only. Set <code class="font-mono">PUBLIC_CESIUM_TOKEN</code> in your environment to unlock world terrain and aerial imagery.
+      Cesium Ion access token not configured. Showing the public WGS84 globe with OpenStreetMap imagery. Set <code class="font-mono">PUBLIC_CESIUM_TOKEN</code> in your environment to unlock world terrain and Bing aerial imagery.
     </div>
   )}
 </section>
@@ -125,24 +125,46 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
           Cesium.Ion.defaultAccessToken = token;
         }
 
-        // Build the imagery provider based on the prop. Aerial layers
-        // require a token; fall back to Natural Earth if missing.
-        let imageryProvider: any = false;
-        if (token && (conf.imagery === 'aerial' || conf.imagery === 'aerial-with-labels')) {
-          // Asset 2 = Bing Maps Aerial, Asset 3 = Bing Aerial with Labels.
-          const assetId = conf.imagery === 'aerial' ? 2 : 3;
-          imageryProvider = await Cesium.IonImageryProvider.fromAssetId(assetId);
-        } else if (conf.imagery !== 'default') {
-          // Cesium ships a Natural Earth II tileset that doesn't need a token.
-          imageryProvider = new Cesium.TileMapServiceImageryProvider({
-            url: Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII'),
-          });
+        // Build the base imagery layer. The 'default' option means "no
+        // imagery, just the bare blue ellipsoid". Anything else gets a
+        // real tile source. Aerial requires a token; the no-token
+        // fallback is OpenStreetMap, which is built into Cesium and
+        // does not need any asset path.
+        let baseLayer: any = undefined;
+        let usedFallback = false;
+        const makeOSM = () => new Cesium.ImageryLayer(
+          new Cesium.OpenStreetMapImageryProvider({
+            url: 'https://tile.openstreetmap.org/',
+          }),
+          {}
+        );
+        if (conf.imagery === 'default') {
+          baseLayer = false;
+        } else if (token && (conf.imagery === 'aerial' || conf.imagery === 'aerial-with-labels')) {
+          try {
+            // Asset 2 = Bing Maps Aerial, Asset 3 = Bing Aerial with Labels.
+            // These are public sample assets every Ion account has access to.
+            const assetId = conf.imagery === 'aerial' ? 2 : 3;
+            baseLayer = Cesium.ImageryLayer.fromProviderAsync(
+              Cesium.IonImageryProvider.fromAssetId(assetId)
+            );
+          } catch (e) {
+            console.warn('Cesium Ion imagery failed, falling back to OSM', e);
+            baseLayer = makeOSM();
+            usedFallback = true;
+          }
+        } else {
+          baseLayer = makeOSM();
         }
 
         // Terrain: Cesium World Terrain (Ion asset 1) requires a token.
-        let terrainProvider: any = undefined;
+        let terrain: any = undefined;
         if (token && conf.terrain === 'world') {
-          terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+          try {
+            terrain = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+          } catch (e) {
+            console.warn('Cesium World Terrain failed, falling back to ellipsoid', e);
+          }
         }
 
         const viewer = new Cesium.Viewer(mount, {
@@ -156,8 +178,8 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
           fullscreenButton: false,
           infoBox: true,
           selectionIndicator: true,
-          imageryProvider,
-          terrainProvider,
+          baseLayer,
+          terrainProvider: terrain,
         });
 
         // Tone down the default Cesium chrome so it fits the site theme.
@@ -239,7 +261,15 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
           });
         });
 
-        status.textContent = token ? 'Live' : 'Bare globe (no token)';
+        if (token && conf.imagery !== 'default' && !usedFallback) {
+          status.textContent = 'Live';
+        } else if (usedFallback) {
+          status.textContent = 'OSM fallback (Ion failed)';
+        } else if (conf.imagery === 'default') {
+          status.textContent = 'Bare globe';
+        } else {
+          status.textContent = 'OSM (no token)';
+        }
       } catch (err: any) {
         console.warn('Cesium init failed', err);
         if (status) status.textContent = 'Failed to load globe.';
