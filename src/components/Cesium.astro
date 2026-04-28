@@ -214,6 +214,33 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         controller.minimumZoomDistance = 10; // 10 m from surface (street level)
         controller.maximumZoomDistance = 50000000; // 50,000 km out
 
+        // Tame wheel-zoom granularity. Cesium's default wheel handler in
+        // 1.140 jumps the camera ~65% of its current altitude per notch
+        // regardless of _zoomFactor (which the new internals ignore).
+        // Replace it with a custom wheel handler that moves a fixed
+        // fraction of current altitude per notch, so the feel stays
+        // proportional but each step is small enough to intend.
+        const canvas = mount.querySelector('canvas') as HTMLCanvasElement | null;
+        if (canvas) {
+          const STEP_FRACTION = 0.08; // 8% of altitude per wheel notch
+          const onWheel = (e: WheelEvent) => {
+            // Stop Cesium's bigger default move from running too.
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const height = viewer.camera.positionCartographic.height;
+            // Normalize deltaY across browsers / OSes. One Chrome notch is
+            // typically 100; Firefox sends 3 lines (deltaMode=1). Treat
+            // deltaY > 0 as "scroll down" = zoom OUT.
+            const notches = e.deltaMode === 1 ? e.deltaY / 3 : e.deltaY / 100;
+            const distance = height * STEP_FRACTION * Math.min(Math.abs(notches), 3);
+            if (notches < 0) viewer.camera.zoomIn(distance);
+            else viewer.camera.zoomOut(distance);
+          };
+          canvas.addEventListener('wheel', onWheel, { capture: true, passive: false });
+        }
+        // Inertia adds a soft glide so the wheel doesn't feel like teleport.
+        controller.inertiaZoom = 0.85;
+
         // Stash the viewer on the root for tests / debugging.
         (root as any).__cesiumViewer = viewer;
 
