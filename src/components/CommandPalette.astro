@@ -56,10 +56,12 @@ const index = allGuides.map((g) => ({
 </div>
 
 <script is:inline define:vars={{ index }}>
-  const root = document.getElementById('cmdk-root');
-  const input = document.getElementById('cmdk-input');
-  const results = document.getElementById('cmdk-results');
-  const backdrop = document.getElementById('cmdk-backdrop');
+  // Look elements up lazily so View Transition page swaps that destroy
+  // and recreate the palette nodes don't leave us holding stale references.
+  const $root = () => document.getElementById('cmdk-root');
+  const $input = () => document.getElementById('cmdk-input');
+  const $results = () => document.getElementById('cmdk-results');
+  const $backdrop = () => document.getElementById('cmdk-backdrop');
   let active = 0;
 
   // Quick action shortcuts available even when search box is empty.
@@ -71,12 +73,16 @@ const index = allGuides.map((g) => ({
   ];
 
   const open = () => {
+    const root = $root(), input = $input();
+    if (!root || !input) return;
     root.classList.remove('hidden');
     root.classList.add('flex');
     setTimeout(() => input.focus(), 10);
     render('');
   };
   const close = () => {
+    const root = $root(), input = $input();
+    if (!root || !input) return;
     root.classList.add('hidden');
     root.classList.remove('flex');
     input.value = '';
@@ -114,6 +120,8 @@ const index = allGuides.map((g) => ({
 
   const render = (q) => {
     active = 0;
+    const results = $results();
+    if (!results) return;
     const query = q.trim();
 
     if (!query) {
@@ -176,6 +184,8 @@ const index = allGuides.map((g) => ({
   };
 
   const updateActive = () => {
+    const results = $results();
+    if (!results) return;
     const items = results.querySelectorAll('.cmdk-row');
     items.forEach((el, i) => {
       el.classList.toggle('bg-accent-50', i === active);
@@ -186,30 +196,54 @@ const index = allGuides.map((g) => ({
     items[active]?.scrollIntoView({ block: 'nearest' });
   };
 
-  document.addEventListener('keydown', (e) => {
-    const isOpen = !root.classList.contains('hidden');
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); isOpen ? close() : open(); return; }
-    if (!isOpen) return;
-    const items = results.querySelectorAll('.cmdk-row');
-    if (e.key === 'Escape') { e.preventDefault(); close(); }
-    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); updateActive(); }
-    if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); updateActive(); }
-    if (e.key === 'Enter' && items[active]) {
-      e.preventDefault();
-      const href = items[active].getAttribute('data-href');
-      if (href) window.location.href = href;
+  // Bind document-level keys exactly once for the lifetime of the document
+  // (which is shared across View Transition navigations, so we never want
+  // to add this listener twice).
+  if (!window.__cmdkKeysBound) {
+    window.__cmdkKeysBound = true;
+    document.addEventListener('keydown', (e) => {
+      const root = $root();
+      if (!root) return;
+      const isOpen = !root.classList.contains('hidden');
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        isOpen ? close() : open();
+        return;
+      }
+      if (!isOpen) return;
+      const results = $results();
+      if (!results) return;
+      const items = results.querySelectorAll('.cmdk-row');
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); updateActive(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); updateActive(); }
+      if (e.key === 'Enter' && items[active]) {
+        e.preventDefault();
+        const href = items[active].getAttribute('data-href');
+        if (href) window.location.href = href;
+      }
+    });
+  }
+
+  // Re-bind per-element listeners every page load so each fresh palette
+  // instance has working backdrop click, input typing, and search trigger.
+  const bindLocalListeners = () => {
+    const trigger = document.getElementById('search-trigger');
+    if (trigger && !trigger.dataset.cmdkBound) {
+      trigger.dataset.cmdkBound = '1';
+      trigger.addEventListener('click', open);
     }
-  });
-
-  const bindTrigger = () => {
-    const t = document.getElementById('search-trigger');
-    if (!t || t.dataset.cmdkBound) return;
-    t.dataset.cmdkBound = '1';
-    t.addEventListener('click', open);
+    const backdrop = $backdrop();
+    if (backdrop && !backdrop.dataset.cmdkBound) {
+      backdrop.dataset.cmdkBound = '1';
+      backdrop.addEventListener('click', close);
+    }
+    const input = $input();
+    if (input && !input.dataset.cmdkBound) {
+      input.dataset.cmdkBound = '1';
+      input.addEventListener('input', (e) => render(e.target.value));
+    }
   };
-  bindTrigger();
-  document.addEventListener('astro:after-swap', bindTrigger);
-
-  backdrop?.addEventListener('click', close);
-  input?.addEventListener('input', (e) => render(e.target.value));
+  bindLocalListeners();
+  document.addEventListener('astro:after-swap', bindLocalListeners);
 </script>
