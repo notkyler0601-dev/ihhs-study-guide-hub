@@ -15,6 +15,7 @@ import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
 import MapView from '../../components/MapView.astro';
 import Timeline from '../../components/Timeline.astro';
+import Cesium from '../../components/Cesium.astro';
 
 ## Learning objectives
 
@@ -31,6 +32,38 @@ By the end of this guide you'll be able to:
 ## TL;DR
 
 Hitler's Non-Aggression Pact with Stalin (Aug 1939) cleared the path to invade Poland on Sept 1, 1939. Germany conquered most of Europe with **blitzkrieg** but failed to break Britain (Battle of Britain, 1940) and bogged down in the USSR (Operation Barbarossa, 1941). Japan's attack on **Pearl Harbor** (Dec 7, 1941) made the war truly global. The tide turned in **1942-43** at Midway, Stalingrad, and El Alamein. **D-Day** (June 6, 1944) opened a second front. Germany surrendered May 7, 1945 (V-E Day). Atomic bombs on **Hiroshima and Nagasaki** forced Japan's surrender on August 14, 1945 (V-J Day). About **60 million people died**. The U.S. and Soviet Union emerged as superpowers, beginning the **Cold War**.
+
+## The war on a globe
+
+Drag to spin, scroll to zoom. Click any marker for context. The three glowing arcs show three of the most consequential operations: the Pearl Harbor strike that pulled the U.S. in, the D-Day invasion that opened the second front, and Operation Barbarossa, the German invasion that became Stalingrad.
+
+<Cesium
+  target={[30, 20, 18000000]}
+  height={560}
+  terrain="world"
+  imagery="aerial-with-labels"
+  markers={[
+    { lat: 38.9072, lng: -77.0369, name: "Washington, DC", note: "Allied capital. The U.S. enters the war Dec 8, 1941." },
+    { lat: 51.5074, lng: -0.1278, name: "London", note: "Allied capital. RAF headquarters during the Battle of Britain (1940)." },
+    { lat: 55.7558, lng: 37.6173, name: "Moscow", note: "Allied capital. Soviet leadership coordinates the Eastern Front from here." },
+    { lat: 52.5200, lng: 13.4050, name: "Berlin", note: "Axis capital. Nazi Germany's seat of power." },
+    { lat: 41.9028, lng: 12.4964, name: "Rome", note: "Axis capital under Mussolini until 1943." },
+    { lat: 35.6762, lng: 139.6503, name: "Tokyo", note: "Axis capital. Imperial Japan's command center." },
+    { lat: 21.3650, lng: -157.9740, name: "Pearl Harbor", note: "Dec 7, 1941. The Japanese surprise attack brings the U.S. into the war." },
+    { lat: 48.7080, lng: 44.5133, name: "Stalingrad", note: "Aug 1942 to Feb 1943. The Eastern Front turning point. ~2 million casualties." },
+    { lat: 49.3700, lng: -0.8700, name: "Normandy", note: "D-Day, June 6, 1944. Largest amphibious invasion in history. Opens the second front." },
+    { lat: 34.3853, lng: 132.4553, name: "Hiroshima", note: "Aug 6, 1945. First atomic bomb used in war. Nagasaki follows on Aug 9. Japan surrenders Aug 14." }
+  ]}
+  arcs={[
+    { from: [35.6762, 139.6503], to: [21.3650, -157.9740], name: "Pearl Harbor strike, Dec 7, 1941" },
+    { from: [50.8198, -1.0880], to: [49.3700, -0.8700], name: "D-Day, June 6, 1944" },
+    { from: [52.5200, 13.4050], to: [48.7080, 44.5133], name: "Operation Barbarossa, June 1941" }
+  ]}
+/>
+
+<Callout type="tip" title="Geography is the test answer">
+  Many EOC questions are really geography questions in disguise. "Why did the Battle of Britain fail for Germany?" is partly because the English Channel separates the UK from continental Europe. "Why did Japan attack Pearl Harbor?" is partly because Hawaii is the closest U.S. naval base to Japan. Spin the globe and notice the distances.
+</Callout>
 
 ## Master timeline
 
