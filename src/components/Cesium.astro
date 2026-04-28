@@ -50,7 +50,7 @@ interface Props {
   height?: number;
 }
 const {
-  target = [40.0, -83.0, 1500000], // Ohio
+  target = [40.0, -10.0, 13000000], // Atlantic-centered: shows N America, Europe, Africa
   markers = [],
   arcs = [],
   terrain = 'world',
@@ -167,12 +167,31 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         const creditContainer = viewer.cesiumWidget.creditContainer as HTMLElement;
         if (creditContainer) creditContainer.style.display = 'none';
 
-        // Camera fly to target.
+        // Camera fly to target. With no orientation override Cesium points
+        // the camera straight at the destination point on Earth, which gives
+        // a globe-filling view at sensible altitudes (~10-15 million meters).
+        // The previous 45-degree pitch override pushed Earth out of the
+        // viewport at high altitudes, leaving a tiny dot among stars.
         const [lat, lng, h] = conf.target;
         viewer.camera.setView({
           destination: Cesium.Cartesian3.fromDegrees(lng, lat, h),
-          orientation: { heading: 0.0, pitch: -Math.PI / 4, roll: 0.0 },
         });
+
+        // Make sure the user can spin, tilt, and zoom freely.
+        const controller = viewer.scene.screenSpaceCameraController;
+        controller.enableInputs = true;
+        controller.enableZoom = true;
+        controller.enableRotate = true;
+        controller.enableTilt = true;
+        controller.enableTranslate = true;
+        // The minimum zoom default (1.0m) prevents flying through the surface.
+        // Bumping it slightly avoids the "stuck zooming in but nothing happens"
+        // feeling some users hit when the camera is already very close.
+        controller.minimumZoomDistance = 100000; // 100 km from surface
+        controller.maximumZoomDistance = 50000000; // 50,000 km out
+
+        // Stash the viewer on the root for tests / debugging.
+        (root as any).__cesiumViewer = viewer;
 
         // Markers.
         conf.markers.forEach((m) => {
