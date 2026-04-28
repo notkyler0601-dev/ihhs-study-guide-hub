@@ -150,7 +150,8 @@ Pre-existing subject-specific components. CDN script loads only when the compone
 | Component | Library | CDN | Brief |
 |---|---|---|---|
 | `<StoryMap url="..." />` | Knight Lab StoryMapJS | iframe `uploads.knightlab.com/storymapjs/...` | Geographic scrollytelling. |
-| `<Globe3D markers={[...]} />` | globe.gl 2.32.4 + three-globe earth texture | `cdn.jsdelivr.net/npm/globe.gl`, `unpkg.com/three-globe/example/img/earth-night.jpg` | 3D Earth with markers and arcs. |
+| `<Globe3D markers={[...]} />` | globe.gl 2.32.4 + three-globe earth texture | `cdn.jsdelivr.net/npm/globe.gl`, `unpkg.com/three-globe/example/img/earth-night.jpg` | 3D Earth with markers and arcs. Lightweight (~150KB) alternative to `<Cesium>` for simple "pin some places on a globe" use cases. |
+| `<Cesium target={[lat, lng, h]} markers={[...]} arcs={[...]} />` | CesiumJS 1.140 (npm + CDN-loaded at runtime) | `cesium.com/downloads/cesiumjs/releases/1.140/Build/Cesium/Cesium.js` | Production-grade WGS84 3D globe. Real terrain (mountains have real elevation), Bing aerial imagery, time-dynamic data, photorealistic 3D Tiles, all unlocked when `PUBLIC_CESIUM_TOKEN` is set. Without a token shows a bare globe with public Natural Earth imagery. Lazy-loads ~3-5MB from the official Cesium CDN, so guides without it pay zero cost. For history (troop movements, trade routes), geography (real terrain, climate overlays), astronomy (Earth-from-orbit). |
 | `<DocAnnotate text="..." />` | none (custom) | n/a | Pre-baked highlight spans on a source text. |
 | `<CompareSlider before="..." />` | img-comparison-slider 8.0.6 (web component) | `unpkg.com/img-comparison-slider` | Before/after image slider. |
 
@@ -502,7 +503,7 @@ All entries cross-checked against the catalog above to avoid duplicates. AI, AR,
 | **VTK.js** | `@kitware/vtk.js` | BSD-3 | Scientific visualization: marching cubes, volume rendering, vector fields. WebGL and WebGPU. |
 | **Quirk** | iframe `algassert.com/quirk`; source `Strilanc/Quirk` | Apache-2.0 | Drag-and-drop quantum circuit simulator. Build entanglement, run Grover's. |
 | **NetLogo Web** | iframe `netlogoweb.org` | BSD-2 | Browser-only agent-based modeling. Wolf-Sheep, Schelling segregation, traffic. |
-| **CesiumJS** | `cesium` | Apache-2.0 | Production-grade WGS84 3D globe. Real terrain, 3D city tiles, time-dynamic data. |
+| **CesiumJS** | `cesium` | Apache-2.0 | Production-grade WGS84 3D globe. Real terrain, 3D city tiles, time-dynamic data. **Now wrapped as `<Cesium>` in section 8 (Tier 3 / History and geography).** |
 | **CindyJS** | CDN `https://cindyjs.org/dist/latest/Cindy.js` | Apache-2.0 | Browser port of Cinderella. CindyLab: electrostatics, springs, orbits. CindyGL: GPU wave interference, electromagnetic fields. |
 | **Ray-Optics Simulation** | iframe `phydemo.app/ray-optics`; source `ricktu288/ray-optics` | Apache-2.0 | 2D geometric optics: mirrors, lenses, gratings, custom equation surfaces. |
 

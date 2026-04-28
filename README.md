@@ -559,6 +559,20 @@ The localStorage version is the perfect starting point: zero infrastructure, ins
 
 Without the env var, the component renders a clear "not configured" notice instead of a broken chat box.
 
+## Optional: enable the 3D globe (Cesium)
+
+`<Cesium>` renders a production-grade WGS84 3D globe with markers and great-circle arcs. Without a token it shows a bare globe with public Natural Earth imagery (still useful). With a Cesium Ion token it unlocks world terrain (real mountain elevation) and Bing aerial imagery.
+
+1. Sign up free at [ion.cesium.com](https://ion.cesium.com) (no credit card required).
+2. Copy your default access token from the dashboard.
+3. In Vercel project settings (and your local `.env`), add:
+   ```
+   PUBLIC_CESIUM_TOKEN=eyJhbGciOi...
+   ```
+4. Drop `<Cesium markers={[{ lat, lng, name }]} />` into any guide.
+
+Free tier: 5 GB stored / 100 GB streamed per month, plenty for an educational site.
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](./LICENSE) for the full text.

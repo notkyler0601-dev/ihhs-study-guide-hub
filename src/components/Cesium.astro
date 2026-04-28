@@ -1,0 +1,234 @@
+---
+// Production-grade WGS84 3D globe via CesiumJS, lazy-loaded from the
+// official Cesium CDN. Real terrain, photorealistic 3D Tiles, and
+// time-dynamic data are all available when PUBLIC_CESIUM_TOKEN is set
+// in the environment (see SUPABASE_SETUP-style docs in README.md).
+//
+// Without a token the component still renders a bare WGS84 globe with
+// the public Natural Earth imagery, which is enough for basic
+// "spin this and pin some places" use cases. With a token you unlock
+// world terrain (mountains have real height), Bing aerial imagery,
+// and the global Photorealistic 3D Tiles dataset.
+//
+// Usage:
+//
+//   <Cesium
+//     target={[40.0, -83.0, 1500000]}
+//     markers={[
+//       { lat: 51.5074, lng: -0.1278, name: "London", note: "Allied capital" },
+//       { lat: 52.5200, lng: 13.4050, name: "Berlin", note: "Axis capital" }
+//     ]}
+//     arcs={[
+//       { from: [40.0, -83.0], to: [51.5, -0.13], name: "Columbus to London" }
+//     ]}
+//     terrain="world"
+//     imagery="aerial"
+//     height={520}
+//   />
+//
+// Props:
+//   target        [lat, lng, height-in-meters]. Default centers on Ohio.
+//   markers       Array of { lat, lng, name?, note? } pins.
+//   arcs          Array of { from: [lat, lng], to: [lat, lng], name? } great-circle arcs.
+//   terrain       'world' to use Cesium World Terrain (token required), 'default' for ellipsoid.
+//   imagery       'aerial' (Bing aerial, token required), 'aerial-with-labels',
+//                 'natural-earth' (public, no token), 'default' for ellipsoid only.
+//   timeline      Show the timeline / animation widget. Default false.
+//   navHelp       Show the navigation help button. Default false.
+//   height        Pixel height of the viewer. Default 520.
+
+interface Marker { lat: number; lng: number; name?: string; note?: string; }
+interface Arc { from: [number, number]; to: [number, number]; name?: string; }
+interface Props {
+  target?: [number, number, number];
+  markers?: Marker[];
+  arcs?: Arc[];
+  terrain?: 'world' | 'default';
+  imagery?: 'aerial' | 'aerial-with-labels' | 'natural-earth' | 'default';
+  timeline?: boolean;
+  navHelp?: boolean;
+  height?: number;
+}
+const {
+  target = [40.0, -83.0, 1500000], // Ohio
+  markers = [],
+  arcs = [],
+  terrain = 'world',
+  imagery = 'aerial-with-labels',
+  timeline = false,
+  navHelp = false,
+  height = 520,
+} = Astro.props;
+
+const id = 'cesium-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ target, markers, arcs, terrain, imagery, timeline, navHelp });
+const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-cesium id={id} data-conf={conf} data-token={token}>
+  <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">🌍</span>
+      3D globe
+    </span>
+    <span class="text-xs text-ink-500" data-cesium-status>Loading...</span>
+  </div>
+  <div data-cesium-mount class="relative w-full bg-ink-950" style={`min-height:${height}px; height:${height}px;`}></div>
+  {!token && (
+    <div class="px-5 py-3 border-t border-ink-200 dark:border-ink-800 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-900 dark:text-amber-200">
+      Cesium Ion access token not configured. Showing the public WGS84 globe with Natural Earth imagery only. Set <code class="font-mono">PUBLIC_CESIUM_TOKEN</code> in your environment to unlock world terrain and aerial imagery.
+    </div>
+  )}
+</section>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  type Marker = { lat: number; lng: number; name?: string; note?: string };
+  type Arc = { from: [number, number]; to: [number, number]; name?: string };
+  type Conf = {
+    target: [number, number, number];
+    markers: Marker[];
+    arcs: Arc[];
+    terrain: 'world' | 'default';
+    imagery: 'aerial' | 'aerial-with-labels' | 'natural-earth' | 'default';
+    timeline: boolean;
+    navHelp: boolean;
+  };
+
+  // Cesium loads its own Workers and shaders relative to CESIUM_BASE_URL.
+  // Pointing this at the official CDN sidesteps the entire build-time
+  // asset-copy dance.
+  const CESIUM_VERSION = '1.140';
+  const CESIUM_BASE = `https://cesium.com/downloads/cesiumjs/releases/${CESIUM_VERSION}/Build/Cesium/`;
+  const CESIUM_JS = CESIUM_BASE + 'Cesium.js';
+  const CESIUM_CSS = CESIUM_BASE + 'Widgets/widgets.css';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-cesium]:not([data-cesium-ready])');
+    for (const root of Array.from(roots)) {
+      root.dataset.cesiumReady = '1';
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+      const token = (root.dataset.token || '').trim();
+      const mount = root.querySelector<HTMLElement>('[data-cesium-mount]');
+      const status = root.querySelector<HTMLElement>('[data-cesium-status]');
+      if (!mount || !status) continue;
+
+      try {
+        // Set CESIUM_BASE_URL so worker / asset URLs resolve to the CDN.
+        (window as any).CESIUM_BASE_URL = CESIUM_BASE;
+        loadStyle(CESIUM_CSS);
+        await loadScript(CESIUM_JS);
+        const Cesium: any = await waitForGlobal('Cesium');
+
+        if (token) {
+          Cesium.Ion.defaultAccessToken = token;
+        }
+
+        // Build the imagery provider based on the prop. Aerial layers
+        // require a token; fall back to Natural Earth if missing.
+        let imageryProvider: any = false;
+        if (token && (conf.imagery === 'aerial' || conf.imagery === 'aerial-with-labels')) {
+          // Asset 2 = Bing Maps Aerial, Asset 3 = Bing Aerial with Labels.
+          const assetId = conf.imagery === 'aerial' ? 2 : 3;
+          imageryProvider = await Cesium.IonImageryProvider.fromAssetId(assetId);
+        } else if (conf.imagery !== 'default') {
+          // Cesium ships a Natural Earth II tileset that doesn't need a token.
+          imageryProvider = new Cesium.TileMapServiceImageryProvider({
+            url: Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII'),
+          });
+        }
+
+        // Terrain: Cesium World Terrain (Ion asset 1) requires a token.
+        let terrainProvider: any = undefined;
+        if (token && conf.terrain === 'world') {
+          terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+        }
+
+        const viewer = new Cesium.Viewer(mount, {
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          navigationHelpButton: !!conf.navHelp,
+          animation: !!conf.timeline,
+          timeline: !!conf.timeline,
+          fullscreenButton: false,
+          infoBox: true,
+          selectionIndicator: true,
+          imageryProvider,
+          terrainProvider,
+        });
+
+        // Tone down the default Cesium chrome so it fits the site theme.
+        viewer.scene.globe.enableLighting = !!token;
+        viewer.scene.skyAtmosphere.show = true;
+        // Hide the credit container's bulky toolbar (still keeps attribution).
+        const creditContainer = viewer.cesiumWidget.creditContainer as HTMLElement;
+        if (creditContainer) creditContainer.style.display = 'none';
+
+        // Camera fly to target.
+        const [lat, lng, h] = conf.target;
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(lng, lat, h),
+          orientation: { heading: 0.0, pitch: -Math.PI / 4, roll: 0.0 },
+        });
+
+        // Markers.
+        conf.markers.forEach((m) => {
+          viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(m.lng, m.lat, 0),
+            point: {
+              pixelSize: 12,
+              color: Cesium.Color.fromCssColorString('#b91c1c'),
+              outlineColor: Cesium.Color.WHITE,
+              outlineWidth: 2,
+              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            },
+            label: m.name ? {
+              text: m.name,
+              font: '13px Inter, system-ui, sans-serif',
+              fillColor: Cesium.Color.WHITE,
+              outlineColor: Cesium.Color.fromCssColorString('#18181b'),
+              outlineWidth: 3,
+              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+              pixelOffset: new Cesium.Cartesian2(0, -18),
+              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            } : undefined,
+            description: m.note ?? '',
+          });
+        });
+
+        // Arcs (great-circle polylines arching above the surface).
+        conf.arcs.forEach((a) => {
+          const positions = Cesium.Cartesian3.fromDegreesArrayHeights([
+            a.from[1], a.from[0], 100000,
+            (a.from[1] + a.to[1]) / 2, (a.from[0] + a.to[0]) / 2, 800000,
+            a.to[1], a.to[0], 100000,
+          ]);
+          viewer.entities.add({
+            name: a.name ?? '',
+            polyline: {
+              positions,
+              width: 2,
+              material: new Cesium.PolylineGlowMaterialProperty({
+                glowPower: 0.25,
+                color: Cesium.Color.fromCssColorString('#f87171'),
+              }),
+              arcType: Cesium.ArcType.NONE,
+            },
+          });
+        });
+
+        status.textContent = token ? 'Live' : 'Bare globe (no token)';
+      } catch (err: any) {
+        console.warn('Cesium init failed', err);
+        if (status) status.textContent = 'Failed to load globe.';
+        mount.innerHTML = `<div class="p-6 text-center text-sm text-ink-400">${(err && err.message) || 'Cesium failed to initialize.'}</div>`;
+      }
+    }
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

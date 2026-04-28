@@ -161,7 +161,7 @@ Choose 2–3 by topic:
 Always: `<Quiz>`, `<KeyTerm>` (jargon), `<Flashcards>` (dates and figures).
 Choose 2–3 by topic:
 - Chronology: `<ChronoTimeline mode="VERTICAL_ALTERNATING">`, `<Timeline>` (Knight Lab), `<VisTimeline>` (parallel lanes), `<VerticalTimeline>` (scroll-reveal narrative)
-- Geographic / spatial: `<MapView>` (Leaflet), `<MapLibreView>`, `<DeckMap>` (animated arcs for trade routes), `<Globe3D>` / `<CobeGlobe>`
+- Geographic / spatial: `<MapView>` (Leaflet), `<MapLibreView>`, `<DeckMap>` (animated arcs for trade routes), `<Globe3D>` / `<CobeGlobe>` (lightweight), `<Cesium>` (production-grade real-terrain globe; needs `PUBLIC_CESIUM_TOKEN` for premium layers)
 - Storytelling: `<StoryMap>`, `<Scrollytelling>`
 - Primary sources: `<DocAnnotate>`, `<DeepZoomAnnotated>` for high-res manuscripts/maps
 - Comparison: `<CompareSlider>` for then-and-now photos
