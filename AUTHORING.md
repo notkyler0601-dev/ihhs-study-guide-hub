@@ -166,6 +166,7 @@ Choose 2–3 by topic:
 - Primary sources: `<DocAnnotate>`, `<DeepZoomAnnotated>` for high-res manuscripts/maps
 - Comparison: `<CompareSlider>` for then-and-now photos
 - Map-labeling assessment: `<Hotspots image="europe-1914.png" mode="quiz">`.
+- Era-specific simulations (built for `modern-europe-1500-1991`): `<GuillotineAnimation>` (French Revolution), `<TrenchWarfareSim>` (WWI), `<FiveYearPlanGame>` (Stalin), `<DDayLandingSim>` (WWII), `<JungleSpot>` (Vietnam), `<MissileCrisisGame>` (Cold War decision tree). Each is a one-purpose component pegged to a specific era; reuse only if the new guide is on the same era.
 
 ### English / Literature
 Always: `<KeyTerm>` (literary devices), `<Callout>` for passages, `<Quiz>`.

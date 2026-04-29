@@ -1,0 +1,251 @@
+---
+// Cuban Missile Crisis branching decision game. You play Kennedy in
+// October 1962. Each choice leads down a branch; some end in nuclear
+// war, one matches the historical resolution, others end in political
+// or strategic failure. Replayable.
+//
+// Pure HTML/JS. The decision tree is data-driven so authors can swap
+// scenarios without touching the rendering code.
+//
+// Usage: <MissileCrisisGame />
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-mc>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">☢</span>
+      Cuban Missile Crisis: You are JFK
+    </span>
+    <span class="text-xs text-ink-500" data-day>October 1962</span>
+  </header>
+
+  <div class="p-6">
+    <div data-scenario class="font-serif text-lg leading-relaxed text-ink-900 dark:text-ink-50 mb-5"></div>
+
+    <div data-choices class="space-y-2"></div>
+
+    <div data-history class="hidden mt-5 p-4 rounded-xl border-l-4"></div>
+
+    <div data-ending-buttons class="hidden mt-5 flex flex-wrap items-center gap-2">
+      <button data-restart type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">↻ Try a different choice</button>
+      <span class="text-xs text-ink-500" data-pathlog></span>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Choice = { label: string; next: string };
+  type Node =
+    | { kind: 'choice'; day: string; text: string; choices: Choice[] }
+    | { kind: 'ending'; day: string; text: string; outcome: 'win' | 'lose' | 'mixed'; commentary: string };
+
+  const tree: Record<string, Node> = {
+    start: {
+      kind: 'choice',
+      day: 'October 16, 1962 (Day 1)',
+      text: 'A U-2 spy plane has photographed Soviet medium-range nuclear missile sites under construction in Cuba. The missiles can hit most of the eastern U.S. within minutes of launch. ExComm is convening. The American public does not yet know. What do you do first?',
+      choices: [
+        { label: 'Order an immediate airstrike on the missile sites.', next: 'airstrike1' },
+        { label: 'Impose a naval "quarantine" of Cuba.', next: 'quarantine1' },
+        { label: 'Open public negotiations with Khrushchev.', next: 'public1' },
+        { label: 'Wait. Gather more intelligence.', next: 'wait1' },
+      ],
+    },
+
+    airstrike1: {
+      kind: 'choice',
+      day: 'October 17 (Day 2 of an airstrike track)',
+      text: 'Air Force F-100s strike the missile sites. Damage assessments come back: many sites destroyed, but at least four sites unconfirmed. A U-2 is shot down over Cuba. American TV networks are demanding to know what is happening. The Joint Chiefs are pushing for a ground invasion. What now?',
+      choices: [
+        { label: 'Order a full ground invasion of Cuba.', next: 'endNuclear' },
+        { label: 'Halt strikes and switch to a quarantine.', next: 'endLateBlockade' },
+        { label: 'Hold a press conference admitting the strike failed.', next: 'endPolitical' },
+      ],
+    },
+
+    quarantine1: {
+      kind: 'choice',
+      day: 'October 22 (Day 7 of the quarantine track)',
+      text: 'You announce the "quarantine" on national television. Soviet ships are approaching the line. Khrushchev calls the blockade an "act of aggression" but does not yet recall his fleet. ExComm is split on rules of engagement. Which ships do you stop?',
+      choices: [
+        { label: 'Stop all ships, including civilian and oil tankers.', next: 'quarantine2' },
+        { label: 'Stop only ships clearly carrying military cargo.', next: 'quarantine2' },
+        { label: 'Add an airstrike ultimatum: 24 hours or we attack.', next: 'endHotWar' },
+      ],
+    },
+
+    quarantine2: {
+      kind: 'choice',
+      day: 'October 26–27 (Day 11–12)',
+      text: 'Khrushchev sends two letters in 24 hours. The first is conciliatory: he will withdraw missiles if the U.S. promises not to invade Cuba. The second is harder: he demands the U.S. also remove its Jupiter missiles from Turkey. A U-2 is shot down over Cuba; the pilot dies. The Joint Chiefs call for invasion now.',
+      choices: [
+        { label: 'Respond ONLY to the conciliatory letter (the "Trollope ploy"). Privately tell the Soviet ambassador we will quietly remove Jupiters in Turkey within months.', next: 'endHistorical' },
+        { label: 'Respond firmly to both letters. Demand public Soviet retreat.', next: 'endStandoff' },
+        { label: 'Demand a public Soviet humiliation: missiles out and a UN apology.', next: 'endRejection' },
+      ],
+    },
+
+    public1: {
+      kind: 'choice',
+      day: 'October 18 (public negotiation track)',
+      text: 'You open a televised channel directly to Khrushchev. He projects calm and offers to "negotiate the entire European security framework" if the U.S. will be reasonable. The press reads weakness. Your approval rating drops 10 points overnight. ExComm is alarmed.',
+      choices: [
+        { label: 'Concede: offer to leave Berlin if Soviets leave Cuba.', next: 'endBerlin' },
+        { label: 'Reverse course. Announce a quarantine tomorrow.', next: 'quarantine1' },
+        { label: 'Accept missiles in Cuba but demand inspection rights.', next: 'endIndefinite' },
+      ],
+    },
+
+    wait1: {
+      kind: 'choice',
+      day: 'October 22 (waiting track)',
+      text: 'You hold off for a week. Subsequent U-2 flights show the missile sites are now operational. American newspapers leak the existence of the missiles. Senator Russell calls for impeachment if you do nothing. The Soviets are no longer moving missiles in. They are aiming them.',
+      choices: [
+        { label: 'Strike now, before they are fully fueled.', next: 'endLateStrike' },
+        { label: 'Switch to a quarantine, late.', next: 'quarantine2' },
+        { label: 'Accept the new reality. Cuba has nuclear missiles.', next: 'endIndefinite' },
+      ],
+    },
+
+    // Endings
+    endNuclear: {
+      kind: 'ending',
+      day: 'October 28, 1962 — outcome',
+      text: 'A ground invasion meets unexpectedly heavy resistance. Soviet field commanders, who had tactical nuclear authority you did not know about, fire battlefield nuclear weapons at U.S. forces. Strategic Air Command launches its retaliation. By midnight Moscow, Washington, London, and most of the Eastern Seaboard are gone. Estimates of dead reach 100 million by week\'s end.',
+      outcome: 'lose',
+      commentary: 'In real history, the Joint Chiefs pressured JFK toward exactly this option. Recently declassified Soviet records confirm that field commanders had pre-delegated authority to fire tactical nukes if invaded. The "airstrike then invade" path was almost certainly nuclear war. JFK\'s rejection of it likely saved tens of millions of lives.',
+    },
+
+    endLateBlockade: {
+      kind: 'ending',
+      day: 'October 24, 1962 — outcome',
+      text: 'You announce a quarantine to international shock after striking first. Khrushchev publicly accuses you of acting like a cowboy. Soviet missiles that survived the strike remain in Cuba. The crisis ends weeks later with secret concessions far worse than the historical deal. Your approval rating collapses; you barely win re-election.',
+      outcome: 'mixed',
+      commentary: 'A "strike then negotiate" approach forfeits the moral high ground that the actual quarantine gave JFK. The historical blockade worked partly because the U.S. looked restrained, not aggressive.',
+    },
+
+    endPolitical: {
+      kind: 'ending',
+      day: 'November 1962 — outcome',
+      text: 'You admit on live TV that the airstrike missed key sites. Republicans call it the "Bay of Pigs II." Soviet missiles remain operational in Cuba. Public confidence in your administration craters. You announce in 1963 that you will not seek re-election.',
+      outcome: 'lose',
+      commentary: 'Public admission of military failure during a nuclear crisis is rare for a reason. JFK\'s actual approach was to keep public messaging tightly controlled while ExComm worked the problem behind closed doors.',
+    },
+
+    endHotWar: {
+      kind: 'ending',
+      day: 'October 23, 1962 — outcome',
+      text: 'Your ultimatum reaches Moscow. Khrushchev orders the Soviet fleet to maintain course. As ships approach the line, U.S. destroyers fire warning shots. A Soviet submarine, out of contact with Moscow and assuming war has begun, prepares to launch a nuclear torpedo. One officer, Vasili Arkhipov, refuses to authorize. Without him, this would be the end. The standoff drags into a hot war over Berlin within weeks.',
+      outcome: 'lose',
+      commentary: 'Ultimatums removed Khrushchev\'s ability to back down without humiliation. The historical JFK was careful never to issue one publicly. The Arkhipov story is real and is one of the closest brushes with nuclear war on record.',
+    },
+
+    endHistorical: {
+      kind: 'ending',
+      day: 'October 28, 1962 — outcome',
+      text: 'Khrushchev announces on Radio Moscow that the missile sites will be dismantled. The U.S. publicly pledges not to invade Cuba. Privately, Jupiter missiles in Turkey are quietly removed over the next six months. The world steps back from the brink. The "hotline" between Washington and Moscow is established the next year. This is the real history.',
+      outcome: 'win',
+      commentary: 'The "Trollope ploy" — responding only to the conciliatory letter and treating the harder one as if it had not arrived — was JFK\'s actual move. Combined with a private back-channel deal on Turkey, it gave Khrushchev a face-saving exit. Both sides claimed victory at home; both knew how close they had come.',
+    },
+
+    endStandoff: {
+      kind: 'ending',
+      day: 'November 1962 — outcome',
+      text: 'You demand public retreat. Khrushchev refuses to back down without a quid pro quo. The blockade extends for months. The Berlin crisis flares again. Defense spending soars. The Cold War freezes for another decade with no thaw and no détente.',
+      outcome: 'mixed',
+      commentary: 'Without the back-channel deal on Turkey, neither side could de-escalate without public humiliation. JFK\'s willingness to make a private concession was decisive.',
+    },
+
+    endRejection: {
+      kind: 'ending',
+      day: 'October 28, 1962 — outcome',
+      text: 'Your demand for public Soviet humiliation reaches Moscow. Khrushchev cannot accept. The Politburo authorizes preemptive strikes on U.S. tactical nuclear weapons in Italy and Turkey. Within hours the war is general. Final death toll: estimates range from 50 to 150 million.',
+      outcome: 'lose',
+      commentary: 'Demanding public submission destroys the loser\'s incentive to de-escalate. Modern crisis-management literature treats this as one of the cardinal mistakes a leader can make.',
+    },
+
+    endBerlin: {
+      kind: 'ending',
+      day: 'November 1962 — outcome',
+      text: 'You agree to leave Berlin in exchange for Soviet withdrawal from Cuba. Khrushchev wins the Cold War in a single negotiation. NATO collapses. West German voters elect a Soviet-aligned coalition by 1968.',
+      outcome: 'lose',
+      commentary: 'Linking Berlin to Cuba was Khrushchev\'s long-game ambition. JFK refused to negotiate Berlin under threat. Trading a NATO commitment for a Cuban withdrawal would have shattered the Western alliance.',
+    },
+
+    endIndefinite: {
+      kind: 'ending',
+      day: 'December 1962 — outcome',
+      text: 'You accept Soviet missiles in Cuba in exchange for inspection rights. The missiles stay. American voters revolt at the 1964 midterms. Republicans win the presidency in 1964 on a promise to "remove the missiles." A second crisis follows in 1965.',
+      outcome: 'lose',
+      commentary: 'Accepting fait accompli would have changed the Cold War strategic balance permanently and made the U.S. look unable to defend its hemisphere. JFK\'s refusal to accept the missiles, even at the risk of war, is one reason historians rank his handling of the crisis so highly.',
+    },
+
+    endLateStrike: {
+      kind: 'ending',
+      day: 'October 28, 1962 — outcome',
+      text: 'You strike with the missiles fully fueled. Several launch in the chaos. Tactical nuclear weapons hit Miami, New Orleans, and Atlanta. The retaliation that follows ends the world as planned.',
+      outcome: 'lose',
+      commentary: 'Time mattered. Once the missiles were operational, the strike option was no longer "preventive": it was a guarantee of nuclear retaliation. Waiting was the worst possible track.',
+    },
+  };
+
+  const setupMC = () => {
+    document.querySelectorAll<HTMLElement>('[data-mc]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+      const day = root.querySelector<HTMLElement>('[data-day]')!;
+      const scenario = root.querySelector<HTMLElement>('[data-scenario]')!;
+      const choicesEl = root.querySelector<HTMLElement>('[data-choices]')!;
+      const history = root.querySelector<HTMLElement>('[data-history]')!;
+      const endingBtns = root.querySelector<HTMLElement>('[data-ending-buttons]')!;
+      const restart = root.querySelector<HTMLButtonElement>('[data-restart]')!;
+      const pathLog = root.querySelector<HTMLElement>('[data-pathlog]')!;
+
+      let path: string[] = [];
+
+      const render = (key: string) => {
+        const node = tree[key];
+        if (!node) return;
+        path.push(key);
+        day.textContent = node.day;
+
+        if (node.kind === 'choice') {
+          scenario.textContent = node.text;
+          choicesEl.innerHTML = '';
+          history.classList.add('hidden');
+          endingBtns.classList.add('hidden');
+          node.choices.forEach((c, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 hover:border-accent-400 dark:hover:border-accent-600 transition-colors text-sm';
+            btn.innerHTML = `<span class="mt-0.5 inline-flex items-center justify-center h-5 w-5 rounded-full border border-ink-300 dark:border-ink-700 text-[10px] font-mono">${String.fromCharCode(65 + i)}</span><span class="flex-1">${c.label}</span>`;
+            btn.addEventListener('click', () => render(c.next));
+            choicesEl.appendChild(btn);
+          });
+        } else {
+          // Ending
+          scenario.textContent = node.text;
+          choicesEl.innerHTML = '';
+          const baseCls = 'mt-5 p-4 rounded-xl border-l-4 ';
+          history.className = baseCls + (
+            node.outcome === 'win' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100'
+              : node.outcome === 'mixed' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100'
+              : 'border-rose-500 bg-rose-50 dark:bg-rose-900/30 text-rose-900 dark:text-rose-100'
+          );
+          history.innerHTML = `<div class="text-xs uppercase tracking-[0.16em] font-semibold mb-2">Historical commentary</div><p class="text-sm leading-relaxed">${node.commentary}</p>`;
+          history.classList.remove('hidden');
+          endingBtns.classList.remove('hidden');
+          pathLog.textContent = `Path: ${path.length} decisions made`;
+        }
+      };
+
+      restart.addEventListener('click', () => {
+        path = [];
+        render('start');
+      });
+
+      render('start');
+    });
+  };
+  setupMC();
+  document.addEventListener('astro:after-swap', setupMC);
+</script>

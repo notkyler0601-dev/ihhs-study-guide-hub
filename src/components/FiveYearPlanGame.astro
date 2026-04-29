@@ -1,0 +1,232 @@
+---
+// Stalin's Five-Year Plan: a resource-allocation puzzle. The player
+// distributes 100 units of "Soviet labor" each year across five
+// categories. The game runs a simulation and surfaces consequences
+// (industrial growth, famine deaths, party purges, military
+// readiness). Five years per playthrough; final report card vs.
+// historical reality.
+//
+// Pure HTML/JS, no external dependencies.
+//
+// Usage: <FiveYearPlanGame />
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-fyp>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">☭</span>
+      Five-Year Plan: you are Stalin
+    </span>
+    <span class="text-xs text-ink-500" data-year>Year 1 of 5</span>
+  </header>
+
+  <div class="p-6 space-y-5">
+    <p class="text-sm text-ink-700 dark:text-ink-200 leading-relaxed">
+      Allocate 100 units of Soviet labor each year. The plan runs five years (1928–1933). At the end you'll see your Soviet Union next to the historical one.
+    </p>
+
+    <div data-allocator class="grid sm:grid-cols-2 gap-4"></div>
+
+    <div class="flex items-center justify-between gap-3 pt-2 border-t border-ink-200 dark:border-ink-800">
+      <div class="text-xs">
+        <span class="uppercase tracking-[0.14em] text-ink-500">Allocated</span>
+        <span class="ml-2 font-mono" data-total>0</span>
+        <span class="text-ink-400">/ 100</span>
+      </div>
+      <button data-advance type="button" disabled class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium">Advance year</button>
+    </div>
+
+    <div data-events class="hidden p-4 rounded-xl border-l-4 border-ink-300 dark:border-ink-700 bg-ink-50 dark:bg-ink-900/40 text-sm leading-relaxed"></div>
+
+    <div data-final class="hidden mt-2 p-5 rounded-xl border border-accent-200 dark:border-accent-800 bg-accent-50/50 dark:bg-accent-900/20"></div>
+
+    <div data-restart-row class="hidden flex justify-end">
+      <button data-restart type="button" class="px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-800 dark:bg-ink-200 dark:hover:bg-white dark:text-ink-900 text-white text-sm font-medium">↻ Restart</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Categories = 'Steel' | 'Grain' | 'Coal' | 'Tractors' | 'Education';
+  type Allocation = Record<Categories, number>;
+
+  const CATS: Categories[] = ['Steel', 'Grain', 'Coal', 'Tractors', 'Education'];
+  const DESCRIPTIONS: Record<Categories, string> = {
+    Steel: 'Heavy industry. Drives factories and weapons.',
+    Grain: 'Food for cities. Famine is the cost of neglect.',
+    Coal: 'Energy. Underpins everything else.',
+    Tractors: 'Mechanized farming. Helps grain over time.',
+    Education: 'Trained engineers. Pays off in later years.',
+  };
+
+  // Stalin's actual rough emphasis (illustrative, not exact)
+  const HISTORICAL: Allocation = { Steel: 30, Grain: 10, Coal: 25, Tractors: 15, Education: 20 };
+
+  const setupFYP = () => {
+    document.querySelectorAll<HTMLElement>('[data-fyp]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+      const allocator = root.querySelector<HTMLElement>('[data-allocator]')!;
+      const totalEl = root.querySelector<HTMLElement>('[data-total]')!;
+      const advanceBtn = root.querySelector<HTMLButtonElement>('[data-advance]')!;
+      const eventsEl = root.querySelector<HTMLElement>('[data-events]')!;
+      const yearEl = root.querySelector<HTMLElement>('[data-year]')!;
+      const finalEl = root.querySelector<HTMLElement>('[data-final]')!;
+      const restartRow = root.querySelector<HTMLElement>('[data-restart-row]')!;
+      const restartBtn = root.querySelector<HTMLButtonElement>('[data-restart]')!;
+
+      let year = 0;
+      const TOTAL_YEARS = 5;
+      const totals: Record<Categories, number> = { Steel: 0, Grain: 0, Coal: 0, Tractors: 0, Education: 0 };
+      let stats = { industrial: 0, famine: 0, military: 0, dissent: 0 };
+
+      const buildAllocator = () => {
+        allocator.innerHTML = '';
+        CATS.forEach((cat) => {
+          const wrap = document.createElement('label');
+          wrap.className = 'block';
+          wrap.innerHTML = `
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-semibold text-ink-900 dark:text-ink-100">${cat}</span>
+              <span class="text-sm font-mono tabular-nums" data-val>20</span>
+            </div>
+            <input type="range" min="0" max="60" step="5" value="20" class="w-full accent-accent-700" data-cat="${cat}" />
+            <p class="mt-1 text-xs text-ink-500 leading-snug">${DESCRIPTIONS[cat]}</p>
+          `;
+          allocator.appendChild(wrap);
+        });
+        recalcTotal();
+      };
+
+      const recalcTotal = () => {
+        let total = 0;
+        allocator.querySelectorAll<HTMLInputElement>('input[data-cat]').forEach((inp) => {
+          const v = Number(inp.value);
+          total += v;
+          inp.parentElement!.querySelector<HTMLElement>('[data-val]')!.textContent = String(v);
+        });
+        totalEl.textContent = String(total);
+        if (total === 100) {
+          totalEl.className = 'ml-2 font-mono text-emerald-700 dark:text-emerald-400 font-semibold';
+          advanceBtn.disabled = false;
+        } else {
+          totalEl.className = 'ml-2 font-mono ' + (total > 100 ? 'text-rose-600' : 'text-ink-500');
+          advanceBtn.disabled = true;
+        }
+      };
+
+      allocator.addEventListener('input', recalcTotal);
+
+      const readAllocation = (): Allocation => {
+        const a: Allocation = { Steel: 0, Grain: 0, Coal: 0, Tractors: 0, Education: 0 };
+        allocator.querySelectorAll<HTMLInputElement>('input[data-cat]').forEach((inp) => {
+          a[inp.dataset.cat as Categories] = Number(inp.value);
+        });
+        return a;
+      };
+
+      const simulateYear = (a: Allocation, y: number) => {
+        // Apply the allocation. Tractors compound grain output in later years.
+        const grainEffective = a.Grain + a.Tractors * 0.5 * (y / 5);
+        const industrialOutput = (a.Steel + a.Coal * 0.7 + a.Education * 0.3 * (y / 5));
+        const military = (a.Steel * 0.5 + a.Coal * 0.3);
+
+        stats.industrial += industrialOutput;
+        stats.military += military;
+
+        // Famine if grain too low
+        if (grainEffective < 20) {
+          const deathToll = (20 - grainEffective) * 50000 * y;
+          stats.famine += deathToll;
+        }
+
+        // Dissent if education too low or military too high relative to others
+        if (a.Education < 10) stats.dissent += 1;
+        if (a.Steel + a.Coal > 70) stats.dissent += 1;
+
+        // Generate per-year event text
+        const events: string[] = [];
+        if (grainEffective < 15) events.push(`Severe famine. Estimated ${Math.round((20 - grainEffective) * 50000 * y).toLocaleString()} dead this year.`);
+        else if (grainEffective < 25) events.push(`Bread shortages in cities; rationing imposed.`);
+        else events.push(`Grain quotas met. Cities fed.`);
+        if (a.Steel >= 25) events.push(`Steel quotas exceeded. Magnitogorsk expands.`);
+        if (a.Coal < 10) events.push(`Coal shortage shuts factories for weeks.`);
+        if (a.Tractors >= 20) events.push(`Tractor production accelerates collectivization.`);
+        if (a.Education >= 25) events.push(`New cohort of engineers graduates from technical institutes.`);
+        if (stats.dissent >= y) events.push(`NKVD reports rising party dissent. A purge is recommended.`);
+
+        return events;
+      };
+
+      const advanceYear = () => {
+        const a = readAllocation();
+        CATS.forEach((c) => totals[c] += a[c]);
+        year++;
+        const events = simulateYear(a, year);
+        yearEl.textContent = `Year ${year} of ${TOTAL_YEARS}`;
+        eventsEl.innerHTML = `<div class="text-xs uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">Year ${year} report</div>` +
+          events.map((e) => `<div class="mt-1">• ${e}</div>`).join('');
+        eventsEl.classList.remove('hidden');
+
+        if (year >= TOTAL_YEARS) finishGame();
+      };
+
+      const finishGame = () => {
+        advanceBtn.disabled = true;
+        advanceBtn.classList.add('hidden');
+        allocator.querySelectorAll<HTMLInputElement>('input[data-cat]').forEach((inp) => inp.disabled = true);
+
+        const totalIndustrial = Math.round(stats.industrial);
+        const famineDead = Math.round(stats.famine);
+        const totalMilitary = Math.round(stats.military);
+
+        const verdict = (() => {
+          if (famineDead > 4_000_000) return ['Catastrophic', 'You out-Stalin\'d Stalin. Tens of millions dead but USSR is industrialized. The price was hideous.'];
+          if (famineDead > 1_500_000 && totalIndustrial > 200) return ['Stalin\'s outcome', 'You replicated the historical Five-Year Plans roughly. ~4 million dead from famine but USSR industrializes enough to defeat Hitler in WWII.'];
+          if (famineDead > 1_500_000) return ['Famine, no industry', 'Your USSR starved its population without building enough factories. Political collapse follows.'];
+          if (totalMilitary < 80) return ['Soft power', 'You spared lives but the Wehrmacht reaches Moscow in 1941. The USSR collapses in WWII.'];
+          if (totalIndustrial > 250 && famineDead < 500_000) return ['Impossible balance', 'You achieved more industry than Stalin with less famine. Historians would call your approach unrealistic given 1930s Soviet conditions.'];
+          return ['Mixed', 'Your USSR survives but does not impress. The Cold War still happens; you are a footnote, not a colossus.'];
+        })();
+
+        const report = `
+          <div class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400 mb-2">${verdict[0]}</div>
+          <div class="font-serif text-lg leading-relaxed text-ink-900 dark:text-ink-50 mb-4">${verdict[1]}</div>
+          <table class="w-full text-sm">
+            <thead class="text-xs uppercase tracking-[0.14em] text-ink-500">
+              <tr><th class="text-left py-1">Metric</th><th class="text-right py-1">Yours</th><th class="text-right py-1">Stalin's actual</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="py-1">Industrial output</td><td class="text-right tabular-nums">${totalIndustrial}</td><td class="text-right tabular-nums text-ink-500">~250</td></tr>
+              <tr><td class="py-1">Military readiness</td><td class="text-right tabular-nums">${totalMilitary}</td><td class="text-right tabular-nums text-ink-500">~140</td></tr>
+              <tr><td class="py-1">Famine deaths</td><td class="text-right tabular-nums">${famineDead.toLocaleString()}</td><td class="text-right tabular-nums text-ink-500">~4,000,000</td></tr>
+              <tr><td class="py-1">Party dissent</td><td class="text-right tabular-nums">${stats.dissent}</td><td class="text-right tabular-nums text-ink-500">${'(suppressed by Great Purge)'.length} <span class="text-[10px]">(see Great Purge)</span></td></tr>
+            </tbody>
+          </table>
+          <p class="mt-4 text-xs text-ink-500 leading-relaxed">Stalin's actual Five-Year Plans drove rapid industrialization at the cost of an estimated 5–10 million deaths from famine, deportation, and forced labor between 1928 and 1933. The USSR went from a peasant economy to a global industrial power within a decade. Whether the human cost was justifiable remains one of the most-argued questions in 20th-century history.</p>
+        `;
+        finalEl.innerHTML = report;
+        finalEl.classList.remove('hidden');
+        restartRow.classList.remove('hidden');
+      };
+
+      advanceBtn.addEventListener('click', advanceYear);
+      restartBtn.addEventListener('click', () => {
+        year = 0;
+        Object.assign(stats, { industrial: 0, famine: 0, military: 0, dissent: 0 });
+        Object.assign(totals, { Steel: 0, Grain: 0, Coal: 0, Tractors: 0, Education: 0 });
+        finalEl.classList.add('hidden');
+        restartRow.classList.add('hidden');
+        eventsEl.classList.add('hidden');
+        advanceBtn.classList.remove('hidden');
+        advanceBtn.disabled = false;
+        yearEl.textContent = `Year 1 of ${TOTAL_YEARS}`;
+        buildAllocator();
+        allocator.querySelectorAll<HTMLInputElement>('input[data-cat]').forEach((inp) => inp.disabled = false);
+      });
+
+      buildAllocator();
+    });
+  };
+  setupFYP();
+  document.addEventListener('astro:after-swap', setupFYP);
+</script>

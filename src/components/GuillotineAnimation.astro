@@ -1,0 +1,167 @@
+---
+// Looping guillotine animation for the French Revolution / Reign of
+// Terror section of any guide. Pure SVG plus CSS keyframes, zero
+// external dependencies. Respects prefers-reduced-motion.
+//
+// Usage:
+//   <GuillotineAnimation />
+//
+// Props:
+//   target  Total executions to count up to. Default 17,000 (the
+//           commonly cited Reign of Terror figure).
+//   period  Seconds per blade cycle. Default 2.5s.
+
+interface Props {
+  target?: number;
+  period?: number;
+}
+const { target = 17000, period = 2.5 } = Astro.props;
+const id = 'guillotine-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft p-6 flex flex-col items-center gap-4" data-guillotine id={id}>
+  <div class="flex items-start gap-6 w-full justify-center">
+    <svg viewBox="0 0 200 280" class="h-64 w-auto" role="img" aria-label="Guillotine animation, blade rises and falls on a loop">
+      <!-- Wooden platform base -->
+      <rect x="20" y="240" width="160" height="20" fill="#3f2a1a" />
+      <rect x="20" y="240" width="160" height="3" fill="#1f140a" />
+
+      <!-- Two upright posts -->
+      <rect x="40" y="40" width="14" height="200" fill="#5a3b22" />
+      <rect x="146" y="40" width="14" height="200" fill="#5a3b22" />
+      <rect x="40" y="40" width="120" height="10" fill="#5a3b22" />
+
+      <!-- Wood grain on posts -->
+      <line x1="47" y1="50" x2="47" y2="240" stroke="#3f2a1a" stroke-width="1" />
+      <line x1="153" y1="50" x2="153" y2="240" stroke="#3f2a1a" stroke-width="1" />
+
+      <!-- Lunette (the wooden head holder) at the bottom -->
+      <rect x="60" y="220" width="80" height="14" fill="#3f2a1a" />
+      <circle cx="100" cy="227" r="9" fill="#1f140a" />
+
+      <!-- Basket below for the heads -->
+      <path d="M70 234 L130 234 L138 252 L62 252 Z" fill="#4a2a14" stroke="#1f140a" stroke-width="1" />
+      <line x1="75" y1="240" x2="75" y2="252" stroke="#3f2a1a" stroke-width="0.8" />
+      <line x1="85" y1="240" x2="85" y2="252" stroke="#3f2a1a" stroke-width="0.8" />
+      <line x1="95" y1="240" x2="95" y2="252" stroke="#3f2a1a" stroke-width="0.8" />
+      <line x1="105" y1="240" x2="105" y2="252" stroke="#3f2a1a" stroke-width="0.8" />
+      <line x1="115" y1="240" x2="115" y2="252" stroke="#3f2a1a" stroke-width="0.8" />
+      <line x1="125" y1="240" x2="125" y2="252" stroke="#3f2a1a" stroke-width="0.8" />
+
+      <!-- Blade group: weighted angled blade. Animates via CSS. -->
+      <g data-blade>
+        <!-- Heavy iron block above the angled blade for weight -->
+        <rect x="50" y="50" width="100" height="22" fill="#2c2c2c" stroke="#0a0a0a" stroke-width="1" />
+        <!-- Angled blade -->
+        <polygon points="50,72 150,72 150,82 130,108 70,108 50,82" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1" />
+        <!-- Highlight on the blade for menace -->
+        <polygon points="55,75 145,75 145,80 60,80" fill="#dc2626" opacity="0.7" />
+      </g>
+    </svg>
+
+    <div class="flex flex-col justify-center min-w-[140px]">
+      <div class="text-[11px] uppercase tracking-[0.18em] font-semibold text-ink-500 mb-1">Reign of Terror</div>
+      <div class="font-serif text-4xl font-semibold text-accent-700 dark:text-accent-400 tabular-nums" data-counter>0</div>
+      <div class="text-xs text-ink-500 dark:text-ink-400 mt-1">executed by guillotine, 1793–1794</div>
+
+      <button
+        type="button"
+        data-toggle
+        class="mt-4 inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-400 text-xs font-medium text-ink-700 dark:text-ink-200"
+        aria-label="Pause or resume the animation"
+      >
+        Pause
+      </button>
+    </div>
+  </div>
+
+  <figcaption class="text-xs text-ink-500 dark:text-ink-400 text-center max-w-md leading-relaxed">
+    The guillotine was sold to the public as a more humane and democratic way to execute, equal in death for noble and commoner alike. During the Reign of Terror, roughly 17,000 official executions were carried out, with thousands more dying in prison.
+  </figcaption>
+</figure>
+
+<style is:global>
+  [data-guillotine] [data-blade] {
+    transform-origin: center top;
+    animation: guillotineFall var(--guillotine-period, 2.5s) cubic-bezier(0.4, 0, 0.95, 0.4) infinite;
+  }
+  [data-guillotine][data-paused] [data-blade] {
+    animation-play-state: paused;
+  }
+  @keyframes guillotineFall {
+    0% { transform: translateY(0); }
+    35% { transform: translateY(0); }
+    40% { transform: translateY(-2px); }
+    65% { transform: translateY(140px); }
+    72% { transform: translateY(135px); }
+    100% { transform: translateY(0); }
+  }
+
+  /* Reduced motion: park the blade at the top, no animation. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-guillotine] [data-blade] {
+      animation: none !important;
+      transform: translateY(0) !important;
+    }
+  }
+  .a11y-reduce-motion [data-guillotine] [data-blade] {
+    animation: none !important;
+    transform: translateY(0) !important;
+  }
+</style>
+
+<script define:vars={{ target, period }}>
+  const setupGuillotine = () => {
+    document.querySelectorAll('[data-guillotine]:not([data-ready])').forEach((root) => {
+      root.setAttribute('data-ready', '1');
+      root.style.setProperty('--guillotine-period', period + 's');
+      const counter = root.querySelector('[data-counter]');
+      const toggle = root.querySelector('[data-toggle]');
+      if (!counter || !toggle) return;
+
+      // Respect reduced motion: just show the target number, no count-up.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.documentElement.classList.contains('a11y-reduce-motion');
+      if (reduceMotion) {
+        counter.textContent = target.toLocaleString();
+        toggle.textContent = 'Animation off';
+        toggle.disabled = true;
+        toggle.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      // 30-second count-up cycle then reset
+      const cycleMs = 30000;
+      let startTime = performance.now();
+      let paused = false;
+      let pausedAt = 0;
+
+      const tick = (now) => {
+        if (!root.isConnected) return;
+        if (paused) { requestAnimationFrame(tick); return; }
+        const elapsed = (now - startTime) % cycleMs;
+        const fraction = elapsed / cycleMs;
+        const value = Math.floor(target * fraction);
+        counter.textContent = value.toLocaleString();
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+
+      toggle.addEventListener('click', () => {
+        paused = !paused;
+        if (paused) {
+          pausedAt = performance.now();
+          root.setAttribute('data-paused', '1');
+          toggle.textContent = 'Resume';
+        } else {
+          // Shift startTime forward by the time we were paused so the count-up doesn't jump.
+          startTime += performance.now() - pausedAt;
+          root.removeAttribute('data-paused');
+          toggle.textContent = 'Pause';
+        }
+      });
+    });
+  };
+  setupGuillotine();
+  document.addEventListener('astro:after-swap', setupGuillotine);
+</script>

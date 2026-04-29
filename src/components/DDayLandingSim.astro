@@ -1,0 +1,354 @@
+---
+// D-Day landing simulation. Top-down view of Omaha Beach. Player
+// controls a soldier with WASD/arrow keys (or tap on touch) and tries
+// to reach the seawall under MG fire and a rising tide.
+//
+// Pure HTML5 canvas, vanilla JS, no game library.
+//
+// Usage: <DDayLandingSim />
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-dday>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">⚓</span>
+      D-Day, Omaha Beach
+    </span>
+    <span class="text-xs text-ink-500" data-status>Press start</span>
+  </header>
+
+  <div class="relative bg-ink-950" style="aspect-ratio: 16 / 11;">
+    <canvas data-canvas class="block w-full h-full" tabindex="0" aria-label="D-Day landing simulator. Use arrow keys or WASD to move."></canvas>
+
+    <!-- Reduced-motion fallback -->
+    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-ink-900/95 text-ink-50 p-6 text-center">
+      <div class="text-5xl mb-3">⚓</div>
+      <div class="font-serif text-xl mb-2">Omaha Beach, June 6, 1944</div>
+      <p class="text-sm text-ink-300 max-w-md leading-relaxed">
+        About 156,000 Allied soldiers landed across five Normandy beaches on D-Day. Roughly 3,000 died on Omaha alone, pinned down by MG-42 fire from the seawall. The interactive simulation has been disabled because you have reduced motion enabled.
+      </p>
+    </div>
+
+    <!-- Start overlay -->
+    <div data-start-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 backdrop-blur-sm text-ink-50 p-6 text-center">
+      <div class="text-5xl mb-3">⚓</div>
+      <div class="font-serif text-xl mb-1">Reach the seawall</div>
+      <p class="text-xs text-ink-300 max-w-sm leading-relaxed mb-4">
+        Move with arrow keys or WASD (tap to move on touch). MG nests sweep the beach. Tide is rising. You have one life per round.
+      </p>
+      <button data-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Start landing</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3 px-5 py-3 border-t border-ink-200 dark:border-ink-800 text-center text-xs">
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Rounds</div>
+      <div class="font-serif text-lg" data-rounds>0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Survived</div>
+      <div class="font-serif text-lg text-emerald-700 dark:text-emerald-400" data-survived>0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Best time</div>
+      <div class="font-serif text-lg" data-besttime>—</div>
+    </div>
+  </div>
+
+  <div class="px-5 py-3 border-t border-ink-200 dark:border-ink-800 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+    <strong>How it really went:</strong> June 6, 1944. About 156,000 Allied troops landed across five beaches in Normandy. ~3,000 died on Omaha alone, pinned down by MG-42 fire from the bluffs. Rangers eventually scaled the cliffs at Pointe du Hoc and broke the line. By nightfall the Allies held a fragile beachhead.
+  </div>
+</section>
+
+<script>
+  const setupDDay = () => {
+    document.querySelectorAll<HTMLElement>('[data-dday]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+      const status = root.querySelector<HTMLElement>('[data-status]')!;
+      const startOverlay = root.querySelector<HTMLElement>('[data-start-overlay]')!;
+      const startBtn = root.querySelector<HTMLButtonElement>('[data-start]')!;
+      const rmFallback = root.querySelector<HTMLElement>('[data-rm-fallback]')!;
+      const roundsEl = root.querySelector<HTMLElement>('[data-rounds]')!;
+      const survivedEl = root.querySelector<HTMLElement>('[data-survived]')!;
+      const bestTimeEl = root.querySelector<HTMLElement>('[data-besttime]')!;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.documentElement.classList.contains('a11y-reduce-motion');
+      if (reduceMotion) {
+        rmFallback.classList.remove('hidden');
+        startOverlay.classList.add('hidden');
+        return;
+      }
+
+      const ctx = canvas.getContext('2d')!;
+      let rounds = 0, survived = 0, bestTime = Infinity;
+      let running = false;
+
+      // Game state
+      const W = () => canvas.width;
+      const H = () => canvas.height;
+      let player: { x: number; y: number; r: number; alive: boolean };
+      let bullets: { x: number; y: number; vy: number; life: number }[];
+      let tide: number; // y-coord of the rising water
+      let nests: { x: number; y: number; t: number; cooldown: number }[];
+      let startTimeMs = 0;
+
+      // Touch / tap-to-move target
+      let moveTarget: { x: number; y: number } | null = null;
+      const keys = new Set<string>();
+
+      const resize = () => {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      const reset = () => {
+        player = { x: W() / 2, y: H() - 24, r: 7, alive: true };
+        bullets = [];
+        tide = H() - 6;
+        // 4 MG nests at the top, evenly spaced
+        nests = [];
+        for (let i = 0; i < 4; i++) {
+          nests.push({ x: W() * (0.18 + i * 0.22), y: 28, t: i * 0.4, cooldown: 0 });
+        }
+        startTimeMs = performance.now();
+        moveTarget = null;
+      };
+
+      const drawBackground = () => {
+        // Sand gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, H());
+        grad.addColorStop(0, '#3a2a14'); // dark cliff/seawall area
+        grad.addColorStop(0.15, '#7c5a30');
+        grad.addColorStop(0.75, '#c9a16a');
+        grad.addColorStop(0.95, '#7e6a4f');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W(), H());
+
+        // Seawall band
+        ctx.fillStyle = '#1f140a';
+        ctx.fillRect(0, 0, W(), 50);
+        ctx.fillStyle = '#3f2a1a';
+        ctx.fillRect(0, 50, W(), 6);
+
+        // Tide (water creeping up from the bottom)
+        const grad2 = ctx.createLinearGradient(0, tide, 0, H());
+        grad2.addColorStop(0, 'rgba(38, 94, 124, 0.7)');
+        grad2.addColorStop(1, 'rgba(20, 50, 70, 0.95)');
+        ctx.fillStyle = grad2;
+        ctx.fillRect(0, tide, W(), H() - tide);
+
+        // Random debris on the sand
+        ctx.fillStyle = 'rgba(20, 14, 6, 0.18)';
+        for (let i = 0; i < 18; i++) {
+          const x = (i * 53.7) % W();
+          const y = 70 + ((i * 91) % (tide - 100));
+          ctx.fillRect(x, y, 3, 2);
+        }
+      };
+
+      const drawNests = () => {
+        for (const n of nests) {
+          // Nest box
+          ctx.fillStyle = '#2c2c2c';
+          ctx.fillRect(n.x - 9, n.y - 6, 18, 12);
+          // Muzzle flash on cooldown
+          if (n.cooldown > 0.85) {
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(n.x, n.y + 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      };
+
+      const drawBullets = () => {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        for (const b of bullets) {
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y);
+          ctx.lineTo(b.x, b.y + 8);
+          ctx.stroke();
+        }
+      };
+
+      const drawPlayer = () => {
+        if (!player.alive) {
+          // Body
+          ctx.fillStyle = '#7f1d1d';
+          ctx.beginPath();
+          ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+          ctx.fill();
+          // Splatter
+          ctx.fillStyle = 'rgba(127, 29, 29, 0.45)';
+          for (let i = 0; i < 6; i++) {
+            const ang = (i / 6) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.arc(player.x + Math.cos(ang) * 12, player.y + Math.sin(ang) * 12, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          return;
+        }
+        // Live soldier: green helmet + red marker
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(player.x - 1, player.y - 1, 2, 2);
+      };
+
+      let lastTs = performance.now();
+      const loop = (now: number) => {
+        if (!running) return;
+        const dt = Math.min(0.05, (now - lastTs) / 1000);
+        lastTs = now;
+
+        // Movement input
+        if (player.alive) {
+          let dx = 0, dy = 0;
+          if (keys.has('ArrowUp') || keys.has('KeyW')) dy -= 1;
+          if (keys.has('ArrowDown') || keys.has('KeyS')) dy += 1;
+          if (keys.has('ArrowLeft') || keys.has('KeyA')) dx -= 1;
+          if (keys.has('ArrowRight') || keys.has('KeyD')) dx += 1;
+          if (moveTarget) {
+            const tx = moveTarget.x - player.x;
+            const ty = moveTarget.y - player.y;
+            const len = Math.hypot(tx, ty);
+            if (len < 4) moveTarget = null;
+            else { dx = tx / len; dy = ty / len; }
+          }
+          const len = Math.hypot(dx, dy) || 1;
+          const speed = 110;
+          player.x = Math.max(player.r, Math.min(W() - player.r, player.x + (dx / len) * speed * dt));
+          player.y = Math.max(56 + player.r, Math.min(H() - player.r, player.y + (dy / len) * speed * dt));
+        }
+
+        // Tide rises
+        tide -= 4 * dt;
+        if (player.alive && player.y > tide) {
+          // Drowned / pushed back; treat as a loss
+          player.alive = false;
+          status.textContent = 'Drowned in the surf.';
+          finalize(false);
+        }
+
+        // MG nests fire bursts
+        for (const n of nests) {
+          n.t += dt;
+          n.cooldown = Math.max(0, n.cooldown - dt);
+          if (n.t > 1.4 + Math.sin(n.x * 0.01) * 0.4) {
+            n.t = 0;
+            n.cooldown = 1.0;
+            // Burst of 4 bullets aimed at a random downbeach band
+            const aimX = n.x + (Math.random() - 0.5) * W() * 0.4;
+            for (let i = 0; i < 4; i++) {
+              bullets.push({ x: aimX + (Math.random() - 0.5) * 30, y: n.y + 14, vy: 380 + Math.random() * 80, life: 2 });
+            }
+          }
+        }
+
+        // Update bullets
+        for (const b of bullets) {
+          b.y += b.vy * dt;
+          b.life -= dt;
+        }
+        bullets = bullets.filter((b) => b.life > 0 && b.y < H() + 20);
+
+        // Hit detection
+        if (player.alive) {
+          for (const b of bullets) {
+            const dx = b.x - player.x;
+            const dy = b.y - player.y;
+            if (dx * dx + dy * dy < (player.r + 2) ** 2) {
+              player.alive = false;
+              status.textContent = 'Hit by MG fire.';
+              finalize(false);
+              break;
+            }
+          }
+        }
+
+        // Win condition
+        if (player.alive && player.y < 56 + player.r + 1) {
+          player.alive = false;
+          const time = (performance.now() - startTimeMs) / 1000;
+          if (time < bestTime) bestTime = time;
+          status.textContent = `Reached the seawall in ${time.toFixed(1)}s.`;
+          survived++;
+          rounds++;
+          updateStats();
+          running = false;
+          setTimeout(showRestart, 1200);
+          return;
+        }
+
+        // Render
+        ctx.clearRect(0, 0, W(), H());
+        drawBackground();
+        drawNests();
+        drawBullets();
+        drawPlayer();
+
+        requestAnimationFrame(loop);
+      };
+
+      const updateStats = () => {
+        roundsEl.textContent = String(rounds);
+        survivedEl.textContent = String(survived);
+        bestTimeEl.textContent = bestTime === Infinity ? '—' : `${bestTime.toFixed(1)}s`;
+      };
+
+      const finalize = (won: boolean) => {
+        rounds++;
+        if (won) survived++;
+        updateStats();
+        running = false;
+        setTimeout(showRestart, 1200);
+      };
+
+      const showRestart = () => {
+        startOverlay.classList.remove('hidden');
+        startBtn.textContent = 'Try again';
+        startOverlay.querySelector('div.font-serif')!.textContent = 'Press start to retry';
+      };
+
+      const start = () => {
+        startOverlay.classList.add('hidden');
+        reset();
+        running = true;
+        lastTs = performance.now();
+        canvas.focus();
+        status.textContent = 'Run for the wall.';
+        requestAnimationFrame(loop);
+      };
+
+      startBtn.addEventListener('click', start);
+      window.addEventListener('keydown', (e) => {
+        if (!running) return;
+        keys.add(e.code);
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+      });
+      window.addEventListener('keyup', (e) => keys.delete(e.code));
+
+      // Tap-to-move on canvas
+      canvas.addEventListener('pointerdown', (e) => {
+        if (!running) return;
+        const rect = canvas.getBoundingClientRect();
+        moveTarget = {
+          x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+          y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+        };
+      });
+
+      updateStats();
+    });
+  };
+  setupDDay();
+  document.addEventListener('astro:after-swap', setupDDay);
+</script>

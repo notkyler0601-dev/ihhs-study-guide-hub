@@ -1,0 +1,372 @@
+---
+// WWI trench warfare mini-game. Top-down view of no-man's land
+// between Allied (bottom) and German (top) trenches. Player goes
+// "over the top" and tries to advance 100 meters under MG arcs and
+// random artillery. Each round logs distance gained.
+//
+// Pure HTML5 canvas. Vanilla JS. Touch + keyboard controls.
+//
+// Usage: <TrenchWarfareSim />
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-trench>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">⚔</span>
+      Over the top: WWI no-man's land
+    </span>
+    <span class="text-xs text-ink-500" data-status>Press start</span>
+  </header>
+
+  <div class="relative" style="aspect-ratio: 16 / 11;">
+    <canvas data-canvas class="block w-full h-full bg-[#3a2e1f]" tabindex="0" aria-label="WWI trench warfare simulator. Use arrow keys or WASD to advance."></canvas>
+
+    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-ink-900/95 text-ink-50 p-6 text-center">
+      <div class="text-5xl mb-3">⚔</div>
+      <div class="font-serif text-xl mb-2">No-man's land, 1916</div>
+      <p class="text-sm text-ink-300 max-w-md leading-relaxed">
+        The Battle of the Somme cost 1.2 million casualties. Average territorial gain: roughly 6 miles in 5 months. The interactive simulation has been disabled because you have reduced motion enabled.
+      </p>
+    </div>
+
+    <div data-start-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 backdrop-blur-sm text-ink-50 p-6 text-center">
+      <div class="text-5xl mb-3">⚔</div>
+      <div class="font-serif text-xl mb-1">Take the enemy trench</div>
+      <p class="text-xs text-ink-300 max-w-sm leading-relaxed mb-4">
+        100 meters of mud lies between you and them. Move with arrow keys / WASD or tap-to-walk. MG arcs sweep predictably; artillery is random.
+      </p>
+      <button data-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Whistle blows</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3 px-5 py-3 border-t border-ink-200 dark:border-ink-800 text-center text-xs">
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Assaults</div>
+      <div class="font-serif text-lg" data-assaults>0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Avg. m gained</div>
+      <div class="font-serif text-lg" data-avg>0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Best</div>
+      <div class="font-serif text-lg text-emerald-700 dark:text-emerald-400" data-best>0 m</div>
+    </div>
+  </div>
+
+  <div class="px-5 py-3 border-t border-ink-200 dark:border-ink-800 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+    <strong>Why this was hell:</strong> The Battle of the Somme (July to November 1916) cost ~1.2 million casualties for territorial gains of about 6 miles. Trench warfare on the Western Front turned into a 4-year stalemate because defensive technology (MGs, barbed wire, artillery) outpaced offensive technology until tanks and combined arms emerged in 1918.
+  </div>
+</section>
+
+<script>
+  const setupTrench = () => {
+    document.querySelectorAll<HTMLElement>('[data-trench]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+      const status = root.querySelector<HTMLElement>('[data-status]')!;
+      const startOverlay = root.querySelector<HTMLElement>('[data-start-overlay]')!;
+      const startBtn = root.querySelector<HTMLButtonElement>('[data-start]')!;
+      const rmFallback = root.querySelector<HTMLElement>('[data-rm-fallback]')!;
+      const assaultsEl = root.querySelector<HTMLElement>('[data-assaults]')!;
+      const avgEl = root.querySelector<HTMLElement>('[data-avg]')!;
+      const bestEl = root.querySelector<HTMLElement>('[data-best]')!;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.documentElement.classList.contains('a11y-reduce-motion');
+      if (reduceMotion) { rmFallback.classList.remove('hidden'); startOverlay.classList.add('hidden'); return; }
+
+      const ctx = canvas.getContext('2d')!;
+      const W = () => canvas.width;
+      const H = () => canvas.height;
+
+      let assaults = 0;
+      let totalGain = 0;
+      let best = 0;
+      let running = false;
+
+      let player: { x: number; y: number; r: number; alive: boolean };
+      let arcAngle = 0; // for MG sweeping arcs
+      let shells: { x: number; y: number; t: number; max: number; rad: number }[];
+      let bullets: { x: number; y: number; vx: number; vy: number; life: number }[];
+
+      const keys = new Set<string>();
+      let moveTarget: { x: number; y: number } | null = null;
+
+      const resize = () => {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      const reset = () => {
+        player = { x: W() / 2, y: H() - 35, r: 7, alive: true };
+        shells = [];
+        bullets = [];
+        arcAngle = 0;
+        moveTarget = null;
+      };
+
+      const drawBackground = () => {
+        // Dirt brown
+        ctx.fillStyle = '#3a2e1f';
+        ctx.fillRect(0, 0, W(), H());
+        // Random shell craters
+        ctx.fillStyle = '#1f140a';
+        for (let i = 0; i < 20; i++) {
+          const cx = ((i * 71.3) % W());
+          const cy = 50 + ((i * 113) % (H() - 100));
+          ctx.beginPath();
+          ctx.arc(cx, cy, 8 + (i % 5) * 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Allied trench (bottom)
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(0, H() - 24, W(), 24);
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, H() - 28, W(), 4);
+        // German trench (top)
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(0, 0, W(), 30);
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 30, W(), 4);
+        // Barbed wire bands
+        ctx.strokeStyle = '#5a4a3a';
+        ctx.lineWidth = 1;
+        for (let y = 50; y < H() - 50; y += 60) {
+          ctx.beginPath();
+          for (let x = 0; x < W(); x += 6) {
+            const off = ((x + y) % 12) - 6;
+            ctx.moveTo(x, y + off);
+            ctx.lineTo(x + 6, y - off);
+          }
+          ctx.stroke();
+        }
+      };
+
+      const drawMGArcs = (now: number) => {
+        // Two MG nests in the German trench, arcs sweep
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.08)';
+        const nests = [W() * 0.3, W() * 0.7];
+        for (const nx of nests) {
+          const ang = arcAngle + (nx / W()) * 1.5;
+          const swept = Math.sin(ang) * 0.6;
+          ctx.beginPath();
+          ctx.moveTo(nx, 30);
+          ctx.arc(nx, 30, H() * 0.85, Math.PI / 2 - 0.3 + swept, Math.PI / 2 + 0.3 + swept);
+          ctx.closePath();
+          ctx.fill();
+        }
+      };
+
+      const drawShells = () => {
+        for (const s of shells) {
+          const phase = s.t / s.max;
+          if (phase < 0.7) {
+            // Incoming shell warning ring
+            const r = s.rad * (1 - phase / 0.7);
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+          } else {
+            // Explosion
+            const ePhase = (phase - 0.7) / 0.3;
+            ctx.fillStyle = `rgba(251, 191, 36, ${1 - ePhase})`;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.rad * (1 + ePhase), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = `rgba(220, 38, 38, ${0.6 - ePhase * 0.6})`;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.rad * 0.7 * (1 + ePhase), 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      };
+
+      const drawBullets = () => {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        for (const b of bullets) {
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y);
+          ctx.lineTo(b.x - b.vx * 0.02, b.y - b.vy * 0.02);
+          ctx.stroke();
+        }
+      };
+
+      const drawPlayer = () => {
+        if (!player.alive) {
+          ctx.fillStyle = '#7f1d1d';
+          ctx.beginPath();
+          ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+          ctx.fill();
+          return;
+        }
+        ctx.fillStyle = '#84603c'; // Allied khaki
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+        ctx.fill();
+        // Helmet
+        ctx.fillStyle = '#3a2e1f';
+        ctx.fillRect(player.x - 5, player.y - 7, 10, 4);
+      };
+
+      let lastTs = performance.now();
+      const finalize = () => {
+        // Convert distance to "meters" — 100 m = full beach
+        const distance = Math.max(0, Math.min(100, Math.round((H() - 35 - player.y) / (H() - 70) * 100)));
+        assaults++;
+        totalGain += distance;
+        if (distance > best) best = distance;
+        assaultsEl.textContent = String(assaults);
+        avgEl.textContent = `${Math.round(totalGain / assaults)} m`;
+        bestEl.textContent = `${best} m`;
+        running = false;
+        setTimeout(showRestart, 1300);
+      };
+
+      const showRestart = () => {
+        startOverlay.classList.remove('hidden');
+        startBtn.textContent = 'Whistle blows again';
+        startOverlay.querySelector('div.font-serif')!.textContent = 'Press for the next assault';
+      };
+
+      const loop = (now: number) => {
+        if (!running) return;
+        const dt = Math.min(0.05, (now - lastTs) / 1000);
+        lastTs = now;
+        arcAngle += dt * 0.7;
+
+        // Movement
+        if (player.alive) {
+          let dx = 0, dy = 0;
+          if (keys.has('ArrowUp') || keys.has('KeyW')) dy -= 1;
+          if (keys.has('ArrowDown') || keys.has('KeyS')) dy += 1;
+          if (keys.has('ArrowLeft') || keys.has('KeyA')) dx -= 1;
+          if (keys.has('ArrowRight') || keys.has('KeyD')) dx += 1;
+          if (moveTarget) {
+            const tx = moveTarget.x - player.x;
+            const ty = moveTarget.y - player.y;
+            const len = Math.hypot(tx, ty);
+            if (len < 4) moveTarget = null;
+            else { dx = tx / len; dy = ty / len; }
+          }
+          const len = Math.hypot(dx, dy) || 1;
+          const speed = 90; // slower than DDay; mud
+          player.x = Math.max(player.r, Math.min(W() - player.r, player.x + (dx / len) * speed * dt));
+          player.y = Math.max(34 + player.r, Math.min(H() - player.r, player.y + (dy / len) * speed * dt));
+        }
+
+        // Win condition
+        if (player.alive && player.y < 34 + player.r + 1) {
+          player.alive = false;
+          status.textContent = 'You took the trench. Almost certainly never happened in real WWI.';
+          finalize();
+          return;
+        }
+
+        // Random artillery shells
+        if (Math.random() < 0.04) {
+          shells.push({
+            x: Math.random() * W(),
+            y: 60 + Math.random() * (H() - 120),
+            t: 0,
+            max: 1.2,
+            rad: 30 + Math.random() * 25,
+          });
+        }
+        for (const s of shells) {
+          s.t += dt;
+          // Damage at peak of explosion
+          if (s.t > s.max * 0.7 && s.t < s.max * 0.9 && player.alive) {
+            const dx = player.x - s.x, dy = player.y - s.y;
+            if (dx * dx + dy * dy < (s.rad * 1.1) ** 2) {
+              player.alive = false;
+              status.textContent = 'Hit by artillery shell.';
+              finalize();
+              return;
+            }
+          }
+        }
+        shells = shells.filter((s) => s.t < s.max);
+
+        // MG fire from arcs
+        if (Math.random() < 0.6) {
+          const nests = [W() * 0.3, W() * 0.7];
+          for (const nx of nests) {
+            const ang = arcAngle + (nx / W()) * 1.5;
+            const swept = Math.sin(ang) * 0.6;
+            const dir = Math.PI / 2 + swept;
+            bullets.push({
+              x: nx,
+              y: 30,
+              vx: Math.cos(dir) * 280,
+              vy: Math.sin(dir) * 280,
+              life: 2.5,
+            });
+          }
+        }
+        for (const b of bullets) {
+          b.x += b.vx * dt;
+          b.y += b.vy * dt;
+          b.life -= dt;
+        }
+        bullets = bullets.filter((b) => b.life > 0 && b.y < H() && b.x > 0 && b.x < W());
+
+        if (player.alive) {
+          for (const b of bullets) {
+            const dx = b.x - player.x, dy = b.y - player.y;
+            if (dx * dx + dy * dy < (player.r + 2) ** 2) {
+              player.alive = false;
+              status.textContent = 'Cut down by MG fire.';
+              finalize();
+              return;
+            }
+          }
+        }
+
+        // Render
+        ctx.clearRect(0, 0, W(), H());
+        drawBackground();
+        drawMGArcs(now);
+        drawShells();
+        drawBullets();
+        drawPlayer();
+
+        requestAnimationFrame(loop);
+      };
+
+      const start = () => {
+        startOverlay.classList.add('hidden');
+        reset();
+        running = true;
+        lastTs = performance.now();
+        canvas.focus();
+        status.textContent = 'Forward.';
+        requestAnimationFrame(loop);
+      };
+
+      startBtn.addEventListener('click', start);
+      window.addEventListener('keydown', (e) => {
+        if (!running) return;
+        keys.add(e.code);
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+      });
+      window.addEventListener('keyup', (e) => keys.delete(e.code));
+      canvas.addEventListener('pointerdown', (e) => {
+        if (!running) return;
+        const rect = canvas.getBoundingClientRect();
+        moveTarget = {
+          x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+          y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+        };
+      });
+    });
+  };
+  setupTrench();
+  document.addEventListener('astro:after-swap', setupTrench);
+</script>

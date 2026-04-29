@@ -1,0 +1,293 @@
+---
+// "Spot the Vietcong" jungle game. Stylized SVG jungle with a
+// camouflaged figure hidden behind procedurally-placed leaves. Player
+// has a few seconds to click where they see the figure. 10 rounds.
+//
+// Pedagogical hook: shows why the Vietcong's use of dense jungle
+// terrain made U.S. patrol operations so difficult during the
+// Vietnam War.
+//
+// Usage: <JungleSpot />
+
+interface Props {
+  rounds?: number;
+  secondsPerRound?: number;
+}
+const { rounds = 10, secondsPerRound = 5 } = Astro.props;
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-jungle data-rounds={rounds} data-spr={secondsPerRound}>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">🌿</span>
+      Spot the Vietcong
+    </span>
+    <span class="text-xs text-ink-500" data-status>Press start</span>
+  </header>
+
+  <div class="relative" style="aspect-ratio: 16 / 10;">
+    <svg data-svg viewBox="0 0 800 500" class="block w-full h-full bg-[#1a2a18] cursor-crosshair" preserveAspectRatio="xMidYMid slice" aria-label="Jungle scene with hidden Vietcong soldier"></svg>
+
+    <div data-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 backdrop-blur-sm text-ink-50 p-6 text-center">
+      <div class="text-5xl mb-3">🌿</div>
+      <div class="font-serif text-xl mb-1" data-overlay-title>Spot the Vietcong</div>
+      <p class="text-xs text-ink-300 max-w-sm leading-relaxed mb-4" data-overlay-body>
+        The Vietcong used dense jungle to ambush U.S. patrols. American troops trained to spot them in seconds. Try it yourself: 10 rounds, ~5 seconds each. Click the soldier when you see them.
+      </p>
+      <button data-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Start</button>
+    </div>
+
+    <!-- Reduced-motion fallback -->
+    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-ink-900/95 text-ink-50 p-6 text-center">
+      <div class="text-5xl mb-3">🌿</div>
+      <div class="font-serif text-xl mb-2">Vietcong used jungle camouflage</div>
+      <p class="text-sm text-ink-300 max-w-md leading-relaxed">
+        American troops faced an enemy that could vanish into the foliage. The interactive game has been disabled because you have reduced motion enabled.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3 px-5 py-3 border-t border-ink-200 dark:border-ink-800 text-center text-xs">
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Round</div>
+      <div class="font-serif text-lg" data-round>0 / 0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Spotted</div>
+      <div class="font-serif text-lg text-emerald-700 dark:text-emerald-400" data-spotted>0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Avg. time</div>
+      <div class="font-serif text-lg" data-avgtime>—</div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const setupJungle = () => {
+    document.querySelectorAll<HTMLElement>('[data-jungle]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+      const svg = root.querySelector<SVGSVGElement>('[data-svg]')!;
+      const overlay = root.querySelector<HTMLElement>('[data-overlay]')!;
+      const overlayTitle = root.querySelector<HTMLElement>('[data-overlay-title]')!;
+      const overlayBody = root.querySelector<HTMLElement>('[data-overlay-body]')!;
+      const startBtn = root.querySelector<HTMLButtonElement>('[data-start]')!;
+      const rmFallback = root.querySelector<HTMLElement>('[data-rm-fallback]')!;
+      const status = root.querySelector<HTMLElement>('[data-status]')!;
+      const roundEl = root.querySelector<HTMLElement>('[data-round]')!;
+      const spottedEl = root.querySelector<HTMLElement>('[data-spotted]')!;
+      const avgTimeEl = root.querySelector<HTMLElement>('[data-avgtime]')!;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.documentElement.classList.contains('a11y-reduce-motion');
+      if (reduceMotion) {
+        rmFallback.classList.remove('hidden');
+        overlay.classList.add('hidden');
+        return;
+      }
+
+      const TOTAL_ROUNDS = Number(root.dataset.rounds || '10');
+      const SECONDS = Number(root.dataset.spr || '5');
+
+      let round = 0;
+      let spotted = 0;
+      let totalTime = 0;
+      let roundStart = 0;
+      let timerHandle: number | null = null;
+      let solved = false;
+      let figureBox: { x: number; y: number; w: number; h: number } | null = null;
+
+      const rand = (min: number, max: number) => min + Math.random() * (max - min);
+      const choice = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+      const drawJungle = () => {
+        // Wipe SVG
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+        // Backdrop
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('x', '0'); bg.setAttribute('y', '0');
+        bg.setAttribute('width', '800'); bg.setAttribute('height', '500');
+        bg.setAttribute('fill', '#13231a');
+        svg.appendChild(bg);
+
+        // Layered procedural leaves
+        const leafColors = ['#1f3a25', '#264e2e', '#2f6238', '#3a7842', '#1b3a23', '#2d5a37', '#0e1e14'];
+        const trunkColors = ['#3a2a1a', '#2a1d10', '#4a3526'];
+
+        // Tree trunks for depth
+        for (let i = 0; i < 6; i++) {
+          const x = rand(0, 800);
+          const w = rand(18, 36);
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          t.setAttribute('x', String(x));
+          t.setAttribute('y', String(rand(60, 200)));
+          t.setAttribute('width', String(w));
+          t.setAttribute('height', String(rand(280, 440)));
+          t.setAttribute('fill', choice(trunkColors));
+          t.setAttribute('opacity', String(rand(0.7, 0.95)));
+          svg.appendChild(t);
+        }
+
+        // Place the hidden figure first so subsequent leaves cover the soldier partially
+        const figureGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const fx = rand(80, 700);
+        const fy = rand(120, 380);
+        figureBox = { x: fx - 14, y: fy - 18, w: 28, h: 38 };
+        // Body (very camouflaged green-brown blend)
+        const body = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        body.setAttribute('x', String(fx - 8));
+        body.setAttribute('y', String(fy - 10));
+        body.setAttribute('width', '16');
+        body.setAttribute('height', '24');
+        body.setAttribute('rx', '4');
+        body.setAttribute('fill', '#2d3d22');
+        figureGroup.appendChild(body);
+        // Head
+        const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        head.setAttribute('cx', String(fx));
+        head.setAttribute('cy', String(fy - 14));
+        head.setAttribute('r', '5');
+        head.setAttribute('fill', '#3d4a30');
+        figureGroup.appendChild(head);
+        // Tiny rifle hint
+        const rifle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rifle.setAttribute('x', String(fx + 4));
+        rifle.setAttribute('y', String(fy - 4));
+        rifle.setAttribute('width', '12');
+        rifle.setAttribute('height', '2');
+        rifle.setAttribute('fill', '#1a1a1a');
+        figureGroup.appendChild(rifle);
+        figureGroup.setAttribute('data-figure', '1');
+        svg.appendChild(figureGroup);
+
+        // Foliage layers (lots of leaves to camouflage)
+        for (let i = 0; i < 220; i++) {
+          const x = rand(-20, 820);
+          const y = rand(-20, 520);
+          const r = rand(8, 28);
+          const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+          leaf.setAttribute('cx', String(x));
+          leaf.setAttribute('cy', String(y));
+          leaf.setAttribute('rx', String(r));
+          leaf.setAttribute('ry', String(r * 0.55));
+          leaf.setAttribute('transform', `rotate(${rand(0, 360)} ${x} ${y})`);
+          leaf.setAttribute('fill', choice(leafColors));
+          leaf.setAttribute('opacity', String(rand(0.55, 0.95)));
+          svg.appendChild(leaf);
+        }
+
+        // Top canopy darker layer
+        const canopy = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        canopy.setAttribute('x', '0');
+        canopy.setAttribute('y', '0');
+        canopy.setAttribute('width', '800');
+        canopy.setAttribute('height', '60');
+        canopy.setAttribute('fill', 'url(#canopyGrad)');
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad.setAttribute('id', 'canopyGrad');
+        grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
+        grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
+        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', '#0a1a0e');
+        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', 'rgba(10,26,14,0)');
+        grad.appendChild(stop1); grad.appendChild(stop2);
+        defs.appendChild(grad);
+        svg.appendChild(defs);
+        svg.appendChild(canopy);
+      };
+
+      const startRound = () => {
+        round++;
+        solved = false;
+        if (round > TOTAL_ROUNDS) { finishGame(); return; }
+        roundEl.textContent = `${round} / ${TOTAL_ROUNDS}`;
+        status.textContent = `${SECONDS}s to spot...`;
+        drawJungle();
+        roundStart = performance.now();
+        if (timerHandle) clearTimeout(timerHandle);
+        timerHandle = window.setTimeout(timeOut, SECONDS * 1000);
+      };
+
+      const revealFigure = () => {
+        const fig = svg.querySelector<SVGGElement>('[data-figure]');
+        if (!fig) return;
+        // Outline circle around the figure
+        if (figureBox) {
+          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          ring.setAttribute('cx', String(figureBox.x + figureBox.w / 2));
+          ring.setAttribute('cy', String(figureBox.y + figureBox.h / 2));
+          ring.setAttribute('r', '32');
+          ring.setAttribute('fill', 'none');
+          ring.setAttribute('stroke', '#dc2626');
+          ring.setAttribute('stroke-width', '3');
+          ring.setAttribute('opacity', '0.9');
+          svg.appendChild(ring);
+        }
+      };
+
+      const timeOut = () => {
+        if (solved) return;
+        solved = true;
+        status.textContent = 'Time up. Hidden in plain sight.';
+        revealFigure();
+        setTimeout(startRound, 1500);
+      };
+
+      const onSvgClick = (e: MouseEvent) => {
+        if (solved || !figureBox || round === 0 || round > TOTAL_ROUNDS) return;
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX; pt.y = e.clientY;
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return;
+        const local = pt.matrixTransform(ctm.inverse());
+        const inside =
+          local.x >= figureBox.x &&
+          local.x <= figureBox.x + figureBox.w &&
+          local.y >= figureBox.y &&
+          local.y <= figureBox.y + figureBox.h;
+        if (inside) {
+          solved = true;
+          if (timerHandle) clearTimeout(timerHandle);
+          const dt = (performance.now() - roundStart) / 1000;
+          totalTime += dt;
+          spotted++;
+          status.textContent = `Spotted in ${dt.toFixed(1)}s.`;
+          spottedEl.textContent = String(spotted);
+          revealFigure();
+          setTimeout(startRound, 900);
+        }
+      };
+      svg.addEventListener('click', onSvgClick);
+
+      const finishGame = () => {
+        const avg = spotted > 0 ? (totalTime / spotted).toFixed(1) + 's' : '—';
+        avgTimeEl.textContent = avg;
+        status.textContent = `Game over. ${spotted}/${TOTAL_ROUNDS} spotted.`;
+        overlay.classList.remove('hidden');
+        overlayTitle.textContent = `${spotted} / ${TOTAL_ROUNDS} spotted`;
+        overlayBody.textContent = spotted >= 7
+          ? 'Excellent eye. You would have survived more patrols than most.'
+          : spotted >= 4
+          ? 'Mixed results. The jungle was a real adversary, even with binoculars.'
+          : 'Almost none. The Vietcong used this terrain advantage at scale; U.S. casualties from ambushes were high.';
+        startBtn.textContent = 'Play again';
+      };
+
+      const start = () => {
+        round = 0;
+        spotted = 0;
+        totalTime = 0;
+        spottedEl.textContent = '0';
+        avgTimeEl.textContent = '—';
+        overlay.classList.add('hidden');
+        startRound();
+      };
+      startBtn.addEventListener('click', start);
+    });
+  };
+  setupJungle();
+  document.addEventListener('astro:after-swap', setupJungle);
+</script>
