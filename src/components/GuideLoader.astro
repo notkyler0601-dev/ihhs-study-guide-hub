@@ -1,0 +1,399 @@
+---
+// GuideLoader: full-screen overlay that warms up a heavy guide before
+// the user starts scrolling. Most lazy components in this project
+// (Cesium, MapLibre, Vanta, Particles, deck.gl, Lottie, the custom
+// games, scrollytelling steps) defer their init via IntersectionObserver
+// with rootMargin '300px'. They only fire when the user scrolls past
+// them. On a 4,800-line guide that means 30+ separate init bursts
+// during the first scroll, each one a visible jank.
+//
+// This component:
+//   1. Mounts a fixed overlay (covers the whole viewport).
+//   2. Stops the BaseLayout's rAF "pin to 0" loop by dispatching a
+//      synthetic wheel event (the pin watches for user input and bows
+//      out on first event).
+//   3. Programmatically scrolls the document top → bottom in small
+//      steps with a brief pause each step so IntersectionObserver
+//      callbacks have time to fire and components have time to init.
+//   4. Returns to scroll top.
+//   5. Fades out the overlay.
+//
+// The overlay caches a session flag per pathname, so revisiting the
+// guide in the same session skips the warmup. Users can also click
+// "Skip" to dismiss immediately.
+//
+// Usage: <GuideLoader />
+//   Drop at the very top of a guide's MDX, just below frontmatter
+//   imports.
+//
+// Props:
+//   maxSeconds — hard cap on warmup time. Defaults to 9 seconds.
+//   stepPx     — pixels per warmup step. Defaults to 700.
+//   stepMs     — ms to wait between steps. Defaults to 130.
+//
+interface Props {
+  maxSeconds?: number;
+  stepPx?: number;
+  stepMs?: number;
+}
+const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
+---
+
+<div
+  id="ihhs-guide-loader"
+  data-max-seconds={maxSeconds}
+  data-step-px={stepPx}
+  data-step-ms={stepMs}
+  role="status"
+  aria-live="polite"
+  aria-label="Warming up guide"
+>
+  <div class="ihhs-loader-card">
+    <div class="ihhs-loader-spinner" aria-hidden="true">
+      <div class="ihhs-spinner-ring"></div>
+      <div class="ihhs-spinner-crown">♛</div>
+    </div>
+    <div class="ihhs-loader-title">Warming up the interactives</div>
+    <p class="ihhs-loader-sub" data-status>
+      Spinning up the 3D globe, simulations, scrollytelling, and 60+ widgets so the rest of your scroll is smooth.
+    </p>
+    <div class="ihhs-loader-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bar-aria>
+      <div class="ihhs-loader-fill" data-fill></div>
+    </div>
+    <div class="ihhs-loader-meta">
+      <span data-pct>0%</span>
+      <button type="button" data-skip>Skip warmup</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  #ihhs-guide-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(ellipse at center, rgba(24,24,27,0.97) 0%, rgba(0,0,0,0.99) 75%);
+    color: #fafafa;
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: opacity 420ms ease;
+    /* Catch all input so the user cannot click through */
+    pointer-events: auto;
+  }
+  #ihhs-guide-loader.ihhs-loader-fade {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ihhs-loader-card {
+    max-width: 440px;
+    text-align: center;
+    padding: 28px 32px;
+  }
+  .ihhs-loader-spinner {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
+  }
+  .ihhs-spinner-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.08);
+    border-top-color: #f87171;
+    border-right-color: #b91c1c;
+    animation: ihhs-spin 1.1s linear infinite;
+  }
+  .ihhs-spinner-crown {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 30px;
+    color: #f87171;
+  }
+  @keyframes ihhs-spin {
+    to { transform: rotate(360deg); }
+  }
+  .ihhs-loader-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .ihhs-loader-sub {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.62);
+    margin: 0 0 22px;
+  }
+  .ihhs-loader-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  .ihhs-loader-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #b91c1c, #f87171);
+    transition: width 200ms ease;
+  }
+  .ihhs-loader-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    font-variant-numeric: tabular-nums;
+  }
+  .ihhs-loader-meta button {
+    all: unset;
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-size: 12px;
+  }
+  .ihhs-loader-meta button:hover { color: #fafafa; }
+  .ihhs-loader-meta button:focus-visible {
+    outline: 2px solid #f87171;
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* Honor reduced-motion: drop the warmup entirely. The user has
+     opted out of motion, so they probably also want the page to just
+     load straight rather than scroll-warm. */
+  @media (prefers-reduced-motion: reduce) {
+    #ihhs-guide-loader { display: none; }
+    .ihhs-spinner-ring { animation: none; }
+  }
+</style>
+
+<script>
+  const KEY = () => 'ihhs:warmed:' + location.pathname;
+
+  type LoaderEls = {
+    overlay: HTMLElement;
+    fill: HTMLElement;
+    pct: HTMLElement;
+    bar: HTMLElement;
+    status: HTMLElement;
+    skipBtn: HTMLButtonElement;
+  };
+
+  const findEls = (): LoaderEls | null => {
+    const overlay = document.getElementById('ihhs-guide-loader');
+    if (!overlay) return null;
+    return {
+      overlay,
+      fill: overlay.querySelector('[data-fill]') as HTMLElement,
+      pct: overlay.querySelector('[data-pct]') as HTMLElement,
+      bar: overlay.querySelector('[data-bar-aria]') as HTMLElement,
+      status: overlay.querySelector('[data-status]') as HTMLElement,
+      skipBtn: overlay.querySelector('[data-skip]') as HTMLButtonElement,
+    };
+  };
+
+  const setProgress = (els: LoaderEls, pct: number) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+    els.fill.style.width = clamped + '%';
+    els.pct.textContent = clamped + '%';
+    els.bar.setAttribute('aria-valuenow', String(clamped));
+  };
+
+  const tearDown = (els: LoaderEls, restoreScroll = true) => {
+    try { sessionStorage.setItem(KEY(), '1'); } catch (_) {}
+    if (restoreScroll) {
+      // Land at the top.
+      window.scrollTo(0, 0);
+    }
+    els.overlay.classList.add('ihhs-loader-fade');
+    setTimeout(() => {
+      els.overlay.remove();
+      // Release the BaseLayout suppress flag so future scroll saves work.
+      (window as any).__ihhsSuppressSave = false;
+    }, 460);
+  };
+
+  const stopBaseLayoutPin = () => {
+    // The BaseLayout has a 2.5s rAF loop that pins scrollY to 0 until
+    // first user input. It listens for wheel/touchstart/keydown/etc.
+    // Dispatch a synthetic wheel so it bows out and stops fighting our
+    // programmatic scrolling.
+    try {
+      window.dispatchEvent(new WheelEvent('wheel'));
+    } catch (_) {
+      // Older browsers fall back to a generic event.
+      try {
+        window.dispatchEvent(new Event('wheel'));
+      } catch (__) {}
+    }
+  };
+
+  const init = () => {
+    const els = findEls();
+    if (!els) return;
+
+    // If reduced-motion media query says no, hide and bail.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      els.overlay.remove();
+      return;
+    }
+
+    // Deep-link: the user wants a specific section. Skip warmup so
+    // the browser can land on the anchor immediately.
+    if (location.hash) {
+      els.overlay.remove();
+      return;
+    }
+
+    // Cached warmup for this pathname this session: skip.
+    try {
+      if (sessionStorage.getItem(KEY())) {
+        els.overlay.remove();
+        return;
+      }
+    } catch (_) {}
+
+    // The user has a saved scroll position from a prior visit on this
+    // pathname (the "Resume where you left off" pill will offer to
+    // restore it). Skip warmup so the pill renders and behaves
+    // normally. The user has presumably been on the page before, so
+    // they've already seen the components hydrate once.
+    try {
+      const savedY = parseInt(sessionStorage.getItem('ihhs:scroll:' + location.pathname) || '0', 10);
+      if (!Number.isNaN(savedY) && savedY > 400) {
+        els.overlay.remove();
+        return;
+      }
+    } catch (_) {}
+
+    const maxSeconds = Number(els.overlay.dataset.maxSeconds || '9');
+    const stepPx = Number(els.overlay.dataset.stepPx || '700');
+    const stepMs = Number(els.overlay.dataset.stepMs || '130');
+
+    let cancelled = false;
+    els.skipBtn.addEventListener('click', () => {
+      cancelled = true;
+      tearDown(els);
+    });
+
+    // Suppress the BaseLayout scroll-saver during warmup so its
+    // throttled save doesn't overwrite the user's real saved Y with
+    // intermediate warmup positions.
+    (window as any).__ihhsSuppressSave = true;
+
+    // Keyboard escape: skip on Esc.
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        cancelled = true;
+        tearDown(els);
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    const start = () => {
+      stopBaseLayoutPin();
+
+      const startTime = performance.now();
+      let phase = 0;
+      let lastMaxScroll = 0;
+      let stableFrames = 0;
+
+      const tick = () => {
+        if (cancelled) return;
+
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+        // If the document is short enough that warmup isn't worth it,
+        // just bail.
+        if (maxScroll < window.innerHeight * 1.5) {
+          tearDown(els);
+          return;
+        }
+
+        const targetY = Math.min(maxScroll, phase * stepPx);
+        window.scrollTo(0, targetY);
+
+        // Progress is a blend of (scroll progress) and (time progress)
+        // so the bar always moves even if the document height is
+        // changing as components hydrate.
+        const elapsed = (performance.now() - startTime) / 1000;
+        const scrollPct = maxScroll > 0 ? (targetY / maxScroll) * 100 : 100;
+        const timePct = (elapsed / maxSeconds) * 100;
+        setProgress(els, Math.max(scrollPct, timePct));
+
+        // Update status text on milestones so the user feels progress.
+        if (scrollPct > 25 && scrollPct <= 50 && els.status.dataset.milestone !== '1') {
+          els.status.textContent = 'Loading the master globe and timeline.';
+          els.status.dataset.milestone = '1';
+        } else if (scrollPct > 50 && scrollPct <= 75 && els.status.dataset.milestone !== '2') {
+          els.status.textContent = 'Spinning up era simulations and animations.';
+          els.status.dataset.milestone = '2';
+        } else if (scrollPct > 75 && els.status.dataset.milestone !== '3') {
+          els.status.textContent = 'Final stretch. Final exam mock test loading.';
+          els.status.dataset.milestone = '3';
+        }
+
+        phase++;
+
+        // Detect "stable" — document height stops growing. Lazy
+        // components often add height as they hydrate, so we wait
+        // until height has been steady for a few ticks before bailing.
+        if (Math.abs(maxScroll - lastMaxScroll) < 5) {
+          stableFrames++;
+        } else {
+          stableFrames = 0;
+        }
+        lastMaxScroll = maxScroll;
+
+        const reachedBottom = targetY >= maxScroll;
+        const stable = reachedBottom && stableFrames >= 4;
+        const timedOut = elapsed > maxSeconds;
+
+        if (stable || timedOut) {
+          // Final settle: pause briefly so any straggler component
+          // finishes its init.
+          setTimeout(() => {
+            if (cancelled) return;
+            setProgress(els, 100);
+            els.status.textContent = 'Ready.';
+            // Brief reveal moment, then tear down.
+            setTimeout(() => {
+              if (cancelled) return;
+              document.removeEventListener('keydown', escHandler);
+              tearDown(els);
+            }, 220);
+          }, 280);
+          return;
+        }
+
+        setTimeout(tick, stepMs);
+      };
+
+      // Small initial delay so the overlay is painted before we start
+      // scrolling.
+      setTimeout(tick, 60);
+    };
+
+    if (document.readyState === 'complete') {
+      // Wait one frame after 'complete' to let any post-load scripts settle.
+      requestAnimationFrame(() => setTimeout(start, 80));
+    } else {
+      window.addEventListener('load', () => requestAnimationFrame(() => setTimeout(start, 80)), { once: true });
+    }
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
