@@ -10,6 +10,12 @@
 //     ]}
 //     groups={[{ id: 'Europe', content: 'Europe' }, { id: 'Pacific', content: 'Pacific' }]}
 //   />
+//
+// Implementation note: data is passed via JSON in a data attribute, NOT via
+// `define:vars`. `define:vars` emits the script as a classic <script>, and
+// classic scripts cannot resolve bare module specifiers like
+// 'vis-timeline/standalone' when calling `import()`. A regular module script
+// (Astro's default) is processed by Vite and gets proper module resolution.
 interface TimelineItem { id: string | number; content: string; start: string; end?: string; group?: string | number; }
 interface TimelineGroup { id: string | number; content: string; }
 interface Props {
@@ -21,36 +27,69 @@ interface Props {
 }
 const { items, groups = [], height = '380px', start, end } = Astro.props;
 const id = 'vt-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ items, groups, start, end });
 ---
 
 <div class="not-prose my-6 surface rounded-xl overflow-hidden">
-  <div id={id} style={`height: ${height};`}></div>
+  <div
+    id={id}
+    data-vis-timeline
+    data-conf={conf}
+    style={`height: ${height};`}
+  ></div>
 </div>
 
-<script define:vars={{ id, items, groups, start, end }}>
-  const init = async () => {
-    const el = document.getElementById(id);
-    if (!el || el.dataset.bound) return;
+<script>
+  import { Timeline, DataSet } from 'vis-timeline/standalone';
+  import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
+
+  type Conf = {
+    items: any[];
+    groups: any[];
+    start?: string;
+    end?: string;
+  };
+
+  const initOne = (el: HTMLElement) => {
+    if (el.dataset.bound) return;
     el.dataset.bound = '1';
-    const vis = await import('vis-timeline/standalone');
-    await import('vis-timeline/styles/vis-timeline-graph2d.min.css');
-    const ds = new vis.DataSet(items);
-    const opts = {
-      stack: true,
-      orientation: 'top',
-      zoomable: true,
-      moveable: true,
-      ...(start ? { start } : {}),
-      ...(end ? { end } : {}),
-    };
-    if (groups.length > 0) {
-      new vis.Timeline(el, ds, new vis.DataSet(groups), opts);
-    } else {
-      new vis.Timeline(el, ds, opts);
+    let conf: Conf;
+    try {
+      conf = JSON.parse(el.dataset.conf || '{}');
+    } catch {
+      console.warn('VisTimeline: failed to parse conf', el.dataset.conf);
+      return;
+    }
+    if (!conf.items || conf.items.length === 0) return;
+
+    try {
+      const ds = new DataSet(conf.items);
+      const opts: any = {
+        stack: true,
+        orientation: 'top',
+        zoomable: true,
+        moveable: true,
+      };
+      if (conf.start) opts.start = new Date(conf.start);
+      if (conf.end) opts.end = new Date(conf.end);
+
+      if (conf.groups && conf.groups.length > 0) {
+        new Timeline(el, ds, new DataSet(conf.groups), opts);
+      } else {
+        new Timeline(el, ds, opts);
+      }
+    } catch (err) {
+      console.error('VisTimeline init failed', err);
+      el.innerHTML = '<div style="padding:24px;text-align:center;color:#71717a;font-size:14px;">Timeline failed to load. Refresh the page.</div>';
     }
   };
-  init();
-  document.addEventListener('astro:after-swap', init);
+
+  const initAll = () => {
+    document.querySelectorAll<HTMLElement>('[data-vis-timeline]:not([data-bound])').forEach(initOne);
+  };
+
+  initAll();
+  document.addEventListener('astro:after-swap', initAll);
 </script>
 
 <style is:global>
