@@ -268,9 +268,27 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         }
         // Force one resize on the next frame in case the initial
         // construction grabbed a stale layout width.
-        requestAnimationFrame(() => {
+        const forceResize = () => {
           try { viewer.resize(); viewer.scene.requestRender(); } catch (_) {}
-        });
+        };
+        requestAnimationFrame(forceResize);
+        // GuideLoader scrolls the page programmatically before the user
+        // sees it, which can cause Cesium to construct against a layout
+        // that's mid-reflow. Stagger several resize attempts to catch
+        // any late layout settling.
+        setTimeout(forceResize, 200);
+        setTimeout(forceResize, 800);
+        setTimeout(forceResize, 2000);
+        // When the GuideLoader fades out, the document layout is final.
+        // Force one last resize so the canvas fills the container even
+        // if every earlier attempt grabbed a stale size.
+        window.addEventListener('ihhs:warmup-done', forceResize);
+        // Also resize on full window load (last-resort if no GuideLoader).
+        if (document.readyState === 'complete') {
+          setTimeout(forceResize, 50);
+        } else {
+          window.addEventListener('load', () => setTimeout(forceResize, 50), { once: true });
+        }
 
         // Markers. Pass `name` so the InfoBox header shows "London" instead
         // of the auto-generated entity UUID Cesium falls back to.
@@ -340,15 +358,28 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
   // Defer init to viewport entry. Cesium is ~14MB of JS plus tiles; loading it
   // up front blocks first paint. IntersectionObserver lets the page render
   // before we touch the WebGL globe.
+  //
+  // If GuideLoader is currently warming up the page (programmatic scrolling),
+  // we wait for the `ihhs:warmup-done` event before initializing. Cesium
+  // grabs the container's layout dimensions once at construction time, and
+  // mid-warmup the layout is unstable enough that the canvas can end up
+  // pinned at a tiny size in the corner. Waiting for warmup-done means we
+  // construct against the final, stable layout.
   const observer = typeof IntersectionObserver !== 'undefined'
     ? new IntersectionObserver((entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             observer!.unobserve(entry.target);
-            // Fire init via requestIdleCallback so first paint and other CDNs settle first.
             const fire = () => init();
-            if ('requestIdleCallback' in window) (window as any).requestIdleCallback(fire, { timeout: 800 });
-            else setTimeout(fire, 100);
+            const fireDeferred = () => {
+              if ('requestIdleCallback' in window) (window as any).requestIdleCallback(fire, { timeout: 800 });
+              else setTimeout(fire, 100);
+            };
+            if ((window as any).__ihhsWarmingUp) {
+              window.addEventListener('ihhs:warmup-done', fireDeferred, { once: true });
+            } else {
+              fireDeferred();
+            }
           }
         }
       }, { rootMargin: '0px' })

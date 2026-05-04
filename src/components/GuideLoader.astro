@@ -39,6 +39,23 @@ interface Props {
 const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
 ---
 
+<script is:inline>
+  // Synchronous flag-set so heavy components (Cesium, MapLibre, etc.)
+  // that check this in their IntersectionObserver callbacks know to
+  // wait for `ihhs:warmup-done` before constructing themselves. Set
+  // here at parse time so it beats the deferred component scripts.
+  // Skipped on deep-link navigation (the user wants a specific anchor)
+  // and on cached pathnames (warmup already ran this session).
+  (function () {
+    if (location.hash) return;
+    try {
+      if (sessionStorage.getItem('ihhs:warmed:' + location.pathname)) return;
+    } catch (_) {}
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    window.__ihhsWarmingUp = true;
+  })();
+</script>
+
 <div
   id="ihhs-guide-loader"
   data-max-seconds={maxSeconds}
@@ -55,7 +72,7 @@ const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
     </div>
     <div class="ihhs-loader-title">Warming up the interactives</div>
     <p class="ihhs-loader-sub" data-status>
-      Spinning up the 3D globe, simulations, scrollytelling, and 60+ widgets so the rest of your scroll is smooth.
+      Spinning up the 3D globe, simulations, scrollytelling, and 60+ widgets. We'll bring you back to where you left off when this finishes.
     </p>
     <div class="ihhs-loader-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bar-aria>
       <div class="ihhs-loader-fill" data-fill></div>
@@ -213,13 +230,36 @@ const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
   const tearDown = (els: LoaderEls, restoreScroll = true) => {
     try { sessionStorage.setItem(KEY(), '1'); } catch (_) {}
     if (restoreScroll) {
-      // Land at the top.
-      window.scrollTo(0, 0);
+      // If the user has a saved scroll position from a prior visit on
+      // this pathname, jump there. Otherwise land at the top. The
+      // warmup just hydrated every lazy component on the page, so the
+      // document is finally tall enough for `scrollTo` to land where
+      // the user expects.
+      let targetY = 0;
+      try {
+        const savedY = parseInt(sessionStorage.getItem('ihhs:scroll:' + location.pathname) || '0', 10);
+        if (!Number.isNaN(savedY) && savedY > 0) {
+          const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+          targetY = Math.min(savedY, maxScroll);
+        }
+      } catch (_) {}
+      window.scrollTo(0, targetY);
     }
+    // Tell every component on the page that warmup is over. Components
+    // that need a final resize/refresh after the document has settled
+    // (Cesium, MapLibre, deck.gl) listen for this. Dispatched BEFORE
+    // we clear __ihhsWarmingUp so they can init while the overlay is
+    // still up and the BaseLayout pin still yields.
+    try {
+      window.dispatchEvent(new CustomEvent('ihhs:warmup-done'));
+    } catch (_) {}
     els.overlay.classList.add('ihhs-loader-fade');
     setTimeout(() => {
       els.overlay.remove();
-      // Release the BaseLayout suppress flag so future scroll saves work.
+      // Release the BaseLayout pin & save-suppression. By now the pin's
+      // 2.5s window has long expired, so the page stays where the loader
+      // left it.
+      (window as any).__ihhsWarmingUp = false;
       (window as any).__ihhsSuppressSave = false;
     }, 460);
   };
@@ -256,22 +296,15 @@ const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
       return;
     }
 
-    // Cached warmup for this pathname this session: skip.
+    // Cached warmup for this pathname this session: skip the warmup
+    // animation but still honor any saved scroll position.
     try {
       if (sessionStorage.getItem(KEY())) {
-        els.overlay.remove();
-        return;
-      }
-    } catch (_) {}
-
-    // The user has a saved scroll position from a prior visit on this
-    // pathname (the "Resume where you left off" pill will offer to
-    // restore it). Skip warmup so the pill renders and behaves
-    // normally. The user has presumably been on the page before, so
-    // they've already seen the components hydrate once.
-    try {
-      const savedY = parseInt(sessionStorage.getItem('ihhs:scroll:' + location.pathname) || '0', 10);
-      if (!Number.isNaN(savedY) && savedY > 400) {
+        const savedY = parseInt(sessionStorage.getItem('ihhs:scroll:' + location.pathname) || '0', 10);
+        if (!Number.isNaN(savedY) && savedY > 0) {
+          // Defer to next frame so DOM is stable.
+          requestAnimationFrame(() => window.scrollTo(0, savedY));
+        }
         els.overlay.remove();
         return;
       }
