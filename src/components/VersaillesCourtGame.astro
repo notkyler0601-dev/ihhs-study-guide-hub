@@ -1,0 +1,348 @@
+---
+// Hold Court at Versailles: a decision game. The player is Louis XIV
+// across six historical turning points (1661 to 1700). Each turn
+// presents a real choice with effects on four gauges:
+//   - Royal Treasury (livres, starts at 50)
+//   - Nobles' Loyalty (0 to 100, starts at 50)
+//   - Church Approval (0 to 100, starts at 50)
+//   - Army Strength (0 to 100, starts at 50)
+// After each choice the historical outcome is revealed. After turn 6
+// a final report compares the player's reign to the actual Louis XIV.
+//
+// Pure HTML/JS, no external dependencies. Mirrors the structure of
+// FiveYearPlanGame so the visual language stays consistent across the
+// custom interactives.
+//
+// Usage: <VersaillesCourtGame />
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-vcg>
+  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+    <span class="font-serif text-base font-semibold flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">♛</span>
+      Hold Court at Versailles: you are Louis XIV
+    </span>
+    <span class="text-xs text-ink-500" data-turn>Turn 1 of 6</span>
+  </header>
+
+  <div class="p-6 space-y-5">
+    <p class="text-sm text-ink-700 dark:text-ink-200 leading-relaxed">
+      You inherit France in 1661. Six turning points stand between you and your death in 1715. Each choice ripples through four gauges. Drop any gauge below zero and you lose control. Survive all six turns and you'll see your reign next to the historical Sun King's.
+    </p>
+
+    <div data-gauges class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+    <div data-event class="p-5 rounded-xl border border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40"></div>
+
+    <div data-outcome class="hidden p-4 rounded-xl border-l-4 border-accent-500 bg-accent-50/40 dark:bg-accent-900/20 text-sm leading-relaxed"></div>
+
+    <div class="flex justify-end">
+      <button data-advance type="button" class="hidden px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Next turn →</button>
+    </div>
+
+    <div data-final class="hidden mt-2 p-5 rounded-xl border border-accent-200 dark:border-accent-800 bg-accent-50/50 dark:bg-accent-900/20"></div>
+
+    <div data-restart-row class="hidden flex justify-end">
+      <button data-restart type="button" class="px-4 py-2 rounded-lg bg-ink-700 hover:bg-ink-800 dark:bg-ink-200 dark:hover:bg-white dark:text-ink-900 text-white text-sm font-medium">↻ Restart reign</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Gauge = 'Treasury' | 'Loyalty' | 'Church' | 'Army';
+  type Stats = Record<Gauge, number>;
+  type Effect = Partial<Stats>;
+  interface Choice {
+    label: string;
+    effect: Effect;
+    note: string;
+    historical?: boolean;
+  }
+  interface Turn {
+    year: string;
+    title: string;
+    body: string;
+    choices: Choice[];
+    actual: string;
+  }
+
+  const GAUGES: Gauge[] = ['Treasury', 'Loyalty', 'Church', 'Army'];
+  const GAUGE_LABEL: Record<Gauge, string> = {
+    Treasury: 'Royal Treasury',
+    Loyalty: "Nobles' Loyalty",
+    Church: 'Church Approval',
+    Army: 'Army Strength',
+  };
+  const GAUGE_ICON: Record<Gauge, string> = {
+    Treasury: '⚜',
+    Loyalty: '♟',
+    Church: '✝',
+    Army: '⚔',
+  };
+
+  const TURNS: Turn[] = [
+    {
+      year: '1661',
+      title: 'Mazarin is dead. What kind of king will you be?',
+      body: 'Cardinal Mazarin governed in your name for eighteen years. He has just died. You are 22. The court expects you to name a new chief minister. Three secretaries of state are waiting in the antechamber for instructions.',
+      choices: [
+        { label: 'Appoint another chief minister. Let an experienced cleric run daily affairs.', effect: { Treasury: 5, Loyalty: 5, Army: -10 }, note: 'A safer rule, but the great nobles see your hesitation and start scheming. The old Fronde rebels notice.' },
+        { label: 'Take personal control. "L\'Etat, c\'est moi." No first minister, ever again.', effect: { Treasury: -5, Loyalty: -10, Church: 10, Army: 15 }, note: 'You declare to a stunned court that you will govern alone. Some nobles bristle. The army and the Church recognize the authority of a true Bourbon.', historical: true },
+        { label: 'Convene the Estates-General. Share the throne with the three estates.', effect: { Treasury: 10, Loyalty: 30, Church: -15, Army: -20 }, note: 'The bourgeoisie and clergy cheer. The army and Church are appalled. You have just disarmed yourself.' },
+      ],
+      actual: 'Louis XIV chose option 2. He never again appointed a chief minister and ruled personally for 54 years.',
+    },
+    {
+      year: '1664',
+      title: 'Where will you hold court?',
+      body: "The Louvre is in central Paris. The streets are dirty, the people are restless, and your great nobles plot in their townhouses. Your superintendent of finances, Nicolas Fouquet, has just thrown a private party at his château of Vaux-le-Vicomte that outshone any royal entertainment.",
+      choices: [
+        { label: 'Stay at the Louvre. The capital is where the king belongs.', effect: { Treasury: 20, Loyalty: -15, Army: 0 }, note: 'You save a fortune. But the great nobles spend most of the year on their own estates, raising private armies and grievances.' },
+        { label: 'Build Versailles. Twelve miles from Paris. Make every great noble live there.', effect: { Treasury: -30, Loyalty: 25, Church: 5, Army: 5 }, note: 'A staggering cost. But the dukes and counts of France are now your house guests. They cannot plot against you when they are bowing every morning at your levée.', historical: true },
+        { label: 'Travel constantly. Hold a moving court between provincial châteaux.', effect: { Treasury: -10, Loyalty: 5, Army: 10 }, note: 'Medieval kings did this. Your visibility is high but your bureaucracy cannot keep up with you, and your reforms drift.' },
+      ],
+      actual: 'Louis XIV moved the court to Versailles in 1682. The palace cost roughly 5 percent of state revenue but functioned as the most effective political control machine in early modern Europe.',
+    },
+    {
+      year: '1672',
+      title: 'War with the Dutch Republic?',
+      body: 'The Dutch Republic is the richest state in Europe per capita. Its merchants undercut your tariffs. Its Protestantism affronts the Church. Your finance minister Colbert has built up the navy. Your war minister Louvois has reformed the army. Both whisper that now is the moment.',
+      choices: [
+        { label: 'Invade the Dutch. Crush the Protestant republic. Take their Spanish Netherlands holdings.', effect: { Treasury: -25, Loyalty: 5, Church: 15, Army: 15 }, note: 'You cross the Rhine in person. The Dutch open their dykes to flood the country and stop you. Six years of war follow. You gain Franche-Comté and humble Holland.', historical: true },
+        { label: 'Build the army quietly. Wait a decade.', effect: { Treasury: -5, Army: 10 }, note: 'A patient choice. Louvois and Colbert grumble but refine the army further. Other powers fill the vacuum and Spain begins to recover.' },
+        { label: 'Sign a commercial treaty. The Dutch are richer than us anyway; trade with them.', effect: { Treasury: 20, Loyalty: -10, Church: -10, Army: -10 }, note: 'A Bourbon king signing a treaty with Calvinist merchants. The court is appalled. Your treasury swells; your prestige tanks.' },
+      ],
+      actual: 'Louis XIV chose option 1. The Dutch War of 1672 to 1678 ended with the Treaty of Nijmegen, expanding France toward the Rhine and confirming his reputation as the dominant ruler of Europe.',
+    },
+    {
+      year: '1685',
+      title: 'The Edict of Nantes.',
+      body: "Your grandfather Henry IV signed the Edict of Nantes in 1598, granting French Protestants (Huguenots) religious tolerance. They are about 200,000 of your subjects and disproportionately bankers, weavers, watchmakers, and skilled craftsmen. Bishop Bossuet and your Jesuit confessor demand you act.",
+      choices: [
+        { label: 'Revoke the Edict. Force conversion or expulsion. One king, one law, one faith.', effect: { Treasury: -25, Loyalty: 10, Church: 30, Army: -10 }, note: 'About 200,000 Huguenots flee to England, the Netherlands, Brandenburg-Prussia, and the American colonies. They take their skills and capital with them. The Catholic Church canonizes the act.', historical: true },
+        { label: 'Maintain the Edict. The Huguenots are loyal taxpayers and skilled artisans.', effect: { Treasury: 15, Church: -25, Loyalty: -5 }, note: 'The Catholic clergy denounce you from every pulpit. The Pope writes a private letter of disappointment. France keeps its watchmakers and its bankers.' },
+        { label: 'Quietly persecute. No public revocation, but soldiers quartered in Huguenot homes (the dragonnades).', effect: { Treasury: -5, Church: 15, Loyalty: -5, Army: -5 }, note: 'A middle path. Forced conversions rise; emigration begins to leak; the diplomatic damage of a public revocation is avoided.' },
+      ],
+      actual: 'Louis XIV chose option 1, the Edict of Fontainebleau, in October 1685. Modern economists estimate the Huguenot brain drain cost France roughly 1 percent of its population and a much larger share of its skilled labor.',
+    },
+    {
+      year: '1693',
+      title: 'The great famine.',
+      body: 'Two failed harvests in a row. Bread prices triple. About 1.3 million of your subjects will die before the famine ends in 1694. Your steward asks how to use the royal granaries.',
+      choices: [
+        { label: 'Open the granaries. Distribute bread free in Paris and the worst-hit provinces.', effect: { Treasury: -25, Loyalty: 25, Army: -10 }, note: 'You feed perhaps 100,000 in Paris. Your ministers warn that the army is going hungry on the Spanish frontier. Peasants in Brittany name their children Louis.' },
+        { label: 'Sell grain stores at market price. Use the cash to feed the army on campaign.', effect: { Treasury: 25, Loyalty: -25, Army: 15 }, note: 'The army stays in the field. Bread riots break out in Lyon and Rouen. Your intendants suppress them.' },
+        { label: 'Hold a royal mass at Notre Dame and a Te Deum at Versailles. Pray for relief.', effect: { Treasury: -5, Church: 20, Loyalty: -15 }, note: 'The clergy applaud. The peasants notice that prayer does not fill stomachs. About 1.3 million die before the rains come back.' },
+      ],
+      actual: "Louis XIV's response was inadequate by any standard. About 1.3 million French subjects died, roughly 6 percent of the population. The famines of 1693 and 1709 quietly broke the legitimacy of the absolutist bargain.",
+    },
+    {
+      year: '1700',
+      title: 'The Spanish Succession.',
+      body: 'King Charles II of Spain has died childless after years of agony. His will names your grandson Philip of Anjou as sole heir to the entire Spanish empire: Spain, the Spanish Netherlands, Naples, Sicily, and the Spanish Americas. Britain, the Dutch Republic, and Austria will not accept this.',
+      choices: [
+        { label: 'Accept. A Bourbon on the throne of Spain. Worth any war.', effect: { Treasury: -40, Loyalty: 10, Church: 10, Army: 20 }, note: 'You install Philip V in Madrid. The Grand Alliance forms within months. The War of the Spanish Succession lasts until 1714. Your treasury empties and your great-grandson Louis XV inherits a wreck.', historical: true },
+        { label: 'Decline the inheritance. The Habsburgs can have the throne.', effect: { Treasury: 20, Loyalty: -15, Church: -5, Army: -10 }, note: 'The court is shocked. Your enemies are confused. France stays solvent but loses the prize of a generation.' },
+        { label: 'Negotiate a partition. Split the Spanish empire with the British and Dutch.', effect: { Treasury: -10, Loyalty: 0, Army: 5 }, note: 'A diplomatic compromise. Britain takes Gibraltar and trade rights. Spain stays Habsburg in Madrid. War is averted but Bourbon prestige takes a hit.' },
+      ],
+      actual: 'Louis XIV chose option 1. The War of the Spanish Succession (1701 to 1714) is widely credited with bankrupting France, killing roughly a million people, and laying the financial groundwork for the Revolution of 1789.',
+    },
+  ];
+
+  // Historical Louis XIV's "score" by 1715, on the same gauges, for comparison
+  const HISTORICAL: Stats = { Treasury: 5, Loyalty: 60, Church: 80, Army: 75 };
+
+  const setupVCG = () => {
+    document.querySelectorAll<HTMLElement>('[data-vcg]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+
+      const turnEl = root.querySelector<HTMLElement>('[data-turn]')!;
+      const gaugesEl = root.querySelector<HTMLElement>('[data-gauges]')!;
+      const eventEl = root.querySelector<HTMLElement>('[data-event]')!;
+      const outcomeEl = root.querySelector<HTMLElement>('[data-outcome]')!;
+      const advanceBtn = root.querySelector<HTMLButtonElement>('[data-advance]')!;
+      const finalEl = root.querySelector<HTMLElement>('[data-final]')!;
+      const restartRow = root.querySelector<HTMLElement>('[data-restart-row]')!;
+      const restartBtn = root.querySelector<HTMLButtonElement>('[data-restart]')!;
+
+      let turnIdx = 0;
+      let stats: Stats = { Treasury: 50, Loyalty: 50, Church: 50, Army: 50 };
+      let dethroned = false;
+
+      const renderGauges = () => {
+        gaugesEl.innerHTML = '';
+        GAUGES.forEach((g) => {
+          const v = stats[g];
+          const pct = Math.max(0, Math.min(100, v));
+          const tone = v < 20 ? 'bg-rose-500' : v < 40 ? 'bg-amber-500' : v < 70 ? 'bg-accent-600' : 'bg-emerald-500';
+          const wrap = document.createElement('div');
+          wrap.className = 'rounded-lg border border-ink-200 dark:border-ink-800 bg-white/40 dark:bg-ink-900/40 p-3';
+          wrap.innerHTML = `
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold flex items-center gap-1.5">
+                <span class="text-accent-600 dark:text-accent-400">${GAUGE_ICON[g]}</span>
+                ${GAUGE_LABEL[g]}
+              </span>
+              <span class="text-sm font-mono tabular-nums ${v < 20 ? 'text-rose-600' : 'text-ink-800 dark:text-ink-100'}">${v}</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-ink-200 dark:bg-ink-800 overflow-hidden">
+              <div class="h-full ${tone} transition-all duration-500" style="width:${pct}%"></div>
+            </div>
+          `;
+          gaugesEl.appendChild(wrap);
+        });
+      };
+
+      const renderTurn = () => {
+        if (turnIdx >= TURNS.length) {
+          finishGame();
+          return;
+        }
+        const t = TURNS[turnIdx];
+        turnEl.textContent = `Turn ${turnIdx + 1} of ${TURNS.length}`;
+        eventEl.innerHTML = `
+          <div class="text-[11px] uppercase tracking-[0.16em] text-accent-700 dark:text-accent-400 font-semibold mb-1">${t.year}</div>
+          <div class="font-serif text-lg font-semibold mb-2 text-ink-900 dark:text-ink-50">${t.title}</div>
+          <p class="text-sm text-ink-700 dark:text-ink-200 leading-relaxed mb-4">${t.body}</p>
+          <div class="space-y-2" data-choices></div>
+        `;
+        const choicesWrap = eventEl.querySelector<HTMLElement>('[data-choices]')!;
+        t.choices.forEach((c, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full text-left px-4 py-3 rounded-lg border border-ink-200 dark:border-ink-800 bg-white/60 dark:bg-ink-900/40 hover:border-accent-500 dark:hover:border-accent-500 hover:bg-accent-50/60 dark:hover:bg-accent-900/20 transition-colors text-sm leading-snug';
+          btn.innerHTML = `<span class="font-mono text-xs text-accent-700 dark:text-accent-400 mr-2">${String.fromCharCode(65 + i)}.</span>${c.label}`;
+          btn.addEventListener('click', () => commitChoice(t, c));
+          choicesWrap.appendChild(btn);
+        });
+        outcomeEl.classList.add('hidden');
+        advanceBtn.classList.add('hidden');
+      };
+
+      const commitChoice = (turn: Turn, choice: Choice) => {
+        // Apply effects
+        for (const g of GAUGES) {
+          const delta = choice.effect[g] ?? 0;
+          stats[g] = Math.max(-100, Math.min(100, stats[g] + delta));
+        }
+        // Disable all choice buttons
+        eventEl.querySelectorAll<HTMLButtonElement>('[data-choices] button').forEach((b) => {
+          b.disabled = true;
+          b.classList.add('opacity-60');
+        });
+        renderGauges();
+
+        // Format the deltas
+        const deltaParts = GAUGES
+          .filter((g) => (choice.effect[g] ?? 0) !== 0)
+          .map((g) => {
+            const d = choice.effect[g]!;
+            const sign = d > 0 ? '+' : '';
+            const tone = d > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+            return `<span class="${tone} font-mono">${GAUGE_ICON[g]} ${sign}${d}</span>`;
+          }).join(' &nbsp; ');
+
+        outcomeEl.innerHTML = `
+          <div class="text-[11px] uppercase tracking-[0.14em] font-semibold text-accent-700 dark:text-accent-400 mb-1">Consequence</div>
+          <div class="mb-2">${choice.note}</div>
+          <div class="text-xs">${deltaParts}</div>
+          ${choice.historical ? `<div class="mt-2 text-[11px] italic text-ink-500">↳ This is what Louis XIV actually did.</div>` : ''}
+          <div class="mt-3 pt-3 border-t border-accent-200/60 dark:border-accent-800/60 text-xs text-ink-600 dark:text-ink-300"><strong class="text-ink-800 dark:text-ink-100">In reality:</strong> ${turn.actual}</div>
+        `;
+        outcomeEl.classList.remove('hidden');
+
+        // Lose condition
+        if (GAUGES.some((g) => stats[g] <= 0)) {
+          dethroned = true;
+          finishGame();
+          return;
+        }
+
+        if (turnIdx + 1 >= TURNS.length) {
+          advanceBtn.textContent = 'See your reign →';
+        } else {
+          advanceBtn.textContent = 'Next turn →';
+        }
+        advanceBtn.classList.remove('hidden');
+      };
+
+      advanceBtn.addEventListener('click', () => {
+        turnIdx++;
+        renderTurn();
+      });
+
+      const finishGame = () => {
+        eventEl.classList.add('opacity-60');
+        advanceBtn.classList.add('hidden');
+
+        const totalPlayer = GAUGES.reduce((s, g) => s + Math.max(0, stats[g]), 0);
+        const totalHistorical = GAUGES.reduce((s, g) => s + HISTORICAL[g], 0);
+
+        let verdictTitle = '';
+        let verdictBody = '';
+        if (dethroned) {
+          const fallenGauge = GAUGES.find((g) => stats[g] <= 0)!;
+          verdictTitle = 'Your reign collapses';
+          verdictBody = ({
+            Treasury: 'You bankrupted the crown. The Estates-General is convened, and that always ends the same way for an absolute monarch.',
+            Loyalty: 'The great nobles withdraw to their estates. A second Fronde breaks out. The throne falls to a regent within a year.',
+            Church: 'Rome excommunicates you. French bishops refuse the sacraments to royal officers. Your authority dissolves.',
+            Army: 'Without an army, the Spanish Habsburgs march into Burgundy and the Dutch retake Lille. France is partitioned by 1715.',
+          } as Record<Gauge, string>)[fallenGauge];
+        } else if (totalPlayer > totalHistorical + 30) {
+          verdictTitle = 'A more sustainable Sun King';
+          verdictBody = 'You out-Bourboned Louis XIV. Modern historians would call this counterfactual unrealistic given the political pressures of the late 1600s, but on paper your reign leaves France stronger than the historical one.';
+        } else if (totalPlayer > totalHistorical) {
+          verdictTitle = 'A reign Louis would have envied';
+          verdictBody = 'You preserved more wealth and stability than the actual Sun King without losing your authority. Your great-grandson inherits a kingdom that does not need to call the Estates-General in 1789.';
+        } else if (totalPlayer > totalHistorical - 30) {
+          verdictTitle = "Roughly Louis XIV's reign";
+          verdictBody = 'You produced a France similar to the historical one: glittering culturally, dominant militarily, but financially exhausted. The seeds of 1789 are already in the soil.';
+        } else {
+          verdictTitle = 'A weaker France';
+          verdictBody = 'You lost ground that Louis XIV held. The Bourbon dynasty survives but the model of absolute monarchy looks shakier across Europe by your death.';
+        }
+
+        const rows = GAUGES.map((g) => `
+          <tr>
+            <td class="py-1">${GAUGE_LABEL[g]}</td>
+            <td class="text-right tabular-nums ${stats[g] < 20 ? 'text-rose-600' : ''}">${stats[g]}</td>
+            <td class="text-right tabular-nums text-ink-500">${HISTORICAL[g]}</td>
+          </tr>
+        `).join('');
+
+        finalEl.innerHTML = `
+          <div class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400 mb-2">${verdictTitle}</div>
+          <div class="font-serif text-lg leading-relaxed text-ink-900 dark:text-ink-50 mb-4">${verdictBody}</div>
+          <table class="w-full text-sm">
+            <thead class="text-xs uppercase tracking-[0.14em] text-ink-500">
+              <tr><th class="text-left py-1">Pillar</th><th class="text-right py-1">Yours</th><th class="text-right py-1">Louis XIV's</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <p class="mt-4 text-xs text-ink-500 leading-relaxed">Louis XIV reigned 72 years. He left France culturally dominant and militarily feared, but the cost of Versailles, the wars, the famines, and the loss of the Huguenots produced a debt and a brittleness that his great-grandson Louis XVI inherited and could not pay off. The French Revolution begins, in a real sense, in 1685 with the Edict of Fontainebleau.</p>
+        `;
+        finalEl.classList.remove('hidden');
+        restartRow.classList.remove('hidden');
+      };
+
+      restartBtn.addEventListener('click', () => {
+        turnIdx = 0;
+        stats = { Treasury: 50, Loyalty: 50, Church: 50, Army: 50 };
+        dethroned = false;
+        finalEl.classList.add('hidden');
+        restartRow.classList.add('hidden');
+        eventEl.classList.remove('opacity-60');
+        renderGauges();
+        renderTurn();
+      });
+
+      // Initial render
+      renderGauges();
+      renderTurn();
+    });
+  };
+
+  setupVCG();
+  document.addEventListener('astro:after-swap', setupVCG);
+</script>
