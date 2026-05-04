@@ -14,7 +14,7 @@ A free, no-account static study site (Astro + Tailwind + MDX) hosting deep-dive 
 
 ## Available interactive components
 
-**Read `AUTHORING.md` before authoring or revising a guide.** It maps teaching goals (memorize / visualize / manipulate / read / hear / code / test / atmosphere) to the right components, lists per-subject canonical shortlists, and includes combination patterns and a self-audit checklist. It exists because Claude defaults to the same 10 components and ignores the other ~150.
+**Read `AUTHORING.md` before authoring or revising a guide.** It is the visual-learner playbook: one rule (a visual every 200 words of prose), a "pick the most advanced visual that fits" table, a packing checklist, and an explicit list of components I overuse vs ones to force into rotation. It exists because Claude defaults to the same 10 components and ignores the other ~190.
 
 **Read `LIBRARIES.md` before recommending or building a new component.** It catalogs every Tier 1, 2, and 3 component with subject, CDN, and props. If you're about to spin up a charting/diagram/sim component, check first that one already exists.
 

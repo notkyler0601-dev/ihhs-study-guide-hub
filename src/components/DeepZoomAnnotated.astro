@@ -54,15 +54,28 @@ const conf = JSON.stringify({ src, markers });
           showNavigator: true,
         });
         viewer.addHandler('open', () => {
-          (conf.markers || []).forEach((m: any, i: number) => {
+          // OpenSeadragon normalizes viewport coords so that the IMAGE WIDTH = 1.
+          // For a portrait (taller than wide), the y range is 0 .. (height/width).
+          // We pass markers as fractions of full image (x and y both 0..1) and
+          // multiply y by the image's aspect ratio so they land correctly.
+          const tiledImage = viewer.world.getItemAt(0);
+          const bounds = tiledImage ? tiledImage.getBounds() : new OpenSeadragon.Rect(0, 0, 1, 1);
+          const yScale = bounds.height; // height when width is 1.0
+          (conf.markers || []).forEach((m: any) => {
             const dot = document.createElement('button');
             dot.type = 'button';
-            dot.style.cssText = 'background:#b91c1c; border:2px solid white; border-radius:50%; width:20px; height:20px; cursor:pointer; box-shadow:0 0 0 2px rgba(0,0,0,0.3);';
+            dot.style.cssText = 'background:#b91c1c; border:2px solid white; border-radius:50%; width:22px; height:22px; cursor:pointer; box-shadow:0 0 0 2px rgba(0,0,0,0.4); pointer-events: auto; z-index: 10;';
             dot.title = m.label;
-            dot.addEventListener('click', () => {
+            // Stop OSD from swallowing the click (it would otherwise treat it as pan/drag)
+            const stop = (e: Event) => e.stopPropagation();
+            dot.addEventListener('mousedown', stop);
+            dot.addEventListener('pointerdown', stop);
+            dot.addEventListener('touchstart', stop);
+            dot.addEventListener('click', (e) => {
+              e.stopPropagation();
               info.innerHTML = `<strong>${m.label}</strong>${m.description ? '<div class="text-xs text-ink-500 mt-1">' + m.description + '</div>' : ''}`;
             });
-            viewer.addOverlay({ element: dot, location: new OpenSeadragon.Point(m.x, m.y), placement: OpenSeadragon.Placement.CENTER });
+            viewer.addOverlay({ element: dot, location: new OpenSeadragon.Point(m.x, m.y * yScale), placement: OpenSeadragon.Placement.CENTER });
           });
         });
       } catch (e) {

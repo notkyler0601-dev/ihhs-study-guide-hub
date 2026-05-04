@@ -1,0 +1,188 @@
+---
+// 3D animated globe powered by Apache ECharts GL. Renders a spinnable
+// Earth with great-circle arcs and pulsing scatter points overlaid in
+// world coordinates. Designed for "trade routes", "colonial supply
+// lines", "alliance corridors", "migration arcs" — anywhere a flat map
+// would lose half the story.
+//
+// Usage in MDX:
+//   <EChartsGlobe
+//     title="Allied supply lines, 1942 to 1945"
+//     height={520}
+//     points={[
+//       { name: "New York",  lng: -74.0,  lat: 40.7, color: "#86efac" },
+//       { name: "Liverpool", lng:  -2.99, lat: 53.4, color: "#fde68a" },
+//       { name: "Murmansk",  lng:  33.05, lat: 68.97, color: "#fca5a5" }
+//     ]}
+//     arcs={[
+//       { from: [-74.0, 40.7], to: [-2.99, 53.4], color: "#fcd34d", value: 9 },
+//       { from: [-2.99, 53.4], to: [33.05, 68.97], color: "#dc2626", value: 7 }
+//     ]}
+//   />
+//
+// Props:
+//   title          Figure caption.
+//   height         Canvas height in px. Default 520.
+//   baseTexture    URL for the globe surface texture. Default: NASA Blue Marble via jsdelivr.
+//   autoRotate     Spin the globe automatically. Default true.
+//   autoRotateSpeed degrees per second. Default 6.
+//   points         [{ name, lng, lat, color?, symbolSize? }] for pulsing dots.
+//   arcs           [{ from: [lng,lat], to: [lng,lat], color?, value? }] for great-circle arcs.
+
+interface Point { name: string; lng: number; lat: number; color?: string; symbolSize?: number; }
+interface Arc { from: [number, number]; to: [number, number]; color?: string; value?: number; }
+interface Props {
+  title?: string;
+  height?: number;
+  baseTexture?: string;
+  autoRotate?: boolean;
+  autoRotateSpeed?: number;
+  points?: Point[];
+  arcs?: Arc[];
+}
+const {
+  title = '3D globe',
+  height = 520,
+  baseTexture = 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
+  autoRotate = true,
+  autoRotateSpeed = 6,
+  points = [],
+  arcs = [],
+} = Astro.props;
+
+const id = 'egl-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ baseTexture, autoRotate, autoRotateSpeed, points, arcs, height });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-egl data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">ECharts GL · WebGL</span>
+  </figcaption>
+  <div data-egl-host class="w-full bg-[#020617]" style={`min-height:${height}px; height:${height}px;`}></div>
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal, mountWhenVisible } from '../lib/loadScript';
+
+  const ECHARTS = 'https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js';
+  const ECHARTS_GL = 'https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js';
+
+  type Point = { name: string; lng: number; lat: number; color?: string; symbolSize?: number };
+  type Arc = { from: [number, number]; to: [number, number]; color?: string; value?: number };
+  type Conf = {
+    baseTexture: string;
+    autoRotate: boolean;
+    autoRotateSpeed: number;
+    points: Point[];
+    arcs: Arc[];
+    height: number;
+  };
+
+  const init = async (roots: HTMLElement[]) => {
+    let echarts: any;
+    try {
+      await loadScript(ECHARTS);
+      await loadScript(ECHARTS_GL);
+      echarts = await waitForGlobal('echarts');
+    } catch (e) {
+      console.warn('EChartsGlobe failed to load deps', e);
+      return;
+    }
+
+    for (const root of roots) {
+      root.dataset.eglReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-egl-host]')!;
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+
+      const chart = echarts.init(host);
+
+      // value = [lng, lat, height_above_surface]. Height 0 puts the dot
+      // flush with the globe surface; anything >0 makes it visibly float
+      // above the planet, which looks wrong for "this is a city on Earth".
+      const scatterData = (conf.points ?? []).map((p) => ({
+        name: p.name,
+        value: [p.lng, p.lat, 0],
+        itemStyle: { color: p.color ?? '#dc2626' },
+        symbolSize: p.symbolSize ?? 8,
+      }));
+
+      const linesData = (conf.arcs ?? []).map((a) => ({
+        coords: [a.from, a.to],
+        lineStyle: { color: a.color ?? '#f87171', width: 1.5 },
+        value: a.value ?? 1,
+      }));
+
+      const option = {
+        backgroundColor: isDark ? '#020617' : '#0a0f1a',
+        globe: {
+          baseTexture: conf.baseTexture,
+          shading: 'lambert',
+          environment: '#000',
+          atmosphere: { show: true, offset: 4, color: isDark ? '#fca5a5' : '#fbbf24', glowPower: 6, innerGlowPower: 2 },
+          light: {
+            ambient: { intensity: 0.4 },
+            main: { intensity: 1.4, shadow: false },
+          },
+          viewControl: {
+            autoRotate: !!conf.autoRotate,
+            autoRotateSpeed: conf.autoRotateSpeed ?? 6,
+            autoRotateAfterStill: 4,
+            distance: 200,
+            alpha: 30,
+            beta: 160,
+          },
+        },
+        series: [
+          {
+            type: 'scatter3D',
+            coordinateSystem: 'globe',
+            blendMode: 'lighter',
+            symbolSize: 14,
+            itemStyle: { opacity: 1 },
+            label: { show: true, formatter: '{b}', position: 'right', textStyle: { color: '#fff', fontSize: 11, fontFamily: 'Inter, sans-serif' } },
+            data: scatterData,
+          },
+          {
+            type: 'lines3D',
+            coordinateSystem: 'globe',
+            effect: {
+              show: true,
+              period: 2,
+              trailWidth: 2,
+              trailLength: 0.4,
+              trailOpacity: 0.85,
+              trailColor: '#fcd34d',
+            },
+            blendMode: 'lighter',
+            lineStyle: { width: 1.4, color: '#dc2626', opacity: 0.7 },
+            data: linesData,
+          },
+        ],
+      };
+
+      try {
+        chart.setOption(option);
+      } catch (e) {
+        console.warn('EChartsGlobe render failed', e);
+      }
+
+      // Resize on container changes (Cesium-style fix). echarts itself
+      // listens to window resize, but a parent layout change after init
+      // would otherwise leave the canvas at its first measured size.
+      if (typeof ResizeObserver !== 'undefined') {
+        let lastW = 0;
+        const ro = new ResizeObserver(() => {
+          const w = host.clientWidth;
+          if (w === lastW) return;
+          lastW = w;
+          try { chart.resize(); } catch (_) {}
+        });
+        ro.observe(host);
+      }
+    }
+  };
+
+  mountWhenVisible('[data-egl]:not([data-egl-ready])', init, { rootMargin: '400px 0px' });
+</script>

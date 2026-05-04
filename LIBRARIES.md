@@ -152,6 +152,7 @@ Pre-existing subject-specific components. CDN script loads only when the compone
 | `<StoryMap url="..." />` | Knight Lab StoryMapJS | iframe `uploads.knightlab.com/storymapjs/...` | Geographic scrollytelling. |
 | `<Globe3D markers={[...]} />` | globe.gl 2.32.4 + three-globe earth texture | `cdn.jsdelivr.net/npm/globe.gl`, `unpkg.com/three-globe/example/img/earth-night.jpg` | 3D Earth with markers and arcs. Lightweight (~150KB) alternative to `<Cesium>` for simple "pin some places on a globe" use cases. |
 | `<Cesium target={[lat, lng, h]} markers={[...]} arcs={[...]} />` | CesiumJS 1.140 (npm + CDN-loaded at runtime) | `cesium.com/downloads/cesiumjs/releases/1.140/Build/Cesium/Cesium.js` | Production-grade WGS84 3D globe. Real terrain (mountains have real elevation), Bing aerial imagery, time-dynamic data, photorealistic 3D Tiles, all unlocked when `PUBLIC_CESIUM_TOKEN` is set. Without a token shows a bare globe with public Natural Earth imagery. Lazy-loads ~3-5MB from the official Cesium CDN, so guides without it pay zero cost. For history (troop movements, trade routes), geography (real terrain, climate overlays), astronomy (Earth-from-orbit). |
+| `<TroopMovement title="..." caption="..." arcs={[{from,to,label,t},...]} basemap="europe" showTimeline duration={6000} />` | deck.gl 9.3.1 (GreatCircleLayer) + MapLibre 4.7 | `unpkg.com/deck.gl@9.3.1/dist.min.js`, `unpkg.com/@deck.gl/geo-layers@9.3.1/dist.min.js`, `unpkg.com/maplibre-gl@4.7.1` | Specialized companion to `<DeckMap>`. Animated great-circle arcs over a 2D basemap with a play / pause / scrub timeline. Each arc has a `t` (0 to 1) marking when it appears, then "draws in" from source to target as the global timeline progresses. Basemap presets (`europe`, `world`, `atlantic`, `pacific`) set the initial viewport. Per-arc `color: 'red' | 'black'` override. Reduced motion renders all arcs fully drawn at once with the timeline disabled. For Napoleon's 1812 march, the Schlieffen Plan, Operation Barbarossa, D-Day landings, the Berlin Airlift. |
 | `<DocAnnotate text="..." />` | none (custom) | n/a | Pre-baked highlight spans on a source text. |
 | `<CompareSlider before="..." />` | img-comparison-slider 8.0.6 (web component) | `unpkg.com/img-comparison-slider` | Before/after image slider. |
 
@@ -255,11 +256,25 @@ Added on top of Tier 3 to close gaps in chemistry, biology, astronomy, CS, data 
 |---|---|---|---|
 | `<Slides slides={[...]} />` | reveal.js 5.2 | `cdn.jsdelivr.net/npm/reveal.js` | Inline slide decks from markdown, or embed an external deck by URL. |
 
+### History pictograms
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<Flag code="DE" />` | Custom inline SVG (hand-built ~30-flag set) | none | Tiny country-flag pictogram for inline use next to country names, NetworkGraph alliance webs, and MatchPairs leader-to-country puzzles. Includes special codes `SU` (Soviet Union, hand-drawn hammer-and-sickle) and `AH` (Austria-Hungary). Falls back to Unicode regional-indicator emoji for unknown codes. |
+| `<HistoryAnimation title="..." scenes={[{duration,caption,svg},...]} loop />` | none (custom JS scene player) | n/a | OverSimplified-style animated mini-cartoon player. Cycles through 4 to 6 inline-SVG scenes with caption track, scene-progress dots, Pause / Restart / Prev / Next, and reduced-motion storyboard fallback. Built for high-impact moments: Bastille storm, Napoleon, Scramble for Africa, Sarajevo dominoes, Stalin's Five-Year Plan, Cuban Missile Crisis. Author the per-scene SVG markup, the component handles timing, transitions, accessibility, and SPA teardown. Composable with `<SpeechBubble>` and `<DrawnSVG>` inside each scene's SVG. |
+
+### Subject-specific simulations
+
+| Component | Library | CDN / source | Brief |
+|---|---|---|---|
+| `<BranchingScenario title="..." context="..." tree={...} historicalAnswer="..." />` | Custom (HTML/JS state machine) | none | Generalized runtime for "you are X at Y" branching narrative decision games. Author one tree as a JSON object (`{ start, nodes: { [id]: { scenario, choices?, ending?, historicalNote? } } }`) and the component handles state, transitions, ending cards with a "What actually happened" callout, a Try Again button, and a localStorage-backed paths-attempted counter. Engine-agnostic so a future Ink (`inkjs`) backend can drop in behind the same prop interface. First instance: `robespierre-thermidor.ts` (9 Thermidor 1794, 7 choice nodes, 6 endings). Planned siblings: Napoleon at Borodino, Bismarck after 1871, Chamberlain at Munich, Truman in August 1945, Gorbachev in 1989. |
+
 ### Engagement
 
 | Component | Library | CDN / source | Brief |
 |---|---|---|---|
 | `<Poll src="..." provider="particify" />` | Particify / ClassQuiz / StrawPoll (iframe) | external | Live polls/quizzes via a self-hosted or third-party instance. |
+| `<SpeechBubble variant="say" tail="bottom-left" speaker="..." />` | none (custom CSS) | n/a | Comic-style speech / thought bubble for stick-figure history cartoons and inline character commentary. Variants: say, think, shout, whisper. |
 
 ---
 
@@ -275,6 +290,7 @@ Built specifically to make learning more visual: animations, hand-drawn aestheti
 | `<Rive src="..." stateMachine="..." />` | @rive-app/canvas 2.21 | `cdn.jsdelivr.net/npm/@rive-app/canvas/+esm` | Interactive state-machine animations. |
 | `<RevealOnScroll>` | Native + IntersectionObserver | none | Stagger fade/slide each child in as it enters the viewport. |
 | `<StepThrough steps={[...]} />` | Custom | none | Click "next" to advance through a multi-step diagram. |
+| `<DrawnSVG src="..." duration={120} startMode="inViewport">` | Vivus.js 0.4.6 | `cdn.jsdelivr.net/npm/vivus@0.4.6` | Animate inline or fetched SVG paths drawing themselves in line by line. |
 
 ### Sketch / hand-drawn aesthetic
 
@@ -290,6 +306,8 @@ Built specifically to make learning more visual: animations, hand-drawn aestheti
 | `<DeepZoom src="..." />` | OpenSeadragon 5.0 | `cdn.jsdelivr.net/npm/openseadragon` | Zoom infinitely into a high-res image. |
 | `<DeepZoomAnnotated markers={[...]}>` | OpenSeadragon | same | Add clickable annotation markers on top of the deep-zoom. |
 | `<Lightbox images={[...]}>` | PhotoSwipe 5.4 | `cdn.jsdelivr.net/npm/photoswipe/+esm` | Click any thumbnail to expand fullscreen with pan/zoom. |
+| `<Panorama360 src="..." title="..." caption="..." hotspots={[...]} />` | Pannellum 2.5.6 | `cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js` + `pannellum.css` | 360-degree equirectangular panorama viewer (HTML5 + WebGL, no Three.js). Drag to look around, optional info/scene hotspots, compass and controls built in. Lets students "stand inside" historical sites: Versailles Hall of Mirrors, a WWI trench, a section of the Berlin Wall. Reduced-motion mode renders a static flat image with a notice and skips loading the library. Pannellum's competitor Panolens.js was archived June 2023, leaving Pannellum as the leading open-source 360 viewer. |
+| `<Flipbook title="..." pages={[{content}, ...]} cover={{...}} warning={null} />` | StPageFlip 2.0.7 | `cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js` | Realistic 3D page-turn viewer for primary-source documents (Communist Manifesto opening, Versailles Article 231, Mein Kampf excerpts). Each page is an HTML string on a cream serif "paper" background, optional auto-generated cover, and an optional heavy red warning frame above the book for sensitive historical material (study-not-endorsement framing). Keyboard arrow navigation, `aria-live` page indicator, and a "Skip to flat reading" toggle that swaps the book for a vertical stack of page cards. Reduced-motion users get the flat stack automatically and the StPageFlip CDN never loads. |
 
 ### 3D models and scenes
 
@@ -727,8 +745,8 @@ Added in 2026-04 after auditing the latest "futuristic toolkit" research report.
 | `<FinchSim populationSize={32} />` | Custom canvas | none | Galápagos finch evolution sim. Hand-drawn finches with size-varying beaks forage on a beach for small (any beak) and big (beak ≥ 10 mm) seeds. Click ☀ Trigger drought to remove small seeds and watch mean beak depth shift right within a few years. Live histogram of beak depth, mean-over-time line, and population graph. The textbook example, playable. |
 | `<DichotomousKey tree={{ question, yes, no, result, note }} />` | Custom | none | Branching identification tree. Each node is a yes/no question that leads to either another question or a final identification. Breadcrumb shows path taken. Reset to try again. |
 | `<GuillotineAnimation />` | Custom (SVG + CSS keyframes) | none | Looping guillotine animation for the French Revolution / Reign of Terror. Blade rises, falls, repeats; counter ticks up to ~17,000 (the Reign of Terror execution count) over 30 seconds. Pause button. Respects `prefers-reduced-motion` (static frame). Used in `modern-europe-1500-1991`. |
-| `<DDayLandingSim />` | Custom (HTML5 canvas) | none | D-Day Omaha Beach landing simulation. Top-down view; player controls a soldier with WASD/arrows or tap-to-move; MG fire sweeps random rows; tide rises so retreat is impossible; goal is to reach the seawall. Stats panel tracks rounds, survived, best time. Reduced-motion fallback shows a static labeled image. |
-| `<JungleSpot rounds={10} secondsPerRound={5} />` | Custom (SVG + procedural) | none | "Spot the Vietcong" jungle game for the Vietnam War subsection. Stylized SVG jungle with hidden camouflaged figure; user has 5 seconds per round to click the soldier; 10 rounds; reveals figure after each. Score and avg reaction time tracked. Reduced-motion fallback shows the figure pre-marked. |
+| `<DDayLandingSim />` | Custom (HTML5 canvas) | none | D-Day Omaha Beach landing simulation. First-person 2.5D view with depth-aware sprite scaling (cliffs, bunkers, seawall, hedgehogs, fallen soldiers, surf, and the player's helmet rim and rifle barrel anchored at the bottom). WASD or arrow keys advance/strafe, Shift crouches, Space dives prone for 1s of invulnerability. Touch-friendly virtual D-pad and tap-to-advance. MG-42 bullets and telegraphed mortar shells are deadly; tide rises so retreat is impossible. Stats panel tracks rounds, survived, best time, and total meters advanced. Reduced-motion fallback shows a static labeled scene plus the pedagogical callout. |
+| `<JungleSpot />` | Custom (HTML5 canvas + procedural) | none | "Spot the Vietcong" jungle game for the Vietnam War subsection. First-person POV at eye level in a dense Vietnamese jungle: M16 hands and rifle anchored at the bottom of the canvas, layered procedural foliage (jungle floor, foreground fronds, midground brush, bamboo, background trunks, distant hill silhouette, sky strip filtering through canopy). Drag mouse or swipe touch to pan a 180 degree arc; click or tap on the camouflaged Vietcong soldier hidden in the brush. 10 rounds, 8 seconds each; subtle decoy rustles in the foliage with a faint hint near the figure. HUD shows round, time remaining, hits, last result, and a camera bearing indicator. Score and avg reaction time tracked. Reduced-motion fallback renders one static scene with the figure pre-circled. |
 | `<MissileCrisisGame />` | Custom (HTML/JS branching tree) | none | Cuban Missile Crisis decision-tree game. Player is JFK in October 1962; choices lead through 5 nodes to ~8 distinct endings (nuclear war, blockade success, Bay of Pigs II, Berlin lost, etc.). Historical commentary at every leaf. Restart-friendly. |
 | `<TrenchWarfareSim />` | Custom (HTML5 canvas) | none | WWI no-man's land simulation. Top-down view of trenches; player ordered "over the top"; random artillery + sweeping MG arcs; goal is to gain 100 m. Stats: assaults, avg meters gained, best. Touch fallback. Reduced-motion shows trench cross-section. |
 | `<FiveYearPlanGame />` | Custom (HTML/JS) | none | Stalin's Five-Year Plan resource-allocation puzzle. Player allocates 100 units of Soviet labor per year across Steel, Grain, Coal, Tractors, Education for 5 years; each year surfaces consequences (industrial growth, famine deaths, party purges). Final report card vs. Stalin's actual policy. |
@@ -850,6 +868,26 @@ Added 2026-04 to support React-only libraries (Recharts, Nivo, React Flow, Tremo
 | `motion` | Smooth React animations (replaces deprecated framer-motion). |
 
 React components live in `src/components/react/` and are imported by their Astro wrappers (which add the surface card and the `client:only="react"` directive).
+
+---
+
+## 8h. Tier 10 (visual-learner power kit, CDN, lazy-loaded)
+
+Added 2026-05 to plug the highest-wow-factor gaps in the visual-learner playbook. All actively maintained, top-shelf, and CDN-verified. Wrappers live in `src/components/` and use `mountWhenVisible` so they only fetch when the user scrolls toward them.
+
+| Component / library | npm / CDN | License | Visual gap it fills |
+|---|---|---|---|
+| `<EChartsGlobe>` | `echarts` 5.5 + `echarts-gl` 2.0 (CDN: jsdelivr) | Apache-2.0 | Spinnable WebGL 3D globe with great-circle arcs, pulsing scatter points, and an atmosphere glow. Drop in `points` and `arcs`; auto-rotate, drag-to-spin, scroll-to-zoom for free. Use for trade routes, supply lines, alliance corridors, migration arcs — anywhere a flat map collapses the third dimension. Used in `modern-europe-1500-1991` for imperial sea-lanes. |
+| `<G6Graph>` | `@antv/g6` v5 (CDN: jsdelivr `+esm`) | MIT | Production graph visualization from Alibaba's AntV team. Six built-in auto-layouts: `dagre` (layered), `radial`, `force`, `concentric`, `circular`, `mindmap`. Node groups colour-mapped automatically. Drag-canvas, zoom-canvas, drag-element behaviours wired up. Use instead of `<NetworkGraph>` (Cytoscape) when the graph has clear hierarchy or layered structure. Used in `modern-europe-1500-1991` for the NATO / Warsaw Pact dual command pyramid. |
+| `<MolStar>` | `molstar` v4.6 (CDN: jsdelivr) | MIT | Modern Mol* viewer (the engine behind RCSB PDB and AlphaFold DB). Accepts a `pdb` ID, `pubchemCid`, `smiles` (resolved via PubChem's REST endpoint), or a direct `url` to a `.cif`/`.pdb`/`.sdf`/`.mol` file. Renders cartoon, surface, ball-and-stick. WebGL2 / WebGPU. Replaces the older 3Dmol-based `<Molecule>` for any new authoring. Used in `modern-europe-1500-1991` for the chemistry of industrial warfare (TNT, RDX, hemoglobin). |
+| `<WebGLFluid>` | Pavel Dobryakov's WebGL Fluid Simulation (iframe to `paveldogreat.github.io/WebGL-Fluid-Simulation`) | MIT | The famous interactive 2D Navier-Stokes simulation. Drag/swipe/splash to add velocity. Embedded as a deferred iframe (zero parent-page cost until the user scrolls to it). Use as a metaphorical interlude (the "tide of revolution") or a literal physics teaching moment in a science guide. Used in `modern-europe-1500-1991` as the Russian Revolution interlude. |
+| **Spline runtime** | `@splinetool/runtime` (CDN: jsdelivr `+esm`, ~2MB ESM bundle) | MIT | Embed pre-designed 3D scenes from the Spline editor (spline.design) with one URL. Designers build the scene visually, export a `.splinecode` file, and the runtime renders it with full mouse/scroll interaction. Skips the entire Three.js authoring loop. **Wrapper not yet built**; instantiate via `loadScript` until a `<Spline>` component lands. |
+
+### When to reach for these vs the existing catalog
+
+- **Spline runtime** vs `<Sketchfab>`/`<ModelViewer>`: Sketchfab/ModelViewer embed an existing model file. Spline lets you ship an entire interactive scene (camera, lighting, animations, mouse triggers) authored visually. If you need the user to *interact with the scene*, prefer Spline. If you just need a model to rotate, ModelViewer is lighter.
+- **AntV G6** vs `<NetworkGraph>` (Cytoscape): Cytoscape's `cose` layout is a good general-purpose force-directed graph. G6 wins for hierarchical or layered graphs (org charts, ancestry, build dependencies, decision trees with sideways branches) and for "mindmap" auto-layouts that look like Xmind without the manual placement.
+- **ECharts GL** vs `<Plotly>` 3D: Plotly is the reigning scientific 3D plotting library and has more chart types. ECharts GL wins for animated 3D globes (great for trade routes, disease spread, migration), and for 3D bars/scatter that integrate cleanly with the rest of an ECharts dashboard you've already built.
 
 ---
 

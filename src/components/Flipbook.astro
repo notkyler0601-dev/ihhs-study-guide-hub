@@ -1,0 +1,282 @@
+---
+// Realistic 3D page-turn book viewer using StPageFlip. Each page is an
+// HTML string, rendered inside a "paper" page with a serif body, optional
+// auto-generated front cover, and an optional heavy red warning frame for
+// historically sensitive material. Falls back to a flat vertical stack for
+// reduced-motion users and screen readers.
+interface Page { content: string; }
+interface Cover { title?: string; subtitle?: string; color?: string; }
+interface Warning {
+  title: string;
+  body: string;
+  accent: 'caution' | 'critical';
+}
+interface Props {
+  title: string;
+  attribution?: string;
+  width?: number;
+  height?: number;
+  pages: Page[];
+  cover?: Cover;
+  warning?: Warning | null;
+  class?: string;
+}
+const {
+  title,
+  attribution,
+  width = 400,
+  height = 520,
+  pages,
+  cover,
+  warning = null,
+  class: extraClass = '',
+} = Astro.props;
+const id = 'fb-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ width, height });
+const coverColor = cover?.color || '#fee2e2';
+---
+
+<figure
+  class:list={['not-prose my-10 surface rounded-2xl shadow-soft p-6 flex flex-col items-center gap-4', extraClass]}
+  id={id}
+  data-flipbook
+  data-conf={conf}
+  role="region"
+  aria-label={`${title} flipbook`}
+>
+  {warning && (
+    <div class:list={[
+      'w-full max-w-2xl border-2 rounded-xl p-5 bg-white dark:bg-ink-900',
+      warning.accent === 'critical'
+        ? 'border-accent-700 dark:border-accent-500'
+        : 'border-accent-500 dark:border-accent-600',
+    ]}>
+      <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-accent-700 dark:text-accent-400 mb-2">
+        Study material, historical context
+      </p>
+      <h3 class="font-serif text-lg font-bold text-ink-900 dark:text-ink-50 mb-2">{warning.title}</h3>
+      <p class="text-sm text-ink-700 dark:text-ink-300 leading-relaxed">{warning.body}</p>
+      <hr class="mt-4 border-t-2 border-accent-700 dark:border-accent-500" />
+    </div>
+  )}
+
+  <h2 class="font-serif text-xl font-bold text-center text-ink-900 dark:text-ink-50">{title}</h2>
+
+  <button
+    type="button"
+    data-flipbook-flat-toggle
+    class="text-xs uppercase tracking-[0.16em] font-semibold text-accent-700 dark:text-accent-400 hover:underline"
+    aria-controls={`${id}-flat`}
+  >
+    Skip to flat reading
+  </button>
+
+  <div data-flipbook-stage class="relative" style={`width:${width * 2}px;max-width:100%;`}>
+    <div data-flipbook-host style={`width:${width * 2}px;height:${height}px;`}></div>
+    <p
+      data-flipbook-live
+      aria-live="polite"
+      class="sr-only"
+    ></p>
+  </div>
+
+  <div data-flipbook-pages class="hidden">
+    {cover && (
+      <div data-fb-cover style={`background:${coverColor};`}>
+        <div class="flex flex-col items-center justify-center h-full p-8 text-center">
+          <h3 class="font-serif text-2xl font-bold text-ink-900 mb-3">{cover.title || title}</h3>
+          {cover.subtitle && <p class="font-serif italic text-sm text-ink-700">{cover.subtitle}</p>}
+        </div>
+      </div>
+    )}
+    {pages.map((p, i) => (
+      <div data-fb-page>
+        <div class="fb-page-inner">
+          <div class="fb-page-body" set:html={p.content} />
+          <span class="fb-page-num">{i + 1}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div
+    data-flipbook-flat
+    id={`${id}-flat`}
+    class="hidden w-full max-w-2xl flex flex-col gap-4"
+  >
+    {pages.map((p, i) => (
+      <article class="surface rounded-xl p-5 border border-ink-200 dark:border-ink-800">
+        <p class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500 mb-2">
+          Page {i + 1} of {pages.length}
+        </p>
+        <div class="fb-flat-body" set:html={p.content} />
+      </article>
+    ))}
+  </div>
+
+  {attribution && (
+    <figcaption class="text-xs italic text-ink-500 dark:text-ink-400 text-center">{attribution}</figcaption>
+  )}
+</figure>
+
+<style is:global>
+  [data-flipbook] [data-fb-page],
+  [data-flipbook] [data-fb-cover] {
+    background: #fafaf5;
+    color: #18181b;
+    font-family: 'Fraunces', Georgia, serif;
+  }
+  [data-flipbook] .fb-page-inner {
+    height: 100%;
+    padding: 28px 26px 36px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  [data-flipbook] .fb-page-body {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow: hidden;
+  }
+  [data-flipbook] .fb-page-body h2,
+  [data-flipbook] .fb-page-body h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 700;
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: #111;
+  }
+  [data-flipbook] .fb-page-body p {
+    margin: 0 0 10px;
+  }
+  [data-flipbook] .fb-page-num {
+    position: absolute;
+    bottom: 12px;
+    right: 18px;
+    font-size: 11px;
+    color: #6b6b6b;
+    font-style: italic;
+  }
+  [data-flipbook] [data-flipbook-host] .stf__parent {
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.18));
+  }
+  [data-flipbook] .fb-flat-body h2,
+  [data-flipbook] .fb-flat-body h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+  }
+  [data-flipbook] .fb-flat-body p {
+    font-family: 'Fraunces', Georgia, serif;
+    margin: 0 0 0.6rem;
+    line-height: 1.6;
+  }
+</style>
+
+<script>
+  import { importGlobal } from '../lib/loadScript';
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-flipbook]:not([data-ready])');
+    if (roots.length === 0) return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || document.documentElement.classList.contains('a11y-reduce-motion');
+
+    const enableFlat = (root: HTMLElement) => {
+      const stage = root.querySelector<HTMLElement>('[data-flipbook-stage]');
+      const flat = root.querySelector<HTMLElement>('[data-flipbook-flat]');
+      const toggle = root.querySelector<HTMLButtonElement>('[data-flipbook-flat-toggle]');
+      if (stage) stage.style.display = 'none';
+      if (flat) flat.classList.remove('hidden');
+      if (toggle) toggle.style.display = 'none';
+    };
+
+    if (reduce) {
+      roots.forEach((root) => {
+        root.dataset.ready = '1';
+        enableFlat(root);
+      });
+      return;
+    }
+
+    let PageFlip: any;
+    try {
+      const St: any = await importGlobal(
+        'https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js',
+        'St'
+      );
+      PageFlip = St?.PageFlip || (window as any).PageFlip;
+    } catch (e) {
+      console.warn('Flipbook: StPageFlip failed to load, using flat fallback', e);
+      roots.forEach((root) => { root.dataset.ready = '1'; enableFlat(root); });
+      return;
+    }
+
+    roots.forEach((root) => {
+      root.dataset.ready = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const host = root.querySelector<HTMLElement>('[data-flipbook-host]')!;
+      const pagesWrap = root.querySelector<HTMLElement>('[data-flipbook-pages]')!;
+      const live = root.querySelector<HTMLElement>('[data-flipbook-live]')!;
+      const toggle = root.querySelector<HTMLButtonElement>('[data-flipbook-flat-toggle]')!;
+      const flat = root.querySelector<HTMLElement>('[data-flipbook-flat]')!;
+      const stage = root.querySelector<HTMLElement>('[data-flipbook-stage]')!;
+
+      const pageEls = Array.from(pagesWrap.children) as HTMLElement[];
+      if (pageEls.length === 0) return;
+
+      try {
+        const book = new PageFlip(host, {
+          width: conf.width,
+          height: conf.height,
+          size: 'fixed',
+          minWidth: conf.width,
+          maxWidth: conf.width,
+          minHeight: conf.height,
+          maxHeight: conf.height,
+          drawShadow: true,
+          flippingTime: 800,
+          usePortrait: true,
+          autoSize: true,
+          maxShadowOpacity: 0.5,
+          showCover: true,
+          mobileScrollSupport: false,
+        });
+        book.loadFromHTML(pageEls);
+
+        book.on('flip', (e: any) => {
+          const total = pageEls.length;
+          live.textContent = `Page ${(e.data ?? 0) + 1} of ${total}`;
+        });
+
+        // Keyboard navigation
+        root.tabIndex = 0;
+        root.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'ArrowRight') { e.preventDefault(); book.flipNext(); }
+          else if (e.key === 'ArrowLeft') { e.preventDefault(); book.flipPrev(); }
+        });
+
+        toggle.addEventListener('click', () => {
+          const showing = !flat.classList.contains('hidden');
+          if (showing) {
+            flat.classList.add('hidden');
+            stage.style.display = '';
+            toggle.textContent = 'Skip to flat reading';
+          } else {
+            flat.classList.remove('hidden');
+            stage.style.display = 'none';
+            toggle.textContent = 'Return to flipbook';
+          }
+        });
+      } catch (e) {
+        console.warn('Flipbook init failed, using flat fallback', e);
+        enableFlat(root);
+      }
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

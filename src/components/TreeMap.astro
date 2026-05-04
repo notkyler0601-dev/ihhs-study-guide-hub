@@ -17,10 +17,9 @@ const conf = JSON.stringify(data);
 </figure>
 
 <script>
-  const init = async () => {
-    const roots = document.querySelectorAll<HTMLElement>('[data-tm]:not([data-tm-ready])');
-    if (roots.length === 0) return;
+  import { mountWhenVisible } from '../lib/loadScript';
 
+  const init = async (roots: HTMLElement[]) => {
     let d3: any;
     try {
       d3 = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/d3@7/+esm');
@@ -57,6 +56,5 @@ const conf = JSON.stringify(data);
       cell.append('title').text((d: any) => `${d.data.name}: ${d.value}`);
     });
   };
-  init();
-  document.addEventListener('astro:after-swap', init);
+  mountWhenVisible('[data-tm]:not([data-tm-ready])', init);
 </script>

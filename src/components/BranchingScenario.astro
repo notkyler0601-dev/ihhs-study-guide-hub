@@ -1,0 +1,308 @@
+---
+// BranchingScenario, a reusable runtime for branching narrative decision games.
+//
+// Generalizes the v1 MissileCrisisGame pattern (a JSON tree of nodes, each
+// either a choice node with options or an ending node with a historicalNote).
+// The user steps through choices, eventually reaches an ending, sees what
+// actually happened, and can replay.
+//
+// Authoring shape (the `tree` prop):
+//
+//   {
+//     start: "node1",
+//     nodes: {
+//       node1: {
+//         scenario: "You stand before the Convention. The crowd jeers.",
+//         choices: [
+//           { text: "Try to give your speech", next: "node2" },
+//           { text: "Flee through the back",   next: "node3" }
+//         ]
+//       },
+//       node2: {
+//         scenario: "The crowd shouts you down. Hands seize you.",
+//         ending: "arrested",
+//         historicalNote: "On 9 Thermidor (July 27, 1794) ..."
+//       },
+//       ...
+//     }
+//   }
+//
+// The component is intentionally engine-agnostic. The internal state machine
+// only cares about node shapes, so a future Ink-based runtime (compiled .ink
+// JSON via inkjs) can be swapped behind the same prop interface without
+// changing call-sites.
+//
+// Usage:
+//
+//   <BranchingScenario
+//     title="You are Robespierre on 9 Thermidor"
+//     context="Paris, July 27, 1794. The Convention turns on you."
+//     tree={robespierreTree}
+//     historicalAnswer="On 9 Thermidor, Robespierre was shouted down, arrested, and guillotined the next day."
+//   />
+//
+// Visual contract:
+//   - Wrapped in <figure class="not-prose my-8 surface rounded-2xl shadow-soft p-6">.
+//   - Eyebrow + serif title at top.
+//   - Italic context paragraph (Callout-style box).
+//   - Larger serif scenario body.
+//   - Stacked choice buttons, full width on mobile, hover red accent.
+//   - Ending state: red top border card with ending text, an insight-styled
+//     "What actually happened" callout, and a Try Again button.
+//   - 200ms fade between nodes.
+//   - "Paths attempted" counter, persisted in localStorage per scenario id.
+
+interface Props {
+  title: string;
+  context: string;
+  tree: {
+    start: string;
+    nodes: Record<string, {
+      scenario: string;
+      choices?: { text: string; next: string }[];
+      ending?: string;
+      historicalNote?: string;
+      accurate?: boolean;
+    }>;
+  };
+  historicalAnswer: string;
+  class?: string;
+}
+
+const {
+  title,
+  context,
+  tree,
+  historicalAnswer,
+  class: extraClass = '',
+} = Astro.props;
+
+// Stable id derived from title so localStorage keys persist across reloads
+// and so multiple instances on the same page do not collide.
+const scenarioId = (title || 'branching-scenario')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '')
+  .slice(0, 64);
+
+const treeJson = JSON.stringify(tree);
+const historicalAnswerJson = JSON.stringify(historicalAnswer);
+---
+
+<figure
+  class:list={['not-prose my-8 surface rounded-2xl shadow-soft p-6', extraClass]}
+  data-bs
+  data-bs-id={scenarioId}
+  data-bs-tree={treeJson}
+  data-bs-historical-answer={historicalAnswerJson}
+>
+  <header class="mb-4">
+    <div class="text-[10px] uppercase tracking-[0.16em] text-accent-700 dark:text-accent-400 font-semibold mb-1">
+      Choose your path
+    </div>
+    <h3 class="font-serif text-2xl font-bold text-ink-900 dark:text-ink-50 leading-tight">
+      {title}
+    </h3>
+  </header>
+
+  <div class="mb-5 p-4 rounded-xl border border-ink-200 dark:border-ink-800 bg-ink-50 dark:bg-ink-900/40">
+    <p class="italic text-sm leading-relaxed text-ink-700 dark:text-ink-300 m-0">
+      {context}
+    </p>
+  </div>
+
+  <div
+    data-bs-stage
+    class="transition-opacity duration-200 ease-out"
+    style="opacity: 1;"
+  >
+    <div
+      data-bs-scenario
+      class="font-serif text-lg leading-relaxed text-ink-900 dark:text-ink-50 mb-5"
+    ></div>
+
+    <div data-bs-choices class="space-y-2"></div>
+
+    <div data-bs-ending class="hidden">
+      <div class="rounded-xl border-t-4 border-accent-700 dark:border-accent-500 bg-white dark:bg-ink-900 shadow-soft p-5 mt-2">
+        <div class="text-[10px] uppercase tracking-[0.16em] text-accent-700 dark:text-accent-400 font-semibold mb-2" data-bs-ending-label>
+          Outcome
+        </div>
+        <p data-bs-ending-text class="font-serif text-base leading-relaxed text-ink-900 dark:text-ink-50 m-0"></p>
+      </div>
+
+      <aside
+        data-bs-historical
+        class="not-prose my-5 rounded-xl border-l-4 border-accent-300 dark:border-accent-700 bg-accent-50 dark:bg-accent-900/30 p-5 shadow-soft"
+      >
+        <div class="flex items-center gap-2 mb-2 text-xs uppercase tracking-[0.14em] font-semibold text-accent-700 dark:text-accent-300">
+          <span class="text-base leading-none">✦</span>
+          <span>What actually happened</span>
+        </div>
+        <p data-bs-historical-text class="text-[0.95rem] leading-relaxed text-ink-800 dark:text-ink-200 m-0"></p>
+      </aside>
+
+      <button
+        type="button"
+        data-bs-restart
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-colors"
+      >
+        <span aria-hidden="true">▶</span>
+        <span>Try Again</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-5 flex items-center justify-end text-[11px] text-ink-500 dark:text-ink-500">
+    <span data-bs-paths>Paths attempted: 0</span>
+  </div>
+</figure>
+
+<script>
+  type Choice = { text: string; next: string };
+  type Node = {
+    scenario: string;
+    choices?: Choice[];
+    ending?: string;
+    historicalNote?: string;
+    accurate?: boolean;
+  };
+  type Tree = { start: string; nodes: Record<string, Node> };
+
+  const STORAGE_PREFIX = 'ihhs:branching-scenario:';
+
+  const readPathsAttempted = (id: string): number => {
+    try {
+      const raw = localStorage.getItem(STORAGE_PREFIX + id);
+      if (!raw) return 0;
+      const n = parseInt(raw, 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const writePathsAttempted = (id: string, n: number): void => {
+    try {
+      localStorage.setItem(STORAGE_PREFIX + id, String(n));
+    } catch {
+      // localStorage unavailable; counter stays in-memory only.
+    }
+  };
+
+  const setupBranchingScenario = (): void => {
+    document.querySelectorAll<HTMLElement>('[data-bs]:not([data-ready])').forEach((root) => {
+      root.dataset.ready = '1';
+
+      const id = root.dataset.bsId || 'unknown';
+      let tree: Tree;
+      let historicalAnswer = '';
+      try {
+        tree = JSON.parse(root.dataset.bsTree || '{}') as Tree;
+        historicalAnswer = JSON.parse(root.dataset.bsHistoricalAnswer || '""') as string;
+      } catch {
+        return;
+      }
+      if (!tree || !tree.start || !tree.nodes) return;
+
+      const stage = root.querySelector<HTMLElement>('[data-bs-stage]')!;
+      const scenarioEl = root.querySelector<HTMLElement>('[data-bs-scenario]')!;
+      const choicesEl = root.querySelector<HTMLElement>('[data-bs-choices]')!;
+      const endingWrap = root.querySelector<HTMLElement>('[data-bs-ending]')!;
+      const endingTextEl = root.querySelector<HTMLElement>('[data-bs-ending-text]')!;
+      const endingLabelEl = root.querySelector<HTMLElement>('[data-bs-ending-label]')!;
+      const historicalTextEl = root.querySelector<HTMLElement>('[data-bs-historical-text]')!;
+      const restartBtn = root.querySelector<HTMLButtonElement>('[data-bs-restart]')!;
+      const pathsEl = root.querySelector<HTMLElement>('[data-bs-paths]')!;
+
+      let pathsAttempted = readPathsAttempted(id);
+      pathsEl.textContent = `Paths attempted: ${pathsAttempted}`;
+
+      let endingCountedThisRun = false;
+
+      const fadeAndRender = (key: string): void => {
+        stage.style.opacity = '0';
+        window.setTimeout(() => {
+          render(key);
+          stage.style.opacity = '1';
+        }, 200);
+      };
+
+      const render = (key: string): void => {
+        const node = tree.nodes[key];
+        if (!node) {
+          scenarioEl.textContent = `Scenario error: missing node "${key}".`;
+          choicesEl.innerHTML = '';
+          endingWrap.classList.add('hidden');
+          return;
+        }
+
+        scenarioEl.textContent = node.scenario || '';
+
+        if (node.ending) {
+          // Ending node: show ending card + historical callout + restart.
+          choicesEl.innerHTML = '';
+          endingTextEl.textContent = node.scenario || '';
+          endingLabelEl.textContent = node.ending
+            ? `Outcome: ${node.ending}`
+            : 'Outcome';
+          // Hide the duplicate scenario text in the upper slot; the ending
+          // card has the same text, so we clear the upper one.
+          scenarioEl.textContent = '';
+
+          const note = node.historicalNote && node.historicalNote.trim().length > 0
+            ? node.historicalNote
+            : historicalAnswer;
+          historicalTextEl.textContent = note;
+          endingWrap.classList.remove('hidden');
+
+          if (!endingCountedThisRun) {
+            endingCountedThisRun = true;
+            pathsAttempted += 1;
+            writePathsAttempted(id, pathsAttempted);
+            pathsEl.textContent = `Paths attempted: ${pathsAttempted}`;
+          }
+          return;
+        }
+
+        // Choice node.
+        endingWrap.classList.add('hidden');
+        choicesEl.innerHTML = '';
+        const list = node.choices || [];
+        list.forEach((c, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = [
+            'w-full text-left flex items-start gap-3 px-4 py-3',
+            'rounded-lg border border-ink-200 dark:border-ink-800',
+            'bg-white dark:bg-ink-900',
+            'hover:border-accent-500 dark:hover:border-accent-500',
+            'hover:bg-accent-50 dark:hover:bg-accent-900/30',
+            'active:scale-[0.99] active:bg-accent-100 dark:active:bg-accent-900/50',
+            'transition-colors text-sm leading-snug',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500',
+          ].join(' ');
+          const letter = String.fromCharCode(65 + i);
+          btn.innerHTML = `<span class="mt-0.5 inline-flex items-center justify-center h-5 w-5 rounded-full border border-ink-300 dark:border-ink-700 text-[10px] font-mono shrink-0">${letter}</span><span class="flex-1">${c.text}</span>`;
+          btn.addEventListener('click', () => fadeAndRender(c.next));
+          choicesEl.appendChild(btn);
+        });
+      };
+
+      const reset = (): void => {
+        endingCountedThisRun = false;
+        fadeAndRender(tree.start);
+      };
+
+      restartBtn.addEventListener('click', reset);
+
+      // Initial render, no fade.
+      render(tree.start);
+    });
+  };
+
+  const _bsObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _bsObs!.unobserve(e.target); setupBranchingScenario(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeBS = () => document.querySelectorAll<HTMLElement>('[data-bs]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_bsObs) _bsObs.observe(r); else setupBranchingScenario(); });
+  _observeBS();
+  document.addEventListener('astro:after-swap', _observeBS);
+</script>

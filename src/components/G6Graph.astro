@@ -1,0 +1,183 @@
+---
+// AntV G6 graph visualization. Use this instead of <NetworkGraph>
+// (Cytoscape) when the graph has structure: hierarchy, layered ranks,
+// concentric rings, or a mindmap. G6's built-in dagre/radial/circular/
+// mindmap layouts beat Cytoscape's force-directed defaults for these
+// shapes, and the rendering is more polished.
+//
+// nodes:  [{ id, label?, group? }]   group is mapped to a colour
+// edges:  [{ source, target, label? }]
+// layout: 'dagre' | 'radial' | 'force' | 'concentric' | 'circular' | 'mindmap'
+//
+// Usage:
+//   <G6Graph
+//     title="Treaty of Versailles, drafting parties"
+//     layout="dagre"
+//     nodes={[
+//       { id: 'BIG3',   label: 'Big Three',     group: 'apex' },
+//       { id: 'WIL',    label: 'Wilson (USA)',  group: 'leader' },
+//       { id: 'CLE',    label: 'Clemenceau (FR)', group: 'leader' },
+//       { id: 'LG',     label: 'Lloyd George (UK)', group: 'leader' }
+//     ]}
+//     edges={[
+//       { source: 'BIG3', target: 'WIL' },
+//       { source: 'BIG3', target: 'CLE' },
+//       { source: 'BIG3', target: 'LG'  }
+//     ]}
+//   />
+
+interface Node { id: string; label?: string; group?: string; }
+interface Edge { source: string; target: string; label?: string; }
+interface Props {
+  title?: string;
+  nodes: Node[];
+  edges: Edge[];
+  layout?: 'dagre' | 'radial' | 'force' | 'concentric' | 'circular' | 'mindmap';
+  height?: number;
+  rankdir?: 'TB' | 'BT' | 'LR' | 'RL';
+}
+const {
+  title = 'Graph',
+  nodes,
+  edges,
+  layout = 'dagre',
+  height = 480,
+  rankdir = 'TB',
+} = Astro.props;
+
+const id = 'g6-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ nodes, edges, layout, rankdir, height });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-g6 data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">AntV G6 · {layout}</span>
+  </figcaption>
+  <div data-g6-host class="w-full bg-white dark:bg-ink-900" style={`height:${height}px;`}></div>
+</figure>
+
+<script>
+  import { mountWhenVisible } from '../lib/loadScript';
+
+  type Node = { id: string; label?: string; group?: string };
+  type Edge = { source: string; target: string; label?: string };
+  type Conf = {
+    nodes: Node[];
+    edges: Edge[];
+    layout: string;
+    rankdir: string;
+    height: number;
+  };
+
+  const init = async (roots: HTMLElement[]) => {
+    let G6: any;
+    try {
+      const mod: any = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/@antv/g6/+esm');
+      G6 = mod;
+    } catch (e) {
+      console.warn('G6Graph failed to load', e);
+      return;
+    }
+
+    for (const root of roots) {
+      root.dataset.g6Ready = '1';
+      const host = root.querySelector<HTMLElement>('[data-g6-host]')!;
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+      const isDark = document.documentElement.classList.contains('dark');
+
+      const palette: Record<string, string> = {};
+      const palOrder = ['#b91c1c', '#27272a', '#dc2626', '#a1a1aa', '#7f1d1d', '#52525b', '#fca5a5'];
+      const colorFor = (g?: string) => {
+        if (!g) return palOrder[0];
+        if (!palette[g]) palette[g] = palOrder[Object.keys(palette).length % palOrder.length];
+        return palette[g];
+      };
+
+      // G6 v5 node sizing: pick a width that fits the longest label so the
+      // dagre layout can space nodes correctly. Nodes default to type=rect
+      // (rounded pill) so they read as labelled boxes, not bare dots.
+      const labels = (conf.nodes ?? []).map((n) => n.label ?? n.id);
+      const maxLen = labels.reduce((m, l) => Math.max(m, l.length), 0);
+      const nodeW = Math.max(120, Math.min(220, maxLen * 8 + 24));
+      const nodeH = 40;
+
+      const data = {
+        nodes: (conf.nodes ?? []).map((n) => ({
+          id: n.id,
+          type: 'rect',
+          style: {
+            labelText: n.label ?? n.id,
+            labelPlacement: 'center',
+            fill: colorFor(n.group),
+            stroke: isDark ? '#18181b' : '#fafafa',
+            lineWidth: 2,
+            radius: 8,
+            labelFill: '#ffffff',
+            labelFontFamily: 'Inter, sans-serif',
+            labelFontSize: 12,
+            labelFontWeight: 600,
+            size: [nodeW, nodeH],
+          },
+        })),
+        edges: (conf.edges ?? []).map((e, i) => ({
+          id: 'e' + i,
+          source: e.source,
+          target: e.target,
+          style: {
+            stroke: isDark ? '#52525b' : '#a1a1aa',
+            lineWidth: 1.5,
+            endArrow: true,
+            endArrowSize: 8,
+            labelText: e.label ?? '',
+            labelFill: isDark ? '#a1a1aa' : '#52525b',
+            labelFontFamily: 'Inter, sans-serif',
+            labelFontSize: 10,
+            labelBackgroundFill: isDark ? '#18181b' : '#ffffff',
+            labelPadding: [2, 4],
+          },
+        })),
+      };
+
+      let layoutCfg: any;
+      switch (conf.layout) {
+        case 'radial':      layoutCfg = { type: 'radial',     unitRadius: 100, preventOverlap: true }; break;
+        case 'force':       layoutCfg = { type: 'force',      preventOverlap: true, nodeStrength: -50, linkDistance: 120 }; break;
+        case 'concentric':  layoutCfg = { type: 'concentric', preventOverlap: true, minNodeSpacing: 30 }; break;
+        case 'circular':    layoutCfg = { type: 'circular',   radius: 180 }; break;
+        case 'mindmap':     layoutCfg = { type: 'mindmap',    direction: 'H', getHeight: () => 18, getWidth: () => 90, getVGap: () => 12, getHGap: () => 60 }; break;
+        case 'dagre':
+        default:            layoutCfg = { type: 'dagre',      rankdir: conf.rankdir || 'TB', nodesep: 18, ranksep: 50, nodeSize: [nodeW, nodeH] }; break;
+      }
+
+      try {
+        const graph = new G6.Graph({
+          container: host,
+          width: host.clientWidth || 720,
+          height: host.clientHeight || 480,
+          data,
+          layout: layoutCfg,
+          behaviors: ['drag-canvas', 'zoom-canvas', 'drag-element'],
+          autoFit: 'view',
+          padding: 20,
+        });
+        graph.render();
+
+        if (typeof ResizeObserver !== 'undefined') {
+          let lastW = 0;
+          const ro = new ResizeObserver(() => {
+            const w = host.clientWidth;
+            if (w === lastW) return;
+            lastW = w;
+            try { graph.setSize(w, host.clientHeight || conf.height); graph.fitView(); } catch (_) {}
+          });
+          ro.observe(host);
+        }
+      } catch (e) {
+        console.warn('G6Graph render failed', e);
+      }
+    }
+  };
+
+  mountWhenVisible('[data-g6]:not([data-g6-ready])', init, { rootMargin: '400px 0px' });
+</script>

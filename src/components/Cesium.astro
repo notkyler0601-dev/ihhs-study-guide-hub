@@ -244,9 +244,39 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         // Stash the viewer on the root for tests / debugging.
         (root as any).__cesiumViewer = viewer;
 
-        // Markers.
+        // Cesium reads container dimensions ONCE when the viewer is
+        // constructed and from then on only auto-resizes on `window`
+        // resize events, not parent layout changes. If the prose column
+        // settles to its final width after Cesium init (animations,
+        // sticky-aside layout, MDX components above shifting things), the
+        // canvas stays pinned at the early small size and ends up
+        // rendering only in the corner of the larger container. Watch
+        // the mount with a ResizeObserver and call resize() whenever
+        // its size actually changes.
+        if (typeof ResizeObserver !== 'undefined') {
+          let lastW = 0;
+          let lastH = 0;
+          const ro = new ResizeObserver(() => {
+            const w = mount.clientWidth;
+            const h = mount.clientHeight;
+            if (w === lastW && h === lastH) return;
+            lastW = w;
+            lastH = h;
+            try { viewer.resize(); viewer.scene.requestRender(); } catch (_) {}
+          });
+          ro.observe(mount);
+        }
+        // Force one resize on the next frame in case the initial
+        // construction grabbed a stale layout width.
+        requestAnimationFrame(() => {
+          try { viewer.resize(); viewer.scene.requestRender(); } catch (_) {}
+        });
+
+        // Markers. Pass `name` so the InfoBox header shows "London" instead
+        // of the auto-generated entity UUID Cesium falls back to.
         conf.markers.forEach((m) => {
           viewer.entities.add({
+            name: m.name ?? '',
             position: Cesium.Cartesian3.fromDegrees(m.lng, m.lat, 0),
             point: {
               pixelSize: 12,
@@ -307,6 +337,30 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
     }
   };
 
-  init();
-  document.addEventListener('astro:after-swap', init);
+  // Defer init to viewport entry. Cesium is ~14MB of JS plus tiles; loading it
+  // up front blocks first paint. IntersectionObserver lets the page render
+  // before we touch the WebGL globe.
+  const observer = typeof IntersectionObserver !== 'undefined'
+    ? new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            observer!.unobserve(entry.target);
+            // Fire init via requestIdleCallback so first paint and other CDNs settle first.
+            const fire = () => init();
+            if ('requestIdleCallback' in window) (window as any).requestIdleCallback(fire, { timeout: 800 });
+            else setTimeout(fire, 100);
+          }
+        }
+      }, { rootMargin: '0px' })
+    : null;
+
+  const observe = () => {
+    document.querySelectorAll<HTMLElement>('[data-cesium]:not([data-cesium-ready]):not([data-cesium-observed])').forEach((root) => {
+      root.dataset.cesiumObserved = '1';
+      if (observer) observer.observe(root);
+      else init();
+    });
+  };
+  observe();
+  document.addEventListener('astro:after-swap', observe);
 </script>

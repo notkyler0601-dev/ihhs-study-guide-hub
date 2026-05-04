@@ -227,6 +227,8 @@
       buildAllocator();
     });
   };
-  setupFYP();
-  document.addEventListener('astro:after-swap', setupFYP);
+  const _fypObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _fypObs!.unobserve(e.target); setupFYP(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeFYP = () => document.querySelectorAll<HTMLElement>('[data-fyp]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_fypObs) _fypObs.observe(r); else setupFYP(); });
+  _observeFYP();
+  document.addEventListener('astro:after-swap', _observeFYP);
 </script>

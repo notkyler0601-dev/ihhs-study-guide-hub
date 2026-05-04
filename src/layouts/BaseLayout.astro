@@ -45,7 +45,149 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
         if (localStorage.getItem('a11y:reduce-motion') === '1') {
           document.documentElement.classList.add('a11y-reduce-motion');
         }
+        // Manual scroll restoration via opt-in resume pill.
+        // Lazy-loaded components made auto-restore unreliable: jumping to a
+        // saved offset triggers every IntersectionObserver at the destination
+        // at once (lag spike) and shifts layout below. Instead: refreshes
+        // land at the top, and if a saved position exists we surface a small
+        // "Resume where you left off" pill the user clicks when ready.
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        const SCROLL_KEY = 'ihhs:scroll:' + location.pathname;
+        // Save scroll position throttled while scrolling, and on unload as backup.
+        // The resume-pill click sets window.__ihhsSuppressSave during programmatic
+        // smooth-scroll, so intermediate animation positions (and any clamp-to-
+        // bottom that happens before lazy components finish laying out) don't
+        // overwrite the user's real saved Y.
+        var saveTimer = 0;
+        window.addEventListener('scroll', function () {
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(function () {
+            if (window.__ihhsSuppressSave) return;
+            try { sessionStorage.setItem(SCROLL_KEY, String(window.scrollY)); } catch (_) {}
+          }, 250);
+        }, { passive: true });
+        window.addEventListener('beforeunload', () => {
+          if (window.__ihhsSuppressSave) return;
+          try { sessionStorage.setItem(SCROLL_KEY, String(window.scrollY)); } catch (_) {}
+        });
+        // Aggressive land-at-top: continuously pin scrollY to 0 via rAF
+        // until the user actually interacts. This beats every other
+        // scroll-restoration path (browser auto-restore, lazy-loaded layout
+        // shifts, prerendered pages, view-transition scroll-after-swap, etc.)
+        // because rAF fires every paint frame.
+        // Suppress the position-saver while pinning: the pin's own
+        // scrollTo(0,0) calls (and any layout-shift scrolls it counteracts)
+        // would otherwise let the throttled save write "0" on top of the
+        // user's real saved Y, which would also nuke the resume pill.
+        if (!location.hash) {
+          window.__ihhsSuppressSave = true;
+          var userScrolled = false;
+          var stopPin = function () {
+            userScrolled = true;
+            window.__ihhsSuppressSave = false;
+          };
+          ['wheel','touchstart','keydown','mousedown','pointerdown'].forEach(function (e) {
+            window.addEventListener(e, stopPin, { once: true, passive: true });
+          });
+          var startedAt = performance.now();
+          var pinFrame = function () {
+            if (userScrolled) return;
+            if (window.scrollY !== 0) window.scrollTo(0, 0);
+            // Stop after 2.5 seconds OR on first user input (above)
+            if (performance.now() - startedAt < 2500) {
+              requestAnimationFrame(pinFrame);
+            } else {
+              window.__ihhsSuppressSave = false;
+            }
+          };
+          requestAnimationFrame(pinFrame);
+        }
       })();
+    </script>
+    <script is:inline>
+      // Resume-where-you-left-off pill. Shown bottom-center on page load if a
+      // saved scroll position exists for this URL and is more than 400px down.
+      // Clicking smooth-scrolls there. Auto-hides after 12s, on user scroll,
+      // on dismiss, or after click.
+      window.addEventListener('load', function () {
+        if (location.hash) return;
+        const SCROLL_KEY = 'ihhs:scroll:' + location.pathname;
+        const raw = sessionStorage.getItem(SCROLL_KEY);
+        if (!raw) return;
+        const y = parseInt(raw, 10);
+        if (Number.isNaN(y) || y < 400) return;
+
+        const pill = document.createElement('div');
+        pill.setAttribute('role', 'status');
+        pill.style.cssText = [
+          'position:fixed', 'left:50%', 'bottom:24px', 'transform:translateX(-50%) translateY(8px)',
+          'z-index:999', 'display:flex', 'align-items:center', 'gap:10px',
+          'padding:10px 16px', 'border-radius:9999px',
+          'background:#18181b', 'color:#fafafa',
+          'box-shadow:0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.12)',
+          'font-family:Inter,system-ui,sans-serif', 'font-size:14px', 'font-weight:500',
+          'opacity:0', 'transition:opacity 220ms ease, transform 220ms ease',
+          'cursor:default'
+        ].join(';');
+        pill.innerHTML =
+          '<button type="button" data-resume style="all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">' +
+            '<span style="display:inline-block; width:14px; height:14px; border-bottom:2px solid #f87171; border-right:2px solid #f87171; transform:rotate(45deg) translate(-2px,-2px);"></span>' +
+            'Resume where you left off' +
+          '</button>' +
+          '<button type="button" data-dismiss aria-label="Dismiss" style="all:unset; cursor:pointer; padding:0 4px; opacity:0.55; font-size:18px; line-height:1;">×</button>';
+        document.body.appendChild(pill);
+        // Slide in
+        requestAnimationFrame(() => {
+          pill.style.opacity = '1';
+          pill.style.transform = 'translateX(-50%) translateY(0)';
+        });
+
+        const cleanup = () => {
+          pill.style.opacity = '0';
+          pill.style.transform = 'translateX(-50%) translateY(8px)';
+          setTimeout(() => pill.remove(), 240);
+          window.removeEventListener('wheel', onUserScroll);
+          window.removeEventListener('touchstart', onUserScroll);
+          window.removeEventListener('keydown', onUserScroll);
+          clearTimeout(autoHide);
+        };
+        const onUserScroll = () => cleanup();
+        // 12-second auto-hide
+        const autoHide = setTimeout(cleanup, 12000);
+        // Dismiss if user starts scrolling on their own
+        window.addEventListener('wheel', onUserScroll, { once: true, passive: true });
+        window.addEventListener('touchstart', onUserScroll, { once: true, passive: true });
+        window.addEventListener('keydown', onUserScroll, { once: true, passive: true });
+        // Resume click: wait for the document to be tall enough before
+        // smooth-scrolling. Heavy guides (mermaid, 3D scenes, scrollytells with
+        // 60vh step gaps) initialize asynchronously after `load`, so the doc
+        // can still be shorter than the saved Y at click time. If we naively
+        // call scrollTo({ top: y }) the browser clamps to the bottom and the
+        // user lands at the end of the page instead of where they left off.
+        // Suppress the throttled save while restoring so the clamped value
+        // doesn't overwrite the real saved Y.
+        pill.querySelector('[data-resume]').addEventListener('click', function () {
+          cleanup();
+          window.__ihhsSuppressSave = true;
+          var startedAt = performance.now();
+          var doScroll = function () {
+            var maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            var elapsed = performance.now() - startedAt;
+            if (maxScroll >= y || elapsed > 3000) {
+              window.scrollTo({ top: Math.min(y, maxScroll), behavior: 'smooth' });
+              var clearSuppress = function () { window.__ihhsSuppressSave = false; };
+              if ('onscrollend' in window) {
+                window.addEventListener('scrollend', clearSuppress, { once: true });
+              }
+              setTimeout(clearSuppress, 2500);
+              return;
+            }
+            setTimeout(doScroll, 80);
+          };
+          doScroll();
+        });
+        pill.querySelector('[data-dismiss]').addEventListener('click', cleanup);
+      });
     </script>
     <script type="speculationrules" is:inline set:html={JSON.stringify({
       prerender: [

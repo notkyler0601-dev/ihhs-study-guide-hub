@@ -14,13 +14,18 @@ const stripMd = (s: string) => s
   .trim();
 
 const allGuides = await getCollection('guides', ({ data }) => !data.draft);
+// Truncate body to a 1.2 KB excerpt per guide. The full bodies (combined
+// ~350 KB across the catalog) inlined into every page's HTML created
+// hundreds of milliseconds of HTML parse time on initial load. The excerpt
+// still surfaces most search hits because key terms tend to appear early.
+const BODY_CHARS = 1200;
 const index = allGuides.map((g) => ({
   slug: g.id.replace(/\.(md|mdx)$/, ''),
   title: g.data.title,
   subject: g.data.subject,
   description: g.data.description,
   tags: g.data.tags,
-  body: stripMd(g.body ?? ''),
+  body: stripMd(g.body ?? '').slice(0, BODY_CHARS),
 }));
 ---
 

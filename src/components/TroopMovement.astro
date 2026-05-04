@@ -1,0 +1,401 @@
+---
+// TroopMovement: deck.gl great-circle arcs animated over a basemap, with a
+// timeline scrubber. Specialized companion to <DeckMap> for showing troop,
+// supply, and migration movement over time.
+//
+// Each arc has a `t` (0 to 1) marking when in the timeline it should appear,
+// then "draw in" from source to target as the global timeline progresses.
+// Useful for: Napoleon's 1812 march, the Schlieffen Plan invasion, Operation
+// Barbarossa, D-Day landings, the Berlin Airlift, and similar moments where
+// multiple movements unfold across days, weeks, or months.
+//
+// Usage:
+//
+//   <TroopMovement
+//     title="Operation Barbarossa, June 1941"
+//     caption="3.8 million Axis troops launched the largest invasion in history."
+//     arcs={[
+//       { from: [13.4, 52.5], to: [44.5, 48.7], label: "Army Group South to Stalingrad", t: 0 },
+//       { from: [13.4, 52.5], to: [37.6, 55.7], label: "Army Group Center to Moscow", t: 0 },
+//       { from: [13.4, 52.5], to: [30.3, 59.9], label: "Army Group North to Leningrad", t: 0 }
+//     ]}
+//     basemap="europe"
+//     height={520}
+//     showTimeline
+//     duration={8000}
+//   />
+
+interface Arc {
+  from: [number, number];
+  to: [number, number];
+  label: string;
+  t: number;
+  color?: 'red' | 'black';
+}
+
+interface Props {
+  title: string;
+  caption: string;
+  arcs: Arc[];
+  basemap?: 'europe' | 'world' | 'atlantic' | 'pacific';
+  height?: number;
+  showTimeline?: boolean;
+  duration?: number;
+  class?: string;
+}
+
+const {
+  title,
+  caption,
+  arcs,
+  basemap = 'europe',
+  height = 480,
+  showTimeline = true,
+  duration = 6000,
+  class: extraClass = '',
+} = Astro.props;
+
+const id = 'troop-movement-' + Math.random().toString(36).slice(2, 9);
+
+const conf = JSON.stringify({
+  arcs: (arcs || []).map((a) => ({
+    from: a.from,
+    to: a.to,
+    label: String(a.label || ''),
+    t: Math.min(1, Math.max(0, Number(a.t) || 0)),
+    color: a.color === 'black' ? 'black' : 'red',
+  })),
+  basemap,
+  height,
+  showTimeline: Boolean(showTimeline),
+  duration: Math.max(500, Number(duration) || 6000),
+});
+---
+
+<figure
+  class:list={['not-prose my-8 surface rounded-2xl shadow-soft p-5 flex flex-col gap-3', extraClass]}
+  data-troop-movement
+  id={id}
+  data-conf={conf}
+  role="region"
+  aria-label={`${title} troop movement map`}
+>
+  <h3
+    class="font-serif text-lg sm:text-xl font-bold text-ink-900 dark:text-ink-100 m-0"
+    style="border-bottom: 3px solid #b91c1c; padding-bottom: 0.15rem;"
+  >
+    {title}
+  </h3>
+
+  <div
+    data-tm-mount
+    class="relative w-full bg-ink-950 rounded-xl overflow-hidden"
+    style={`height:${height}px;`}
+  >
+    <div
+      class="absolute inset-0 flex items-center justify-center text-xs text-ink-400"
+      data-tm-status
+    >
+      Loading map...
+    </div>
+  </div>
+
+  {showTimeline && (
+    <div class="flex items-center gap-3 flex-wrap" data-tm-timeline>
+      <button
+        type="button"
+        data-tm-play
+        class="inline-flex items-center justify-center min-h-[36px] min-w-[36px] px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-500 hover:text-accent-700 dark:hover:text-accent-400 text-xs font-medium text-ink-700 dark:text-ink-200 transition-colors"
+        aria-label="Play timeline"
+      >
+        &#9654; Play
+      </button>
+      <input
+        type="range"
+        min="0"
+        max="1000"
+        value="0"
+        step="1"
+        data-tm-scrub
+        class="flex-1 min-w-[120px] accent-accent-700"
+        aria-label="Timeline scrubber"
+      />
+      <span
+        class="text-xs tabular-nums text-ink-500 dark:text-ink-400 font-mono w-12 text-right"
+        data-tm-readout
+      >0%</span>
+    </div>
+  )}
+
+  <figcaption class="text-sm font-serif italic text-ink-600 dark:text-ink-300 leading-snug">
+    {caption}
+  </figcaption>
+
+  {/* Screen-reader-only list of every movement, always rendered. */}
+  <ul class="sr-only" aria-label="All movements in this map">
+    {arcs.map((a) => (
+      <li>{a.label}, from coordinates {a.from[1]}, {a.from[0]} to coordinates {a.to[1]}, {a.to[0]}.</li>
+    ))}
+  </ul>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  type Arc = {
+    from: [number, number];
+    to: [number, number];
+    label: string;
+    t: number;
+    color: 'red' | 'black';
+  };
+  type Conf = {
+    arcs: Arc[];
+    basemap: 'europe' | 'world' | 'atlantic' | 'pacific';
+    height: number;
+    showTimeline: boolean;
+    duration: number;
+  };
+
+  // CDN bundles. deck.gl 9.x ships a UMD that attaches to window.deck and a
+  // separate geo-layers UMD that extends it with GreatCircleLayer. MapLibre
+  // 4.x is loaded for the underlying basemap so the map shows real coast
+  // and country outlines rather than a black void.
+  const DECK_VERSION = '9.3.1';
+  const MAPLIBRE_VERSION = '4.7.1';
+  const DECK_CORE = `https://unpkg.com/deck.gl@${DECK_VERSION}/dist.min.js`;
+  const DECK_GEO = `https://unpkg.com/@deck.gl/geo-layers@${DECK_VERSION}/dist.min.js`;
+  const MAPLIBRE_JS = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl.js`;
+  const MAPLIBRE_CSS = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl.css`;
+  const MAP_STYLE = 'https://demotiles.maplibre.org/style.json';
+
+  // Basemap viewport presets. Keep these in sync with the spec block above.
+  const VIEWPORTS: Record<string, { longitude: number; latitude: number; zoom: number }> = {
+    europe: { longitude: 15, latitude: 50, zoom: 3.5 },
+    world: { longitude: 0, latitude: 20, zoom: 1.5 },
+    atlantic: { longitude: -30, latitude: 40, zoom: 2 },
+    pacific: { longitude: 170, latitude: 20, zoom: 2 },
+  };
+
+  // Color palette: red and black only. Both have a slightly darker target
+  // shade so the arc fades into its destination.
+  const COLOR_RED_SRC: [number, number, number] = [185, 28, 28];
+  const COLOR_RED_TGT: [number, number, number] = [127, 29, 29];
+  const COLOR_BLACK_SRC: [number, number, number] = [24, 24, 27];
+  const COLOR_BLACK_TGT: [number, number, number] = [9, 9, 11];
+
+  const isReduced = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cls = document.documentElement.classList.contains('a11y-reduce-motion');
+    return Boolean(mq || cls);
+  };
+
+  // Linear interpolate a target coordinate between source and full target so
+  // the arc visually "draws in" as progress goes 0 -> 1.
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-troop-movement]:not([data-ready])');
+    if (roots.length === 0) return;
+
+    for (const root of Array.from(roots)) {
+      root.dataset.ready = '1';
+
+      let conf: Conf;
+      try {
+        conf = JSON.parse(root.dataset.conf || '{}') as Conf;
+      } catch {
+        console.warn('TroopMovement: invalid data-conf JSON');
+        continue;
+      }
+      if (!conf.arcs || conf.arcs.length === 0) continue;
+
+      const mount = root.querySelector<HTMLElement>('[data-tm-mount]');
+      const status = root.querySelector<HTMLElement>('[data-tm-status]');
+      if (!mount) continue;
+
+      const view = VIEWPORTS[conf.basemap] || VIEWPORTS.europe;
+      const reduced = isReduced();
+
+      try {
+        // Lazy-load MapLibre (basemap) and deck.gl (overlay) in parallel,
+        // then the geo-layers extension for GreatCircleLayer.
+        loadStyle(MAPLIBRE_CSS);
+        await Promise.all([
+          loadScript(MAPLIBRE_JS),
+          loadScript(DECK_CORE),
+        ]);
+        await loadScript(DECK_GEO);
+        const deck: any = await waitForGlobal('deck');
+        const maplibregl: any = await waitForGlobal('maplibregl');
+
+        if (status) status.remove();
+
+        // Build the basemap. MapLibre handles pan, tilt, and zoom; deck.gl
+        // overlays the arcs on top using a shared canvas.
+        const map = new maplibregl.Map({
+          container: mount,
+          style: MAP_STYLE,
+          center: [view.longitude, view.latitude],
+          zoom: view.zoom,
+          attributionControl: { compact: true },
+        });
+
+        // Wait until the basemap's first style load before adding the deck
+        // overlay; otherwise the overlay can paint before the canvas exists.
+        await new Promise<void>((resolve) => map.once('load', () => resolve()));
+
+        // Animation state: a single global progress value from 0 to 1. The
+        // scrub bar and the rAF tick both write into this and trigger a deck
+        // re-render via setProps(). Each arc renders only when global >= t.
+        let progress = reduced ? 1 : 0;
+        let playing = !reduced;
+        let lastTick = performance.now();
+
+        const buildLayer = () => {
+          // For each arc, decide: skip entirely, draw partial, or draw full.
+          // We always pass the same arcs array shape to deck.gl but compute
+          // an effective endpoint based on local progress within this arc.
+          const ARC_DURATION = 0.35; // each arc takes 35% of the timeline
+          const visibleArcs = conf.arcs
+            .map((a) => {
+              if (progress < a.t) return null;
+              const localStart = a.t;
+              const localEnd = Math.min(1, a.t + ARC_DURATION);
+              const localT =
+                localEnd === localStart
+                  ? 1
+                  : Math.min(1, (progress - localStart) / (localEnd - localStart));
+              const lng = lerp(a.from[0], a.to[0], localT);
+              const lat = lerp(a.from[1], a.to[1], localT);
+              return { ...a, target: [lng, lat] as [number, number], localT };
+            })
+            .filter(Boolean) as (Arc & { target: [number, number]; localT: number })[];
+
+          return new deck.GreatCircleLayer({
+            id: 'troop-arcs',
+            data: visibleArcs,
+            getSourcePosition: (d: any) => d.from,
+            getTargetPosition: (d: any) => d.target,
+            getSourceColor: (d: any) =>
+              d.color === 'black' ? COLOR_BLACK_SRC : COLOR_RED_SRC,
+            getTargetColor: (d: any) =>
+              d.color === 'black' ? COLOR_BLACK_TGT : COLOR_RED_TGT,
+            getWidth: 3,
+            widthMinPixels: 2,
+            widthMaxPixels: 6,
+            pickable: true,
+          });
+        };
+
+        // Build the deck overlay synced to the MapLibre camera. MapboxOverlay
+        // is the recommended interleaved overlay for deck.gl 9.x.
+        const overlay = new deck.MapboxOverlay({
+          interleaved: false,
+          layers: [buildLayer()],
+        });
+        map.addControl(overlay as any);
+
+        const refreshLayer = () => {
+          overlay.setProps({ layers: [buildLayer()] });
+          updateReadout();
+        };
+
+        // Timeline UI wiring: only present when showTimeline was set.
+        const playBtn = root.querySelector<HTMLButtonElement>('[data-tm-play]');
+        const scrub = root.querySelector<HTMLInputElement>('[data-tm-scrub]');
+        const readout = root.querySelector<HTMLElement>('[data-tm-readout]');
+
+        const updateReadout = () => {
+          if (scrub) scrub.value = String(Math.round(progress * 1000));
+          if (readout) readout.textContent = `${Math.round(progress * 100)}%`;
+        };
+
+        const setPlayLabel = (isPlaying: boolean) => {
+          if (!playBtn) return;
+          playBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+          playBtn.setAttribute('aria-label', isPlaying ? 'Pause timeline' : 'Play timeline');
+        };
+
+        const tick = (now: number) => {
+          if (!playing) {
+            lastTick = now;
+            return;
+          }
+          const dt = now - lastTick;
+          lastTick = now;
+          progress += dt / conf.duration;
+          if (progress >= 1) {
+            progress = 1;
+            playing = false;
+            setPlayLabel(false);
+          }
+          refreshLayer();
+          if (playing) requestAnimationFrame(tick);
+        };
+
+        if (playBtn) {
+          playBtn.addEventListener('click', () => {
+            if (progress >= 1) progress = 0;
+            playing = !playing;
+            setPlayLabel(playing);
+            if (playing) {
+              lastTick = performance.now();
+              requestAnimationFrame(tick);
+            }
+          });
+        }
+
+        if (scrub) {
+          scrub.addEventListener('input', () => {
+            playing = false;
+            setPlayLabel(false);
+            progress = Number(scrub.value) / 1000;
+            refreshLayer();
+          });
+        }
+
+        // Reduced motion: skip the play loop entirely, render at progress=1
+        // with all arcs fully drawn, and disable timeline buttons.
+        if (reduced) {
+          if (playBtn) {
+            playBtn.disabled = true;
+            playBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          }
+          if (scrub) scrub.disabled = true;
+          refreshLayer();
+        } else {
+          // Auto-start the animation. Users can pause via the button.
+          updateReadout();
+          setPlayLabel(true);
+          lastTick = performance.now();
+          requestAnimationFrame(tick);
+        }
+
+        // SPA teardown: when astro:before-swap fires and we're leaving, drop
+        // the MapLibre instance so its WebGL context is released.
+        const onBeforeSwap = () => {
+          if (!root.isConnected) {
+            try {
+              map.remove();
+            } catch {}
+          }
+        };
+        document.addEventListener('astro:before-swap', onBeforeSwap, { once: true });
+      } catch (err: any) {
+        console.warn('TroopMovement init failed', err);
+        if (status) {
+          status.textContent = 'Map failed to load.';
+          status.classList.remove('text-ink-400');
+          status.classList.add('text-accent-400');
+        }
+      }
+    }
+  };
+
+  const _tmObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _tmObs!.unobserve(e.target); init(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeTM = () => document.querySelectorAll<HTMLElement>('[data-troop-movement]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_tmObs) _tmObs.observe(r); else init(); });
+  _observeTM();
+  document.addEventListener('astro:after-swap', _observeTM);
+</script>

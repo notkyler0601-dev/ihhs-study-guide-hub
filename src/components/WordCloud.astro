@@ -19,14 +19,11 @@ const conf = JSON.stringify({ words, text });
 </figure>
 
 <script>
-  import { loadScript, waitForGlobal } from '../lib/loadScript';
+  import { loadScript, waitForGlobal, mountWhenVisible } from '../lib/loadScript';
 
   const STOPWORDS = new Set(('a about above after again against all am an and any are as at be because been before being below between both but by could did do does doing down during each few for from further had has have having he her here hers herself him himself his how i if in into is it its itself just let me more most my myself nor not of off on once only or other our ours ourselves out over own same she should so some such than that the their theirs them themselves then there these they this those through to too under until up very was we were what when where which while who whom why will with would you your yours yourself yourselves').split(' '));
 
-  const init = async () => {
-    const roots = document.querySelectorAll<HTMLElement>('[data-wc]:not([data-wc-ready])');
-    if (roots.length === 0) return;
-
+  const init = async (roots: HTMLElement[]) => {
     await loadScript('https://d3js.org/d3.v5.min.js');
     await loadScript('https://cdn.jsdelivr.net/npm/d3-cloud@1.2.7/build/d3.layout.cloud.min.js');
     const d3: any = await waitForGlobal('d3');
@@ -82,6 +79,5 @@ const conf = JSON.stringify({ words, text });
         .start();
     });
   };
-  init();
-  document.addEventListener('astro:after-swap', init);
+  mountWhenVisible('[data-wc]:not([data-wc-ready])', init);
 </script>

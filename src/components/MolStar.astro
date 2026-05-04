@@ -1,0 +1,168 @@
+---
+// Mol* (molstar.org) PDB / molecule viewer. The modern successor to
+// 3Dmol.js used by RCSB PDB and AlphaFold DB. Renders any small
+// molecule (SMILES via PubChem fetch) or any protein structure (PDB ID
+// or URL). Supports cartoon, ball-and-stick, surface, sequence-aligned
+// representations out of the box. Use for any guide where a 3D
+// molecular structure communicates more than a 2D Lewis diagram —
+// energy carriers, drug structures, biomolecules, even explosives
+// (the chemistry of industrial warfare).
+//
+// Usage:
+//   <MolStar pdb="1AKE" title="Adenylate kinase, open form" />
+//   <MolStar smiles="C(C(=O)O)N" title="Glycine" />
+//   <MolStar pubchemCid="6324" title="Hydrogen peroxide" />
+//
+// Props (one of pdb / smiles / pubchemCid / url required):
+//   pdb         4-letter RCSB PDB ID (e.g. "1A3N" hemoglobin).
+//   pubchemCid  PubChem compound CID. Will be fetched as 3D SDF.
+//   smiles      SMILES string. Resolved to a CID, then 3D SDF, via PubChem.
+//   url         Direct URL to a PDB / mmCIF / SDF / MOL file.
+//   format      Force a format if `url` is non-standard. 'pdb' | 'mmcif' | 'sdf' | 'mol'.
+//   title       Figure caption.
+//   height      Canvas height in px. Default 460.
+//   preset      'cartoon' | 'ball-and-stick' | 'surface' | 'spacefill'. Default auto.
+
+interface Props {
+  pdb?: string;
+  pubchemCid?: string | number;
+  smiles?: string;
+  url?: string;
+  format?: 'pdb' | 'mmcif' | 'sdf' | 'mol';
+  title?: string;
+  height?: number;
+  preset?: 'cartoon' | 'ball-and-stick' | 'surface' | 'spacefill';
+}
+const {
+  pdb,
+  pubchemCid,
+  smiles,
+  url,
+  format,
+  title = '3D structure',
+  height = 460,
+  preset,
+} = Astro.props;
+
+const id = 'mol-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ pdb, pubchemCid, smiles, url, format, preset, height });
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-mol data-conf={conf}>
+  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span class="font-serif text-base font-semibold">{title}</span>
+    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Mol* · WebGL2</span>
+  </figcaption>
+  <div data-mol-host class="w-full bg-[#0a0f1a]" style={`height:${height}px;`}></div>
+  <div class="px-5 py-2 text-[11px] text-ink-500 dark:text-ink-400 border-t border-ink-200 dark:border-ink-800">
+    Drag to rotate. Scroll to zoom. Right-drag to pan. Click an atom for details.
+  </div>
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal, mountWhenVisible } from '../lib/loadScript';
+
+  const MOLSTAR_VERSION = '4.6.0';
+  const MOLSTAR_CSS = `https://cdn.jsdelivr.net/npm/molstar@${MOLSTAR_VERSION}/build/viewer/molstar.css`;
+  const MOLSTAR_JS = `https://cdn.jsdelivr.net/npm/molstar@${MOLSTAR_VERSION}/build/viewer/molstar.js`;
+
+  type Conf = {
+    pdb?: string;
+    pubchemCid?: string | number;
+    smiles?: string;
+    url?: string;
+    format?: 'pdb' | 'mmcif' | 'sdf' | 'mol';
+    preset?: string;
+    height: number;
+  };
+
+  // Resolve a SMILES to a PubChem CID, then to a 3D SDF URL. Mol* itself
+  // does not have a SMILES parser; PubChem provides this resolution as a
+  // free REST endpoint.
+  const resolveSource = async (conf: Conf): Promise<{ url: string; format: string }> => {
+    if (conf.url) {
+      const f = conf.format ?? (conf.url.endsWith('.cif') ? 'mmcif' : conf.url.endsWith('.sdf') ? 'sdf' : conf.url.endsWith('.mol') ? 'mol' : 'pdb');
+      return { url: conf.url, format: f };
+    }
+    if (conf.pdb) {
+      return { url: `https://files.rcsb.org/download/${conf.pdb.toUpperCase()}.cif`, format: 'mmcif' };
+    }
+    if (conf.pubchemCid != null) {
+      return { url: `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${conf.pubchemCid}/SDF?record_type=3d`, format: 'sdf' };
+    }
+    if (conf.smiles) {
+      const r = await fetch(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(conf.smiles)}/cids/JSON`);
+      const j = await r.json();
+      const cid = j?.IdentifierList?.CID?.[0];
+      if (!cid) throw new Error('SMILES not resolved on PubChem: ' + conf.smiles);
+      return { url: `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/SDF?record_type=3d`, format: 'sdf' };
+    }
+    throw new Error('MolStar: provide one of pdb, pubchemCid, smiles, url');
+  };
+
+  const init = async (roots: HTMLElement[]) => {
+    let ns: any;
+    try {
+      loadStyle(MOLSTAR_CSS);
+      // The molstar/build/viewer bundle is UMD: it exposes a global
+      // `molstar` (with `Viewer` as the entry). Loading it as a regular
+      // script tag and then reading the global is the supported path.
+      await loadScript(MOLSTAR_JS);
+      ns = await waitForGlobal('molstar');
+    } catch (e) {
+      console.warn('MolStar failed to load', e);
+      return;
+    }
+    if (!ns?.Viewer?.create) {
+      console.warn('MolStar: Viewer.create not found on namespace', Object.keys(ns ?? {}));
+      return;
+    }
+
+    for (const root of roots) {
+      root.dataset.molReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-mol-host]')!;
+      const conf: Conf = JSON.parse(root.dataset.conf || '{}');
+
+      try {
+        const { url, format } = await resolveSource(conf);
+        const viewer = await ns.Viewer.create(host, {
+          layoutIsExpanded: false,
+          layoutShowControls: false,
+          layoutShowRemoteState: false,
+          layoutShowSequence: false,
+          layoutShowLog: false,
+          layoutShowLeftPanel: false,
+          viewportShowExpand: false,
+          viewportShowSelectionMode: false,
+          viewportShowAnimation: false,
+          pdbProvider: 'rcsb',
+          emdbProvider: 'rcsb',
+          backgroundColor: { r: 10, g: 15, b: 26 },
+          pixelScale: window.devicePixelRatio || 1,
+        });
+
+        if (format === 'mmcif' || format === 'pdb') {
+          await viewer.loadStructureFromUrl(url, format);
+        } else {
+          // Small molecules (SDF/MOL): the convenience loadStructureFromUrl
+          // path crashes inside the parser ("No suitable parent found")
+          // because the small-molecule preset isn't wired the same way as
+          // the PDB/mmCIF path. Fetch the SDF text ourselves and feed it
+          // through the lower-level builder pipeline, which works.
+          const sdfText = await fetch(url).then((r) => r.text());
+          const plugin = viewer.plugin;
+          const data = await plugin.builders.data.rawData({ data: sdfText, label: 'molecule' });
+          const trajectory = await plugin.builders.structure.parseTrajectory(data, format);
+          const model = await plugin.builders.structure.createModel(trajectory);
+          const structure = await plugin.builders.structure.createStructure(model);
+          await plugin.builders.structure.representation.applyPreset(structure, 'auto');
+        }
+      } catch (e) {
+        console.warn('MolStar load failed', e);
+        host.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%; color:#71717a; font-family: Inter, sans-serif; font-size: 13px; padding: 20px; text-align:center;">${(e as any)?.message ?? 'Failed to load structure.'}</div>`;
+      }
+    }
+  };
+
+  mountWhenVisible('[data-mol]:not([data-mol-ready])', init, { rootMargin: '400px 0px' });
+</script>

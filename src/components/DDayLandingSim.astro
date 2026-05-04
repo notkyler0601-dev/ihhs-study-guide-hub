@@ -1,63 +1,128 @@
 ---
-// D-Day landing simulation. Top-down view of Omaha Beach. Player
-// controls a soldier with WASD/arrow keys (or tap on touch) and tries
-// to reach the seawall under MG fire and a rising tide.
+// D-Day landing simulation. First-person 2.5D view of Omaha Beach,
+// June 6, 1944. The player advances toward the seawall under MG-42
+// fire from bunkers above, mortar shells on the sand, and a rising
+// tide. View is composed of layered horizontal strips with depth-aware
+// sprite scaling. No three.js, no raycasting, just 2D canvas with a
+// per-sprite z-value mapped to canvas y.
 //
 // Pure HTML5 canvas, vanilla JS, no game library.
 //
 // Usage: <DDayLandingSim />
 ---
 
-<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-dday>
-  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
-    <span class="font-serif text-base font-semibold flex items-center gap-2">
-      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">⚓</span>
-      D-Day, Omaha Beach
-    </span>
-    <span class="text-xs text-ink-500" data-status>Press start</span>
+<section
+  class="not-prose my-10 surface rounded-2xl shadow-soft p-5 flex flex-col gap-4"
+  data-dday
+  role="region"
+  aria-label="D-Day Omaha Beach simulation"
+>
+  <header class="flex items-center justify-between gap-3 flex-wrap">
+    <h3 class="font-serif text-base sm:text-lg font-semibold flex items-center gap-2 m-0">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">D</span>
+      D-Day: Omaha Beach, June 6, 1944
+    </h3>
+    <span class="text-xs text-ink-500 font-mono" data-status aria-live="polite">Press start</span>
   </header>
 
-  <div class="relative bg-ink-950" style="aspect-ratio: 16 / 11;">
-    <canvas data-canvas class="block w-full h-full" tabindex="0" aria-label="D-Day landing simulator. Use arrow keys or WASD to move."></canvas>
+  <div class="relative bg-black rounded-lg overflow-hidden border border-black dark:border-white" style="max-width: 100%;">
+    <canvas
+      data-canvas
+      width="720"
+      height="480"
+      class="block w-full h-auto select-none touch-none"
+      tabindex="0"
+      aria-label="First-person Omaha Beach simulator. WASD to move, Shift to crouch, Space to dive prone."
+    ></canvas>
 
-    <!-- Reduced-motion fallback -->
-    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-ink-900/95 text-ink-50 p-6 text-center">
-      <div class="text-5xl mb-3">⚓</div>
+    <!-- Reduced-motion fallback content sits inside the same frame. -->
+    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-black/95 text-white p-6 text-center">
       <div class="font-serif text-xl mb-2">Omaha Beach, June 6, 1944</div>
-      <p class="text-sm text-ink-300 max-w-md leading-relaxed">
-        About 156,000 Allied soldiers landed across five Normandy beaches on D-Day. Roughly 3,000 died on Omaha alone, pinned down by MG-42 fire from the seawall. The interactive simulation has been disabled because you have reduced motion enabled.
+      <p class="text-sm text-white/80 max-w-md leading-relaxed mb-3">
+        About 156,000 Allied soldiers landed across five Normandy beaches on D-Day. Roughly 3,000 died on Omaha alone, pinned down by MG-42 fire from the bluffs. Every soldier was 19 to 25 years old.
+      </p>
+      <p class="text-xs text-white/60 max-w-md">
+        Interactive simulation hidden because reduced motion is preferred. A static rendering is shown above.
       </p>
     </div>
 
     <!-- Start overlay -->
-    <div data-start-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 backdrop-blur-sm text-ink-50 p-6 text-center">
-      <div class="text-5xl mb-3">⚓</div>
-      <div class="font-serif text-xl mb-1">Reach the seawall</div>
-      <p class="text-xs text-ink-300 max-w-sm leading-relaxed mb-4">
-        Move with arrow keys or WASD (tap to move on touch). MG nests sweep the beach. Tide is rising. You have one life per round.
+    <div data-start-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm text-white p-6 text-center">
+      <div class="font-serif text-xl mb-1" data-overlay-title>Reach the seawall</div>
+      <p class="text-xs text-white/80 max-w-sm leading-relaxed mb-4">
+        WASD or arrows to advance and strafe. Shift to crouch. Space to dive prone for one second. MG-42 fire from the bunkers and mortar shells on the sand. Tide is rising. Content warning: depicts violence.
       </p>
-      <button data-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Start landing</button>
+      <button
+        data-start
+        type="button"
+        class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium"
+      >
+        Start landing
+      </button>
+      <button
+        data-prefer-static
+        type="button"
+        class="mt-2 text-[11px] text-white/60 underline hover:text-white"
+      >
+        I prefer not to play this
+      </button>
+    </div>
+
+    <!-- Touch controls (virtual D-pad) -->
+    <div data-touch class="hidden absolute bottom-2 right-2 flex flex-col items-center gap-1 select-none touch-none" aria-hidden="true">
+      <button data-pad="up" class="w-11 h-11 rounded-md bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-lg font-bold border border-white/30">^</button>
+      <div class="flex gap-1">
+        <button data-pad="left" class="w-11 h-11 rounded-md bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-lg font-bold border border-white/30">&lt;</button>
+        <button data-pad="crouch" class="w-11 h-11 rounded-md bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-[10px] font-bold border border-white/30">CROUCH</button>
+        <button data-pad="right" class="w-11 h-11 rounded-md bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-lg font-bold border border-white/30">&gt;</button>
+      </div>
+      <button data-pad="down" class="w-11 h-11 rounded-md bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-lg font-bold border border-white/30">v</button>
     </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-3 px-5 py-3 border-t border-ink-200 dark:border-ink-800 text-center text-xs">
+  <!-- Stats panel -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
     <div>
       <div class="uppercase tracking-[0.14em] text-ink-500">Rounds</div>
-      <div class="font-serif text-lg" data-rounds>0</div>
+      <div class="font-mono text-base sm:text-lg" data-rounds>0</div>
     </div>
     <div>
       <div class="uppercase tracking-[0.14em] text-ink-500">Survived</div>
-      <div class="font-serif text-lg text-emerald-700 dark:text-emerald-400" data-survived>0</div>
+      <div class="font-mono text-base sm:text-lg text-emerald-700 dark:text-emerald-400" data-survived>0</div>
     </div>
     <div>
       <div class="uppercase tracking-[0.14em] text-ink-500">Best time</div>
-      <div class="font-serif text-lg" data-besttime>—</div>
+      <div class="font-mono text-base sm:text-lg" data-besttime>0.0s</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Total m advanced</div>
+      <div class="font-mono text-base sm:text-lg" data-meters>0</div>
     </div>
   </div>
 
-  <div class="px-5 py-3 border-t border-ink-200 dark:border-ink-800 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
-    <strong>How it really went:</strong> June 6, 1944. About 156,000 Allied troops landed across five beaches in Normandy. ~3,000 died on Omaha alone, pinned down by MG-42 fire from the bluffs. Rangers eventually scaled the cliffs at Pointe du Hoc and broke the line. By nightfall the Allies held a fragile beachhead.
+  <!-- About / pedagogical -->
+  <details class="text-xs">
+    <summary class="cursor-pointer font-semibold text-ink-700 dark:text-ink-200">About this simulation</summary>
+    <div class="mt-2 space-y-2 text-ink-700 dark:text-ink-300 leading-relaxed">
+      <p><strong>Controls:</strong> W/Up to advance, A/D or Left/Right to strafe, S/Down to retreat, Shift to crouch (smaller hitbox, lower profile), Space to dive prone for one second of invulnerability. On touch, use the on-screen D-pad or tap the upper canvas to walk toward that point.</p>
+      <p><strong>Historical context:</strong> On June 6, 1944, about 3,000 Allied soldiers died on D-Day. About 156,000 landed across all five beaches. Every soldier you tried to advance was 19 to 25 years old.</p>
+      <p><strong>Content warning:</strong> Depicts violence and combat. The simulation is intentionally difficult; surviving on the first try is unusual. That is the point.</p>
+    </div>
+  </details>
+
+  <!-- Pedagogical hook revealed after a win or via button -->
+  <div data-callout class="hidden p-3 rounded-lg border-l-4 border-accent-600 bg-accent-50 dark:bg-accent-900/20 text-xs text-ink-800 dark:text-ink-100 leading-relaxed">
+    <p class="m-0"><strong>How it really went:</strong> On June 6, 1944, about 3,000 Allied soldiers died on D-Day. About 156,000 landed across all five beaches.</p>
+    <p class="m-0 mt-1">Every soldier you tried to advance was 19 to 25 years old.</p>
   </div>
+
+  <button
+    data-show-callout
+    type="button"
+    class="self-start text-xs underline text-ink-600 dark:text-ink-400 hover:text-accent-700 dark:hover:text-accent-400"
+  >
+    How it really went
+  </button>
 </section>
 
 <script>
@@ -67,288 +132,716 @@
       const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
       const status = root.querySelector<HTMLElement>('[data-status]')!;
       const startOverlay = root.querySelector<HTMLElement>('[data-start-overlay]')!;
+      const overlayTitle = root.querySelector<HTMLElement>('[data-overlay-title]')!;
       const startBtn = root.querySelector<HTMLButtonElement>('[data-start]')!;
+      const preferStatic = root.querySelector<HTMLButtonElement>('[data-prefer-static]')!;
       const rmFallback = root.querySelector<HTMLElement>('[data-rm-fallback]')!;
+      const touchPanel = root.querySelector<HTMLElement>('[data-touch]')!;
       const roundsEl = root.querySelector<HTMLElement>('[data-rounds]')!;
       const survivedEl = root.querySelector<HTMLElement>('[data-survived]')!;
       const bestTimeEl = root.querySelector<HTMLElement>('[data-besttime]')!;
+      const metersEl = root.querySelector<HTMLElement>('[data-meters]')!;
+      const callout = root.querySelector<HTMLElement>('[data-callout]')!;
+      const showCallout = root.querySelector<HTMLButtonElement>('[data-show-callout]')!;
 
+      const ctx = canvas.getContext('2d')!;
+      const W = () => canvas.width;
+      const H = () => canvas.height;
+
+      let rounds = 0;
+      let survived = 0;
+      let bestTime = Infinity;
+      let totalMeters = 0;
+      let running = false;
+
+      // Show touch controls only on touch devices.
+      const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+      if (isTouch) touchPanel.classList.remove('hidden');
+
+      // Reduced motion check.
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         || document.documentElement.classList.contains('a11y-reduce-motion');
       if (reduceMotion) {
+        // Render a static labeled scene under the fallback panel.
+        renderStaticScene();
         rmFallback.classList.remove('hidden');
         startOverlay.classList.add('hidden');
+        callout.classList.remove('hidden');
         return;
       }
 
-      const ctx = canvas.getContext('2d')!;
-      let rounds = 0, survived = 0, bestTime = Infinity;
-      let running = false;
+      // ----- Game state -----
+      type Hedgehog = { worldX: number; worldZ: number };
+      type Body = { worldX: number; worldZ: number };
+      type Bunker = { x: number; nextFlash: number; flashUntil: number; nextShot: number };
+      type Bullet = { x1: number; y1: number; x2: number; y2: number; until: number };
+      type Mortar = { worldX: number; worldZ: number; warnUntil: number; flashUntil: number; radius: number };
 
-      // Game state
-      const W = () => canvas.width;
-      const H = () => canvas.height;
-      let player: { x: number; y: number; r: number; alive: boolean };
-      let bullets: { x: number; y: number; vy: number; life: number }[];
-      let tide: number; // y-coord of the rising water
-      let nests: { x: number; y: number; t: number; cooldown: number }[];
+      let playerZ = 1.0; // 1.0 = far surf line, 0.0 = seawall
+      let playerX = 0; // -1 (left) to +1 (right) screen offset
+      let crouching = false;
+      let proneUntil = 0;
+      let alive = true;
+      let won = false;
+      let tideZ = 1.15;
       let startTimeMs = 0;
+      let shakeUntil = 0;
+      let hitFlashUntil = 0;
+      let hedgehogs: Hedgehog[] = [];
+      let bodies: Body[] = [];
+      let bunkers: Bunker[] = [];
+      let bullets: Bullet[] = [];
+      let mortars: Mortar[] = [];
+      let staticSpecks: { x: number; y: number; phase: number }[] = [];
+      let lastShellFlash = 0;
+      let nextSkyFlash = 0;
 
-      // Touch / tap-to-move target
-      let moveTarget: { x: number; y: number } | null = null;
       const keys = new Set<string>();
+      const padKeys = new Set<string>();
 
-      const resize = () => {
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = Math.floor(rect.width);
-        canvas.height = Math.floor(rect.height);
+      // ----- Depth helpers -----
+      // Map a sprite's relative depth (worldZ - playerZ, with offset) to a
+      // y position on canvas and a scale factor.
+      // The horizon (playerZ + 1.0) sits at top of beach band (y ~= H * 0.35).
+      // The player feet (playerZ + 0.0) sits at y ~= H * 0.85.
+      const depthToY = (relZ: number) => {
+        // relZ in [0, 1.2]; clamp.
+        const r = Math.max(0, Math.min(1.2, relZ));
+        // Non-linear: closer sprites slide down faster (perspective).
+        const t = 1 - Math.pow(r / 1.2, 1.4);
+        return H() * 0.35 + t * H() * 0.5;
       };
-      resize();
-      window.addEventListener('resize', resize);
+      const depthToScale = (relZ: number) => {
+        const r = Math.max(0.001, Math.min(1.2, relZ));
+        return Math.max(0.05, Math.min(1.0, 0.18 / r));
+      };
+      const worldXToScreenX = (worldX: number, relZ: number) => {
+        // worldX in roughly [-3, 3] world units. Foreshorten with depth.
+        const persp = 1 / Math.max(0.2, relZ + 0.2);
+        return W() * 0.5 + (worldX - playerX * 1.5) * W() * 0.18 * persp;
+      };
 
-      const reset = () => {
-        player = { x: W() / 2, y: H() - 24, r: 7, alive: true };
+      // ----- World gen -----
+      const buildWorld = () => {
+        hedgehogs = [];
+        for (let i = 0; i < 14; i++) {
+          hedgehogs.push({
+            worldX: (Math.random() - 0.5) * 5.5,
+            worldZ: 0.15 + Math.random() * 0.85,
+          });
+        }
+        bodies = [];
+        for (let i = 0; i < 9; i++) {
+          bodies.push({
+            worldX: (Math.random() - 0.5) * 5.0,
+            worldZ: 0.1 + Math.random() * 0.9,
+          });
+        }
+        bunkers = [];
+        const bunkerCount = 4;
+        for (let i = 0; i < bunkerCount; i++) {
+          const x = -0.7 + (i / (bunkerCount - 1)) * 1.4;
+          bunkers.push({
+            x,
+            nextFlash: 0.5 + Math.random() * 2.5,
+            flashUntil: 0,
+            nextShot: 1.0 + Math.random() * 2,
+          });
+        }
         bullets = [];
-        tide = H() - 6;
-        // 4 MG nests at the top, evenly spaced
-        nests = [];
-        for (let i = 0; i < 4; i++) {
-          nests.push({ x: W() * (0.18 + i * 0.22), y: 28, t: i * 0.4, cooldown: 0 });
+        mortars = [];
+        staticSpecks = [];
+        for (let i = 0; i < 60; i++) {
+          staticSpecks.push({ x: Math.random() * W(), y: Math.random() * H(), phase: Math.random() * Math.PI * 2 });
         }
+      };
+
+      const resetGame = () => {
+        playerZ = 1.0;
+        playerX = 0;
+        crouching = false;
+        proneUntil = 0;
+        alive = true;
+        won = false;
+        tideZ = 1.15;
+        shakeUntil = 0;
+        hitFlashUntil = 0;
         startTimeMs = performance.now();
-        moveTarget = null;
+        lastShellFlash = 0;
+        nextSkyFlash = 0.5;
+        buildWorld();
       };
 
-      const drawBackground = () => {
-        // Sand gradient
-        const grad = ctx.createLinearGradient(0, 0, 0, H());
-        grad.addColorStop(0, '#3a2a14'); // dark cliff/seawall area
-        grad.addColorStop(0.15, '#7c5a30');
-        grad.addColorStop(0.75, '#c9a16a');
-        grad.addColorStop(0.95, '#7e6a4f');
+      // ----- Rendering -----
+      const drawSky = (now: number) => {
+        const skyH = H() * 0.15;
+        const grad = ctx.createLinearGradient(0, 0, 0, skyH);
+        grad.addColorStop(0, '#1a1410');
+        grad.addColorStop(1, '#3a2f28');
         ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, W(), H());
-
-        // Seawall band
-        ctx.fillStyle = '#1f140a';
-        ctx.fillRect(0, 0, W(), 50);
-        ctx.fillStyle = '#3f2a1a';
-        ctx.fillRect(0, 50, W(), 6);
-
-        // Tide (water creeping up from the bottom)
-        const grad2 = ctx.createLinearGradient(0, tide, 0, H());
-        grad2.addColorStop(0, 'rgba(38, 94, 124, 0.7)');
-        grad2.addColorStop(1, 'rgba(20, 50, 70, 0.95)');
-        ctx.fillStyle = grad2;
-        ctx.fillRect(0, tide, W(), H() - tide);
-
-        // Random debris on the sand
-        ctx.fillStyle = 'rgba(20, 14, 6, 0.18)';
-        for (let i = 0; i < 18; i++) {
-          const x = (i * 53.7) % W();
-          const y = 70 + ((i * 91) % (tide - 100));
-          ctx.fillRect(x, y, 3, 2);
+        ctx.fillRect(0, 0, W(), skyH);
+        // Distant smoke streaks
+        ctx.fillStyle = 'rgba(80, 60, 50, 0.35)';
+        for (let i = 0; i < 5; i++) {
+          const sx = ((i * 137 + (now * 0.005)) % W());
+          ctx.fillRect(sx, skyH * 0.3 + (i % 3) * 8, 60, 4);
+        }
+        // Occasional sky flash from distant artillery
+        if (now / 1000 > nextSkyFlash) {
+          nextSkyFlash = now / 1000 + 1.5 + Math.random() * 3;
+          lastShellFlash = now;
+        }
+        const flashAge = (now - lastShellFlash) / 1000;
+        if (flashAge < 0.18) {
+          ctx.fillStyle = `rgba(255, 240, 220, ${0.5 - flashAge * 2.5})`;
+          ctx.fillRect(0, 0, W(), skyH);
         }
       };
 
-      const drawNests = () => {
-        for (const n of nests) {
-          // Nest box
-          ctx.fillStyle = '#2c2c2c';
-          ctx.fillRect(n.x - 9, n.y - 6, 18, 12);
+      const drawCliffsAndBunkers = (now: number) => {
+        const top = H() * 0.15;
+        const cliffH = H() * 0.20;
+        // Cliff face
+        const cgrad = ctx.createLinearGradient(0, top, 0, top + cliffH);
+        cgrad.addColorStop(0, '#2a221c');
+        cgrad.addColorStop(1, '#1a1410');
+        ctx.fillStyle = cgrad;
+        ctx.fillRect(0, top, W(), cliffH);
+        // Jagged cliff line
+        ctx.fillStyle = '#0e0a08';
+        ctx.beginPath();
+        ctx.moveTo(0, top + cliffH * 0.4);
+        for (let x = 0; x <= W(); x += 30) {
+          const y = top + cliffH * (0.4 + Math.sin(x * 0.013) * 0.18 + Math.sin(x * 0.04) * 0.05);
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(W(), top);
+        ctx.lineTo(0, top);
+        ctx.closePath();
+        ctx.fill();
+        // Bunkers along the top of the cliff
+        for (const b of bunkers) {
+          const bx = W() * 0.5 + b.x * W() * 0.4 - playerX * W() * 0.05;
+          const by = top + cliffH * 0.5;
+          // Bunker body
+          ctx.fillStyle = '#0a0806';
+          ctx.fillRect(bx - 26, by - 16, 52, 22);
+          // Slit
+          ctx.fillStyle = '#1c1612';
+          ctx.fillRect(bx - 18, by - 6, 36, 4);
           // Muzzle flash on cooldown
-          if (n.cooldown > 0.85) {
-            ctx.fillStyle = '#fbbf24';
+          if (b.flashUntil > now) {
+            ctx.fillStyle = 'rgba(255, 245, 220, 0.9)';
+            ctx.fillRect(bx - 7, by - 6, 14, 4);
+            ctx.fillStyle = 'rgba(255, 200, 80, 0.75)';
             ctx.beginPath();
-            ctx.arc(n.x, n.y + 8, 4, 0, Math.PI * 2);
+            ctx.arc(bx, by - 4, 5, 0, Math.PI * 2);
             ctx.fill();
           }
         }
       };
 
-      const drawBullets = () => {
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 2;
-        for (const b of bullets) {
+      const drawSeawall = () => {
+        const top = H() * 0.35;
+        const wallH = H() * 0.07;
+        // Seawall band
+        const grad = ctx.createLinearGradient(0, top, 0, top + wallH);
+        grad.addColorStop(0, '#2a2622');
+        grad.addColorStop(1, '#1a1612');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, top, W(), wallH);
+        // Barbed wire on top
+        ctx.strokeStyle = '#5a4a3a';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = 0; x < W(); x += 8) {
+          const off = ((x + Math.sin(x * 0.1) * 4) % 6) - 3;
+          ctx.moveTo(x, top + off - 4);
+          ctx.lineTo(x + 4, top + 1 - off);
+        }
+        ctx.stroke();
+        // Highlight if player close enough to win
+        if (playerZ < 0.15) {
+          ctx.fillStyle = `rgba(255, 230, 180, ${(0.15 - playerZ) * 3})`;
+          ctx.fillRect(0, top, W(), wallH);
+        }
+      };
+
+      const drawBeach = () => {
+        const top = H() * 0.42;
+        const beachH = H() * 0.58;
+        const grad = ctx.createLinearGradient(0, top, 0, top + beachH);
+        grad.addColorStop(0, '#5a4838');
+        grad.addColorStop(0.5, '#7c6346');
+        grad.addColorStop(1, '#967855');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, top, W(), beachH);
+        // Wet streaks near surf line
+        ctx.fillStyle = 'rgba(40, 30, 22, 0.18)';
+        for (let i = 0; i < 30; i++) {
+          ctx.fillRect((i * 73) % W(), top + (i * 31) % beachH, 4, 2);
+        }
+      };
+
+      const drawHedgehogs = () => {
+        // Sort by depth so closer ones draw last
+        const sorted = [...hedgehogs].sort((a, b) => (b.worldZ - playerZ) - (a.worldZ - playerZ));
+        for (const h of sorted) {
+          const relZ = h.worldZ - playerZ + 0.1;
+          if (relZ < 0.05 || relZ > 1.2) continue;
+          const sx = worldXToScreenX(h.worldX, relZ);
+          const sy = depthToY(relZ);
+          const s = depthToScale(relZ) * 80;
+          if (sx < -50 || sx > W() + 50) continue;
+          // Three crossed bars (steel hedgehog)
+          ctx.strokeStyle = '#1a1612';
+          ctx.lineWidth = Math.max(1, s * 0.06);
           ctx.beginPath();
-          ctx.moveTo(b.x, b.y);
-          ctx.lineTo(b.x, b.y + 8);
+          ctx.moveTo(sx - s * 0.4, sy + s * 0.2);
+          ctx.lineTo(sx + s * 0.4, sy - s * 0.5);
+          ctx.moveTo(sx + s * 0.4, sy + s * 0.2);
+          ctx.lineTo(sx - s * 0.4, sy - s * 0.5);
+          ctx.moveTo(sx, sy + s * 0.25);
+          ctx.lineTo(sx, sy - s * 0.55);
           ctx.stroke();
         }
       };
 
-      const drawPlayer = () => {
-        if (!player.alive) {
-          // Body
-          ctx.fillStyle = '#7f1d1d';
+      const drawBodies = () => {
+        const sorted = [...bodies].sort((a, b) => (b.worldZ - playerZ) - (a.worldZ - playerZ));
+        for (const b of sorted) {
+          const relZ = b.worldZ - playerZ + 0.1;
+          if (relZ < 0.05 || relZ > 1.2) continue;
+          const sx = worldXToScreenX(b.worldX, relZ);
+          const sy = depthToY(relZ);
+          const s = depthToScale(relZ) * 60;
+          if (sx < -50 || sx > W() + 50) continue;
+          // Dark silhouette of a fallen soldier
+          ctx.fillStyle = '#1a1410';
           ctx.beginPath();
-          ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+          ctx.ellipse(sx, sy, s * 0.45, s * 0.15, 0, 0, Math.PI * 2);
           ctx.fill();
-          // Splatter
-          ctx.fillStyle = 'rgba(127, 29, 29, 0.45)';
-          for (let i = 0; i < 6; i++) {
-            const ang = (i / 6) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.arc(player.x + Math.cos(ang) * 12, player.y + Math.sin(ang) * 12, 2, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          return;
+          // Helmet
+          ctx.fillStyle = '#0a0806';
+          ctx.beginPath();
+          ctx.arc(sx - s * 0.25, sy - s * 0.04, s * 0.1, 0, Math.PI * 2);
+          ctx.fill();
         }
-        // Live soldier: green helmet + red marker
-        ctx.fillStyle = '#16a34a';
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#dc2626';
-        ctx.fillRect(player.x - 1, player.y - 1, 2, 2);
       };
 
+      const drawSurf = () => {
+        // Tide rises with tideZ. When tideZ - playerZ < 0 the surf is past us.
+        const surfRel = tideZ - playerZ + 0.1;
+        const surfY = depthToY(surfRel);
+        if (surfY < H() * 0.42) return;
+        // Wet sand band
+        const grad = ctx.createLinearGradient(0, surfY - 20, 0, H());
+        grad.addColorStop(0, 'rgba(40, 60, 80, 0.35)');
+        grad.addColorStop(0.4, 'rgba(30, 50, 70, 0.65)');
+        grad.addColorStop(1, 'rgba(20, 40, 60, 0.85)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, surfY, W(), H() - surfY);
+        // Foam line
+        ctx.fillStyle = 'rgba(220, 220, 215, 0.55)';
+        for (let x = 0; x < W(); x += 6) {
+          const yy = surfY + Math.sin((x + performance.now() * 0.003) * 0.05) * 3;
+          ctx.fillRect(x, yy - 1, 4, 2);
+        }
+      };
+
+      const drawBullets = (now: number) => {
+        ctx.lineWidth = 2;
+        for (const b of bullets) {
+          if (b.until < now) continue;
+          ctx.strokeStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.moveTo(b.x1, b.y1);
+          ctx.lineTo(b.x2, b.y2);
+          ctx.stroke();
+          // Tracer glow
+          ctx.strokeStyle = 'rgba(255, 80, 60, 0.45)';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(b.x1, b.y1);
+          ctx.lineTo(b.x2, b.y2);
+          ctx.stroke();
+          ctx.lineWidth = 2;
+        }
+        bullets = bullets.filter((b) => b.until > now);
+      };
+
+      const drawMortars = (now: number) => {
+        for (const m of mortars) {
+          const relZ = m.worldZ - playerZ + 0.1;
+          if (relZ < 0.05 || relZ > 1.2) continue;
+          const sx = worldXToScreenX(m.worldX, relZ);
+          const sy = depthToY(relZ);
+          const s = depthToScale(relZ);
+          if (m.warnUntil > now) {
+            // Warning ring
+            const pulse = 1 + Math.sin(now * 0.02) * 0.15;
+            ctx.strokeStyle = 'rgba(220, 38, 38, 0.85)';
+            ctx.lineWidth = 3 * s + 1;
+            ctx.beginPath();
+            ctx.ellipse(sx, sy, m.radius * s * pulse, m.radius * s * 0.4 * pulse, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          } else if (m.flashUntil > now) {
+            // Explosion flash
+            const phase = 1 - (m.flashUntil - now) / 350;
+            ctx.fillStyle = `rgba(255, 230, 180, ${1 - phase})`;
+            ctx.beginPath();
+            ctx.ellipse(sx, sy, m.radius * s * (1 + phase * 0.5), m.radius * s * 0.5 * (1 + phase * 0.5), 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = `rgba(220, 38, 38, ${0.6 - phase * 0.6})`;
+            ctx.beginPath();
+            ctx.ellipse(sx, sy, m.radius * s * 0.6, m.radius * s * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        mortars = mortars.filter((m) => m.flashUntil > now);
+      };
+
+      const drawPlayerAnchor = () => {
+        const baseY = H() * 0.92;
+        const offset = crouching ? H() * 0.04 : 0;
+        const proneOffset = proneUntil > performance.now() ? H() * 0.06 : 0;
+        // Helmet rim (dark silhouette)
+        ctx.fillStyle = '#0a0806';
+        ctx.beginPath();
+        ctx.ellipse(W() * 0.5 - playerX * 30, baseY + offset + proneOffset, W() * 0.42, H() * 0.06, 0, Math.PI, 0);
+        ctx.fill();
+        // Rifle barrel
+        ctx.fillStyle = '#1a1612';
+        ctx.fillRect(W() * 0.55 - playerX * 30, baseY - H() * 0.04 + offset + proneOffset, W() * 0.04, H() * 0.16);
+        // Front sight blade
+        ctx.fillStyle = '#0a0806';
+        ctx.fillRect(W() * 0.565 - playerX * 30, baseY - H() * 0.06 + offset + proneOffset, 2, H() * 0.025);
+      };
+
+      const drawVignette = () => {
+        const grad = ctx.createRadialGradient(W() * 0.5, H() * 0.4, W() * 0.2, W() * 0.5, H() * 0.5, W() * 0.7);
+        grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0.55)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W(), H());
+      };
+
+      const drawStatic = (now: number) => {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        for (const sp of staticSpecks) {
+          const a = (Math.sin(now * 0.005 + sp.phase) + 1) * 0.5;
+          if (a > 0.7) ctx.fillRect(sp.x, sp.y, 1, 1);
+        }
+      };
+
+      const drawHitFlash = (now: number) => {
+        if (hitFlashUntil > now) {
+          const phase = (hitFlashUntil - now) / 200;
+          ctx.fillStyle = `rgba(220, 38, 38, ${0.3 * phase})`;
+          ctx.fillRect(0, 0, W(), H());
+        }
+      };
+
+      // ----- Static reduced-motion scene -----
+      function renderStaticScene() {
+        // Set up midway-depth scene
+        playerZ = 0.5;
+        playerX = 0;
+        buildWorld();
+        // Draw once
+        ctx.save();
+        drawSky(0);
+        drawCliffsAndBunkers(0);
+        drawSeawall();
+        drawBeach();
+        drawHedgehogs();
+        drawBodies();
+        drawSurf();
+        drawPlayerAnchor();
+        drawVignette();
+        ctx.restore();
+        // Label
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.font = '12px ui-monospace, monospace';
+        ctx.fillText('Omaha Beach, June 6, 1944. Static view.', 10, 18);
+      }
+
+      // ----- Game loop -----
       let lastTs = performance.now();
       const loop = (now: number) => {
         if (!running) return;
         const dt = Math.min(0.05, (now - lastTs) / 1000);
         lastTs = now;
 
-        // Movement input
-        if (player.alive) {
-          let dx = 0, dy = 0;
-          if (keys.has('ArrowUp') || keys.has('KeyW')) dy -= 1;
-          if (keys.has('ArrowDown') || keys.has('KeyS')) dy += 1;
-          if (keys.has('ArrowLeft') || keys.has('KeyA')) dx -= 1;
-          if (keys.has('ArrowRight') || keys.has('KeyD')) dx += 1;
-          if (moveTarget) {
-            const tx = moveTarget.x - player.x;
-            const ty = moveTarget.y - player.y;
-            const len = Math.hypot(tx, ty);
-            if (len < 4) moveTarget = null;
-            else { dx = tx / len; dy = ty / len; }
-          }
-          const len = Math.hypot(dx, dy) || 1;
-          const speed = 110;
-          player.x = Math.max(player.r, Math.min(W() - player.r, player.x + (dx / len) * speed * dt));
-          player.y = Math.max(56 + player.r, Math.min(H() - player.r, player.y + (dy / len) * speed * dt));
+        // Apply input
+        if (alive && !won) {
+          const advancing = keys.has('KeyW') || keys.has('ArrowUp') || padKeys.has('up');
+          const retreating = keys.has('KeyS') || keys.has('ArrowDown') || padKeys.has('down');
+          const left = keys.has('KeyA') || keys.has('ArrowLeft') || padKeys.has('left');
+          const right = keys.has('KeyD') || keys.has('ArrowRight') || padKeys.has('right');
+          crouching = keys.has('ShiftLeft') || keys.has('ShiftRight') || padKeys.has('crouch');
+          const speedZ = crouching ? 0.10 : 0.16;
+          const speedX = crouching ? 0.7 : 1.1;
+          if (advancing) playerZ -= speedZ * dt;
+          if (retreating) playerZ += speedZ * 0.5 * dt;
+          if (left) playerX -= speedX * dt;
+          if (right) playerX += speedX * dt;
+          playerX = Math.max(-1, Math.min(1, playerX));
+          playerZ = Math.max(0, Math.min(1.2, playerZ));
         }
 
         // Tide rises
-        tide -= 4 * dt;
-        if (player.alive && player.y > tide) {
-          // Drowned / pushed back; treat as a loss
-          player.alive = false;
-          status.textContent = 'Drowned in the surf.';
+        tideZ -= 0.012 * dt;
+        if (alive && !won && tideZ < playerZ) {
+          alive = false;
+          status.textContent = 'The tide caught you. Drowned in the surf.';
           finalize(false);
         }
 
-        // MG nests fire bursts
-        for (const n of nests) {
-          n.t += dt;
-          n.cooldown = Math.max(0, n.cooldown - dt);
-          if (n.t > 1.4 + Math.sin(n.x * 0.01) * 0.4) {
-            n.t = 0;
-            n.cooldown = 1.0;
-            // Burst of 4 bullets aimed at a random downbeach band
-            const aimX = n.x + (Math.random() - 0.5) * W() * 0.4;
-            for (let i = 0; i < 4; i++) {
-              bullets.push({ x: aimX + (Math.random() - 0.5) * 30, y: n.y + 14, vy: 380 + Math.random() * 80, life: 2 });
-            }
-          }
-        }
-
-        // Update bullets
-        for (const b of bullets) {
-          b.y += b.vy * dt;
-          b.life -= dt;
-        }
-        bullets = bullets.filter((b) => b.life > 0 && b.y < H() + 20);
-
-        // Hit detection
-        if (player.alive) {
-          for (const b of bullets) {
-            const dx = b.x - player.x;
-            const dy = b.y - player.y;
-            if (dx * dx + dy * dy < (player.r + 2) ** 2) {
-              player.alive = false;
-              status.textContent = 'Hit by MG fire.';
-              finalize(false);
-              break;
-            }
-          }
-        }
-
         // Win condition
-        if (player.alive && player.y < 56 + player.r + 1) {
-          player.alive = false;
+        if (alive && !won && playerZ < 0.05) {
+          won = true;
+          alive = false;
           const time = (performance.now() - startTimeMs) / 1000;
           if (time < bestTime) bestTime = time;
+          totalMeters += Math.round((1 - playerZ) * 200);
           status.textContent = `Reached the seawall in ${time.toFixed(1)}s.`;
-          survived++;
-          rounds++;
-          updateStats();
-          running = false;
-          setTimeout(showRestart, 1200);
-          return;
+          callout.classList.remove('hidden');
+          finalize(true);
+        }
+
+        // Bunker fire
+        for (const b of bunkers) {
+          b.nextFlash -= dt;
+          b.nextShot -= dt;
+          if (b.nextFlash <= 0) {
+            b.flashUntil = now + 50;
+            b.nextFlash = 1.5 + Math.random();
+          }
+          if (b.nextShot <= 0 && alive && !won) {
+            b.nextShot = 0.6 + Math.random() * 1.2;
+            const top = H() * 0.15 + H() * 0.20 * 0.5;
+            const bx = W() * 0.5 + b.x * W() * 0.4 - playerX * W() * 0.05;
+            // Random aim across canvas
+            const aimX = Math.random() * W();
+            const aimY = H() * 0.6 + Math.random() * H() * 0.35;
+            bullets.push({ x1: bx, y1: top, x2: aimX, y2: aimY, until: now + 150 });
+            // Hit detection: did the bullet path cross the player hitbox?
+            if (lineIntersectsHitbox(bx, top, aimX, aimY)) {
+              if (proneUntil <= now) {
+                onHit('Hit by MG-42 fire from the bluffs.');
+              }
+            }
+          }
+        }
+
+        // Random mortars
+        if (Math.random() < 0.018 && alive && !won) {
+          const targetZ = Math.max(0.1, Math.min(1.0, playerZ + (Math.random() - 0.3) * 0.4));
+          const targetX = (Math.random() - 0.5) * 2.0 + playerX * 0.5;
+          mortars.push({
+            worldX: targetX,
+            worldZ: targetZ,
+            warnUntil: now + 1000,
+            flashUntil: now + 1350,
+            radius: 30 + Math.random() * 20,
+          });
+        }
+
+        // Mortar impact detection
+        for (const m of mortars) {
+          if (m.warnUntil < now && m.flashUntil - 350 + 60 > now && m.flashUntil - 350 - 30 < now) {
+            // Window of ~90ms around the flash start counts as impact.
+            const dx = m.worldX - playerX * 0.5;
+            const dz = m.worldZ - playerZ;
+            const distSq = dx * dx + dz * dz * 4;
+            const r = (m.radius / 60);
+            if (distSq < r * r && proneUntil <= now && alive && !won) {
+              shakeUntil = now + 200;
+              onHit('Mortar shell. Caught in the open.');
+            } else if (distSq < r * r * 4) {
+              shakeUntil = now + 200;
+            }
+          }
         }
 
         // Render
+        ctx.save();
+        if (shakeUntil > now) {
+          ctx.translate((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6);
+        }
         ctx.clearRect(0, 0, W(), H());
-        drawBackground();
-        drawNests();
-        drawBullets();
-        drawPlayer();
+        drawSky(now);
+        drawCliffsAndBunkers(now);
+        drawSeawall();
+        drawBeach();
+        drawHedgehogs();
+        drawBodies();
+        drawSurf();
+        drawMortars(now);
+        drawBullets(now);
+        drawStatic(now);
+        drawPlayerAnchor();
+        drawVignette();
+        drawHitFlash(now);
+        ctx.restore();
+
+        // HUD overlay (advanced meters)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.fillRect(8, 8, 130, 22);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '11px ui-monospace, monospace';
+        const meters = Math.round((1 - playerZ) * 200);
+        ctx.fillText(`Advance: ${meters} m`, 14, 23);
 
         requestAnimationFrame(loop);
+      };
+
+      const lineIntersectsHitbox = (x1: number, y1: number, x2: number, y2: number) => {
+        // Player hitbox sits at the bottom anchor.
+        const hbx = W() * 0.5 - playerX * 30;
+        const hby = H() * 0.92;
+        const hw = crouching ? 30 : 42;
+        const hh = crouching ? 18 : 30;
+        // Sample 6 points along the line and check intersection.
+        for (let t = 0; t <= 1; t += 0.1) {
+          const x = x1 + (x2 - x1) * t;
+          const y = y1 + (y2 - y1) * t;
+          if (Math.abs(x - hbx) < hw / 2 && Math.abs(y - hby) < hh / 2) return true;
+        }
+        return false;
+      };
+
+      const onHit = (msg: string) => {
+        if (!alive || won) return;
+        alive = false;
+        hitFlashUntil = performance.now() + 200;
+        shakeUntil = performance.now() + 200;
+        status.textContent = msg;
+        finalize(false);
       };
 
       const updateStats = () => {
         roundsEl.textContent = String(rounds);
         survivedEl.textContent = String(survived);
-        bestTimeEl.textContent = bestTime === Infinity ? '—' : `${bestTime.toFixed(1)}s`;
+        bestTimeEl.textContent = bestTime === Infinity ? '0.0s' : `${bestTime.toFixed(1)}s`;
+        metersEl.textContent = String(totalMeters);
       };
 
-      const finalize = (won: boolean) => {
+      const finalize = (winFlag: boolean) => {
         rounds++;
-        if (won) survived++;
+        if (winFlag) survived++;
+        if (!winFlag) totalMeters += Math.round((1 - playerZ) * 200);
         updateStats();
         running = false;
-        setTimeout(showRestart, 1200);
+        setTimeout(showRestart, 1300);
       };
 
       const showRestart = () => {
         startOverlay.classList.remove('hidden');
         startBtn.textContent = 'Try again';
-        startOverlay.querySelector('div.font-serif')!.textContent = 'Press start to retry';
+        overlayTitle.textContent = won ? 'You reached the seawall' : 'Press start to retry';
       };
 
       const start = () => {
         startOverlay.classList.add('hidden');
-        reset();
+        callout.classList.add('hidden');
+        resetGame();
         running = true;
         lastTs = performance.now();
-        canvas.focus();
+        try { canvas.focus({ preventScroll: true }); } catch (_) { canvas.focus(); }
         status.textContent = 'Run for the wall.';
         requestAnimationFrame(loop);
       };
 
+      // ----- Wiring -----
       startBtn.addEventListener('click', start);
+      preferStatic.addEventListener('click', () => {
+        running = false;
+        renderStaticScene();
+        startOverlay.classList.add('hidden');
+        rmFallback.classList.remove('hidden');
+        callout.classList.remove('hidden');
+        touchPanel.classList.add('hidden');
+      });
+      showCallout.addEventListener('click', () => callout.classList.toggle('hidden'));
+
       window.addEventListener('keydown', (e) => {
         if (!running) return;
         keys.add(e.code);
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+        if (e.code === 'Space') {
+          proneUntil = performance.now() + 1000;
+          e.preventDefault();
+          return;
+        }
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.key)) e.preventDefault();
       });
       window.addEventListener('keyup', (e) => keys.delete(e.code));
 
-      // Tap-to-move on canvas
+      // Touch D-pad
+      touchPanel.querySelectorAll<HTMLButtonElement>('[data-pad]').forEach((btn) => {
+        const dir = btn.dataset.pad!;
+        const press = (ev: Event) => { ev.preventDefault(); padKeys.add(dir); };
+        const release = (ev: Event) => { ev.preventDefault(); padKeys.delete(dir); };
+        btn.addEventListener('pointerdown', press);
+        btn.addEventListener('pointerup', release);
+        btn.addEventListener('pointercancel', release);
+        btn.addEventListener('pointerleave', release);
+      });
+
+      // Tap-to-advance: tap upper canvas area -> hold "up" briefly.
       canvas.addEventListener('pointerdown', (e) => {
         if (!running) return;
         const rect = canvas.getBoundingClientRect();
-        moveTarget = {
-          x: ((e.clientX - rect.left) / rect.width) * canvas.width,
-          y: ((e.clientY - rect.top) / rect.height) * canvas.height,
-        };
+        const ny = (e.clientY - rect.top) / rect.height;
+        const nx = (e.clientX - rect.left) / rect.width;
+        if (ny < 0.5) {
+          // Advance toward this spot
+          padKeys.add('up');
+          if (nx < 0.4) padKeys.add('left'); else padKeys.delete('left');
+          if (nx > 0.6) padKeys.add('right'); else padKeys.delete('right');
+          setTimeout(() => {
+            padKeys.delete('up');
+            padKeys.delete('left');
+            padKeys.delete('right');
+          }, 600);
+        }
+      });
+
+      // Two-finger tap = crouch
+      let touchPoints = 0;
+      canvas.addEventListener('touchstart', (e) => {
+        touchPoints = e.touches.length;
+        if (touchPoints >= 2) padKeys.add('crouch');
+      });
+      canvas.addEventListener('touchend', (e) => {
+        touchPoints = e.touches.length;
+        if (touchPoints < 2) padKeys.delete('crouch');
       });
 
       updateStats();
     });
   };
-  setupDDay();
-  document.addEventListener('astro:after-swap', setupDDay);
+  // Defer setup until the canvas enters viewport. Long-form pages with many
+  // simulations should not eagerly spawn every game's animation loop.
+  const ddayObserver = typeof IntersectionObserver !== 'undefined'
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            ddayObserver!.unobserve(entry.target);
+            setupDDay();
+          }
+        });
+      }, { rootMargin: '300px 0px' })
+    : null;
+  const observeDDay = () => {
+    document.querySelectorAll<HTMLElement>('[data-dday]:not([data-ready]):not([data-observed])').forEach((root) => {
+      root.dataset.observed = '1';
+      if (ddayObserver) ddayObserver.observe(root);
+      else setupDDay();
+    });
+  };
+  observeDDay();
+  document.addEventListener('astro:after-swap', observeDDay);
 </script>
+</invoke>

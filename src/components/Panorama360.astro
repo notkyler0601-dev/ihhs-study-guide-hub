@@ -1,0 +1,178 @@
+---
+// 360-degree panoramic image viewer using Pannellum. Lets students "stand
+// inside" historical sites: Versailles Hall of Mirrors, a WWI trench, a
+// section of the Berlin Wall. Pannellum is the leading open-source 360 viewer
+// (HTML5 + WebGL, no Three.js dependency). Its competitor Panolens.js was
+// archived June 2023.
+//
+// Usage:
+//   <Panorama360
+//     src="https://upload.wikimedia.org/.../Versailles_Hall_of_Mirrors_360.jpg"
+//     title="Versailles, Hall of Mirrors"
+//     caption="Stand where Louis XIV held court."
+//     attribution="Wikimedia Commons / Public Domain"
+//     hotspots={[
+//       { pitch: 0, yaw: 90, type: "info", text: "Notice the 357 mirrors." }
+//     ]}
+//     height={520}
+//     autoLoad
+//   />
+//
+// Reduced motion: when the user has prefers-reduced-motion set OR has toggled
+// the a11y-reduce-motion class on, the component renders a static flat image
+// of the same panorama with a notice and skips loading Pannellum entirely.
+
+interface Hotspot {
+  pitch: number;
+  yaw: number;
+  type: 'info' | 'scene';
+  text: string;
+  sceneId?: string;
+}
+
+interface Props {
+  src: string;
+  title: string;
+  caption: string;
+  attribution?: string;
+  hotspots?: Hotspot[];
+  height?: number;
+  autoLoad?: boolean;
+  class?: string;
+}
+
+const {
+  src,
+  title,
+  caption,
+  attribution = '',
+  hotspots = [],
+  height = 480,
+  autoLoad = true,
+  class: extraClass = '',
+} = Astro.props;
+
+const id = 'pano-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ src, hotspots, autoLoad });
+---
+
+<figure
+  class={`not-prose my-8 surface rounded-2xl shadow-soft p-5 flex flex-col gap-3 ${extraClass}`}
+  data-panorama
+  id={id}
+  data-conf={conf}
+  role="region"
+  aria-label={`${title} 360 degree panorama`}
+>
+  <h3 class="font-serif text-lg font-bold text-ink-900 dark:text-ink-50 m-0">{title}</h3>
+
+  <div
+    data-panorama-host
+    class="w-full rounded-lg overflow-hidden bg-ink-950 relative"
+    style={`height:${height}px`}
+  ></div>
+
+  <div
+    data-panorama-rm-fallback
+    class="hidden w-full rounded-lg overflow-hidden bg-ink-950 relative"
+  >
+    <img
+      src={src}
+      alt={caption}
+      class="w-full h-auto block"
+      style={`max-height:${height}px; object-fit:cover;`}
+    />
+    <p class="mt-2 text-xs text-ink-500 dark:text-ink-400 italic">
+      Reduced motion mode: showing flat panoramic image. Drag to scroll horizontally.
+    </p>
+  </div>
+
+  <figcaption class="font-serif italic text-sm text-ink-600 dark:text-ink-300 m-0">
+    {caption}
+  </figcaption>
+
+  {attribution && (
+    <p class="text-[10px] text-ink-400 dark:text-ink-500 self-end m-0">
+      {attribution}
+    </p>
+  )}
+</figure>
+
+<script>
+  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+
+  type PannellumHotspot = {
+    pitch: number;
+    yaw: number;
+    type: 'info' | 'scene';
+    text: string;
+    sceneId?: string;
+  };
+
+  type PannellumConfig = {
+    src: string;
+    hotspots: PannellumHotspot[];
+    autoLoad: boolean;
+  };
+
+  const reduceMotion = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || document.documentElement.classList.contains('a11y-reduce-motion');
+  };
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-panorama]:not([data-ready])');
+    if (roots.length === 0) return;
+
+    const reduced = reduceMotion();
+
+    if (reduced) {
+      // Static fallback for every panorama, skip Pannellum entirely.
+      roots.forEach((root) => {
+        root.dataset.ready = '1';
+        const host = root.querySelector<HTMLElement>('[data-panorama-host]');
+        const fallback = root.querySelector<HTMLElement>('[data-panorama-rm-fallback]');
+        if (host) host.classList.add('hidden');
+        if (fallback) fallback.classList.remove('hidden');
+      });
+      return;
+    }
+
+    loadStyle('https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css');
+    await loadScript('https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js');
+    const pannellum: any = await waitForGlobal('pannellum');
+
+    roots.forEach((root) => {
+      root.dataset.ready = '1';
+      const host = root.querySelector<HTMLElement>('[data-panorama-host]');
+      if (!host) return;
+      host.id = 'pano-host-' + Math.random().toString(36).slice(2, 9);
+
+      const conf = JSON.parse(root.dataset.conf || '{}') as PannellumConfig;
+
+      try {
+        pannellum.viewer(host.id, {
+          type: 'equirectangular',
+          panorama: conf.src,
+          autoLoad: conf.autoLoad,
+          compass: true,
+          showControls: true,
+          hfov: 100,
+          hotSpots: (conf.hotspots || []).map((h) => ({
+            pitch: h.pitch,
+            yaw: h.yaw,
+            type: h.type,
+            text: h.text,
+            ...(h.sceneId ? { sceneId: h.sceneId } : {}),
+          })),
+        });
+      } catch (e) {
+        console.warn('Panorama360 failed', e);
+      }
+    });
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

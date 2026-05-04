@@ -100,8 +100,26 @@ const minHeight = height ? `${height}px` : '380px';
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   };
 
+  // Lazy-init each Vanta on viewport entry. With many backgrounds on a single
+  // long-form page, eager-init would spawn N WebGL contexts up front (very
+  // heavy). IntersectionObserver lets us amortize that.
+  const observer = typeof IntersectionObserver !== 'undefined'
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            initOne(entry.target as HTMLElement);
+            observer!.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '300px 0px' })
+    : null;
+
   const init = () => {
-    document.querySelectorAll<HTMLElement>('[data-vanta-root]').forEach(initOne);
+    document.querySelectorAll<HTMLElement>('[data-vanta-root]').forEach((root) => {
+      if (root.dataset.bound) return;
+      if (observer) observer.observe(root);
+      else initOne(root);
+    });
   };
   init();
   document.addEventListener('astro:after-swap', init);

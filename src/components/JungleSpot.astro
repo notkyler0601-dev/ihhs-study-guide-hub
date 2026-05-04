@@ -1,73 +1,101 @@
 ---
-// "Spot the Vietcong" jungle game. Stylized SVG jungle with a
-// camouflaged figure hidden behind procedurally-placed leaves. Player
-// has a few seconds to click where they see the figure. 10 rounds.
+// "Spot the Vietcong" jungle game, FIRST-PERSON edition. The player
+// stands at eye level in a dense Vietnamese jungle, M16 in hand, and
+// pans the camera left/right (drag mouse or swipe touch) across a
+// 180 degree arc. Somewhere in the foliage a Vietcong soldier is
+// hidden, partly obscured by leaves. 10 rounds, 8 seconds each.
 //
-// Pedagogical hook: shows why the Vietcong's use of dense jungle
-// terrain made U.S. patrol operations so difficult during the
-// Vietnam War.
+// Pedagogical hook: the Vietcong's use of dense jungle to ambush
+// U.S. patrols is what made Vietnam War operations so deadly for
+// American troops. This simulates the eye strain.
+//
+// Pure HTML5 canvas, vanilla JS, touch + mouse. Seeded procedural
+// jungle so the same world is consistent across rounds; only the
+// soldier and decoy rustles randomize.
 //
 // Usage: <JungleSpot />
-
-interface Props {
-  rounds?: number;
-  secondsPerRound?: number;
-}
-const { rounds = 10, secondsPerRound = 5 } = Astro.props;
 ---
 
-<section class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" data-jungle data-rounds={rounds} data-spr={secondsPerRound}>
-  <header class="flex items-center justify-between gap-3 px-5 py-3 border-b border-ink-200 dark:border-ink-800">
-    <span class="font-serif text-base font-semibold flex items-center gap-2">
-      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">🌿</span>
-      Spot the Vietcong
-    </span>
-    <span class="text-xs text-ink-500" data-status>Press start</span>
+<section
+  class="not-prose my-10 surface rounded-2xl shadow-soft p-5 flex flex-col gap-4"
+  data-jungle
+  role="region"
+  aria-label="Vietcong jungle spotting simulation"
+>
+  <header class="flex items-center justify-between gap-3">
+    <h3 class="font-serif text-lg font-bold flex items-center gap-2 m-0">
+      <span class="inline-flex items-center justify-center h-7 w-7 rounded-md bg-accent-700 bg-gradient-to-br from-accent-600 to-accent-800 text-white text-xs">VC</span>
+      Spot the Vietcong: Jungle Patrol, c. 1968
+    </h3>
+    <span class="text-xs text-ink-500" data-status aria-live="polite">Press start</span>
   </header>
 
-  <div class="relative" style="aspect-ratio: 16 / 10;">
-    <svg data-svg viewBox="0 0 800 500" class="block w-full h-full bg-[#1a2a18] cursor-crosshair" preserveAspectRatio="xMidYMid slice" aria-label="Jungle scene with hidden Vietcong soldier"></svg>
+  <div class="relative w-full" style="max-width: 720px; aspect-ratio: 720 / 480;">
+    <canvas
+      data-canvas
+      width="720"
+      height="480"
+      class="block w-full h-full bg-[#0e1a12] rounded-lg cursor-crosshair touch-none select-none"
+      aria-label="First-person view of a Vietnamese jungle. Drag or swipe to pan, click or tap to fire."
+    ></canvas>
 
-    <div data-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 backdrop-blur-sm text-ink-50 p-6 text-center">
-      <div class="text-5xl mb-3">🌿</div>
-      <div class="font-serif text-xl mb-1" data-overlay-title>Spot the Vietcong</div>
-      <p class="text-xs text-ink-300 max-w-sm leading-relaxed mb-4" data-overlay-body>
-        The Vietcong used dense jungle to ambush U.S. patrols. American troops trained to spot them in seconds. Try it yourself: 10 rounds, ~5 seconds each. Click the soldier when you see them.
+    <div data-overlay class="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/85 backdrop-blur-sm text-ink-50 p-6 text-center rounded-lg overflow-y-auto">
+      <div class="font-serif text-xl mb-1" data-overlay-title>Patrol, Quang Tri Province</div>
+      <p class="text-xs text-ink-300 max-w-md leading-relaxed mb-4" data-overlay-body>
+        Twelve rounds, ~8 seconds each, three shots per round. Drag or swipe to pan, click or tap to fire. Some rounds are <strong>civilians</strong>, not Vietcong. Hit them and you lose more than the round. Difficulty climbs with each round.
       </p>
-      <button data-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Start</button>
+      <button data-start type="button" class="px-4 py-2 rounded-lg bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium">Begin patrol</button>
     </div>
 
-    <!-- Reduced-motion fallback -->
-    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-ink-900/95 text-ink-50 p-6 text-center">
-      <div class="text-5xl mb-3">🌿</div>
+    <div data-rm-fallback class="hidden absolute inset-0 flex flex-col items-center justify-center bg-ink-900/95 text-ink-50 p-6 text-center rounded-lg">
       <div class="font-serif text-xl mb-2">Vietcong used jungle camouflage</div>
       <p class="text-sm text-ink-300 max-w-md leading-relaxed">
-        American troops faced an enemy that could vanish into the foliage. The interactive game has been disabled because you have reduced motion enabled.
+        American troops faced an enemy who could vanish into the foliage. The interactive simulation has been disabled because you have reduced motion enabled. A static example is shown behind this overlay; the soldier is circled in red.
       </p>
     </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-3 px-5 py-3 border-t border-ink-200 dark:border-ink-800 text-center text-xs">
+  <div class="grid grid-cols-5 gap-3 text-center text-xs">
     <div>
       <div class="uppercase tracking-[0.14em] text-ink-500">Round</div>
-      <div class="font-serif text-lg" data-round>0 / 0</div>
+      <div class="font-serif text-lg" data-round>0 / 12</div>
     </div>
     <div>
-      <div class="uppercase tracking-[0.14em] text-ink-500">Spotted</div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Hits</div>
       <div class="font-serif text-lg text-emerald-700 dark:text-emerald-400" data-spotted>0</div>
     </div>
     <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Misses</div>
+      <div class="font-serif text-lg text-ink-700 dark:text-ink-300" data-misses>0</div>
+    </div>
+    <div>
+      <div class="uppercase tracking-[0.14em] text-ink-500">Friendly fire</div>
+      <div class="font-serif text-lg text-rose-700 dark:text-rose-400" data-ff>0</div>
+    </div>
+    <div>
       <div class="uppercase tracking-[0.14em] text-ink-500">Avg. time</div>
-      <div class="font-serif text-lg" data-avgtime>—</div>
+      <div class="font-serif text-lg" data-avgtime>--</div>
     </div>
   </div>
+
+  <details class="text-xs text-ink-500 leading-relaxed">
+    <summary class="cursor-pointer font-medium text-ink-700 dark:text-ink-300">About this simulation</summary>
+    <div class="mt-2 space-y-2">
+      <p><strong>Controls:</strong> drag mouse left or right (or swipe on touch) to pan across a 180 degree arc. Click or tap to fire. You have <strong>three shots per round</strong>; running out forfeits the round. The compass rail at the top tracks your bearing.</p>
+      <p><strong>Difficulty:</strong> early rounds give you a closer figure, more time, and less brush in the way. Later rounds push the figure into the deep brush and shorten the timer.</p>
+      <p><strong>Civilian rounds:</strong> roughly one in four targets is a Vietnamese villager (lighter clothing, conical non la hat, basket or pole, no rifle). Hitting them is a friendly-fire incident. Patrols in 1967 to 1971 navigated this every day, with consequences ranging from disciplinary to atrocities like My Lai.</p>
+      <p><strong>Tip:</strong> the foliage near the figure rustles slightly more than the rest. Watch the leaves, not just the silhouettes.</p>
+      <p><strong>Content note:</strong> stylized silhouettes only; no graphic imagery. The simulation is a teaching tool, not a celebration of combat.</p>
+    </div>
+  </details>
 </section>
 
 <script>
   const setupJungle = () => {
     document.querySelectorAll<HTMLElement>('[data-jungle]:not([data-ready])').forEach((root) => {
       root.dataset.ready = '1';
-      const svg = root.querySelector<SVGSVGElement>('[data-svg]')!;
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+      const ctx = canvas.getContext('2d')!;
       const overlay = root.querySelector<HTMLElement>('[data-overlay]')!;
       const overlayTitle = root.querySelector<HTMLElement>('[data-overlay-title]')!;
       const overlayBody = root.querySelector<HTMLElement>('[data-overlay-body]')!;
@@ -76,218 +104,1031 @@ const { rounds = 10, secondsPerRound = 5 } = Astro.props;
       const status = root.querySelector<HTMLElement>('[data-status]')!;
       const roundEl = root.querySelector<HTMLElement>('[data-round]')!;
       const spottedEl = root.querySelector<HTMLElement>('[data-spotted]')!;
+      const missesEl = root.querySelector<HTMLElement>('[data-misses]')!;
+      const ffEl = root.querySelector<HTMLElement>('[data-ff]')!;
       const avgTimeEl = root.querySelector<HTMLElement>('[data-avgtime]')!;
+
+      const W = canvas.width;
+      const H = canvas.height;
+      const TOTAL_ROUNDS = 12;
+      const SHOTS_PER_ROUND = 3;
+      const SCREEN_FACTOR = W / Math.PI; // panning 180 deg covers full width
+      const FORGIVE_PX = 28; // hit box expansion
+
+      // Difficulty curve: as the round number rises, the figure moves deeper
+      // into the brush, the timer shortens, and the rustle hint becomes more
+      // subtle. Round 1 is generous; round 12 is brutal.
+      const roundConfig = (n: number) => {
+        const t = (n - 1) / (TOTAL_ROUNDS - 1); // 0..1
+        return {
+          seconds: 9 - t * 4,                  // 9s -> 5s
+          distMin: 0.5 + t * 0.18,             // figure further away
+          distMax: 0.7 + t * 0.18,
+          startOffset: 0.4 + t * 0.55,         // larger initial pan needed
+          rustleHintProb: 0.55 - t * 0.35,     // hint fades as rounds go on
+          fogStrength: 0.18 + t * 0.20,        // more haze later
+        };
+      };
+
+      // Seeded RNG (mulberry32) so the static jungle stays consistent.
+      const mulberry32 = (seed: number) => () => {
+        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+        let t = seed;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         || document.documentElement.classList.contains('a11y-reduce-motion');
-      if (reduceMotion) {
-        rmFallback.classList.remove('hidden');
-        overlay.classList.add('hidden');
-        return;
+
+      // World data: each element has worldTheta and worldDistance.
+      // distance: 0 = at viewer, 1 = far. closer = lower on screen, larger.
+      type Leaf = { theta: number; dist: number; size: number; rot: number; color: string; jitter: number };
+      type Trunk = { theta: number; dist: number; widthAng: number; height: number; color: string };
+      type Frond = { theta: number; dist: number; size: number; angle: number; color: string };
+      type Bamboo = { theta: number; dist: number; widthAng: number; color: string };
+      type Hill = { theta: number; height: number; spread: number };
+
+      const palette = {
+        hill: ['#1a2820', '#22332a', '#152018'],
+        bgTrunk: ['#1a1410', '#221912', '#2a2118'],
+        midTrunk: ['#3a2a1a', '#2a1d10', '#4a3526'],
+        leaves: {
+          mid: ['#1f3a25', '#264e2e', '#22432a', '#1c3522'],
+          bright: ['#2f6238', '#3a7842', '#36703f', '#2c5a35'],
+        },
+        floor: ['#0a1408', '#13201a', '#0e1810', '#152018'],
+      };
+
+      const seed = 0xC0FFEE; // fixed: jungle is the same every round
+      const rngWorld = mulberry32(seed);
+      const choice = <T,>(arr: T[]) => arr[Math.floor(rngWorld() * arr.length)];
+      const rand = (min: number, max: number) => min + rngWorld() * (max - min);
+
+      // Build static world layers in increasing depth (camera-relative).
+      const hills: Hill[] = [];
+      for (let i = 0; i < 5; i++) {
+        hills.push({ theta: rand(-Math.PI, Math.PI), height: rand(30, 70), spread: rand(0.6, 1.4) });
       }
 
-      const TOTAL_ROUNDS = Number(root.dataset.rounds || '10');
-      const SECONDS = Number(root.dataset.spr || '5');
+      const bgTrunks: Trunk[] = [];
+      for (let i = 0; i < 14; i++) {
+        bgTrunks.push({
+          theta: rand(-Math.PI, Math.PI),
+          dist: rand(0.78, 0.92),
+          widthAng: rand(0.012, 0.028),
+          height: rand(0.55, 0.85),
+          color: choice(palette.bgTrunk),
+        });
+      }
 
+      const midTrunks: Trunk[] = [];
+      for (let i = 0; i < 8; i++) {
+        midTrunks.push({
+          theta: rand(-Math.PI, Math.PI),
+          dist: rand(0.55, 0.75),
+          widthAng: rand(0.018, 0.036),
+          height: rand(0.6, 0.92),
+          color: choice(palette.midTrunk),
+        });
+      }
+
+      const bamboos: Bamboo[] = [];
+      for (let i = 0; i < 12; i++) {
+        bamboos.push({
+          theta: rand(-Math.PI, Math.PI),
+          dist: rand(0.45, 0.7),
+          widthAng: rand(0.006, 0.014),
+          color: choice(['#3a4426', '#4a5530', '#2e3a1e']),
+        });
+      }
+
+      // Midground brush (taller leaves between viewer and midtrunks)
+      const midLeaves: Leaf[] = [];
+      for (let i = 0; i < 90; i++) {
+        midLeaves.push({
+          theta: rand(-Math.PI, Math.PI),
+          dist: rand(0.4, 0.6),
+          size: rand(14, 28),
+          rot: rand(-1, 1),
+          color: choice(palette.leaves.mid),
+          jitter: rand(0, Math.PI * 2),
+        });
+      }
+
+      // Foreground brush layer: chest-high bushes / fronds
+      const fgFronds: Frond[] = [];
+      for (let i = 0; i < 110; i++) {
+        fgFronds.push({
+          theta: rand(-Math.PI, Math.PI),
+          dist: rand(0.18, 0.38),
+          size: rand(40, 90),
+          angle: rand(-0.5, 0.5),
+          color: choice([...palette.leaves.mid, ...palette.leaves.bright]),
+        });
+      }
+
+      // Lower jungle floor (very near, small ferns)
+      const floorLeaves: Leaf[] = [];
+      for (let i = 0; i < 130; i++) {
+        floorLeaves.push({
+          theta: rand(-Math.PI, Math.PI),
+          dist: rand(0.05, 0.18),
+          size: rand(10, 26),
+          rot: rand(-Math.PI, Math.PI),
+          color: choice(palette.floor),
+          jitter: rand(0, Math.PI * 2),
+        });
+      }
+
+      // Camera state
+      let cameraTheta = 0;
+      let dragging = false;
+      let dragStartX = 0;
+      let dragStartTheta = 0;
+      let pointerMoved = false;
+
+      // Round state
       let round = 0;
-      let spotted = 0;
-      let totalTime = 0;
+      let spotted = 0;       // VC correctly engaged
+      let misses = 0;        // rounds the player failed to neutralize a VC
+      let friendlyFire = 0;  // civilians hit
+      let heldFire = 0;      // civilian rounds correctly NOT shot
+      let totalReactionTime = 0;
+      let lastResult: 'hit' | 'miss' | 'ff' | 'held' | null = null;
+      let roundActive = false;
       let roundStart = 0;
       let timerHandle: number | null = null;
-      let solved = false;
-      let figureBox: { x: number; y: number; w: number; h: number } | null = null;
+      let figureWorldTheta = 0;
+      let figureWorldDist = 0.7;
+      // The pre-round configuration for the active round; consulted for
+      // figure rendering, fog strength, and the rustle-near-figure hint.
+      let activeCfg = roundConfig(1);
+      // Each round has a target type. 'vc' means engage; 'civ' means hold fire.
+      // Roughly 1 in 4 rounds is a civilian to drill rules-of-engagement.
+      type TargetKind = 'vc' | 'civ';
+      let figureKind: TargetKind = 'vc';
+      let shotsRemaining = SHOTS_PER_ROUND;
+      let figureLastScreen: { x: number; y: number; w: number; h: number } | null = null;
+      let revealUntil = 0;
+      let animFrame: number | null = null;
+      // Mouse position (canvas-local) for crosshair rendering.
+      let mouseX = -1, mouseY = -1;
+      // Brief muzzle flash animation when player fires.
+      let muzzleFlashUntil = 0;
+      // Ambush death sequence: when a VC round times out, the soldier stands
+      // up, fires at the player, and the screen flashes red. Communicates
+      // the cost of failure better than a dry "Time up" message.
+      let deathSequenceStart = 0;
+      let deathSequenceUntil = 0;
 
-      const rand = (min: number, max: number) => min + Math.random() * (max - min);
-      const choice = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+      // Decoy rustles: which leaves shake right now
+      const rustleSet = new Set<number>();
+      let rustleTimer: number | null = null;
 
-      const drawJungle = () => {
-        // Wipe SVG
-        while (svg.firstChild) svg.removeChild(svg.firstChild);
+      // Project a world point (theta, dist) to screen.
+      const project = (theta: number, dist: number) => {
+        let dt = theta - cameraTheta;
+        // Wrap to [-PI, PI]
+        while (dt > Math.PI) dt -= Math.PI * 2;
+        while (dt < -Math.PI) dt += Math.PI * 2;
+        const x = dt * SCREEN_FACTOR + W / 2;
+        // y: closer items lower on screen; horizon roughly at H * 0.45
+        const horizon = H * 0.45;
+        const groundLine = H * 0.92;
+        const y = horizon + (groundLine - horizon) * (1 - Math.pow(dist, 0.7));
+        return { x, y, dt };
+      };
 
-        // Backdrop
-        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        bg.setAttribute('x', '0'); bg.setAttribute('y', '0');
-        bg.setAttribute('width', '800'); bg.setAttribute('height', '500');
-        bg.setAttribute('fill', '#13231a');
-        svg.appendChild(bg);
+      // Drawing helpers
+      const drawSky = () => {
+        const grad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+        grad.addColorStop(0, '#2a3530');
+        grad.addColorStop(1, '#1a2820');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H * 0.5);
+      };
 
-        // Layered procedural leaves
-        const leafColors = ['#1f3a25', '#264e2e', '#2f6238', '#3a7842', '#1b3a23', '#2d5a37', '#0e1e14'];
-        const trunkColors = ['#3a2a1a', '#2a1d10', '#4a3526'];
+      const drawHills = () => {
+        for (const h of hills) {
+          const p = project(h.theta, 0.99);
+          if (p.x < -200 || p.x > W + 200) continue;
+          ctx.fillStyle = palette.hill[Math.floor(Math.abs(h.theta * 7)) % palette.hill.length];
+          ctx.beginPath();
+          const cx = p.x;
+          const baseY = H * 0.5;
+          const peakY = baseY - h.height;
+          const w = 200 * h.spread;
+          ctx.moveTo(cx - w, baseY);
+          ctx.quadraticCurveTo(cx, peakY, cx + w, baseY);
+          ctx.closePath();
+          ctx.fill();
+        }
+      };
 
-        // Tree trunks for depth
-        for (let i = 0; i < 6; i++) {
-          const x = rand(0, 800);
-          const w = rand(18, 36);
-          const t = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-          t.setAttribute('x', String(x));
-          t.setAttribute('y', String(rand(60, 200)));
-          t.setAttribute('width', String(w));
-          t.setAttribute('height', String(rand(280, 440)));
-          t.setAttribute('fill', choice(trunkColors));
-          t.setAttribute('opacity', String(rand(0.7, 0.95)));
-          svg.appendChild(t);
+      const drawTrunk = (t: Trunk) => {
+        const p = project(t.theta, t.dist);
+        if (p.x < -100 || p.x > W + 100) return;
+        const w = SCREEN_FACTOR * t.widthAng / Math.max(t.dist, 0.1);
+        const h = H * t.height;
+        const top = p.y - h;
+        ctx.fillStyle = t.color;
+        ctx.fillRect(p.x - w / 2, top, w, h);
+      };
+
+      const drawBamboo = (b: Bamboo) => {
+        const p = project(b.dist === 0 ? b.theta : b.theta, b.dist);
+        if (p.x < -50 || p.x > W + 50) return;
+        const w = Math.max(2, SCREEN_FACTOR * b.widthAng / Math.max(b.dist, 0.1));
+        ctx.fillStyle = b.color;
+        ctx.fillRect(p.x - w / 2, H * 0.18, w, H * 0.7);
+        // Joints
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        for (let y = H * 0.25; y < H * 0.85; y += 38) {
+          ctx.fillRect(p.x - w / 2, y, w, 2);
+        }
+      };
+
+      const drawLeaf = (l: Leaf, idx: number, time: number) => {
+        const p = project(l.theta, l.dist);
+        if (p.x < -80 || p.x > W + 80) return;
+        const scale = 1 / Math.max(l.dist, 0.05);
+        let dx = 0, dy = 0;
+        if (rustleSet.has(idx)) {
+          dx = Math.sin(time * 0.012 + l.jitter) * 1.5;
+          dy = Math.cos(time * 0.014 + l.jitter) * 1.2;
+        }
+        ctx.save();
+        ctx.translate(p.x + dx, p.y + dy);
+        ctx.rotate(l.rot);
+        ctx.fillStyle = l.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, l.size * scale * 0.4, l.size * scale * 0.18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      };
+
+      const drawFrond = (f: Frond, alpha = 1) => {
+        const p = project(f.theta, f.dist);
+        if (p.x < -150 || p.x > W + 150) return;
+        const scale = 1 / Math.max(f.dist, 0.05);
+        const len = f.size * scale * 0.6;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(f.angle);
+        ctx.fillStyle = f.color;
+        // Compound frond: a center stem with several leaflets
+        ctx.beginPath();
+        ctx.ellipse(0, -len * 0.4, len * 0.55, len * 0.18, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(0, -len * 0.1, len * 0.7, len * 0.22, 0.05, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(0, len * 0.25, len * 0.5, len * 0.16, 0.25, 0, Math.PI * 2);
+        ctx.fill();
+        // Stem
+        ctx.strokeStyle = `rgba(0,0,0,${0.4 * alpha})`;
+        ctx.lineWidth = Math.max(1, 2 * scale * 0.2);
+        ctx.beginPath();
+        ctx.moveTo(0, len * 0.5);
+        ctx.lineTo(0, -len * 0.5);
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      // Draws either the Vietcong soldier (camo, rifle) or a civilian villager
+      // (lighter clothing, conical non la hat, carrying a basket pole, no
+      // rifle). Both use the same stylized vocabulary so the player has to
+      // notice silhouette details rather than colour pops.
+      const drawFigure = (worldTheta: number, worldDist: number, kind: TargetKind) => {
+        const p = project(worldTheta, worldDist);
+        if (p.x < -50 || p.x > W + 50) {
+          figureLastScreen = null;
+          return;
+        }
+        const scale = 1 / Math.max(worldDist, 0.05);
+        const torsoW = 14 * scale * 0.8;
+        const torsoH = 26 * scale * 0.8;
+        const headR = 6 * scale * 0.8;
+        const cx = p.x;
+        const feetY = p.y;
+        const torsoTop = feetY - torsoH;
+        const headCY = torsoTop - headR - 1;
+
+        if (kind === 'vc') {
+          // Body: dark camo green-brown
+          ctx.fillStyle = '#2d3a22';
+          ctx.fillRect(cx - torsoW / 2, torsoTop, torsoW, torsoH);
+          // Head
+          ctx.fillStyle = '#3a4530';
+          ctx.beginPath();
+          ctx.ellipse(cx, headCY, headR, headR * 1.05, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Leafy "hat" bits stuffed into a head-wrap for cover
+          ctx.fillStyle = '#2a4022';
+          ctx.beginPath();
+          ctx.ellipse(cx - headR * 0.4, headCY - headR * 0.7, headR * 0.5, headR * 0.3, -0.3, 0, Math.PI * 2);
+          ctx.ellipse(cx + headR * 0.5, headCY - headR * 0.6, headR * 0.45, headR * 0.28, 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          // AK / SKS rifle hint angled across the body
+          ctx.strokeStyle = '#1a1a1a';
+          ctx.lineWidth = Math.max(1.2, 2 * scale * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(cx + torsoW * 0.3, torsoTop + torsoH * 0.4);
+          ctx.lineTo(cx + torsoW * 1.4, torsoTop + torsoH * 0.15);
+          ctx.stroke();
+        } else {
+          // Civilian: lighter loose clothing (faded indigo/khaki),
+          // conical non la hat, basket on a pole over the shoulder.
+          ctx.fillStyle = '#7a6a4a'; // tunic / ao ba ba in khaki
+          ctx.fillRect(cx - torsoW / 2, torsoTop, torsoW, torsoH);
+          // Pants slightly lighter
+          ctx.fillStyle = '#5e4f37';
+          ctx.fillRect(cx - torsoW / 2, torsoTop + torsoH * 0.55, torsoW, torsoH * 0.45);
+          // Head (skin tone)
+          ctx.fillStyle = '#c8a382';
+          ctx.beginPath();
+          ctx.ellipse(cx, headCY, headR * 0.85, headR * 0.95, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Conical non la hat (defining civilian silhouette)
+          ctx.fillStyle = '#d4b87a';
+          ctx.beginPath();
+          ctx.moveTo(cx - headR * 1.6, headCY - headR * 0.2);
+          ctx.lineTo(cx, headCY - headR * 1.6);
+          ctx.lineTo(cx + headR * 1.6, headCY - headR * 0.2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+          ctx.lineWidth = Math.max(1, 1.4 * scale * 0.4);
+          ctx.stroke();
+          // Carrying pole (don ganh) across the shoulders with a basket
+          ctx.strokeStyle = '#3a2a1a';
+          ctx.lineWidth = Math.max(1, 1.6 * scale * 0.4);
+          ctx.beginPath();
+          ctx.moveTo(cx - torsoW * 1.2, torsoTop + torsoH * 0.08);
+          ctx.lineTo(cx + torsoW * 1.2, torsoTop + torsoH * 0.18);
+          ctx.stroke();
+          // Basket on the right end
+          ctx.fillStyle = '#8a7240';
+          ctx.beginPath();
+          ctx.ellipse(cx + torsoW * 1.25, torsoTop + torsoH * 0.4, torsoW * 0.55, torsoH * 0.3, 0, 0, Math.PI * 2);
+          ctx.fill();
         }
 
-        // Place the hidden figure first so subsequent leaves cover the soldier partially
-        const figureGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        const fx = rand(80, 700);
-        const fy = rand(120, 380);
-        figureBox = { x: fx - 14, y: fy - 18, w: 28, h: 38 };
-        // Body (very camouflaged green-brown blend)
-        const body = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        body.setAttribute('x', String(fx - 8));
-        body.setAttribute('y', String(fy - 10));
-        body.setAttribute('width', '16');
-        body.setAttribute('height', '24');
-        body.setAttribute('rx', '4');
-        body.setAttribute('fill', '#2d3d22');
-        figureGroup.appendChild(body);
+        figureLastScreen = {
+          x: cx - torsoW / 2 - 3,
+          y: headCY - headR - (kind === 'civ' ? headR * 1.6 : 2),
+          w: torsoW + 6 + (kind === 'civ' ? torsoW * 1.4 : 0),
+          h: torsoH + headR * 2 + 6 + (kind === 'civ' ? headR * 1.6 : 0),
+        };
+      };
+
+      // Atmospheric depth haze: subtly tints distant areas of the canvas to
+      // mute background contrast, simulating the wet-air haze that made
+      // Vietnam jungle visibility famously poor. Only the upper portion of
+      // the frame (where distant trees live) gets the haze.
+      const drawFog = (strength: number) => {
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, `rgba(120, 138, 120, ${strength * 0.55})`);
+        grad.addColorStop(0.55, `rgba(90, 105, 90, ${strength * 0.25})`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+      };
+
+      // Crosshair under the cursor while the round is active. Using the
+      // pointer position rather than a fixed reticle preserves the "drag
+      // to pan, click to fire" feel from the original.
+      const drawCrosshair = () => {
+        if (mouseX < 0 || mouseY < 0) return;
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(mouseX - 14, mouseY); ctx.lineTo(mouseX - 4, mouseY);
+        ctx.moveTo(mouseX + 4, mouseY); ctx.lineTo(mouseX + 14, mouseY);
+        ctx.moveTo(mouseX, mouseY - 14); ctx.lineTo(mouseX, mouseY - 4);
+        ctx.moveTo(mouseX, mouseY + 4); ctx.lineTo(mouseX, mouseY + 14);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(220,38,38,0.9)';
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, 2.5, 0, Math.PI * 2);
+        ctx.stroke();
+      };
+
+      // Brief orange flash anchored to the front of the M16 stock when the
+      // player fires. Decays over ~120ms.
+      const drawMuzzleFlash = (time: number) => {
+        if (time >= muzzleFlashUntil) return;
+        const t = (muzzleFlashUntil - time) / 120;
+        const alpha = Math.max(0, t);
+        ctx.fillStyle = `rgba(255, 200, 80, ${alpha * 0.85})`;
+        ctx.beginPath();
+        ctx.arc(W * 0.84, H * 0.9, 22 * (0.6 + alpha * 0.6), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(255, 240, 180, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(W * 0.84, H * 0.9, 10 * (0.5 + alpha), 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      // The "you got ambushed" sequence drawn when a VC round times out.
+      // Three phases over ~1500ms:
+      //   0-250ms:  the VC stands up out of cover (silhouette grows + rises)
+      //   250-600ms: VC muzzle flash (he fires at the camera)
+      //   350-1500ms: red screen tint fades, "AMBUSH" text crossfades in
+      // The camera smooth-pans toward the figure during this sequence so
+      // even players looking the wrong way are forced to see the soldier.
+      const drawDeathSequence = (now: number) => {
+        if (now >= deathSequenceUntil) return;
+        const elapsed = now - deathSequenceStart;
+        // Project the figure's world position fresh (figureLastScreen may be
+        // stale from when the camera was elsewhere). Fall back to canvas
+        // center if somehow the figure has wandered off-screen.
+        const p = project(figureWorldTheta, figureWorldDist);
+        const cx = (p.x >= 0 && p.x <= W) ? p.x : W / 2;
+        const baseY = (p.y >= 0 && p.y <= H) ? p.y : H * 0.7;
+        const standUp = Math.min(1, elapsed / 250);
+        const yOff = -28 * standUp;
+        const scale = 1 / Math.max(figureWorldDist, 0.05);
+        // Bigger silhouette than the cover pose: he is fully upright.
+        const torsoW = Math.max(18, 18 * scale * 0.85);
+        const torsoH = Math.max(48, 38 * scale * 0.85);
+        const headR = Math.max(7, 7 * scale * 0.85);
+        const torsoTop = baseY + yOff - torsoH;
+        const headCY = torsoTop - headR - 1;
+
+        // Body
+        ctx.fillStyle = '#2d3a22';
+        ctx.fillRect(cx - torsoW / 2, torsoTop, torsoW, torsoH);
         // Head
-        const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        head.setAttribute('cx', String(fx));
-        head.setAttribute('cy', String(fy - 14));
-        head.setAttribute('r', '5');
-        head.setAttribute('fill', '#3d4a30');
-        figureGroup.appendChild(head);
-        // Tiny rifle hint
-        const rifle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rifle.setAttribute('x', String(fx + 4));
-        rifle.setAttribute('y', String(fy - 4));
-        rifle.setAttribute('width', '12');
-        rifle.setAttribute('height', '2');
-        rifle.setAttribute('fill', '#1a1a1a');
-        figureGroup.appendChild(rifle);
-        figureGroup.setAttribute('data-figure', '1');
-        svg.appendChild(figureGroup);
+        ctx.fillStyle = '#3a4530';
+        ctx.beginPath();
+        ctx.ellipse(cx, headCY, headR, headR * 1.05, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Leafy headband
+        ctx.fillStyle = '#2a4022';
+        ctx.beginPath();
+        ctx.ellipse(cx - headR * 0.4, headCY - headR * 0.7, headR * 0.5, headR * 0.3, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(cx + headR * 0.5, headCY - headR * 0.6, headR * 0.45, headR * 0.28, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        // Rifle pointing toward the camera (foreshortened: short fat dark bar)
+        ctx.fillStyle = '#0a0a0a';
+        const rifleY = torsoTop + torsoH * 0.32;
+        ctx.fillRect(cx - 5, rifleY, 10, torsoH * 0.45);
+        // Barrel tip
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(cx - 3, rifleY + torsoH * 0.45, 6, 5);
 
-        // Foliage layers (lots of leaves to camouflage)
-        for (let i = 0; i < 220; i++) {
-          const x = rand(-20, 820);
-          const y = rand(-20, 520);
-          const r = rand(8, 28);
-          const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-          leaf.setAttribute('cx', String(x));
-          leaf.setAttribute('cy', String(y));
-          leaf.setAttribute('rx', String(r));
-          leaf.setAttribute('ry', String(r * 0.55));
-          leaf.setAttribute('transform', `rotate(${rand(0, 360)} ${x} ${y})`);
-          leaf.setAttribute('fill', choice(leafColors));
-          leaf.setAttribute('opacity', String(rand(0.55, 0.95)));
-          svg.appendChild(leaf);
+        // VC muzzle flash (250ms-600ms window)
+        if (elapsed >= 250 && elapsed < 600) {
+          const t = 1 - (elapsed - 250) / 350;
+          const flashY = rifleY + torsoH * 0.5;
+          ctx.fillStyle = `rgba(255, 220, 80, ${t * 0.95})`;
+          ctx.beginPath();
+          ctx.arc(cx, flashY, 26 * (0.55 + t * 0.7), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(255, 245, 200, ${t})`;
+          ctx.beginPath();
+          ctx.arc(cx, flashY, 12 * (0.5 + t * 0.8), 0, Math.PI * 2);
+          ctx.fill();
         }
 
-        // Top canopy darker layer
-        const canopy = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        canopy.setAttribute('x', '0');
-        canopy.setAttribute('y', '0');
-        canopy.setAttribute('width', '800');
-        canopy.setAttribute('height', '60');
-        canopy.setAttribute('fill', 'url(#canopyGrad)');
-        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-        grad.setAttribute('id', 'canopyGrad');
-        grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
-        grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
-        const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-        stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', '#0a1a0e');
-        const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-        stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', 'rgba(10,26,14,0)');
-        grad.appendChild(stop1); grad.appendChild(stop2);
-        defs.appendChild(grad);
-        svg.appendChild(defs);
-        svg.appendChild(canopy);
+        // Screen-wide red tint after the flash (player has been hit).
+        // Ramps up 350-550ms, holds briefly, fades through 1500ms.
+        if (elapsed >= 350) {
+          let tintAlpha;
+          if (elapsed < 550) tintAlpha = ((elapsed - 350) / 200) * 0.55;
+          else               tintAlpha = (1 - (elapsed - 550) / 950) * 0.55;
+          ctx.fillStyle = `rgba(140, 0, 0, ${Math.max(0, tintAlpha)})`;
+          ctx.fillRect(0, 0, W, H);
+        }
+
+        // "AMBUSH" text overlay
+        if (elapsed >= 500) {
+          const textAlpha = Math.min(1, (elapsed - 500) / 200);
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = `rgba(255, 80, 80, ${textAlpha})`;
+          ctx.font = 'bold 52px Fraunces, Georgia, serif';
+          ctx.fillText('AMBUSH', W / 2, H / 2 - 18);
+          ctx.font = '13px ui-monospace, monospace';
+          ctx.fillStyle = `rgba(255, 200, 200, ${textAlpha * 0.95})`;
+          ctx.fillText('He fired first. You hesitated.', W / 2, H / 2 + 22);
+          ctx.restore();
+        }
+      };
+
+      const drawHands = () => {
+        // Bottom 10% of canvas: M16 stock + hands.
+        const baseY = H;
+        const topY = H * 0.9;
+        // Background tint
+        ctx.fillStyle = '#0a0d08';
+        ctx.fillRect(0, topY - 4, W, baseY - topY + 4);
+        // Left hand
+        ctx.fillStyle = '#5b3a26';
+        ctx.beginPath();
+        ctx.ellipse(W * 0.32, topY + 14, 32, 18, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        // Right hand
+        ctx.beginPath();
+        ctx.ellipse(W * 0.62, topY + 18, 36, 20, -0.05, 0, Math.PI * 2);
+        ctx.fill();
+        // Rifle stock + barrel running across hands
+        ctx.fillStyle = '#1a1612';
+        ctx.fillRect(W * 0.28, topY + 4, W * 0.42, 14);
+        ctx.fillStyle = '#0a0a08';
+        ctx.fillRect(W * 0.66, topY + 7, W * 0.18, 7);
+        // Front sight
+        ctx.fillRect(W * 0.82, topY - 2, 4, 14);
+        // Sleeve hints (olive drab)
+        ctx.fillStyle = '#3a4128';
+        ctx.fillRect(W * 0.18, topY + 22, 90, baseY - (topY + 22));
+        ctx.fillRect(W * 0.62, topY + 26, 110, baseY - (topY + 26));
+      };
+
+      const drawHUD = () => {
+        const padX = 10;
+        const padY = 8;
+        const boxW = 144;
+        const boxH = 80;
+        const x = W - boxW - 10;
+        const y = 10;
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillRect(x, y, boxW, boxH);
+        ctx.fillStyle = '#e8eee2';
+        ctx.font = '12px ui-monospace, "SFMono-Regular", Menlo, monospace';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`ROUND ${round}/${TOTAL_ROUNDS}`, x + padX, y + padY);
+        const remaining = roundActive
+          ? Math.max(0, activeCfg.seconds - (performance.now() - roundStart) / 1000)
+          : 0;
+        // Time turns amber under 3s, red under 1.5s.
+        ctx.fillStyle = remaining < 1.5 ? '#fca5a5' : remaining < 3 ? '#fde68a' : '#e8eee2';
+        ctx.fillText(`TIME  ${remaining.toFixed(1)}s`, x + padX, y + padY + 14);
+        ctx.fillStyle = '#e8eee2';
+        // Ammo: filled bullet glyphs for remaining shots, outlined for spent.
+        const ammoX = x + padX;
+        const ammoY = y + padY + 28;
+        ctx.fillText('AMMO', ammoX, ammoY);
+        for (let i = 0; i < SHOTS_PER_ROUND; i++) {
+          const bx = ammoX + 44 + i * 12;
+          const filled = i < shotsRemaining;
+          ctx.fillStyle = filled ? '#fcd34d' : 'rgba(255,255,255,0.18)';
+          ctx.fillRect(bx, ammoY + 1, 8, 12);
+          ctx.fillStyle = filled ? '#92400e' : 'rgba(255,255,255,0.4)';
+          ctx.fillRect(bx + 2, ammoY - 1, 4, 3);
+        }
+        ctx.fillStyle = '#86efac';
+        ctx.fillText(`HITS  ${spotted}`, x + padX, y + padY + 42);
+        if (friendlyFire > 0) {
+          ctx.fillStyle = '#fca5a5';
+          ctx.fillText(`FF    ${friendlyFire}`, x + padX, y + padY + 56);
+        }
+        if (lastResult) {
+          const labelMap = { hit: 'LAST  HIT', miss: 'LAST  MISS', ff: 'LAST  FF!', held: 'LAST  HELD' };
+          const colorMap = { hit: '#86efac', miss: '#fca5a5', ff: '#f87171', held: '#7dd3fc' };
+          ctx.fillStyle = colorMap[lastResult];
+          ctx.fillText(labelMap[lastResult], x + padX, y + padY + (friendlyFire > 0 ? 70 : 56));
+        }
+
+        // Pan hint
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.font = '12px ui-monospace, monospace';
+        ctx.fillText('< drag to pan, click to fire >', 10, 10);
+
+        // Camera bearing rail
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fillRect(10, 32, 140, 4);
+        // Rail tick marks at 0, ±45, ±90 degrees
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        for (const t of [-1, -0.5, 0, 0.5, 1]) {
+          const tx = 10 + 70 + t * 70;
+          ctx.fillRect(tx - 0.5, 30, 1, 8);
+        }
+        const dotX = 10 + 70 + (cameraTheta / (Math.PI / 2)) * 70;
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(Math.max(10, Math.min(148, dotX)) - 2, 28, 4, 10);
+
+        // ROE indicator: tells the player whether to expect a target. We
+        // intentionally do NOT reveal whether this round is a civilian; the
+        // lesson is that you cannot tell from the bearing rail alone.
+        if (roundActive) {
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.font = '11px ui-monospace, monospace';
+          ctx.fillText('ROE: identify before you fire', 10, H - 22);
+        }
+      };
+
+      const drawScene = (time: number) => {
+        ctx.clearRect(0, 0, W, H);
+        drawSky();
+        drawHills();
+
+        // Background trunks
+        for (const t of bgTrunks) drawTrunk(t);
+
+        // Atmospheric haze on top of background but behind midground:
+        // washes out distant trunks, leaves close trunks crisp.
+        drawFog(activeCfg.fogStrength);
+
+        // Midground trunks
+        for (const t of midTrunks) drawTrunk(t);
+
+        // Bamboo
+        for (const b of bamboos) drawBamboo(b);
+
+        // Midground leaves (sorted far first)
+        const sortedMid = midLeaves.map((l, i) => ({ l, i })).sort((a, b) => b.l.dist - a.l.dist);
+        for (const { l, i } of sortedMid) drawLeaf(l, i + 10000, time);
+
+        // Figure (above midground brush, below foreground)
+        if (roundActive || performance.now() < revealUntil) {
+          drawFigure(figureWorldTheta, figureWorldDist, figureKind);
+        }
+
+        // Reveal ring on top of figure if revealing
+        if (performance.now() < revealUntil && figureLastScreen) {
+          // Green ring for civilians (correctly identified non-target),
+          // red ring for VC (the actual threat).
+          ctx.strokeStyle = figureKind === 'vc' ? '#dc2626' : '#34d399';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          const cx = figureLastScreen.x + figureLastScreen.w / 2;
+          const cy = figureLastScreen.y + figureLastScreen.h / 2;
+          const pulse = 4 * Math.sin(time * 0.008);
+          const ringR = Math.max(figureLastScreen.w, figureLastScreen.h) * 0.7 + 10 + pulse;
+          ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Foreground fronds (drawn on top to camouflage). When a frond would
+        // sit directly between the camera and the figure, mute it to ~35%
+        // opacity so the figure can never be 100% obscured. Players still
+        // have to identify the silhouette through the leaves; they just
+        // don't get unwinnable rounds where the soldier is fully behind a
+        // bush they can't see around.
+        const sortedFronds = fgFronds.map((f, i) => ({ f, i })).sort((a, b) => b.f.dist - a.f.dist);
+        const showAmbush = performance.now() < deathSequenceUntil;
+        for (const { f } of sortedFronds) {
+          if (roundActive || showAmbush) {
+            let ang = Math.abs(f.theta - figureWorldTheta);
+            if (ang > Math.PI) ang = Math.PI * 2 - ang;
+            // Frond sits in front of figure (smaller dist = closer to viewer)
+            // and within the angular span where it would visually overlap.
+            if (f.dist < figureWorldDist && ang < 0.14) {
+              // During the ambush sequence, hide obscuring fronds entirely so
+              // the standing VC and muzzle flash are unmissable.
+              drawFrond(f, showAmbush ? 0 : 0.35);
+              continue;
+            }
+          }
+          drawFrond(f);
+        }
+
+        // Lower floor leaves
+        const sortedFloor = floorLeaves.map((l, i) => ({ l, i })).sort((a, b) => b.l.dist - a.l.dist);
+        for (const { l, i } of sortedFloor) drawLeaf(l, i + 20000, time);
+
+        // Hands & rifle (always on top of jungle, beneath HUD)
+        drawHands();
+
+        // Muzzle flash and crosshair sit above hands but below HUD
+        drawMuzzleFlash(time);
+        if (roundActive && !dragging) drawCrosshair();
+
+        // Ambush sequence draws on top of EVERYTHING (including the rifle
+        // and hands) so the standing VC, his muzzle flash, and the red
+        // screen tint are unmissable.
+        if (performance.now() < deathSequenceUntil) drawDeathSequence(performance.now());
+
+        // HUD
+        drawHUD();
+      };
+
+      // Animation loop (continuous so rustles + timer redraw work)
+      const tick = (time: number) => {
+        // During the ambush sequence, smooth-pan the camera toward the VC
+        // so the player is forced to face the shot. ~8% per frame is a
+        // gentle whip pan that converges over ~250ms.
+        if (performance.now() < deathSequenceUntil) {
+          let dt = figureWorldTheta - cameraTheta;
+          while (dt > Math.PI) dt -= Math.PI * 2;
+          while (dt < -Math.PI) dt += Math.PI * 2;
+          cameraTheta += dt * 0.10;
+          cameraTheta = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraTheta));
+        }
+        drawScene(time);
+        animFrame = requestAnimationFrame(tick);
+      };
+
+      // Decoy rustle scheduler. Picks a few random leaves anywhere in the
+      // scene to shake briefly so the figure-side rustle isn't a giveaway.
+      // The figure-side rustle probability falls as rounds get harder.
+      const scheduleRustle = () => {
+        rustleSet.clear();
+        const n = 3 + Math.floor(Math.random() * 3);
+        for (let k = 0; k < n; k++) {
+          const useFloor = Math.random() < 0.5;
+          const idx = useFloor
+            ? 20000 + Math.floor(Math.random() * floorLeaves.length)
+            : 10000 + Math.floor(Math.random() * midLeaves.length);
+          rustleSet.add(idx);
+        }
+        // Hint near the figure: pick up to two mid-leaves within ~0.12 rad
+        // of the figure's bearing and add them to the rustle set. The hint
+        // probability is set per-round and drops in harder rounds.
+        if (roundActive && Math.random() < activeCfg.rustleHintProb) {
+          const candidates: { i: number; d: number }[] = [];
+          for (let i = 0; i < midLeaves.length; i++) {
+            let d = Math.abs(midLeaves[i].theta - figureWorldTheta);
+            if (d > Math.PI) d = Math.PI * 2 - d;
+            if (d < 0.12) candidates.push({ i, d });
+          }
+          candidates.sort((a, b) => a.d - b.d);
+          for (const c of candidates.slice(0, 2)) rustleSet.add(10000 + c.i);
+        }
+        rustleTimer = window.setTimeout(scheduleRustle, 500 + Math.random() * 700);
+      };
+
+      // Pointer / drag handling (works for mouse and touch via Pointer Events)
+      const onPointerDown = (e: PointerEvent) => {
+        if (!roundActive) return;
+        canvas.setPointerCapture(e.pointerId);
+        dragging = true;
+        pointerMoved = false;
+        dragStartX = e.clientX;
+        dragStartTheta = cameraTheta;
+      };
+      const onPointerMove = (e: PointerEvent) => {
+        // Always track mouse position for the crosshair.
+        const rect = canvas.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) * (W / rect.width);
+        mouseY = (e.clientY - rect.top) * (H / rect.height);
+        if (!dragging) return;
+        const dx = e.clientX - dragStartX;
+        if (Math.abs(dx) > 4) pointerMoved = true;
+        // 100px drag = ~30 deg = pi/6 rad. So 1 px = pi/600 rad.
+        // Drag right means scene moves right => camera rotates left.
+        const newTheta = dragStartTheta - dx * (Math.PI / 600);
+        cameraTheta = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, newTheta));
+      };
+      const onPointerUp = (e: PointerEvent) => {
+        if (!dragging) return;
+        dragging = false;
+        if (!pointerMoved) {
+          // Treat as a click/tap: fire at this point.
+          handleShot(e);
+        }
+      };
+      const onPointerCancel = () => {
+        dragging = false;
+      };
+      const onPointerLeave = () => {
+        mouseX = -1; mouseY = -1;
+      };
+
+      const handleShot = (e: PointerEvent) => {
+        if (!roundActive) return;
+        if (shotsRemaining <= 0) return;
+        const rect = canvas.getBoundingClientRect();
+        const localX = (e.clientX - rect.left) * (W / rect.width);
+        const localY = (e.clientY - rect.top) * (H / rect.height);
+        shotsRemaining--;
+        muzzleFlashUntil = performance.now() + 120;
+        const box = figureLastScreen;
+        const inside = !!box &&
+          localX >= box.x - FORGIVE_PX &&
+          localX <= box.x + box.w + FORGIVE_PX &&
+          localY >= box.y - FORGIVE_PX &&
+          localY <= box.y + box.h + FORGIVE_PX;
+        if (inside) {
+          // Hit something. Whether it counts depends on what kind it was.
+          if (figureKind === 'vc') {
+            finishRound('hit');
+          } else {
+            // Civilian hit. Friendly-fire incident.
+            finishRound('ff');
+          }
+          return;
+        }
+        // Off-target shot. Visual miss flash. Round ends if no ammo left.
+        flashMiss(localX, localY);
+        if (shotsRemaining === 0) {
+          // For civilian rounds, exhausting ammo without firing AT the
+          // civilian is fine; for VC rounds it's a miss. Either way the
+          // round ends because there's nothing to fire with.
+          finishRound(figureKind === 'civ' ? 'held' : 'miss');
+        }
+      };
+
+      const flashMiss = (x: number, y: number) => {
+        // Brief expanding red ring at the click point for ~280ms.
+        // Drawn directly on top of the next animation frames; cleared
+        // automatically because drawScene wipes the canvas each tick.
+        const start = performance.now();
+        const tickFlash = () => {
+          const age = performance.now() - start;
+          if (age > 280) return;
+          ctx.strokeStyle = 'rgba(220,38,38,0.7)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, 8 + age / 12, 0, Math.PI * 2);
+          ctx.stroke();
+          requestAnimationFrame(tickFlash);
+        };
+        tickFlash();
+      };
+
+      // Pre-roll which rounds will be civilian (~25% of the patrol). The
+      // rounds are chosen up front so each game has the same total budget
+      // of civilians and we never get a streak of all-civilians or all-VC.
+      let civilianRounds: Set<number> = new Set();
+      const pickCivilianRounds = () => {
+        civilianRounds.clear();
+        // Three civilian rounds out of twelve, never round 1 or 2 (let the
+        // player establish the VC pattern first), never two in a row.
+        const candidates = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        for (let i = candidates.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        const chosen: number[] = [];
+        for (const c of candidates) {
+          if (chosen.length >= 3) break;
+          if (chosen.some((x) => Math.abs(x - c) <= 1)) continue;
+          chosen.push(c);
+        }
+        chosen.forEach((r) => civilianRounds.add(r));
       };
 
       const startRound = () => {
         round++;
-        solved = false;
         if (round > TOTAL_ROUNDS) { finishGame(); return; }
-        roundEl.textContent = `${round} / ${TOTAL_ROUNDS}`;
-        status.textContent = `${SECONDS}s to spot...`;
-        drawJungle();
+        lastResult = null;
+        activeCfg = roundConfig(round);
+        figureKind = civilianRounds.has(round) ? 'civ' : 'vc';
+        shotsRemaining = SHOTS_PER_ROUND;
+        // Random figure placement, with the depth (distance) governed by
+        // the per-round difficulty so later rounds put the figure further.
+        figureWorldTheta = -Math.PI / 2 + Math.random() * Math.PI;
+        figureWorldDist = activeCfg.distMin + Math.random() * (activeCfg.distMax - activeCfg.distMin);
+        // Reset camera to an offset away from the figure: the harder the
+        // round, the larger the angular distance the player must pan.
+        const dir = Math.random() < 0.5 ? -1 : 1;
+        const off = activeCfg.startOffset * (0.6 + Math.random() * 0.4);
+        cameraTheta = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, figureWorldTheta + dir * off));
+        roundActive = true;
         roundStart = performance.now();
+        roundEl.textContent = `${round} / ${TOTAL_ROUNDS}`;
+        status.textContent = `Round ${round}: ${activeCfg.seconds.toFixed(1)}s. Identify before you fire.`;
         if (timerHandle) clearTimeout(timerHandle);
-        timerHandle = window.setTimeout(timeOut, SECONDS * 1000);
+        timerHandle = window.setTimeout(
+          () => finishRound(figureKind === 'civ' ? 'held' : 'miss'),
+          activeCfg.seconds * 1000
+        );
       };
 
-      const revealFigure = () => {
-        const fig = svg.querySelector<SVGGElement>('[data-figure]');
-        if (!fig) return;
-        // Outline circle around the figure
-        if (figureBox) {
-          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          ring.setAttribute('cx', String(figureBox.x + figureBox.w / 2));
-          ring.setAttribute('cy', String(figureBox.y + figureBox.h / 2));
-          ring.setAttribute('r', '32');
-          ring.setAttribute('fill', 'none');
-          ring.setAttribute('stroke', '#dc2626');
-          ring.setAttribute('stroke-width', '3');
-          ring.setAttribute('opacity', '0.9');
-          svg.appendChild(ring);
-        }
-      };
-
-      const timeOut = () => {
-        if (solved) return;
-        solved = true;
-        status.textContent = 'Time up. Hidden in plain sight.';
-        revealFigure();
-        setTimeout(startRound, 1500);
-      };
-
-      const onSvgClick = (e: MouseEvent) => {
-        if (solved || !figureBox || round === 0 || round > TOTAL_ROUNDS) return;
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX; pt.y = e.clientY;
-        const ctm = svg.getScreenCTM();
-        if (!ctm) return;
-        const local = pt.matrixTransform(ctm.inverse());
-        const inside =
-          local.x >= figureBox.x &&
-          local.x <= figureBox.x + figureBox.w &&
-          local.y >= figureBox.y &&
-          local.y <= figureBox.y + figureBox.h;
-        if (inside) {
-          solved = true;
-          if (timerHandle) clearTimeout(timerHandle);
-          const dt = (performance.now() - roundStart) / 1000;
-          totalTime += dt;
+      type RoundOutcome = 'hit' | 'miss' | 'ff' | 'held';
+      const finishRound = (outcome: RoundOutcome) => {
+        if (!roundActive) return;
+        roundActive = false;
+        if (timerHandle) { clearTimeout(timerHandle); timerHandle = null; }
+        const dt = (performance.now() - roundStart) / 1000;
+        let extraDelay = 0;
+        if (outcome === 'hit') {
           spotted++;
-          status.textContent = `Spotted in ${dt.toFixed(1)}s.`;
-          spottedEl.textContent = String(spotted);
-          revealFigure();
-          setTimeout(startRound, 900);
+          totalReactionTime += dt;
+          status.textContent = `Hit. ${dt.toFixed(1)}s.`;
+        } else if (outcome === 'miss') {
+          misses++;
+          status.textContent = 'Ambush. He fired first.';
+          // VC ambush sequence: he stands up and shoots back. Plays for
+          // 1500ms before the normal reveal/cooldown advances the patrol.
+          deathSequenceStart = performance.now();
+          deathSequenceUntil = deathSequenceStart + 1500;
+          extraDelay = 1500;
+        } else if (outcome === 'ff') {
+          friendlyFire++;
+          status.textContent = 'Friendly fire. That was a civilian.';
+        } else {
+          // 'held' = correctly did not fire on a civilian.
+          heldFire++;
+          status.textContent = 'Held fire. Civilian. Good call.';
         }
+        spottedEl.textContent = String(spotted);
+        missesEl.textContent = String(misses);
+        ffEl.textContent = String(friendlyFire);
+        lastResult = outcome;
+        // Show the reveal ring AFTER the ambush sequence finishes so the
+        // ring isn't competing with the muzzle flash and red flash.
+        revealUntil = performance.now() + extraDelay + 1300;
+        setTimeout(startRound, 1500 + extraDelay);
       };
-      svg.addEventListener('click', onSvgClick);
 
       const finishGame = () => {
-        const avg = spotted > 0 ? (totalTime / spotted).toFixed(1) + 's' : '—';
+        roundActive = false;
+        revealUntil = 0;
+        const civilianCount = civilianRounds.size;
+        const vcCount = TOTAL_ROUNDS - civilianCount;
+        const accuracy = vcCount > 0 ? Math.round((spotted / vcCount) * 100) : 0;
+        const avg = spotted > 0 ? (totalReactionTime / spotted).toFixed(1) + 's' : '--';
         avgTimeEl.textContent = avg;
-        status.textContent = `Game over. ${spotted}/${TOTAL_ROUNDS} spotted.`;
+        status.textContent = `Patrol over. ${spotted}/${vcCount} VC, ${friendlyFire} friendly fire.`;
         overlay.classList.remove('hidden');
-        overlayTitle.textContent = `${spotted} / ${TOTAL_ROUNDS} spotted`;
-        overlayBody.textContent = spotted >= 7
-          ? 'Excellent eye. You would have survived more patrols than most.'
-          : spotted >= 4
-          ? 'Mixed results. The jungle was a real adversary, even with binoculars.'
-          : 'Almost none. The Vietcong used this terrain advantage at scale; U.S. casualties from ambushes were high.';
-        startBtn.textContent = 'Play again';
+        overlayTitle.textContent = `${spotted}/${vcCount} VC engaged · ${friendlyFire} FF`;
+
+        // Tone of the summary scales with both spotting accuracy AND
+        // friendly-fire restraint. The latter is heavily weighted because
+        // the lesson is that ambush stress made U.S. units fire on civilians.
+        let verdict: string;
+        if (friendlyFire >= 2) {
+          verdict = 'Two or more civilian casualties. In real units this would have triggered an investigation; in some cases it did not. The pattern of ambiguous targets in dense vegetation is part of how the war produced incidents like My Lai (March 1968), Son Thang (February 1970), and many smaller, less-reported cases.';
+        } else if (friendlyFire === 1) {
+          verdict = 'One civilian casualty. A single mistaken identification under pressure. Most of these never reached an inquest. The lesson is not that you failed; the lesson is that the conditions made failure routine.';
+        } else if (accuracy >= 75) {
+          verdict = 'Strong identification under pressure with no civilian casualties. Most U.S. patrols in 1967 to 1969 did not perform this well; sustained jungle deployment degraded both reaction time and target discrimination.';
+        } else if (accuracy >= 50) {
+          verdict = 'Mixed results. The jungle was a real adversary even with training. American patrols routinely lost contact with concealed enemy at this rate or worse.';
+        } else {
+          verdict = 'The Vietcong leveraged this terrain at scale. Search-and-destroy operations against an enemy who chose every encounter produced casualty rates that drove much of the U.S. domestic backlash by 1968.';
+        }
+
+        overlayBody.innerHTML = `
+          <span class="block mb-3 text-base text-ink-100">${verdict}</span>
+          <div class="grid grid-cols-2 gap-2 text-xs text-left mb-3 max-w-sm mx-auto">
+            <div class="text-ink-400">VC engaged</div><div class="text-emerald-300 font-mono">${spotted}/${vcCount}</div>
+            <div class="text-ink-400">Civilians correctly held</div><div class="text-sky-300 font-mono">${heldFire}/${civilianCount}</div>
+            <div class="text-ink-400">Friendly fire</div><div class="text-rose-300 font-mono">${friendlyFire}</div>
+            <div class="text-ink-400">Avg reaction time</div><div class="font-mono">${avg}</div>
+            <div class="text-ink-400">Spotting accuracy</div><div class="font-mono">${accuracy}%</div>
+          </div>
+          <span class="block text-xs text-ink-400 leading-relaxed">U.S. forces deployed roughly 2.7 million personnel to Vietnam from 1965 to 1973. Total casualties: 58,220 American dead, 250,000 South Vietnamese military, 1.1 million North Vietnamese and Vietcong, an estimated 2 million civilians. The conditions you just experienced for ten minutes shaped twelve-month tours.</span>
+        `;
+        startBtn.textContent = 'Restart patrol';
       };
 
-      const start = () => {
+      const startGame = () => {
         round = 0;
         spotted = 0;
-        totalTime = 0;
+        misses = 0;
+        friendlyFire = 0;
+        heldFire = 0;
+        totalReactionTime = 0;
+        lastResult = null;
         spottedEl.textContent = '0';
-        avgTimeEl.textContent = '—';
+        missesEl.textContent = '0';
+        ffEl.textContent = '0';
+        avgTimeEl.textContent = '--';
+        deathSequenceUntil = 0;
+        pickCivilianRounds();
         overlay.classList.add('hidden');
+        if (!animFrame) animFrame = requestAnimationFrame(tick);
+        if (!rustleTimer) scheduleRustle();
         startRound();
       };
-      startBtn.addEventListener('click', start);
+
+      // Reduced-motion: render one static labeled scene with the figure circled.
+      if (reduceMotion) {
+        rmFallback.classList.remove('hidden');
+        overlay.classList.add('hidden');
+        // Draw a single static frame with figure visible and circled.
+        figureWorldTheta = 0.2;
+        figureWorldDist = 0.7;
+        figureKind = 'vc';
+        activeCfg = roundConfig(1);
+        cameraTheta = 0;
+        roundActive = false;
+        revealUntil = performance.now() + 60_000_000; // effectively forever
+        drawScene(0);
+        return;
+      }
+
+      startBtn.addEventListener('click', startGame);
+      canvas.addEventListener('pointerdown', onPointerDown);
+      canvas.addEventListener('pointermove', onPointerMove);
+      canvas.addEventListener('pointerup', onPointerUp);
+      canvas.addEventListener('pointercancel', onPointerCancel);
+      canvas.addEventListener('pointerleave', onPointerLeave);
+      // Prevent default touch behaviors that would interfere with panning
+      canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+      canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+      // Render an initial idle frame (overlay covers it but it primes the canvas).
+      cameraTheta = 0;
+      figureWorldTheta = 0.4;
+      figureWorldDist = 0.7;
+      figureKind = 'vc';
+      activeCfg = roundConfig(1);
+      drawScene(0);
     });
   };
-  setupJungle();
-  document.addEventListener('astro:after-swap', setupJungle);
+  const _jungleObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _jungleObs!.unobserve(e.target); setupJungle(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeJungle = () => document.querySelectorAll<HTMLElement>('[data-jungle]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_jungleObs) _jungleObs.observe(r); else setupJungle(); });
+  _observeJungle();
+  document.addEventListener('astro:after-swap', _observeJungle);
 </script>

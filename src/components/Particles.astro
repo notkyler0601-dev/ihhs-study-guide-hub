@@ -187,8 +187,25 @@ const id = 'particles-' + Math.random().toString(36).slice(2, 9);
     await tsParticles.load({ id, options: buildOptions(preset, density) });
   };
 
+  // Lazy-init each particle field on viewport entry so a long page with many
+  // backgrounds does not pay the WebGL setup cost up front.
+  const observer = typeof IntersectionObserver !== 'undefined'
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            initOne(entry.target as HTMLElement);
+            observer!.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '300px 0px' })
+    : null;
+
   const init = () => {
-    document.querySelectorAll<HTMLElement>('[data-particles-root]').forEach(initOne);
+    document.querySelectorAll<HTMLElement>('[data-particles-root]').forEach((root) => {
+      if (root.dataset.bound) return;
+      if (observer) observer.observe(root);
+      else initOne(root);
+    });
   };
   init();
   document.addEventListener('astro:after-swap', init);

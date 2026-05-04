@@ -162,6 +162,8 @@ const id = 'guillotine-' + Math.random().toString(36).slice(2, 9);
       });
     });
   };
-  setupGuillotine();
-  document.addEventListener('astro:after-swap', setupGuillotine);
+  const _gObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _gObs.unobserve(e.target); setupGuillotine(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeG = () => document.querySelectorAll('[data-guillotine]:not([data-ready]):not([data-observed])').forEach((r) => { r.setAttribute('data-observed', '1'); if (_gObs) _gObs.observe(r); else setupGuillotine(); });
+  _observeG();
+  document.addEventListener('astro:after-swap', _observeG);
 </script>

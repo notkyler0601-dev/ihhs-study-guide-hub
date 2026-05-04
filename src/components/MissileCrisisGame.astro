@@ -246,6 +246,8 @@
       render('start');
     });
   };
-  setupMC();
-  document.addEventListener('astro:after-swap', setupMC);
+  const _mcObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _mcObs!.unobserve(e.target); setupMC(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeMC = () => document.querySelectorAll<HTMLElement>('[data-mc]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_mcObs) _mcObs.observe(r); else setupMC(); });
+  _observeMC();
+  document.addEventListener('astro:after-swap', _observeMC);
 </script>

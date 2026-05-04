@@ -1,0 +1,239 @@
+---
+// SVG-path-drawing animation wrapper using Vivus.js. The component takes
+// either inline SVG via slot or an external SVG URL, and animates each
+// path being drawn line by line. Useful for OverSimplified-style stick
+// figure cartoons inside <HistoryAnimation>, or standalone "watch this
+// redraw" moments like a solar system reveal or a 1914 to 1919 European
+// border redraw.
+//
+// Usage:
+//   <DrawnSVG duration={120} startMode="inViewport">
+//     <svg viewBox="0 0 400 200">...</svg>
+//   </DrawnSVG>
+//
+//   <DrawnSVG src="/images/history/sarajevo-domino.svg" duration={150} startMode="autostart" />
+//
+// Props:
+//   src             URL to an external SVG. Fetched and inlined client-side.
+//                   If both src and slot are provided, the slot wins.
+//   duration        Vivus duration in frames. Default 100, roughly 2s.
+//   startMode       "autostart" | "inViewport" | "manual". Default "inViewport".
+//   type            Vivus animation type. One of "delayed", "sync",
+//                   "oneByOne", "scenario", "scenario-sync". Default "delayed".
+//   loop            Restart on completion. Default false.
+//   restartOnClick  Click figure to restart. Default true.
+//   caption         Optional small italic caption beneath the SVG.
+//   class           Extra Tailwind classes appended to the figure.
+//
+// Respects prefers-reduced-motion: when set, Vivus is not initialized
+// and the SVG renders normally as a static image.
+
+interface Props {
+  src?: string;
+  duration?: number;
+  startMode?: 'autostart' | 'inViewport' | 'manual';
+  type?: 'delayed' | 'sync' | 'oneByOne' | 'scenario' | 'scenario-sync';
+  loop?: boolean;
+  restartOnClick?: boolean;
+  caption?: string;
+  class?: string;
+}
+
+const {
+  src,
+  duration = 100,
+  startMode = 'inViewport',
+  type = 'delayed',
+  loop = false,
+  restartOnClick = true,
+  caption,
+  class: extraClass = '',
+} = Astro.props;
+
+const id = 'drawn-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ src: src ?? null, duration, startMode, type, loop, restartOnClick });
+---
+
+<figure
+  class={`not-prose my-6 surface rounded-2xl shadow-soft p-5 flex flex-col items-center gap-3 ${extraClass}`}
+  data-drawn-svg
+  id={id}
+  data-conf={conf}
+>
+  <div data-drawn-host class="w-full flex items-center justify-center">
+    <slot />
+  </div>
+
+  {caption && (
+    <figcaption class="text-xs text-ink-500 dark:text-ink-400 italic text-center">
+      {caption}
+    </figcaption>
+  )}
+
+  {restartOnClick && (
+    <button
+      type="button"
+      data-drawn-replay
+      class="inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-400 text-xs font-medium text-ink-700 dark:text-ink-200"
+      aria-label="Replay the drawing animation"
+    >
+      &#9654; Replay
+    </button>
+  )}
+</figure>
+
+<script>
+  import { loadScript, waitForGlobal } from '../lib/loadScript';
+
+  type VivusOptions = {
+    type: string;
+    duration: number;
+    start: 'autostart' | 'manual' | 'inViewport';
+    onReady?: (vivus: any) => void;
+  };
+
+  type VivusInstance = {
+    play: (speed?: number) => VivusInstance;
+    stop: () => VivusInstance;
+    reset: () => VivusInstance;
+    finish: () => VivusInstance;
+    setFrameProgress: (p: number) => VivusInstance;
+  };
+
+  type VivusCtor = new (
+    el: HTMLElement | string,
+    opts: VivusOptions,
+    cb?: (vivus: VivusInstance) => void
+  ) => VivusInstance;
+
+  const prefersReducedMotion = (): boolean => {
+    return typeof window !== 'undefined'
+      && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
+
+  const ensureSvgId = (svg: SVGSVGElement): string => {
+    if (!svg.id) svg.id = 'drawn-svg-' + Math.random().toString(36).slice(2, 9);
+    return svg.id;
+  };
+
+  const inlineExternalSvg = async (host: HTMLElement, src: string): Promise<SVGSVGElement | null> => {
+    try {
+      const res = await fetch(src);
+      if (!res.ok) throw new Error(`Failed to fetch SVG: ${res.status}`);
+      const text = await res.text();
+      // Parse and inject the <svg> root only, dropping any wrapping XML doctype.
+      const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+      const svg = doc.querySelector('svg');
+      if (!svg) throw new Error('No <svg> element found in fetched file');
+      const imported = document.importNode(svg, true) as SVGSVGElement;
+      host.innerHTML = '';
+      host.appendChild(imported);
+      return imported;
+    } catch (e) {
+      console.warn('DrawnSVG: failed to inline external SVG', src, e);
+      return null;
+    }
+  };
+
+  const init = async () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-drawn-svg]:not([data-ready])');
+    if (roots.length === 0) return;
+
+    const reduced = prefersReducedMotion();
+
+    // Even if reduced motion is on, we still need to inline external SVGs and
+    // wire up the replay button (which becomes a no-op for reduced motion).
+    let VivusCtor: VivusCtor | null = null;
+    if (!reduced) {
+      await loadScript('https://cdn.jsdelivr.net/npm/vivus@0.4.6/dist/vivus.min.js');
+      VivusCtor = await waitForGlobal<VivusCtor>('Vivus');
+    }
+
+    for (const root of Array.from(roots)) {
+      root.dataset.ready = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}') as {
+        src: string | null;
+        duration: number;
+        startMode: 'autostart' | 'inViewport' | 'manual';
+        type: string;
+        loop: boolean;
+        restartOnClick: boolean;
+      };
+
+      const host = root.querySelector<HTMLElement>('[data-drawn-host]');
+      if (!host) continue;
+
+      // If src is provided and the slot is empty, fetch and inline the SVG.
+      // If a slot SVG is present, the slot wins.
+      let svg = host.querySelector<SVGSVGElement>('svg');
+      if (!svg && conf.src) {
+        svg = await inlineExternalSvg(host, conf.src);
+      }
+      if (!svg) {
+        console.warn('DrawnSVG: no SVG found in slot or fetched from src');
+        continue;
+      }
+
+      const svgId = ensureSvgId(svg);
+      const replayBtn = root.querySelector<HTMLButtonElement>('[data-drawn-replay]');
+
+      // If reduced motion, leave the SVG as-is and skip Vivus entirely.
+      if (reduced || !VivusCtor) {
+        if (replayBtn) replayBtn.disabled = true;
+        continue;
+      }
+
+      // Translate startMode to Vivus's start option.
+      // Vivus accepts 'autostart' | 'manual' | 'inViewport'.
+      const vivusStart: 'autostart' | 'manual' | 'inViewport' =
+        conf.startMode === 'autostart' ? 'autostart'
+        : conf.startMode === 'inViewport' ? 'inViewport'
+        : 'manual';
+
+      let instance: VivusInstance | null = null;
+      try {
+        instance = new VivusCtor(svgId, {
+          type: conf.type,
+          duration: conf.duration,
+          start: vivusStart,
+        }, (v) => {
+          // The third constructor arg is Vivus's "end" callback, fired
+          // each time the animation finishes drawing. If loop is true,
+          // wait a short beat then reset and play again.
+          if (conf.loop) {
+            setTimeout(() => {
+              v.reset().play();
+            }, 600);
+          }
+        });
+      } catch (e) {
+        console.warn('DrawnSVG: Vivus init failed', e);
+        continue;
+      }
+
+      // Click-to-replay on the figure (and dedicated replay button).
+      if (conf.restartOnClick && instance) {
+        const replay = (ev: Event) => {
+          ev.stopPropagation();
+          instance!.reset().play();
+        };
+        // Click on the SVG host triggers replay.
+        host.style.cursor = 'pointer';
+        host.addEventListener('click', replay);
+        if (replayBtn) replayBtn.addEventListener('click', replay);
+      } else if (replayBtn && instance) {
+        // Even when restartOnClick is false, the explicit Replay button still works
+        // when present. The component spec defaults restartOnClick to true and only
+        // renders the button in that case, so this branch is defensive.
+        replayBtn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          instance!.reset().play();
+        });
+      }
+    }
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

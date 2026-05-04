@@ -11,13 +11,14 @@
 //       { lng: -0.13, lat: 51.50, label: 'London' }
 //     ]}
 //   />
-interface Marker { lng: number; lat: number; label?: string; color?: string; }
+interface Marker { lng: number; lat: number; label?: string; description?: string; color?: string; }
 interface Props {
   center?: [number, number];
   zoom?: number;
   height?: string;
   style?: string;
   markers?: Marker[];
+  projection?: 'mercator' | 'globe';
 }
 const {
   center = [0, 20],
@@ -25,6 +26,7 @@ const {
   height = '420px',
   style = 'https://demotiles.maplibre.org/style.json',
   markers = [],
+  projection = 'mercator',
 } = Astro.props;
 const id = 'maplibre-' + Math.random().toString(36).slice(2, 9);
 ---
@@ -33,7 +35,33 @@ const id = 'maplibre-' + Math.random().toString(36).slice(2, 9);
   <div id={id} style={`width: 100%; height: ${height};`}></div>
 </div>
 
-<script define:vars={{ id, center, zoom, style, markers }}>
+<style is:global>
+  .ihhs-maplibre-popup .maplibregl-popup-content {
+    border-radius: 10px;
+    padding: 12px 14px 12px 14px;
+    font-family: 'Inter', system-ui, sans-serif;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+    max-width: 280px;
+  }
+  .ihhs-maplibre-popup .maplibregl-popup-content h4 {
+    margin: 0 0 4px 0;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #b91c1c;
+  }
+  .ihhs-maplibre-popup .maplibregl-popup-content p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #27272a;
+  }
+  .dark .ihhs-maplibre-popup .maplibregl-popup-content { background: #18181b; color: #fafafa; }
+  .dark .ihhs-maplibre-popup .maplibregl-popup-content p { color: #e4e4e7; }
+  .dark .ihhs-maplibre-popup .maplibregl-popup-tip { border-top-color: #18181b; border-bottom-color: #18181b; }
+</style>
+
+<script define:vars={{ id, center, zoom, style, markers, projection }}>
   const init = async () => {
     const el = document.getElementById(id);
     if (!el || el.dataset.bound) return;
@@ -45,15 +73,24 @@ const id = 'maplibre-' + Math.random().toString(36).slice(2, 9);
       style,
       center,
       zoom,
+      projection,
       attributionControl: { compact: true },
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+    const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     map.on('load', () => {
       markers.forEach((m) => {
         const marker = new maplibregl.Marker({ color: m.color || '#b91c1c' })
           .setLngLat([m.lng, m.lat])
           .addTo(map);
-        if (m.label) marker.setPopup(new maplibregl.Popup({ offset: 12 }).setText(m.label));
+        if (m.label || m.description) {
+          const html =
+            (m.label ? `<h4>${escape(m.label)}</h4>` : '') +
+            (m.description ? `<p>${escape(m.description)}</p>` : '');
+          const popup = new maplibregl.Popup({ offset: 14, className: 'ihhs-maplibre-popup', closeButton: true })
+            .setHTML(html);
+          marker.setPopup(popup);
+        }
       });
     });
   };

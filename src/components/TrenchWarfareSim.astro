@@ -367,6 +367,8 @@
       });
     });
   };
-  setupTrench();
-  document.addEventListener('astro:after-swap', setupTrench);
+  const _trObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _trObs!.unobserve(e.target); setupTrench(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeTrench = () => document.querySelectorAll<HTMLElement>('[data-trench]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_trObs) _trObs.observe(r); else setupTrench(); });
+  _observeTrench();
+  document.addEventListener('astro:after-swap', _observeTrench);
 </script>

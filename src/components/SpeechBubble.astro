@@ -1,0 +1,442 @@
+---
+// Comic-style speech / thought bubble. Pure CSS, no JS dependencies.
+// Use inline next to a stick figure SVG, or as a standalone callout in prose.
+//
+// Examples:
+//   <SpeechBubble>Let them eat cake!</SpeechBubble>
+//   <SpeechBubble variant="think" tail="left">I am the state.</SpeechBubble>
+//   <SpeechBubble variant="shout" tail="bottom-right">Liberte!</SpeechBubble>
+//   <SpeechBubble speaker="Robespierre">The Republic must be defended.</SpeechBubble>
+interface Props {
+  variant?: 'say' | 'think' | 'shout' | 'whisper';
+  tail?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'left' | 'right' | 'none';
+  speaker?: string;
+  class?: string;
+}
+const {
+  variant = 'say',
+  tail = 'bottom-left',
+  speaker,
+  class: extra = '',
+} = Astro.props;
+---
+
+<figure
+  class:list={['sb not-prose', extra]}
+  data-sb
+  data-variant={variant}
+  data-tail={tail}
+>
+  <div class="sb-body">
+    <div class="sb-text"><slot /></div>
+  </div>
+  {variant === 'think' && tail !== 'none' && (
+    <span class="sb-think-dots" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  )}
+  {speaker && <figcaption class="sb-speaker">{speaker}</figcaption>}
+</figure>
+
+<style>
+  /* Wrapper: relative, flows inline-block by default so it sits next to figures.
+     Authors can add `block` via the class prop when they want it standalone. */
+  .sb {
+    position: relative;
+    display: inline-block;
+    max-width: 22rem;
+    margin: 0.25rem 0.5rem 0.25rem 0;
+    vertical-align: middle;
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+  }
+
+  /* Bubble body: rounded card. */
+  .sb-body {
+    position: relative;
+    background: #ffffff;
+    color: #18181b;
+    border: 2px solid #000000;
+    border-radius: 1.1rem;
+    padding: 0.75rem 1rem;
+    line-height: 1.4;
+    font-size: 1rem;
+    /* Soft red accent shadow for depth. */
+    box-shadow: 0 1px 0 rgba(185, 28, 28, 0.6), 0 4px 14px -6px rgba(0, 0, 0, 0.18);
+  }
+
+  :global(.dark) .sb-body {
+    background: #18181b;
+    color: #fafafa;
+    border-color: #fafafa;
+    box-shadow: 0 1px 0 rgba(185, 28, 28, 0.7), 0 4px 14px -6px rgba(0, 0, 0, 0.6);
+  }
+
+  .sb-text {
+    /* Allow short HTML / MDX content to flow normally. */
+    display: block;
+  }
+  .sb-text :global(p) { margin: 0; }
+  .sb-text :global(p + p) { margin-top: 0.4rem; }
+
+  /* Speaker tag: small caps under the bubble. */
+  .sb-speaker {
+    margin-top: 0.4rem;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #71717a;
+    text-align: center;
+  }
+  :global(.dark) .sb-speaker { color: #a1a1aa; }
+
+  /* =========================================================================
+     SAY (default): sharp triangular tail. Two stacked triangles via ::before
+     (border color, slightly larger) and ::after (fill color, smaller, offset)
+     give the tail a clean outlined look that matches the body border.
+     ========================================================================= */
+
+  /* The tail uses ::before for the border-colored outer triangle, and ::after
+     for the fill-colored inner triangle, both on .sb-body. */
+  .sb[data-variant='say'] .sb-body::before,
+  .sb[data-variant='say'] .sb-body::after,
+  .sb[data-variant='shout'] .sb-body::before,
+  .sb[data-variant='shout'] .sb-body::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  /* SAY tail directions. Each direction pins the triangle so it points outward
+     from the bubble. ::before (border) sits 2px further out than ::after (fill).
+  */
+
+  /* bottom-left */
+  .sb[data-variant='say'][data-tail='bottom-left'] .sb-body::before {
+    bottom: -14px; left: 22px;
+    border: 14px solid transparent;
+    border-top-color: #000000;
+    border-right: 0;
+  }
+  .sb[data-variant='say'][data-tail='bottom-left'] .sb-body::after {
+    bottom: -10px; left: 24px;
+    border: 11px solid transparent;
+    border-top-color: #ffffff;
+    border-right: 0;
+  }
+  :global(.dark) .sb[data-variant='say'][data-tail='bottom-left'] .sb-body::before { border-top-color: #fafafa; }
+  :global(.dark) .sb[data-variant='say'][data-tail='bottom-left'] .sb-body::after  { border-top-color: #18181b; }
+
+  /* bottom-right */
+  .sb[data-variant='say'][data-tail='bottom-right'] .sb-body::before {
+    bottom: -14px; right: 22px;
+    border: 14px solid transparent;
+    border-top-color: #000000;
+    border-left: 0;
+  }
+  .sb[data-variant='say'][data-tail='bottom-right'] .sb-body::after {
+    bottom: -10px; right: 24px;
+    border: 11px solid transparent;
+    border-top-color: #ffffff;
+    border-left: 0;
+  }
+  :global(.dark) .sb[data-variant='say'][data-tail='bottom-right'] .sb-body::before { border-top-color: #fafafa; }
+  :global(.dark) .sb[data-variant='say'][data-tail='bottom-right'] .sb-body::after  { border-top-color: #18181b; }
+
+  /* top-left */
+  .sb[data-variant='say'][data-tail='top-left'] .sb-body::before {
+    top: -14px; left: 22px;
+    border: 14px solid transparent;
+    border-bottom-color: #000000;
+    border-right: 0;
+  }
+  .sb[data-variant='say'][data-tail='top-left'] .sb-body::after {
+    top: -10px; left: 24px;
+    border: 11px solid transparent;
+    border-bottom-color: #ffffff;
+    border-right: 0;
+  }
+  :global(.dark) .sb[data-variant='say'][data-tail='top-left'] .sb-body::before { border-bottom-color: #fafafa; }
+  :global(.dark) .sb[data-variant='say'][data-tail='top-left'] .sb-body::after  { border-bottom-color: #18181b; }
+
+  /* top-right */
+  .sb[data-variant='say'][data-tail='top-right'] .sb-body::before {
+    top: -14px; right: 22px;
+    border: 14px solid transparent;
+    border-bottom-color: #000000;
+    border-left: 0;
+  }
+  .sb[data-variant='say'][data-tail='top-right'] .sb-body::after {
+    top: -10px; right: 24px;
+    border: 11px solid transparent;
+    border-bottom-color: #ffffff;
+    border-left: 0;
+  }
+  :global(.dark) .sb[data-variant='say'][data-tail='top-right'] .sb-body::before { border-bottom-color: #fafafa; }
+  :global(.dark) .sb[data-variant='say'][data-tail='top-right'] .sb-body::after  { border-bottom-color: #18181b; }
+
+  /* left */
+  .sb[data-variant='say'][data-tail='left'] .sb-body::before {
+    left: -14px; top: 50%; transform: translateY(-50%);
+    border: 14px solid transparent;
+    border-right-color: #000000;
+    border-left: 0;
+  }
+  .sb[data-variant='say'][data-tail='left'] .sb-body::after {
+    left: -10px; top: 50%; transform: translateY(-50%);
+    border: 11px solid transparent;
+    border-right-color: #ffffff;
+    border-left: 0;
+  }
+  :global(.dark) .sb[data-variant='say'][data-tail='left'] .sb-body::before { border-right-color: #fafafa; }
+  :global(.dark) .sb[data-variant='say'][data-tail='left'] .sb-body::after  { border-right-color: #18181b; }
+
+  /* right */
+  .sb[data-variant='say'][data-tail='right'] .sb-body::before {
+    right: -14px; top: 50%; transform: translateY(-50%);
+    border: 14px solid transparent;
+    border-left-color: #000000;
+    border-right: 0;
+  }
+  .sb[data-variant='say'][data-tail='right'] .sb-body::after {
+    right: -10px; top: 50%; transform: translateY(-50%);
+    border: 11px solid transparent;
+    border-left-color: #ffffff;
+    border-right: 0;
+  }
+  :global(.dark) .sb[data-variant='say'][data-tail='right'] .sb-body::before { border-left-color: #fafafa; }
+  :global(.dark) .sb[data-variant='say'][data-tail='right'] .sb-body::after  { border-left-color: #18181b; }
+
+  /* =========================================================================
+     THINK: cloud-like wavy outline plus three trailing dots toward the target.
+     The wavy edge is approximated with mismatched border-radii on each corner,
+     which produces the classic asymmetric "cloud" silhouette.
+     ========================================================================= */
+  .sb[data-variant='think'] .sb-body {
+    border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+    padding: 0.9rem 1.15rem;
+  }
+
+  /* Trailing thought dots: small filled circles, sized down toward the target. */
+  .sb-think-dots {
+    position: absolute;
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .sb-think-dots span {
+    display: block;
+    background: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 9999px;
+    box-shadow: 0 1px 0 rgba(185, 28, 28, 0.6);
+  }
+  :global(.dark) .sb-think-dots span {
+    background: #18181b;
+    border-color: #fafafa;
+  }
+  /* Three dots, decreasing size toward the target. */
+  .sb-think-dots span:nth-child(1) { width: 0.7rem; height: 0.7rem; }
+  .sb-think-dots span:nth-child(2) { width: 0.5rem; height: 0.5rem; }
+  .sb-think-dots span:nth-child(3) { width: 0.35rem; height: 0.35rem; }
+
+  /* Tail-direction placement for think dots. */
+  .sb[data-variant='think'][data-tail='bottom-left'] .sb-think-dots {
+    bottom: -1.6rem; left: 0.75rem; flex-direction: row-reverse;
+  }
+  .sb[data-variant='think'][data-tail='bottom-right'] .sb-think-dots {
+    bottom: -1.6rem; right: 0.75rem;
+  }
+  .sb[data-variant='think'][data-tail='top-left'] .sb-think-dots {
+    top: -1.6rem; left: 0.75rem; flex-direction: row-reverse;
+  }
+  .sb[data-variant='think'][data-tail='top-right'] .sb-think-dots {
+    top: -1.6rem; right: 0.75rem;
+  }
+  .sb[data-variant='think'][data-tail='left'] .sb-think-dots {
+    left: -1.8rem; top: 50%; transform: translateY(-50%); flex-direction: row-reverse;
+  }
+  .sb[data-variant='think'][data-tail='right'] .sb-think-dots {
+    right: -1.8rem; top: 50%; transform: translateY(-50%);
+  }
+
+  /* =========================================================================
+     SHOUT: jagged "POW!" burst silhouette via clip-path, plus a shouty tail.
+     The body itself becomes the burst; we drop the rounded border-radius and
+     replace it with a polygon clip. The 2px border is simulated with an
+     outlined drop-shadow so the jagged edge stays crisp.
+     ========================================================================= */
+  .sb[data-variant='shout'] .sb-body {
+    border: 0;
+    border-radius: 0;
+    padding: 1rem 1.4rem;
+    background: #ffffff;
+    /* Approximated burst silhouette. */
+    clip-path: polygon(
+       3% 18%,  12% 4%,  22% 16%,  33% 2%,  44% 14%,
+      55% 0%,  66% 14%,  77% 4%,  88% 16%,  97% 8%,
+      94% 30%, 100% 42%, 92% 55%, 100% 68%, 90% 80%,
+      96% 96%, 80% 88%,  70% 100%, 58% 86%, 47% 100%,
+      36% 86%, 25% 100%, 14% 86%,  4% 96%,  6% 78%,
+       0% 64%,  6% 50%,  0% 36%
+    );
+    /* Outlined silhouette: stack two filter drop-shadows in opposite tiny
+       offsets to fake an even border around a clipped element. */
+    filter:
+      drop-shadow(1px 0 0 #000000)
+      drop-shadow(-1px 0 0 #000000)
+      drop-shadow(0 1px 0 #000000)
+      drop-shadow(0 -1px 0 #000000)
+      drop-shadow(0 2px 0 rgba(185, 28, 28, 0.7));
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  :global(.dark) .sb[data-variant='shout'] .sb-body {
+    background: #18181b;
+    filter:
+      drop-shadow(1px 0 0 #fafafa)
+      drop-shadow(-1px 0 0 #fafafa)
+      drop-shadow(0 1px 0 #fafafa)
+      drop-shadow(0 -1px 0 #fafafa)
+      drop-shadow(0 2px 0 rgba(185, 28, 28, 0.8));
+  }
+  /* The shout's burst silhouette already implies direction, so we suppress the
+     extra triangular tail (the ::before/::after rules above add nothing here
+     because they have no direction-specific positioning unless we add it).
+     We do, however, give the burst a slight directional shift per `tail` so
+     authors get visual variety. */
+  .sb[data-variant='shout'][data-tail='bottom-left']  .sb-body { transform: rotate(-2deg); }
+  .sb[data-variant='shout'][data-tail='bottom-right'] .sb-body { transform: rotate( 2deg); }
+  .sb[data-variant='shout'][data-tail='top-left']     .sb-body { transform: rotate(-1deg); }
+  .sb[data-variant='shout'][data-tail='top-right']    .sb-body { transform: rotate( 1deg); }
+
+  /* =========================================================================
+     WHISPER: dashed border, lower-opacity text. Tail follows the SAY rules
+     but with a dashed stroke effect via reduced opacity on the outer triangle.
+     ========================================================================= */
+  .sb[data-variant='whisper'] .sb-body {
+    border-style: dashed;
+    border-width: 2px;
+    box-shadow: 0 1px 0 rgba(185, 28, 28, 0.3), 0 4px 14px -6px rgba(0, 0, 0, 0.1);
+    color: #52525b;
+    font-style: italic;
+  }
+  :global(.dark) .sb[data-variant='whisper'] .sb-body { color: #a1a1aa; }
+
+  /* Reuse SAY tails for whisper but soften them. */
+  .sb[data-variant='whisper'] .sb-body::before,
+  .sb[data-variant='whisper'] .sb-body::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+  .sb[data-variant='whisper'][data-tail='bottom-left'] .sb-body::before {
+    bottom: -12px; left: 22px;
+    border: 12px solid transparent;
+    border-top-color: #000000;
+    border-right: 0;
+    opacity: 0.5;
+  }
+  .sb[data-variant='whisper'][data-tail='bottom-left'] .sb-body::after {
+    bottom: -8px; left: 24px;
+    border: 9px solid transparent;
+    border-top-color: #ffffff;
+    border-right: 0;
+  }
+  .sb[data-variant='whisper'][data-tail='bottom-right'] .sb-body::before {
+    bottom: -12px; right: 22px;
+    border: 12px solid transparent;
+    border-top-color: #000000;
+    border-left: 0;
+    opacity: 0.5;
+  }
+  .sb[data-variant='whisper'][data-tail='bottom-right'] .sb-body::after {
+    bottom: -8px; right: 24px;
+    border: 9px solid transparent;
+    border-top-color: #ffffff;
+    border-left: 0;
+  }
+  .sb[data-variant='whisper'][data-tail='top-left'] .sb-body::before {
+    top: -12px; left: 22px;
+    border: 12px solid transparent;
+    border-bottom-color: #000000;
+    border-right: 0;
+    opacity: 0.5;
+  }
+  .sb[data-variant='whisper'][data-tail='top-left'] .sb-body::after {
+    top: -8px; left: 24px;
+    border: 9px solid transparent;
+    border-bottom-color: #ffffff;
+    border-right: 0;
+  }
+  .sb[data-variant='whisper'][data-tail='top-right'] .sb-body::before {
+    top: -12px; right: 22px;
+    border: 12px solid transparent;
+    border-bottom-color: #000000;
+    border-left: 0;
+    opacity: 0.5;
+  }
+  .sb[data-variant='whisper'][data-tail='top-right'] .sb-body::after {
+    top: -8px; right: 24px;
+    border: 9px solid transparent;
+    border-bottom-color: #ffffff;
+    border-left: 0;
+  }
+  .sb[data-variant='whisper'][data-tail='left'] .sb-body::before {
+    left: -12px; top: 50%; transform: translateY(-50%);
+    border: 12px solid transparent;
+    border-right-color: #000000;
+    border-left: 0;
+    opacity: 0.5;
+  }
+  .sb[data-variant='whisper'][data-tail='left'] .sb-body::after {
+    left: -8px; top: 50%; transform: translateY(-50%);
+    border: 9px solid transparent;
+    border-right-color: #ffffff;
+    border-left: 0;
+  }
+  .sb[data-variant='whisper'][data-tail='right'] .sb-body::before {
+    right: -12px; top: 50%; transform: translateY(-50%);
+    border: 12px solid transparent;
+    border-left-color: #000000;
+    border-right: 0;
+    opacity: 0.5;
+  }
+  .sb[data-variant='whisper'][data-tail='right'] .sb-body::after {
+    right: -8px; top: 50%; transform: translateY(-50%);
+    border: 9px solid transparent;
+    border-left-color: #ffffff;
+    border-right: 0;
+  }
+  :global(.dark) .sb[data-variant='whisper'] .sb-body::before { opacity: 0.6; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='bottom-left']  .sb-body::before,
+  :global(.dark) .sb[data-variant='whisper'][data-tail='bottom-right'] .sb-body::before { border-top-color: #fafafa; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='top-left']     .sb-body::before,
+  :global(.dark) .sb[data-variant='whisper'][data-tail='top-right']    .sb-body::before { border-bottom-color: #fafafa; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='left']         .sb-body::before { border-right-color: #fafafa; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='right']        .sb-body::before { border-left-color: #fafafa; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='bottom-left']  .sb-body::after,
+  :global(.dark) .sb[data-variant='whisper'][data-tail='bottom-right'] .sb-body::after  { border-top-color: #18181b; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='top-left']     .sb-body::after,
+  :global(.dark) .sb[data-variant='whisper'][data-tail='top-right']    .sb-body::after  { border-bottom-color: #18181b; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='left']         .sb-body::after  { border-right-color: #18181b; }
+  :global(.dark) .sb[data-variant='whisper'][data-tail='right']        .sb-body::after  { border-left-color: #18181b; }
+
+  /* No tail: hide ::before / ::after on say + whisper, hide dots on think. */
+  .sb[data-tail='none'] .sb-body::before,
+  .sb[data-tail='none'] .sb-body::after { display: none; }
+
+  /* Subtle entry animation; suppressed for users who prefer reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .sb { animation: sbPop 280ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes sbPop {
+      0%   { opacity: 0; transform: translateY(4px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+  }
+</style>

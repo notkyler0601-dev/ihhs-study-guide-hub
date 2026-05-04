@@ -1,0 +1,566 @@
+---
+// HistoryAnimation: an OverSimplified-YouTube-style animated mini-cartoon
+// player. Each "scene" is a self-contained inline SVG with a caption track
+// underneath. Scenes auto-advance on a JS timer, with Pause / Restart / Prev
+// / Next controls and clickable progress dots. No audio, ever, by project
+// policy. Reduced motion clients see a numbered storyboard panel grid
+// instead of an animated player.
+//
+// Designed for high-impact moments in the Modern European History rewrite:
+// "The Bastille Storms", "The Tiny Tyrant", "Cutting Africa Like a Cake",
+// "The Domino Falls", "Stalin's Five-Year Plan", "Thirteen Days of Chicken".
+//
+// =============================================================================
+// AUTHOR EXAMPLE: a 3-scene mini-animation. Drop this in an MDX guide.
+// =============================================================================
+//
+// import HistoryAnimation from '../../components/HistoryAnimation.astro';
+//
+// <HistoryAnimation
+//   title="The Bastille Storms (mini)"
+//   scenes={[
+//     {
+//       duration: 4,
+//       caption: "Paris, July 14, 1789. A crowd gathers.",
+//       svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+//         <rect width="400" height="240" fill="#fff" />
+//         <!-- Bastille tower -->
+//         <rect x="240" y="60" width="100" height="160" fill="none" stroke="#000" stroke-width="3" />
+//         <rect x="252" y="48" width="14" height="14" fill="none" stroke="#000" stroke-width="2" />
+//         <rect x="276" y="48" width="14" height="14" fill="none" stroke="#000" stroke-width="2" />
+//         <rect x="300" y="48" width="14" height="14" fill="none" stroke="#000" stroke-width="2" />
+//         <rect x="324" y="48" width="14" height="14" fill="none" stroke="#000" stroke-width="2" />
+//         <!-- Crowd of stick figures, three of them -->
+//         <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+//           <circle cx="60" cy="160" r="10" />
+//           <line x1="60" y1="170" x2="60" y2="200" />
+//           <line x1="60" y1="180" x2="46" y2="190" />
+//           <line x1="60" y1="180" x2="74" y2="190" />
+//           <line x1="60" y1="200" x2="50" y2="220" />
+//           <line x1="60" y1="200" x2="70" y2="220" />
+//           <circle cx="120" cy="160" r="10" />
+//           <line x1="120" y1="170" x2="120" y2="200" />
+//           <line x1="120" y1="180" x2="106" y2="172" />
+//           <line x1="120" y1="180" x2="134" y2="172" />
+//           <line x1="120" y1="200" x2="110" y2="220" />
+//           <line x1="120" y1="200" x2="130" y2="220" />
+//           <circle cx="180" cy="160" r="10" />
+//           <line x1="180" y1="170" x2="180" y2="200" />
+//           <line x1="180" y1="180" x2="166" y2="190" />
+//           <line x1="180" y1="180" x2="194" y2="190" />
+//           <line x1="180" y1="200" x2="170" y2="220" />
+//           <line x1="180" y1="200" x2="190" y2="220" />
+//         </g>
+//       </svg>`
+//     },
+//     {
+//       duration: 4,
+//       caption: "Nine hundred Parisians need gunpowder.",
+//       svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+//         <rect width="400" height="240" fill="#fff" />
+//         <text x="200" y="120" text-anchor="middle" font-family="serif" font-size="28">900 vs. the king</text>
+//         <text x="200" y="160" text-anchor="middle" font-family="serif" font-size="18" fill="#b91c1c">GUNPOWDER!</text>
+//       </svg>`
+//     },
+//     {
+//       duration: 3,
+//       caption: "The gates fall. Forever after, Bastille Day.",
+//       svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+//         <rect width="400" height="240" fill="#fff" />
+//         <!-- Tilted, falling tower -->
+//         <g transform="translate(200,140) rotate(-25)">
+//           <rect x="-50" y="-80" width="100" height="160" fill="none" stroke="#000" stroke-width="3" />
+//         </g>
+//         <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="20" fill="#b91c1c">VIVE LA REVOLUTION!</text>
+//       </svg>`
+//     }
+//   ]}
+//   loop={true}
+// />
+// =============================================================================
+
+interface Scene {
+  duration: number;
+  caption: string;
+  svg: string;
+}
+
+interface Props {
+  title: string;
+  scenes: Scene[];
+  loop?: boolean;
+  startPaused?: boolean;
+  aspect?: '16/9' | '4/3' | '1/1';
+  class?: string;
+}
+
+const {
+  title,
+  scenes,
+  loop = true,
+  startPaused = false,
+  aspect = '16/9',
+  class: extraClass = '',
+} = Astro.props;
+
+const id = 'hist-anim-' + Math.random().toString(36).slice(2, 9);
+
+// Encode the scenes for the client-side timer. SVG strings can be sizeable,
+// so we stash them in a JSON config attribute.
+const conf = JSON.stringify({
+  scenes: (scenes || []).map((s) => ({
+    duration: Number(s.duration) || 4,
+    caption: String(s.caption || ''),
+    svg: String(s.svg || ''),
+  })),
+  loop: Boolean(loop),
+  startPaused: Boolean(startPaused),
+});
+
+// Aspect-ratio padding-bottom values. 16/9 = 56.25%, 4/3 = 75%, 1/1 = 100%.
+const aspectPad =
+  aspect === '4/3' ? '75%' : aspect === '1/1' ? '100%' : '56.25%';
+
+const sceneCount = scenes?.length || 0;
+const firstScene = sceneCount > 0 ? scenes[0] : null;
+---
+
+<figure
+  class:list={['not-prose my-8 surface rounded-2xl shadow-soft p-5 flex flex-col gap-3', extraClass]}
+  data-history-anim
+  id={id}
+  data-conf={conf}
+  role="region"
+  aria-label={`${title} animated history sequence`}
+>
+  {/* Title bar with Pause and Restart on the right. */}
+  <div class="flex items-start justify-between gap-3 flex-wrap">
+    <h3
+      class="font-serif text-lg sm:text-xl font-bold text-ink-900 dark:text-ink-100 m-0"
+      style="border-bottom: 3px solid #b91c1c; padding-bottom: 0.15rem;"
+      data-ha-title
+    >
+      {title}
+    </h3>
+    <div class="flex items-center gap-2 shrink-0" data-ha-toolbar>
+      <button
+        type="button"
+        data-ha-pause
+        class="inline-flex items-center justify-center min-h-[36px] px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-500 hover:text-accent-700 dark:hover:text-accent-400 text-xs font-medium text-ink-700 dark:text-ink-200 transition-colors"
+        aria-label="Pause animation"
+      >
+        &#9208; Pause
+      </button>
+      <button
+        type="button"
+        data-ha-restart
+        class="inline-flex items-center justify-center min-h-[36px] px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-500 hover:text-accent-700 dark:hover:text-accent-400 text-xs font-medium text-ink-700 dark:text-ink-200 transition-colors"
+        aria-label="Restart animation from the beginning"
+      >
+        &#8634; Restart
+      </button>
+    </div>
+  </div>
+
+  {/* Scene canvas: aspect-ratio enforced via padding-bottom trick. */}
+  <div
+    class="relative w-full bg-white rounded-xl overflow-hidden ha-canvas-frame"
+    style={`padding-bottom:${aspectPad};`}
+  >
+    {/* Subtle paper texture via radial gradient (kept extremely faint). */}
+    <div
+      class="absolute inset-0 pointer-events-none"
+      aria-hidden="true"
+      style="background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px); background-size: 8px 8px;"
+    ></div>
+    <div
+      class="absolute inset-0 flex items-center justify-center transition-opacity duration-200 ease-out"
+      data-ha-stage
+      role="img"
+      aria-label={firstScene?.caption || title}
+    >
+      {firstScene && <Fragment set:html={firstScene.svg} />}
+    </div>
+  </div>
+
+  {/* Caption track. Live region announces caption changes to screen readers. */}
+  <div
+    class="text-center font-serif italic text-base sm:text-lg text-ink-700 dark:text-ink-300 min-h-[2.5em] leading-snug px-2"
+    data-ha-caption
+    aria-live="polite"
+  >
+    {firstScene?.caption || ''}
+  </div>
+
+  {/* Progress dots and prev / next, single row on wide screens, wraps on narrow. */}
+  <div class="flex items-center justify-between gap-3 flex-wrap" data-ha-controls>
+    <div class="flex items-center gap-2 flex-wrap" data-ha-dots role="tablist" aria-label="Scene navigation">
+      {scenes.map((_, i) => (
+        <button
+          type="button"
+          data-ha-dot
+          data-ha-index={String(i)}
+          class:list={[
+            'inline-flex items-center justify-center w-3.5 h-3.5 rounded-full transition-colors',
+            i === 0
+              ? 'bg-accent-600 ring-2 ring-accent-600'
+              : 'bg-transparent ring-2 ring-ink-300 dark:ring-ink-600 hover:ring-accent-500',
+          ]}
+          role="tab"
+          aria-selected={i === 0 ? 'true' : 'false'}
+          aria-label={`Jump to scene ${i + 1} of ${sceneCount}`}
+        ></button>
+      ))}
+    </div>
+    <div class="flex items-center gap-2 ml-auto">
+      <button
+        type="button"
+        data-ha-prev
+        class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-500 hover:text-accent-700 dark:hover:text-accent-400 text-sm font-medium text-ink-700 dark:text-ink-200 transition-colors"
+        aria-label="Previous scene"
+      >
+        &#8249; Prev
+      </button>
+      <button
+        type="button"
+        data-ha-next
+        class="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-3 py-1.5 rounded-md border border-ink-300 dark:border-ink-700 hover:border-accent-500 hover:text-accent-700 dark:hover:text-accent-400 text-sm font-medium text-ink-700 dark:text-ink-200 transition-colors"
+        aria-label="Next scene"
+      >
+        Next &#8250;
+      </button>
+    </div>
+  </div>
+
+  {/* Reduced-motion fallback: a static numbered storyboard. Hidden by default,
+      shown by JS or CSS when reduced motion is detected. The animated player
+      controls and stage are hidden in that mode. */}
+  <div
+    class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+    data-ha-storyboard
+    aria-hidden="true"
+  >
+    {scenes.map((s, i) => (
+      <figure class="flex flex-col gap-2 surface rounded-xl border border-ink-200 dark:border-ink-700 p-3">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent-600 text-white text-xs font-bold tabular-nums">
+            {i + 1}
+          </span>
+          <span class="text-[0.7rem] uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400 font-semibold">
+            Scene {i + 1} of {sceneCount}
+          </span>
+        </div>
+        <div
+          class="relative w-full bg-white rounded-md overflow-hidden border border-ink-200 dark:border-ink-700"
+          style={`padding-bottom:${aspectPad};`}
+        >
+          <div class="absolute inset-0 flex items-center justify-center" set:html={s.svg} />
+        </div>
+        <figcaption class="text-sm font-serif italic text-ink-700 dark:text-ink-300 leading-snug">
+          {s.caption}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</figure>
+
+<style>
+  /* Stage transition: a simple opacity fade controlled via the `data-fading` attr. */
+  [data-ha-stage] { opacity: 1; }
+  [data-history-anim][data-fading='1'] [data-ha-stage] { opacity: 0; }
+
+  /* Make stage SVGs always fill the canvas frame regardless of viewBox. */
+  [data-ha-stage] :global(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* The reduced-motion storyboard is rendered as a CSS grid when revealed. */
+  [data-history-anim][data-reduced='1'] [data-ha-storyboard] {
+    display: grid;
+  }
+  /* Hide the active player chrome under reduced motion. */
+  [data-history-anim][data-reduced='1'] .ha-canvas-frame,
+  [data-history-anim][data-reduced='1'] [data-ha-caption],
+  [data-history-anim][data-reduced='1'] [data-ha-controls],
+  [data-history-anim][data-reduced='1'] [data-ha-toolbar] {
+    display: none !important;
+  }
+
+  /* Subtle top-paper-texture in dark mode is invisible against the white canvas
+     since the canvas background is locked to white per the visual spec.
+     Border helps the canvas read against a dark page surround. */
+  :global(.dark) [data-history-anim] .ha-canvas-frame {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+  }
+
+  /* Shake out media-query reduced motion as well, for users who haven't
+     toggled the site's a11y switch but have OS-level prefers-reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-ha-stage] {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  type Scene = { duration: number; caption: string; svg: string };
+  type Conf = { scenes: Scene[]; loop: boolean; startPaused: boolean };
+
+  // Pause / Resume button labels are unicode glyphs followed by " Pause" /
+  // " Resume" / " Replay". Centralising them here keeps the toggle logic
+  // tidy and prevents stray emoji drift.
+  const LABEL_PAUSE = '⏸ Pause';
+  const LABEL_RESUME = '▶ Resume';
+  const LABEL_REPLAY = '▶ Replay';
+
+  const isReduced = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cls = document.documentElement.classList.contains('a11y-reduce-motion');
+    return Boolean(mq || cls);
+  };
+
+  const init = () => {
+    const roots = document.querySelectorAll<HTMLElement>('[data-history-anim]:not([data-ready])');
+    if (roots.length === 0) return;
+
+    roots.forEach((root) => {
+      root.dataset.ready = '1';
+
+      let conf: Conf;
+      try {
+        conf = JSON.parse(root.dataset.conf || '{}') as Conf;
+      } catch {
+        console.warn('HistoryAnimation: invalid data-conf JSON');
+        return;
+      }
+      const scenes = Array.isArray(conf.scenes) ? conf.scenes : [];
+      if (scenes.length === 0) return;
+
+      // Reduced motion path: reveal the storyboard, hide the player chrome,
+      // and short-circuit. No timer, no transitions.
+      if (isReduced()) {
+        root.dataset.reduced = '1';
+        return;
+      }
+
+      const stage = root.querySelector<HTMLElement>('[data-ha-stage]');
+      const caption = root.querySelector<HTMLElement>('[data-ha-caption]');
+      const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-ha-dot]'));
+      const pauseBtn = root.querySelector<HTMLButtonElement>('[data-ha-pause]');
+      const restartBtn = root.querySelector<HTMLButtonElement>('[data-ha-restart]');
+      const prevBtn = root.querySelector<HTMLButtonElement>('[data-ha-prev]');
+      const nextBtn = root.querySelector<HTMLButtonElement>('[data-ha-next]');
+
+      if (!stage || !caption || !pauseBtn || !restartBtn || !prevBtn || !nextBtn) return;
+
+      // Player state.
+      let currentIndex = 0;
+      let paused = false;
+      let finishedNoLoop = false;
+
+      // Timer accounting. We track when the current scene started and how
+      // much time it had remaining at pause so resume picks up cleanly.
+      let timerId: number | null = null;
+      let sceneStartedAt = 0;
+      let remainingMs = 0;
+
+      const FADE_MS = 200;
+
+      const clearTimer = () => {
+        if (timerId !== null) {
+          window.clearTimeout(timerId);
+          timerId = null;
+        }
+      };
+
+      const updateDots = () => {
+        dots.forEach((dot, i) => {
+          const active = i === currentIndex;
+          dot.classList.toggle('bg-accent-600', active);
+          dot.classList.toggle('ring-accent-600', active);
+          dot.classList.toggle('bg-transparent', !active);
+          dot.classList.toggle('ring-ink-300', !active);
+          dot.classList.toggle('dark:ring-ink-600', !active);
+          dot.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+      };
+
+      const renderScene = (index: number) => {
+        const scene = scenes[index];
+        if (!scene) return;
+        // Drop the SVG into the stage. The fade transition wrapping happens
+        // in the caller (advance / jump).
+        stage.innerHTML = scene.svg;
+        stage.setAttribute('aria-label', scene.caption || '');
+        if (caption) caption.textContent = scene.caption || '';
+        updateDots();
+      };
+
+      const setPauseLabel = (label: string) => {
+        if (!pauseBtn) return;
+        pauseBtn.textContent = label;
+        pauseBtn.setAttribute(
+          'aria-label',
+          label === LABEL_PAUSE
+            ? 'Pause animation'
+            : label === LABEL_RESUME
+              ? 'Resume animation'
+              : 'Replay animation from the beginning'
+        );
+      };
+
+      const scheduleAdvance = (durationMs: number) => {
+        clearTimer();
+        sceneStartedAt = performance.now();
+        remainingMs = durationMs;
+        timerId = window.setTimeout(() => {
+          timerId = null;
+          onSceneComplete();
+        }, durationMs);
+      };
+
+      const onSceneComplete = () => {
+        if (currentIndex >= scenes.length - 1) {
+          if (conf.loop) {
+            transitionTo(0, true);
+          } else {
+            // Freeze on the last scene. Replace Pause with Replay.
+            finishedNoLoop = true;
+            paused = true;
+            setPauseLabel(LABEL_REPLAY);
+          }
+        } else {
+          transitionTo(currentIndex + 1, true);
+        }
+      };
+
+      // Fade out, swap, fade in, then optionally start the next timer.
+      const transitionTo = (index: number, startTimer: boolean) => {
+        clearTimer();
+        const target = ((index % scenes.length) + scenes.length) % scenes.length;
+        // If we're already on the target scene and not transitioning, just
+        // restart the timer cleanly.
+        if (target === currentIndex && stage.innerHTML.length > 0) {
+          currentIndex = target;
+          renderScene(currentIndex);
+          if (startTimer && !paused) {
+            const sec = Math.max(0.5, scenes[currentIndex].duration || 4);
+            scheduleAdvance(sec * 1000);
+          }
+          return;
+        }
+
+        root.setAttribute('data-fading', '1');
+        window.setTimeout(() => {
+          currentIndex = target;
+          renderScene(currentIndex);
+          // Force reflow so the next opacity transition triggers.
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+          stage.offsetHeight;
+          root.removeAttribute('data-fading');
+          if (startTimer && !paused) {
+            const sec = Math.max(0.5, scenes[currentIndex].duration || 4);
+            scheduleAdvance(sec * 1000);
+          }
+        }, FADE_MS);
+      };
+
+      // Pause logic: clear the running timeout and remember how much time
+      // was left so a resume can re-arm a shortened timer.
+      const pause = () => {
+        if (paused) return;
+        paused = true;
+        if (timerId !== null) {
+          const elapsed = performance.now() - sceneStartedAt;
+          remainingMs = Math.max(0, remainingMs - elapsed);
+          clearTimer();
+        }
+        setPauseLabel(LABEL_RESUME);
+      };
+
+      const resume = () => {
+        if (!paused) return;
+        // If the player had finished (loop=false), Replay rewinds to scene 0.
+        if (finishedNoLoop) {
+          finishedNoLoop = false;
+          paused = false;
+          setPauseLabel(LABEL_PAUSE);
+          transitionTo(0, true);
+          return;
+        }
+        paused = false;
+        setPauseLabel(LABEL_PAUSE);
+        // Re-arm the remaining time, or full duration if we lost track.
+        const sec = Math.max(0.5, scenes[currentIndex].duration || 4);
+        const ms = remainingMs > 0 ? remainingMs : sec * 1000;
+        scheduleAdvance(ms);
+      };
+
+      const restart = () => {
+        finishedNoLoop = false;
+        paused = false;
+        setPauseLabel(LABEL_PAUSE);
+        transitionTo(0, true);
+      };
+
+      const jumpTo = (index: number) => {
+        finishedNoLoop = false;
+        // Jumping resets the current timer; if we were paused, stay paused
+        // but render the new scene without restarting the timer.
+        const startTimer = !paused;
+        if (paused) setPauseLabel(LABEL_RESUME);
+        transitionTo(index, startTimer);
+      };
+
+      // Wire up controls.
+      pauseBtn.addEventListener('click', () => {
+        if (paused) {
+          resume();
+        } else {
+          pause();
+        }
+      });
+      restartBtn.addEventListener('click', restart);
+      prevBtn.addEventListener('click', () => jumpTo(currentIndex - 1));
+      nextBtn.addEventListener('click', () => jumpTo(currentIndex + 1));
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => jumpTo(i));
+      });
+
+      // Initial render: the SSR markup already shows scene 0, but we render
+      // again so the JS state is consistent with the DOM (and aria-label
+      // attributes update).
+      renderScene(0);
+
+      // Honor startPaused: render scene 0 but don't start a timer.
+      if (conf.startPaused) {
+        paused = true;
+        setPauseLabel(LABEL_RESUME);
+      } else {
+        const sec = Math.max(0.5, scenes[0].duration || 4);
+        scheduleAdvance(sec * 1000);
+      }
+
+      // Cleanup on disconnect: when the player leaves the DOM (SPA nav,
+      // teardown) we clear our timer to avoid lingering callbacks.
+      const cleanup = () => {
+        clearTimer();
+      };
+      // We don't have a direct disconnect callback for non-custom elements,
+      // but astro:before-swap fires before route changes and is a reasonable
+      // moment to release the timer if the node is being swapped out.
+      const onBeforeSwap = () => {
+        if (!root.isConnected) cleanup();
+      };
+      document.addEventListener('astro:before-swap', onBeforeSwap, { once: true });
+    });
+  };
+
+  const _haObs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { _haObs!.unobserve(e.target); init(); } }), { rootMargin: '300px 0px' }) : null;
+  const _observeHA = () => document.querySelectorAll<HTMLElement>('[data-history-anim]:not([data-ready]):not([data-observed])').forEach((r) => { r.dataset.observed = '1'; if (_haObs) _haObs.observe(r); else init(); });
+  _observeHA();
+  document.addEventListener('astro:after-swap', _observeHA);
+</script>

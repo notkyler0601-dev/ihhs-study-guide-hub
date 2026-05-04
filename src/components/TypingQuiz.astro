@@ -218,7 +218,11 @@ const conf = JSON.stringify({ pairs, accents, promptLabel, acceptArticles, caseS
         const pair = pairs[order[pos]];
         promptEl.textContent = pair.en;
         input.value = '';
-        input.focus();
+        // preventScroll: a TypingQuiz embedded deep in a long guide would
+        // otherwise yank the page down to itself on initial mount, since
+        // restart(false) is called once at init time. The user lands at
+        // whichever quiz appears first instead of the top of the guide.
+        input.focus({ preventScroll: true });
         posEl.textContent = String(pos + 1);
         questionEl.classList.remove('hidden');
         feedbackEl.classList.add('hidden');

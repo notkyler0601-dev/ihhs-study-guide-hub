@@ -1,0 +1,66 @@
+---
+// Pavel Dobryakov's famous WebGL Fluid Simulation, embedded as an
+// iframe. Drag to swirl 2D Navier-Stokes through the canvas. Pure
+// wow-factor; perfect as a metaphorical interlude (the "tide of
+// revolution", "the unraveling", "currents of empire") or as a literal
+// physics teaching moment in a science guide.
+//
+// The simulation runs entirely in the iframe; zero load on the parent
+// page until the iframe is mounted (which we defer until the
+// component is near the viewport).
+//
+// Usage:
+//   <WebGLFluid title="Drag through the tide" caption="..." height={420} />
+
+interface Props {
+  title?: string;
+  caption?: string;
+  height?: number;
+}
+const { title, caption, height = 420 } = Astro.props;
+const id = 'fluid-' + Math.random().toString(36).slice(2, 9);
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-fluid data-height={height}>
+  {(title || caption) && (
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800">
+      {title && <div class="font-serif text-base font-semibold mb-1">{title}</div>}
+      {caption && <div class="text-xs text-ink-600 dark:text-ink-400">{caption}</div>}
+    </figcaption>
+  )}
+  <div data-fluid-host class="w-full bg-black relative" style={`height:${height}px;`}>
+    <div data-fluid-placeholder class="absolute inset-0 flex items-center justify-center text-ink-400 text-sm font-mono">
+      <span class="opacity-60">Scroll into view to load the fluid simulation.</span>
+    </div>
+  </div>
+  <div class="px-5 py-2 text-[11px] text-ink-500 dark:text-ink-400 border-t border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+    <span>Drag, swipe, or splash to add velocity. Click to splash from the centre.</span>
+    <span class="uppercase tracking-[0.16em] font-semibold text-[10px]">WebGL · Navier-Stokes</span>
+  </div>
+</figure>
+
+<script>
+  import { mountWhenVisible } from '../lib/loadScript';
+
+  const init = (roots: HTMLElement[]) => {
+    for (const root of roots) {
+      root.dataset.fluidReady = '1';
+      const host = root.querySelector<HTMLElement>('[data-fluid-host]')!;
+      const placeholder = root.querySelector<HTMLElement>('[data-fluid-placeholder]')!;
+      const height = Number(root.dataset.height ?? '420');
+
+      placeholder?.remove();
+
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://paveldogreat.github.io/WebGL-Fluid-Simulation/';
+      iframe.title = 'WebGL fluid simulation';
+      iframe.loading = 'lazy';
+      iframe.allow = 'fullscreen';
+      iframe.style.cssText = `width:100%; height:${height}px; border:0; display:block;`;
+      iframe.setAttribute('referrerpolicy', 'no-referrer');
+      host.appendChild(iframe);
+    }
+  };
+
+  mountWhenVisible('[data-fluid]:not([data-fluid-ready])', init, { rootMargin: '600px 0px' });
+</script>

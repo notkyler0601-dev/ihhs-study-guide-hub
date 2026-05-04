@@ -22,16 +22,21 @@ const conf = JSON.stringify({ words });
 </section>
 
 <script>
-  import { importGlobal } from '../lib/loadScript';
-
   const init = async () => {
     const roots = document.querySelectorAll<HTMLElement>('[data-cw]:not([data-cw-ready])');
     if (roots.length === 0) return;
 
-    const clg: any = await importGlobal(
-      'https://unpkg.com/crossword-layout-generator@1.0.7/dist/cwgen.umd.js',
-      'CrosswordLayout'
-    );
+    // The unpkg UMD bundle (cwgen.umd.js) is no longer reachable from many
+    // networks. Use jsdelivr's ESM-converted entry point, which works
+    // anywhere jsdelivr does and exposes generateLayout on the namespace.
+    let clg: any;
+    try {
+      const mod: any = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/crossword-layout-generator/+esm');
+      clg = { generateLayout: mod.generateLayout ?? mod.default?.generateLayout };
+    } catch (e) {
+      console.warn('Crossword: layout generator failed to load', e);
+      return;
+    }
 
     roots.forEach((root) => {
       root.dataset.cwReady = '1';

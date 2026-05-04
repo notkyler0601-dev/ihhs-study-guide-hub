@@ -59,3 +59,47 @@ export async function importGlobal<T = unknown>(url: string, globalName: string,
   await loadScript(url, opts);
   return waitForGlobal<T>(globalName);
 }
+
+// Run an init callback for each root only when it scrolls near the viewport.
+// Mega-guides like modern-europe import dozens of components that each pull a
+// chunk of d3 (50+ submodule round-trips on jsdelivr +esm) or a large lib.
+// Without this, every component below the fold fetches its libs on initial
+// page load, freezing the main thread for seconds. Wrapping init in a single
+// IntersectionObserver lets each component pay its cost only when the user
+// actually scrolls toward it.
+//
+// `selector` is the CSS selector for unmounted roots (e.g. '[data-tm]:not([data-tm-ready])').
+// The callback receives the array of roots that just entered the rootMargin.
+// The selector is re-queried on `astro:after-swap` so view transitions work.
+export function mountWhenVisible(
+  selector: string,
+  init: (roots: HTMLElement[]) => void | Promise<void>,
+  opts: { rootMargin?: string } = {}
+): void {
+  if (typeof window === 'undefined') return;
+  const rootMargin = opts.rootMargin ?? '600px 0px';
+  const queue = (): void => {
+    const roots = Array.from(document.querySelectorAll<HTMLElement>(selector));
+    if (roots.length === 0) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      void init(roots);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible: HTMLElement[] = [];
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visible.push(entry.target as HTMLElement);
+            observer.unobserve(entry.target);
+          }
+        }
+        if (visible.length > 0) void init(visible);
+      },
+      { rootMargin }
+    );
+    roots.forEach((r) => observer.observe(r));
+  };
+  queue();
+  document.addEventListener('astro:after-swap', queue);
+}
