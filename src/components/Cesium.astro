@@ -81,6 +81,25 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
   )}
 </section>
 
+<style is:global>
+  /* Force the entire Cesium widget tree to fill its mount container.
+     Cesium normally manages canvas dimensions itself, but if it grabs
+     a bad initial size (e.g. mid-warmup, mid-animation, or before the
+     prose column has settled) the canvas gets pinned at that size and
+     ends up rendering only in the top-left of a much larger container.
+     Forcing 100% on every level guarantees the visible area always
+     fills its parent. We still call viewer.resize() in JS so the
+     internal WebGL framebuffer matches. */
+  [data-cesium] [data-cesium-mount] > .cesium-viewer,
+  [data-cesium] [data-cesium-mount] .cesium-viewer-cesiumWidgetContainer,
+  [data-cesium] [data-cesium-mount] .cesium-widget,
+  [data-cesium] [data-cesium-mount] .cesium-widget > canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+</style>
+
 <script>
   import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
 
@@ -104,6 +123,27 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
   const CESIUM_JS = CESIUM_BASE + 'Cesium.js';
   const CESIUM_CSS = CESIUM_BASE + 'Widgets/widgets.css';
 
+  const waitForStableSize = (mount: HTMLElement, minWidth = 200): Promise<void> => {
+    // Cesium sizes its canvas exactly once at construction time, so if
+    // the mount has 0 (or near-zero) width when we construct, we get a
+    // permanently tiny canvas. Wait for the container to have at least
+    // `minWidth` of layout width before resolving.
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const tryNow = () => {
+        const w = mount.clientWidth;
+        const h = mount.clientHeight;
+        if ((w >= minWidth && h >= 100) || attempts > 60) {
+          resolve();
+          return;
+        }
+        attempts++;
+        requestAnimationFrame(tryNow);
+      };
+      tryNow();
+    });
+  };
+
   const init = async () => {
     const roots = document.querySelectorAll<HTMLElement>('[data-cesium]:not([data-cesium-ready])');
     for (const root of Array.from(roots)) {
@@ -113,6 +153,10 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
       const mount = root.querySelector<HTMLElement>('[data-cesium-mount]');
       const status = root.querySelector<HTMLElement>('[data-cesium-status]');
       if (!mount || !status) continue;
+
+      // Wait for the mount to have a real layout size before we hand
+      // it to Cesium's Viewer constructor.
+      await waitForStableSize(mount);
 
       try {
         // Set CESIUM_BASE_URL so worker / asset URLs resolve to the CDN.
@@ -269,20 +313,53 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         // Force one resize on the next frame in case the initial
         // construction grabbed a stale layout width.
         const forceResize = () => {
-          try { viewer.resize(); viewer.scene.requestRender(); } catch (_) {}
+          try {
+            viewer.resize();
+            viewer.scene.requestRender();
+          } catch (_) {}
         };
+
+        // Compare the actual canvas pixel size to the container's
+        // layout size. If the canvas is meaningfully smaller (more
+        // than 10% off in either dimension), it means Cesium grabbed
+        // a stale or wrong size and we need to keep poking it.
+        const canvasMatchesContainer = (): boolean => {
+          const c = mount.querySelector('canvas') as HTMLCanvasElement | null;
+          if (!c) return true;
+          const dpr = window.devicePixelRatio || 1;
+          const wantW = mount.clientWidth * dpr;
+          const wantH = mount.clientHeight * dpr;
+          if (wantW < 10 || wantH < 10) return true; // container itself is broken; nothing we can do
+          const tolW = wantW * 0.1;
+          const tolH = wantH * 0.1;
+          return Math.abs(c.width - wantW) < tolW && Math.abs(c.height - wantH) < tolH;
+        };
+
         requestAnimationFrame(forceResize);
-        // GuideLoader scrolls the page programmatically before the user
-        // sees it, which can cause Cesium to construct against a layout
-        // that's mid-reflow. Stagger several resize attempts to catch
-        // any late layout settling.
-        setTimeout(forceResize, 200);
-        setTimeout(forceResize, 800);
-        setTimeout(forceResize, 2000);
+        // Aggressive polling: every 100ms for the first 5 seconds, do
+        // a resize. Bail out as soon as the canvas matches the
+        // container so we don't burn cycles forever.
+        let pollCount = 0;
+        const POLL_MAX = 50; // 5 seconds at 100ms intervals
+        const pollResize = () => {
+          if (pollCount++ >= POLL_MAX) return;
+          forceResize();
+          // Once the canvas size matches the container, we can stop
+          // hammering it (ResizeObserver will catch any future changes).
+          if (canvasMatchesContainer() && pollCount > 5) return;
+          setTimeout(pollResize, 100);
+        };
+        setTimeout(pollResize, 80);
+
         // When the GuideLoader fades out, the document layout is final.
         // Force one last resize so the canvas fills the container even
         // if every earlier attempt grabbed a stale size.
-        window.addEventListener('ihhs:warmup-done', forceResize);
+        window.addEventListener('ihhs:warmup-done', () => {
+          // Restart polling after warmup-done in case earlier attempts
+          // were against a mid-warmup layout.
+          pollCount = 0;
+          pollResize();
+        });
         // Also resize on full window load (last-resort if no GuideLoader).
         if (document.readyState === 'complete') {
           setTimeout(forceResize, 50);
