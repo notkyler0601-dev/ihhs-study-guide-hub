@@ -48,10 +48,11 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
         // Scroll restoration policy:
         //   - Disable browser auto-restore (it fights lazy components).
         //   - Save scroll position to sessionStorage continuously.
-        //   - Pages with <GuideLoader/> handle restore explicitly inside
-        //     the loader overlay, jumping to the saved Y once every
-        //     lazy component has been hydrated. Pages without a loader
-        //     simply land at the top on refresh.
+        //   - On load, restore to the saved Y (clamped to current document
+        //     height) and keep restoring for ~2.5s while lazy components
+        //     hydrate and the document grows.
+        //   - GuideLoader sets `__ihhsWarmingUp` when it intends to handle
+        //     scroll itself; the pin yields to it.
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         const SCROLL_KEY = 'ihhs:scroll:' + location.pathname;
         var saveTimer = 0;
@@ -66,10 +67,17 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
           if (window.__ihhsSuppressSave) return;
           try { sessionStorage.setItem(SCROLL_KEY, String(window.scrollY)); } catch (_) {}
         });
-        // Pin scrollY to 0 for ~2.5s after page load to defeat browser
-        // auto-scroll-restoration. GuideLoader sets window.__ihhsWarmingUp
-        // when it intends to handle scroll itself; the pin yields to it.
         if (!location.hash) {
+          // Read where the user left off. Default to 0 if missing/invalid.
+          var savedY = 0;
+          try {
+            var raw = sessionStorage.getItem(SCROLL_KEY);
+            if (raw !== null) {
+              var parsed = parseInt(raw, 10);
+              if (!isNaN(parsed) && parsed >= 0) savedY = parsed;
+            }
+          } catch (_) {}
+
           window.__ihhsSuppressSave = true;
           var userScrolled = false;
           var stopPin = function () {
@@ -87,7 +95,13 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
               return;
             }
             if (userScrolled) return;
-            if (window.scrollY !== 0) window.scrollTo(0, 0);
+            // Re-clamp every frame: as lazy components hydrate the doc grows
+            // and we can reach further down toward savedY.
+            var maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            var target = Math.min(savedY, maxScroll);
+            if (Math.abs(window.scrollY - target) > 1) {
+              window.scrollTo(0, target);
+            }
             if (performance.now() - startedAt < 2500) {
               requestAnimationFrame(pinFrame);
             } else {

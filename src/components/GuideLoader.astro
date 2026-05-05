@@ -297,14 +297,13 @@ const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
     }
 
     // Cached warmup for this pathname this session: skip the warmup
-    // animation but still honor any saved scroll position.
+    // animation. The BaseLayout's pin loop will handle the scroll restore
+    // (it now restores to savedY, not 0), so we just defensively release
+    // any stale flags and remove the overlay.
     try {
       if (sessionStorage.getItem(KEY())) {
-        const savedY = parseInt(sessionStorage.getItem('ihhs:scroll:' + location.pathname) || '0', 10);
-        if (!Number.isNaN(savedY) && savedY > 0) {
-          // Defer to next frame so DOM is stable.
-          requestAnimationFrame(() => window.scrollTo(0, savedY));
-        }
+        (window as any).__ihhsWarmingUp = false;
+        (window as any).__ihhsSuppressSave = false;
         els.overlay.remove();
         return;
       }
