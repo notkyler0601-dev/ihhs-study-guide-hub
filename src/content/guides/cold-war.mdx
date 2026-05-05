@@ -1,0 +1,2247 @@
+---
+title: "Chapter 17 The Cold War, Visual Study Guide"
+description: "A heavily visual deep-dive on the Cold War: origins (Yalta, Potsdam, UN, satellite nations, Iron Curtain, Berlin), going global (Three Worlds, Cuba, Iran), and the Thaw (Détente, Reagan, Gorbachev). Built for visual learners."
+subject: "Social Studies"
+estimatedTime: 70
+date: 2026-05-04
+tags: ["cold-war", "chapter-17", "history", "visual"]
+authors: ["IHHS"]
+draft: false
+---
+
+import Callout from '../../components/Callout.astro';
+import KeyTerm from '../../components/KeyTerm.astro';
+import Collapsible from '../../components/Collapsible.astro';
+import Quiz from '../../components/Quiz.astro';
+import Flashcards from '../../components/Flashcards.astro';
+import Cesium from '../../components/Cesium.astro';
+import Timeline from '../../components/Timeline.astro';
+import VisTimeline from '../../components/VisTimeline.astro';
+import MapView from '../../components/MapView.astro';
+import MapLibreView from '../../components/MapLibreView.astro';
+import StepThrough from '../../components/StepThrough.astro';
+import DiffView from '../../components/DiffView.astro';
+import TremorCard from '../../components/TremorCard.astro';
+import RechartsBar from '../../components/RechartsBar.astro';
+import RechartsLine from '../../components/RechartsLine.astro';
+import HistoryAnimation from '../../components/HistoryAnimation.astro';
+import SpeechBubble from '../../components/SpeechBubble.astro';
+import Flag from '../../components/Flag.astro';
+import GuideLoader from '../../components/GuideLoader.astro';
+import Typewriter from '../../components/Typewriter.astro';
+import VantaBackground from '../../components/VantaBackground.astro';
+import Particles from '../../components/Particles.astro';
+import AuroraBackground from '../../components/AuroraBackground.astro';
+import RoughNotation from '../../components/RoughNotation.astro';
+import BadFact from '../../components/BadFact.astro';
+import MindMap from '../../components/MindMap.astro';
+import NetworkGraph from '../../components/NetworkGraph.astro';
+import CompareSlider from '../../components/CompareSlider.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import Crossword from '../../components/Crossword.astro';
+import Memorize from '../../components/Memorize.astro';
+import DragSort from '../../components/DragSort.astro';
+import MatchPairs from '../../components/MatchPairs.astro';
+import Hotspots from '../../components/Hotspots.astro';
+import Poll from '../../components/Poll.astro';
+import TestTimer from '../../components/TestTimer.astro';
+import Pomodoro from '../../components/Pomodoro.astro';
+import Sankey from '../../components/Sankey.astro';
+import NivoSunburst from '../../components/NivoSunburst.astro';
+import Choropleth from '../../components/Choropleth.astro';
+
+<GuideLoader maxSeconds={10} stepPx={700} stepMs={130} />
+
+<ReadingProgress />
+
+<div class="not-prose relative my-8 rounded-3xl overflow-hidden shadow-soft" style="min-height: 360px;">
+  <VantaBackground effect="net" color="#b91c1c" backgroundColor="#0a0a0a" height={360} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-mono uppercase tracking-[0.3em] text-xs text-white/70 mb-4">Chapter 17 + 19</p>
+    <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">The Cold War</h1>
+    <div class="text-white/90 font-serif text-lg md:text-2xl italic max-w-2xl">
+      <Typewriter text="Two superpowers. One nuclear shadow. Forty-six years." speed={45} />
+    </div>
+    <p class="mt-6 text-white/60 text-sm">1945 to 1991 · Visual study guide</p>
+  </div>
+</div>
+
+<Callout type="insight" title="How to use this guide">
+  This guide is built for visual learners. Every concept has a map, chart, animation, or interactive. Scroll slowly. Click everything. Drag, zoom, and watch each animation play. The text is short on purpose, the visuals do the heavy lifting.
+</Callout>
+
+## Where it all happened
+
+Drag to spin. Scroll to zoom. Click any marker for context. The arcs show key Cold War flights: the Berlin Airlift, the U-2 spy mission, and Soviet missiles bound for Cuba.
+
+<Cesium
+  target={[40, 10, 14000000]}
+  height={520}
+  terrain="world"
+  imagery="aerial-with-labels"
+  markers={[
+    { lat: 38.9072, lng: -77.0369, name: "Washington, D.C.", note: "U.S. capital. Truman, Eisenhower, Kennedy, Nixon, Reagan." },
+    { lat: 55.7558, lng: 37.6173, name: "Moscow", note: "Soviet capital. Stalin, Khrushchev, Brezhnev, Gorbachev." },
+    { lat: 52.5200, lng: 13.4050, name: "Berlin", note: "Divided 1949. Airlift 1948-49. Wall built 1961, fell 1989." },
+    { lat: 47.9990, lng: 37.8050, name: "Yalta", note: "Feb 1945. FDR, Churchill, Stalin agree to divide Germany." },
+    { lat: 52.4009, lng: 13.0656, name: "Potsdam", note: "July 1945. Truman, Attlee, Stalin. Alliance breaks down." },
+    { lat: 40.7128, lng: -74.0060, name: "New York City", note: "United Nations HQ founded 1945 with 50 nations." },
+    { lat: 23.1136, lng: -82.3666, name: "Havana", note: "Castro's communist Cuba. 90 miles from Florida." },
+    { lat: 35.6892, lng: 51.3890, name: "Tehran", note: "1979 Iranian Revolution. 52 hostages held 444 days." },
+    { lat: 33.3152, lng: 44.3661, name: "Baghdad", note: "Iran-Iraq War (1980-1988). Saddam Hussein invades Iran." },
+    { lat: 39.9042, lng: 116.4074, name: "Beijing", note: "Mao's communist China. Splits with USSR 1959. Nixon visits 1972." }
+  ]}
+  arcs={[
+    { from: [50.0379, 8.5622], to: [52.5200, 13.4050], name: "Berlin Airlift, 1948-49" },
+    { from: [37.6, -116.0], to: [55.7558, 37.6173], name: "U-2 spy plane route, 1960" },
+    { from: [55.7558, 37.6173], to: [23.1136, -82.3666], name: "Soviet missiles to Cuba, 1962" }
+  ]}
+/>
+
+## Master timeline, 46 years
+
+Use the arrows or the rail to scrub through the war. Color-coded by section: Origins (red dots) · Going Global (orange) · The Thaw (gold).
+
+<Timeline
+  title={{ headline: "The Cold War", text: "1945 to 1991" }}
+  events={[
+    { date: "1945-02-04", headline: "Yalta Conference", text: "FDR, Churchill, Stalin meet. Germany to be divided. USSR promises free elections in Eastern Europe (Stalin breaks the promise)." },
+    { date: "1945-07-17", headline: "Potsdam Conference", text: "Truman replaces FDR. Demands free elections. Stalin refuses. Alliance breaks down." },
+    { date: "1945-10-24", headline: "United Nations founded", text: "50 nations sign on. HQ in New York City. Security Council with 5 permanent veto members." },
+    { date: "1946-03-05", headline: "Iron Curtain speech", text: "Churchill, Fulton Missouri, names the line dividing free and Soviet Europe." },
+    { date: "1947-03-12", headline: "Truman Doctrine", text: "U.S. aid to Greece and Turkey. Containment policy begins." },
+    { date: "1947-06-05", headline: "Marshall Plan announced", text: "12.5 billion dollars to rebuild Western Europe and undercut communism." },
+    { date: "1948-06-24", headline: "Berlin Blockade begins", text: "USSR blocks all road, rail, and water access to West Berlin." },
+    { date: "1948-06-26", headline: "Berlin Airlift starts", text: "U.S. and Britain fly in supplies for 11 months. First major Cold War confrontation." },
+    { date: "1949-04-04", headline: "NATO formed", text: "12 Western nations. Attack on one is attack on all." },
+    { date: "1949-08-29", headline: "USSR tests atomic bomb", text: "Arms race begins in earnest." },
+    { date: "1949-10-01", headline: "China goes communist", text: "Mao Zedong defeats Nationalists. World's most populous country joins the Soviet bloc." },
+    { date: "1952-11-01", headline: "U.S. tests hydrogen bomb", text: "1,000 times more powerful than the atomic bomb." },
+    { date: "1953-03-05", headline: "Stalin dies", text: "Khrushchev rises. Begins destalinization." },
+    { date: "1953-08-12", headline: "USSR tests hydrogen bomb", text: "Less than a year behind the U.S." },
+    { date: "1955-05-14", headline: "Warsaw Pact formed", text: "USSR plus seven satellite nations. Direct response to NATO." },
+    { date: "1957-10-04", headline: "Sputnik launched", text: "First artificial satellite. Soviets stun the world. Space Race begins." },
+    { date: "1959-01-01", headline: "Castro overthrows Batista", text: "Cuba becomes communist. Soviet ally 90 miles from Florida." },
+    { date: "1959-06-15", headline: "Soviet-Chinese Split", text: "USSR cuts aid to China and refuses to share nuclear tech." },
+    { date: "1960-05-01", headline: "U-2 Incident", text: "Soviets shoot down U.S. spy plane. Pilot Francis Gary Powers captured." },
+    { date: "1961-04-17", headline: "Bay of Pigs Invasion", text: "Failed CIA-backed Cuban exile invasion. Embarrasses JFK." },
+    { date: "1961-08-13", headline: "Berlin Wall built", text: "East Germany seals off West Berlin overnight. The wall stands 28 years." },
+    { date: "1962-10-16", headline: "Cuban Missile Crisis begins", text: "U-2 photos show Soviet missiles in Cuba. Closest the world ever came to nuclear war." },
+    { date: "1962-10-28", headline: "Cuban Missile Crisis ends", text: "USSR removes Cuba missiles. U.S. secretly removes Turkey missiles." },
+    { date: "1972-02-21", headline: "Nixon visits China", text: "Détente. Drives wedge between USSR and China." },
+    { date: "1972-05-26", headline: "SALT I Treaty", text: "First strategic arms limitation. Nixon and Brezhnev." },
+    { date: "1979-02-11", headline: "Iranian Revolution", text: "Ayatollah Khomeini overthrows the Shah. Iran becomes Islamic theocracy." },
+    { date: "1979-11-04", headline: "Iran Hostage Crisis", text: "52 Americans seized at Tehran embassy. Held 444 days." },
+    { date: "1980-09-22", headline: "Iran-Iraq War begins", text: "Saddam invades Iran. 8 years, 1 million dead." },
+    { date: "1981-01-20", headline: "Reagan inaugurated", text: "Hostages released. Reagan renews Cold War tension." },
+    { date: "1983-03-23", headline: "Strategic Defense Initiative", text: "Reagan's Star Wars space-based missile shield. Never built but pressures USSR." },
+    { date: "1985-03-11", headline: "Gorbachev takes power", text: "New Soviet leader. Glasnost, perestroika, democratization." },
+    { date: "1989-11-09", headline: "Berlin Wall falls", text: "East Germans cross freely. Symbol of communism collapses." },
+    { date: "1991-12-25", headline: "USSR dissolves", text: "Gorbachev resigns. 15 republics independent. Cold War over." }
+  ]}
+/>
+
+## Learning objectives
+
+By the end of this guide you will be able to:
+
+- Explain how WWII allies became Cold War enemies (ideology + grievances).
+- Compare Yalta and Potsdam, and identify why one promise broke the alliance.
+- Identify the six strategies the U.S. and USSR used to fight without direct war.
+- Trace the division of Germany and Berlin from 1945 to 1989.
+- Explain Containment, the Truman Doctrine, the Marshall Plan, NATO, and Warsaw Pact in one breath each.
+- Walk through the eight steps of the Cuban Missile Crisis.
+- Connect the Iranian Revolution, the Hostage Crisis, and the Iran-Iraq War.
+- Explain why brinkmanship gave way to détente, and why détente eventually gave way to Reagan.
+- Name Gorbachev's three reforms and trace how they ended the USSR.
+
+## TL;DR
+
+The U.S. and USSR were WWII allies of necessity. After Hitler fell, ideology took over: capitalism vs communism, democracy vs one-party state. Yalta (Feb 1945) divided Germany. Potsdam (July 1945) broke the alliance when Stalin refused free elections in Eastern Europe. The U.S. responded with **containment** (Truman Doctrine, Marshall Plan, NATO). The USSR built a buffer of **satellite nations** behind the **Iron Curtain**. The two powers competed globally without ever fighting each other directly: the **Berlin Airlift** (1948-49), the **arms race** (H-bombs 1952-53), the **space race** (Sputnik 1957), the **Cuban Missile Crisis** (1962, the closest call), and proxy entanglements in **Iran** (Revolution 1979, Hostage Crisis 1979-81, Iran-Iraq War 1980-88). Nixon's **détente** thawed things in the 1970s. Reagan re-froze them in the 1980s with **SDI**. Then Gorbachev's **glasnost**, **perestroika**, and **democratization**, plus a Soviet economy that could not keep up, brought the wall down (1989) and the USSR with it (1991).
+
+## Glossary
+
+These terms are in **every** quiz, every essay prompt, every multiple choice. Memorize them.
+
+<KeyTerm term="Cold War">A 46-year political and ideological conflict (1945 to 1991) between the United States and the Soviet Union. Characterized by tension, competition, and threats of war, but no direct fighting between the two powers.</KeyTerm>
+
+<KeyTerm term="Iron Curtain">Winston Churchill's 1946 phrase for the imaginary line dividing democratic Western Europe from Soviet-controlled Eastern Europe.</KeyTerm>
+
+<KeyTerm term="Satellite Nation">A country that is officially independent but is politically and economically controlled by another (the USSR). The five Eastern European satellites: Poland, Hungary, Romania, Bulgaria, Czechoslovakia (plus East Germany).</KeyTerm>
+
+<KeyTerm term="Containment">U.S. policy to stop the spread of communism without direct war. Drove the Truman Doctrine, the Marshall Plan, NATO, and the wars in Korea and Vietnam.</KeyTerm>
+
+<KeyTerm term="Truman Doctrine">1947 U.S. policy promising aid to any country resisting communism. First applied to Greece and Turkey.</KeyTerm>
+
+<KeyTerm term="Marshall Plan">1947 U.S. program of 12.5 billion dollars to rebuild Western Europe. Strengthened economies and reduced communism's appeal.</KeyTerm>
+
+<KeyTerm term="NATO">North Atlantic Treaty Organization. 1949 mutual-defense alliance of the U.S., Canada, and Western Europe. An attack on one is an attack on all.</KeyTerm>
+
+<KeyTerm term="Warsaw Pact">1955 mutual-defense alliance of the USSR and seven satellite nations. Direct response to NATO.</KeyTerm>
+
+<KeyTerm term="Brinkmanship">The strategy of pushing a conflict to the very edge of war to force the other side to back down.</KeyTerm>
+
+<KeyTerm term="Arms Race">Competition between the U.S. and USSR to stockpile nuclear weapons. U.S. tested the H-bomb in 1952. USSR followed in 1953.</KeyTerm>
+
+<KeyTerm term="Space Race">Competition for technological superiority in space. Sparked by USSR's Sputnik in 1957.</KeyTerm>
+
+<KeyTerm term="Sputnik">The first artificial satellite. Launched by the USSR on October 4, 1957.</KeyTerm>
+
+<KeyTerm term="Three Worlds">First World: capitalist (U.S. and allies). Second World: communist (USSR and allies). Third World: developing, often non-aligned.</KeyTerm>
+
+<KeyTerm term="Non-Aligned Movement">Bloc of newly independent third-world countries (notably India) that refused to join either NATO or the Warsaw Pact.</KeyTerm>
+
+<KeyTerm term="Détente">French for relaxing of tension. The 1970s policy under Nixon to ease Cold War tensions through diplomacy and arms-control treaties.</KeyTerm>
+
+<KeyTerm term="Realpolitik">A foreign policy based on practical considerations of power, not ideology. Associated with Nixon and Kissinger.</KeyTerm>
+
+<KeyTerm term="SALT I">Strategic Arms Limitation Treaty, 1972. The first treaty to cap the number of strategic nuclear weapons. Signed by Nixon and Brezhnev.</KeyTerm>
+
+<KeyTerm term="Glasnost">Russian for openness. Gorbachev's policy of free speech and political openness.</KeyTerm>
+
+<KeyTerm term="Perestroika">Russian for restructuring. Gorbachev's policy of reforming the Soviet economy with limited markets.</KeyTerm>
+
+<KeyTerm term="SDI">Strategic Defense Initiative. Reagan's 1983 plan for a space-based missile defense system, nicknamed Star Wars. Never fully built but pressured the Soviet economy.</KeyTerm>
+
+---
+
+# Section 1 · Origins, Division, Escalation
+
+<div class="not-prose relative my-6 rounded-2xl overflow-hidden" style="min-height: 220px;">
+  <Particles preset="links" backgroundColor="#1a0606" particleColor="#f87171" height={220} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Day 1 to 3 · 1945 to 1960</p>
+    <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">From V-E Day to U-2</h2>
+    <p class="text-white/80 max-w-xl">Yalta, Potsdam, the United Nations, satellite nations, the Iron Curtain, divided Germany, the Berlin Airlift, the Marshall Plan, NATO, the H-bomb, Sputnik.</p>
+  </div>
+</div>
+
+## 1.1 Allies become enemies
+
+The U.S. and USSR fought side-by-side in WWII. They beat Hitler. Then, almost overnight, they turned on each other. The reason was a stack of grievances each side had been carrying for decades, plus a fundamental clash of ideologies.
+
+<DiffView
+  before={`SOVIET GRIEVANCES against the West
+
+  1918-1920  Western powers tried to overthrow
+             communism during the Russian Civil War.
+
+  1919       Excluded from the Treaty of Versailles
+             negotiations and the new League of Nations.
+
+  1938       Not invited to the Munich Conference where
+             Britain and France handed Hitler the Sudetenland.
+
+  1942-1944  U.S. and Britain delayed opening a second front
+             in WWII while the USSR took the brunt on the
+             Eastern Front. 27 million Soviets died.
+
+  RESULT     Stalin viewed the West as untrustworthy.`}
+  after={`WESTERN GRIEVANCES against the USSR
+
+  1917-1920  Bolsheviks pulled Russia out of WWI early,
+             then murdered the royal family.
+
+  1939       Stalin signed the Nazi-Soviet Nonaggression
+             Pact, freeing Hitler to invade Poland.
+
+  1940-1945  Fear that communism would spread globally
+             through revolution, propaganda, and force.
+
+  1945       Stalin's Red Army occupied every country
+             his troops liberated. He kept them.
+
+  RESULT     Truman viewed Stalin as the next Hitler.`}
+  mode="side-by-side"
+  fileName="Why the alliance broke"
+/>
+
+<Callout type="insight" title="The alliance was always tactical">
+  The U.S. and USSR allied because Hitler was a bigger problem than each other. The moment Hitler fell, the bigger problem was each other.
+</Callout>
+
+## 1.2 The two superpowers wanted opposite things
+
+This is a top-three exam topic. Memorize both columns.
+
+<DiffView
+  before={`UNITED STATES GOALS
+
+  1. Encourage democracy in other countries to
+     prevent the rise of Communist governments.
+
+  2. Gain access to raw materials and markets
+     to fuel booming American industries.
+
+  3. Rebuild European governments to promote
+     stability and create new markets for U.S. goods.
+
+  4. Reunite Germany to stabilize it and increase
+     the security of Europe.
+
+  Driver: Capitalism + Democracy.`}
+  after={`SOVIET UNION GOALS
+
+  1. Encourage communism in other countries as
+     part of a worldwide workers' revolution.
+
+  2. Rebuild its war-ravaged economy using
+     Eastern Europe's industrial equipment and
+     raw materials.
+
+  3. Control Eastern Europe to protect Soviet
+     borders and balance U.S. influence in the West.
+
+  4. Keep Germany divided to prevent it from
+     waging war again. Russia had been invaded by
+     Germany twice in 25 years.
+
+  Driver: Communism + Security.`}
+  mode="side-by-side"
+  fileName="U.S. vs USSR postwar goals"
+/>
+
+<Poll
+  question="If you were Stalin in 1945, which goal would matter most?"
+  options={["Spread communism globally", "Protect Soviet borders with a buffer zone", "Rebuild the USSR economy", "Prevent Germany from rising again"]}
+  storageKey="cold-war-stalin-poll"
+/>
+
+## 1.3 Yalta and Potsdam, the alliance fractures
+
+Two conferences. Five months apart. They look similar on paper. They are not.
+
+<TremorCard label="Yalta Conference" value="Feb 1945" delta="Allies still cooperating" deltaType="moderateIncrease" helper="Roosevelt + Churchill + Stalin. Germany to be divided. USSR receives reparations. Eastern Europe promised free elections (a promise Stalin will break)." />
+
+<TremorCard label="Potsdam Conference" value="Jul 1945" delta="Alliance breaks" deltaType="decrease" helper="Truman replaces FDR (FDR died April 12). Truman pushes Stalin to honor the free-elections promise. Stalin refuses. Stalin says communism and capitalism cannot coexist." />
+
+<DiffView
+  before={`YALTA, FEBRUARY 1945
+
+  Location:   Crimea, on the Black Sea.
+  Leaders:    Franklin D. Roosevelt (USA)
+              Winston Churchill (UK)
+              Joseph Stalin (USSR)
+
+  Mood:       Cooperative. Germany not yet defeated.
+              All three sides need each other.
+
+  Decisions:
+  + Germany divided into 4 occupation zones
+    (U.S., UK, France, USSR).
+  + USSR receives reparations from Germany.
+  + USSR will join the Pacific war against Japan.
+  + Eastern European countries get FREE ELECTIONS
+    after liberation.
+  + United Nations to be founded after war.`}
+  after={`POTSDAM, JULY 1945
+
+  Location:   Just outside Berlin.
+  Leaders:    Harry S. Truman (USA, replaces FDR)
+              Clement Attlee (UK, replaces Churchill)
+              Joseph Stalin (USSR)
+
+  Mood:       Hostile. Germany has surrendered.
+              The U.S. has just tested an atomic bomb.
+
+  Conflict:
+  - Truman demands Stalin honor the free-elections
+    promise from Yalta.
+  - Stalin refuses. Soviet troops already occupy
+    Eastern Europe.
+  - Stalin states: "Communism and capitalism
+    cannot coexist."
+
+  RESULT: The alliance is over. The Cold War begins.`}
+  mode="side-by-side"
+  fileName="Yalta vs Potsdam"
+/>
+
+<Callout type="warning" title="Common test trap">
+  Don't confuse the two conferences. Yalta = the agreement. Potsdam = the breakdown. The free-elections promise is at Yalta. The argument over keeping it is at Potsdam.
+</Callout>
+
+## 1.4 The United Nations, founded 1945
+
+The UN was supposed to do what the League of Nations failed to do: prevent another world war. It mostly worked, but it could not prevent the Cold War itself.
+
+<Sankey
+  title="UN Power Structure"
+  nodes={[
+    { id: "All Nations" },
+    { id: "General Assembly" },
+    { id: "Security Council" },
+    { id: "USA (veto)" },
+    { id: "USSR (veto)" },
+    { id: "UK (veto)" },
+    { id: "France (veto)" },
+    { id: "China (veto)" },
+    { id: "10 Rotating Members" }
+  ]}
+  links={[
+    { source: "All Nations", target: "General Assembly", value: 50 },
+    { source: "General Assembly", target: "Security Council", value: 15 },
+    { source: "Security Council", target: "USA (veto)", value: 5 },
+    { source: "Security Council", target: "USSR (veto)", value: 5 },
+    { source: "Security Council", target: "UK (veto)", value: 5 },
+    { source: "Security Council", target: "France (veto)", value: 5 },
+    { source: "Security Council", target: "China (veto)", value: 5 },
+    { source: "Security Council", target: "10 Rotating Members", value: 10 }
+  ]}
+  height={420}
+/>
+
+<TremorCard label="Founding members" value="50 nations" helper="Signed the UN Charter on October 24, 1945. Headquarters in New York City." />
+
+<TremorCard label="Permanent veto seats" value="5" helper="Britain, China, France, the U.S., and the Soviet Union. Each can single-handedly block any Security Council resolution." />
+
+<Callout type="note" title="Why the UN couldn't stop the Cold War">
+  Both the U.S. and USSR sat on the Security Council with veto power. Either side could block any resolution that threatened them. The UN became a venue for Cold War debate, not a solution to it.
+</Callout>
+
+## 1.5 Six strategies for fighting without fighting
+
+The U.S. and USSR never directly attacked each other. Both sides feared a nuclear apocalypse. Instead, they used these six tools to compete globally.
+
+<StepThrough
+  title="Six Cold War strategies"
+  steps={[
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:520px;"><div style="font-size:48px;margin-bottom:12px;">💵</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">1. Foreign Aid</h3><p style="font-size:15px;line-height:1.5;color:#52525b;">Give money, food, weapons, and infrastructure projects to countries to win them over to your side. Marshall Plan (U.S. to Europe). Soviet aid to build the Aswan High Dam (USSR to Egypt).</p></div>`,
+      caption: "Both sides bought allies with cash and concrete."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:520px;"><div style="font-size:48px;margin-bottom:12px;">🕵️</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">2. Espionage</h3><p style="font-size:15px;line-height:1.5;color:#52525b;">Spies, double agents, satellite photos, intercepted radio. The CIA (U.S.) vs the KGB (USSR). Famous case: 1960 U-2 spy plane shot down over Russia, pilot Francis Gary Powers captured.</p></div>`,
+      caption: "Each side knew what the other was doing, often within hours."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:520px;"><div style="font-size:48px;margin-bottom:12px;">🤝</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">3. Multinational Alliances</h3><p style="font-size:15px;line-height:1.5;color:#52525b;">Lock other countries into your defense umbrella. NATO (1949) put Western Europe under U.S. protection. The Warsaw Pact (1955) put Eastern Europe under Soviet command.</p></div>`,
+      caption: "An attack on one became an attack on all."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:520px;"><div style="font-size:48px;margin-bottom:12px;">📻</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">4. Propaganda</h3><p style="font-size:15px;line-height:1.5;color:#52525b;">Movies, posters, radio, newsreels. Radio Free Europe broadcast pro-Western news into Eastern Europe. Soviet propaganda showed Americans as greedy capitalists exploiting workers.</p></div>`,
+      caption: "Win the hearts and minds before you have to win the war."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:520px;"><div style="font-size:48px;margin-bottom:12px;">⚠️</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">5. Brinkmanship</h3><p style="font-size:15px;line-height:1.5;color:#52525b;">Push the conflict to the edge of nuclear war and dare the other side to flinch first. Eisenhower and his Sec. of State John Foster Dulles invented the term. Cuban Missile Crisis (1962) is the textbook example.</p></div>`,
+      caption: "Sometimes both sides flinched. Sometimes only one."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:520px;"><div style="font-size:48px;margin-bottom:12px;">🎭</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">6. Surrogate Wars</h3><p style="font-size:15px;line-height:1.5;color:#52525b;">"Surrogate" means substitute. Korea, Vietnam, Afghanistan, Angola, Nicaragua. The U.S. and USSR funded and armed opposite sides of dozens of regional wars without ever fighting each other directly.</p></div>`,
+      caption: "Cold between the two giants. Hot everywhere else."
+    }
+  ]}
+  height={300}
+/>
+
+## 1.6 Soviet satellite nations
+
+After WWII, the Soviet Red Army occupied every country it had liberated from the Nazis. Stalin installed pro-Soviet communist governments in each one. They became known as **satellite nations**: officially independent, secretly controlled by Moscow.
+
+<MapLibreView
+  center={[18, 50]}
+  zoom={3.6}
+  height={420}
+  style="https://demotiles.maplibre.org/style.json"
+  markers={[
+    { lng: 21.0122, lat: 52.2297, name: "Poland", description: "Soviet satellite. Communist government installed 1947." },
+    { lng: 19.0402, lat: 47.4979, name: "Hungary", description: "Soviet satellite. 1956 uprising crushed by Red Army." },
+    { lng: 26.1025, lat: 44.4268, name: "Romania", description: "Soviet satellite. Ceausescu rules until 1989 revolution." },
+    { lng: 23.3219, lat: 42.6977, name: "Bulgaria", description: "Soviet satellite. Most loyal to Moscow." },
+    { lng: 14.4378, lat: 50.0755, name: "Czechoslovakia", description: "Soviet satellite. 1968 Prague Spring crushed." },
+    { lng: 13.4050, lat: 52.5200, name: "East Germany", description: "Soviet satellite. Walled off from the West in 1961." },
+    { lng: 37.6173, lat: 55.7558, name: "Moscow", description: "USSR. The center that controlled them all." }
+  ]}
+/>
+
+<Callout type="warning" title="Why Stalin wanted a buffer">
+  Russia had been invaded from the west three times in 130 years: Napoleon (1812), the Kaiser (1914), Hitler (1941). Each time millions died. A wall of friendly states between the USSR and Germany was Stalin's insurance policy.
+</Callout>
+
+## 1.7 The Iron Curtain
+
+In 1946, Winston Churchill traveled to Fulton, Missouri and gave a speech. One sentence stuck.
+
+<div class="not-prose my-8 rounded-2xl border-l-4 border-accent-700 bg-ink-50 dark:bg-ink-950 p-6">
+  <blockquote class="font-serif text-xl italic text-ink-700 dark:text-ink-200">
+    "From Stettin in the Baltic to Trieste in the Adriatic, an iron curtain has descended across the continent."
+  </blockquote>
+  <p class="mt-3 text-sm text-ink-500 font-mono">Winston Churchill, March 5, 1946</p>
+</div>
+
+The phrase stuck because it was true. Look at the map: every country east of the line was ruled by a communist government answerable to Moscow. Every country west of the line was a democracy.
+
+<MapView
+  center={[18, 50]}
+  zoom={3.5}
+  height={420}
+  markers={[
+    { lat: 51.5074, lng: -0.1278, label: "London", note: "Western, democratic" },
+    { lat: 48.8566, lng: 2.3522, label: "Paris", note: "Western, democratic" },
+    { lat: 41.9028, lng: 12.4964, label: "Rome", note: "Western, democratic" },
+    { lat: 52.5200, lng: 13.4050, label: "West/East Berlin", note: "Cut by the Iron Curtain" },
+    { lat: 52.2297, lng: 21.0122, label: "Warsaw", note: "Soviet bloc" },
+    { lat: 50.0755, lng: 14.4378, label: "Prague", note: "Soviet bloc" },
+    { lat: 47.4979, lng: 19.0402, label: "Budapest", note: "Soviet bloc" },
+    { lat: 55.7558, lng: 37.6173, label: "Moscow", note: "Soviet capital" }
+  ]}
+/>
+
+## 1.8 Germany divided
+
+Yalta divided Germany into 4 occupation zones (U.S., UK, France, USSR). Berlin sat deep inside the Soviet zone but was itself divided into 4 sub-zones. By 1949, the three Western zones had merged into West Germany, and the Soviet zone had become East Germany.
+
+<StepThrough
+  title="Germany, 1945 to 1989"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;"><h3 style="font-family:serif;font-size:22px;margin-bottom:14px;color:#b91c1c;text-align:center;">1945: Four occupation zones</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#dbeafe;padding:14px;border-radius:8px;text-align:center;border:2px solid #1d4ed8;"><strong>British zone</strong><br/><span style="font-size:12px;color:#1d4ed8;">Northwest Germany</span></div>
+        <div style="background:#fee2e2;padding:14px;border-radius:8px;text-align:center;border:2px solid #b91c1c;"><strong>U.S. zone</strong><br/><span style="font-size:12px;color:#b91c1c;">South Germany</span></div>
+        <div style="background:#e0e7ff;padding:14px;border-radius:8px;text-align:center;border:2px solid #4338ca;"><strong>French zone</strong><br/><span style="font-size:12px;color:#4338ca;">Southwest</span></div>
+        <div style="background:#fef3c7;padding:14px;border-radius:8px;text-align:center;border:2px solid #92400e;"><strong>Soviet zone</strong><br/><span style="font-size:12px;color:#92400e;">East Germany</span></div>
+      </div><p style="margin-top:14px;font-size:13px;color:#52525b;text-align:center;">Berlin sits in the Soviet zone but is itself divided four ways.</p></div>`,
+      caption: "Yalta agreement. Each Allied power gets a slice."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;"><h3 style="font-family:serif;font-size:22px;margin-bottom:14px;color:#b91c1c;text-align:center;">1949: Two Germanys</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="background:#dbeafe;padding:18px;border-radius:8px;text-align:center;border:2px solid #1d4ed8;">
+          <strong style="font-size:18px;">West Germany</strong><br/>
+          <span style="font-size:13px;color:#1d4ed8;">U.S., UK, French zones merge</span><br/>
+          <span style="font-size:12px;color:#52525b;display:block;margin-top:6px;">Democratic. Capitalist. Capital: Bonn.</span>
+        </div>
+        <div style="background:#fee2e2;padding:18px;border-radius:8px;text-align:center;border:2px solid #b91c1c;">
+          <strong style="font-size:18px;">East Germany</strong><br/>
+          <span style="font-size:13px;color:#b91c1c;">Soviet zone</span><br/>
+          <span style="font-size:12px;color:#52525b;display:block;margin-top:6px;">Communist. One-party state. Capital: East Berlin.</span>
+        </div>
+      </div></div>`,
+      caption: "The cold war split Germany in two. It will stay that way for 40 years."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;margin-bottom:14px;color:#b91c1c;">1948 to 1949: The Berlin Blockade</h3><div style="background:#fee2e2;padding:16px;border-radius:8px;border:2px solid #b91c1c;margin-bottom:12px;"><strong>Stalin cuts off West Berlin.</strong><br/><span style="font-size:13px;">Highway, water, and rail access blocked.</span></div><div style="background:#dbeafe;padding:16px;border-radius:8px;border:2px solid #1d4ed8;"><strong>U.S. and Britain fly in supplies.</strong><br/><span style="font-size:13px;">11 months. 277,000 flights. 2.3 million tons.</span></div></div>`,
+      caption: "First major Cold War confrontation. Stalin blinks first."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;margin-bottom:14px;color:#b91c1c;">1961: The Berlin Wall</h3><div style="height:140px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,#dbeafe 0%,#dbeafe 47%,#52525b 47%,#52525b 53%,#fee2e2 53%,#fee2e2 100%);border-radius:8px;border:2px solid #000;position:relative;"><span style="position:absolute;left:14px;font-weight:bold;color:#1d4ed8;">WEST</span><span style="color:#fff;font-weight:bold;font-size:14px;writing-mode:vertical-rl;">WALL</span><span style="position:absolute;right:14px;font-weight:bold;color:#b91c1c;">EAST</span></div><p style="margin-top:14px;font-size:13px;color:#52525b;">Built overnight, August 13, 1961. Stops East Germans from escaping to the West.</p></div>`,
+      caption: "The wall stood for 28 years. It became the defining symbol of the Cold War."
+    }
+  ]}
+  height={360}
+/>
+
+## 1.9 The Berlin Airlift, 1948-1949
+
+This is the first time the world held its breath wondering if the Cold War would turn hot.
+
+<TremorCard label="Duration" value="11 months" helper="June 24, 1948 to May 12, 1949. Stalin lifted the blockade only after it became clear the airlift would never quit." />
+
+<TremorCard label="Total flights" value="277,000" helper="Allied planes landed at Tempelhof every 90 seconds at peak. Pilots flew dawn to dusk in fog, snow, and rain." />
+
+<TremorCard label="Tons of supplies delivered" value="2.3 million" helper="Coal, flour, milk, medicine, and Christmas candy bars dropped on tiny parachutes for Berlin's children." />
+
+<HistoryAnimation
+  title="The Berlin Wall (mini)"
+  scenes={[
+    {
+      duration: 4,
+      caption: "August 12, 1961. Berlin. Families wake up to a normal Saturday morning.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <rect x="60" y="80" width="120" height="120" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+        <text x="120" y="220" text-anchor="middle" font-family="serif" font-size="14" fill="#1d4ed8">WEST BERLIN</text>
+        <rect x="220" y="80" width="120" height="120" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <text x="280" y="220" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c">EAST BERLIN</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="200" cy="120" r="6"/>
+          <line x1="200" y1="126" x2="200" y2="146"/>
+          <line x1="200" y1="146" x2="194" y2="158"/>
+          <line x1="200" y1="146" x2="206" y2="158"/>
+        </g>
+        <text x="200" y="60" text-anchor="middle" font-family="serif" font-size="14">freely walking between</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "August 13, 1961. Overnight, East German troops string barbed wire across the city.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <rect x="60" y="80" width="120" height="120" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+        <rect x="220" y="80" width="120" height="120" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <line x1="200" y1="60" x2="200" y2="220" stroke="#000" stroke-width="3" stroke-dasharray="4 3"/>
+        <text x="200" y="50" text-anchor="middle" font-family="serif" font-size="13" fill="#000">BARBED WIRE</text>
+        <text x="120" y="220" text-anchor="middle" font-family="serif" font-size="14" fill="#1d4ed8">WEST</text>
+        <text x="280" y="220" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c">EAST</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Within weeks, concrete blocks. Within months, a 12-foot wall with guard towers.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <rect x="60" y="80" width="120" height="120" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+        <rect x="220" y="80" width="120" height="120" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <rect x="194" y="60" width="12" height="160" fill="#52525b" stroke="#000" stroke-width="2"/>
+        <rect x="184" y="50" width="32" height="20" fill="#a3a3a3" stroke="#000" stroke-width="2"/>
+        <text x="200" y="44" text-anchor="middle" font-family="serif" font-size="11" fill="#000">guard tower</text>
+        <text x="120" y="220" text-anchor="middle" font-family="serif" font-size="14" fill="#1d4ed8">WEST</text>
+        <text x="280" y="220" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c">EAST</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "It stayed there for 28 years. 140 East Germans were killed trying to cross.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <rect x="194" y="40" width="12" height="200" fill="#52525b" stroke="#000" stroke-width="2"/>
+        <text x="200" y="30" text-anchor="middle" font-family="serif" font-size="20" font-weight="bold" fill="#b91c1c">28 YEARS</text>
+        <text x="100" y="120" text-anchor="middle" font-family="serif" font-size="16" fill="#1d4ed8">freedom</text>
+        <text x="300" y="120" text-anchor="middle" font-family="serif" font-size="16" fill="#b91c1c">surveillance</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="13" fill="#000">a city, a family, a country, cut in half</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+## 1.10 Containment, the U.S. master strategy
+
+In 1946, U.S. diplomat George Kennan sent a long telegram from Moscow arguing that the Soviet system would expand wherever it met no resistance. The right move, he said, was to **contain** it: stop the spread without going to war.
+
+Truman built three weapons around this idea.
+
+<Sankey
+  title="Containment in Action"
+  nodes={[
+    { id: "Containment Doctrine" },
+    { id: "Truman Doctrine 1947" },
+    { id: "Marshall Plan 1947" },
+    { id: "NATO 1949" },
+    { id: "Greece + Turkey aid" },
+    { id: "Western Europe rebuilt" },
+    { id: "Mutual defense alliance" },
+    { id: "Communist spread halted in West" }
+  ]}
+  links={[
+    { source: "Containment Doctrine", target: "Truman Doctrine 1947", value: 5 },
+    { source: "Containment Doctrine", target: "Marshall Plan 1947", value: 12 },
+    { source: "Containment Doctrine", target: "NATO 1949", value: 8 },
+    { source: "Truman Doctrine 1947", target: "Greece + Turkey aid", value: 5 },
+    { source: "Marshall Plan 1947", target: "Western Europe rebuilt", value: 12 },
+    { source: "NATO 1949", target: "Mutual defense alliance", value: 8 },
+    { source: "Greece + Turkey aid", target: "Communist spread halted in West", value: 5 },
+    { source: "Western Europe rebuilt", target: "Communist spread halted in West", value: 12 },
+    { source: "Mutual defense alliance", target: "Communist spread halted in West", value: 8 }
+  ]}
+  height={420}
+/>
+
+<TremorCard label="Marshall Plan total" value="12.5 billion dollars" helper="In 1948 dollars. Roughly 165 billion in today's money. Largest foreign-aid program in history." />
+
+### Where the Marshall Plan money actually went
+
+<RechartsBar
+  title="Marshall Plan aid by country, 1948-1951 (millions of dollars)"
+  data={[
+    { country: "Great Britain", aid: 2826 },
+    { country: "France", aid: 2445 },
+    { country: "Italy", aid: 1316 },
+    { country: "West Germany", aid: 1297 },
+    { country: "Holland", aid: 877 },
+    { country: "Austria", aid: 561 },
+    { country: "Belgium/Lux", aid: 547 },
+    { country: "Greece", aid: 515 },
+    { country: "Denmark", aid: 257 },
+    { country: "Norway", aid: 237 },
+    { country: "Turkey", aid: 153 },
+    { country: "Ireland", aid: 146 },
+    { country: "Sweden", aid: 119 },
+    { country: "Portugal", aid: 51 },
+    { country: "Yugoslavia", aid: 33 },
+    { country: "Iceland", aid: 29 }
+  ]}
+  xKey="country"
+  bars={[{ key: "aid", color: "#b91c1c", name: "Millions of dollars" }]}
+/>
+
+<Callout type="insight" title="Why Britain and France got the most">
+  Both had the largest economies, the deepest war damage, and the most influence over global trade. Strengthening them strengthened the entire Western bloc. A weak Britain or France was a recruiting poster for communism.
+</Callout>
+
+## 1.11 NATO vs Warsaw Pact
+
+The two alliance blocs that defined Europe for 40 years.
+
+<NetworkGraph
+  title="The two alliance blocs, 1955"
+  nodes={[
+    { id: "NATO", label: "NATO (1949)", group: "west" },
+    { id: "Warsaw Pact", label: "Warsaw Pact (1955)", group: "east" },
+    { id: "USA", label: "United States", group: "west" },
+    { id: "UK", label: "United Kingdom", group: "west" },
+    { id: "France", label: "France", group: "west" },
+    { id: "Canada", label: "Canada", group: "west" },
+    { id: "WGer", label: "West Germany", group: "west" },
+    { id: "Italy", label: "Italy", group: "west" },
+    { id: "Belgium", label: "Belgium", group: "west" },
+    { id: "Netherlands", label: "Netherlands", group: "west" },
+    { id: "USSR", label: "Soviet Union", group: "east" },
+    { id: "EGer", label: "East Germany", group: "east" },
+    { id: "Poland", label: "Poland", group: "east" },
+    { id: "Czechoslovakia", label: "Czechoslovakia", group: "east" },
+    { id: "Hungary", label: "Hungary", group: "east" },
+    { id: "Romania", label: "Romania", group: "east" },
+    { id: "Bulgaria", label: "Bulgaria", group: "east" }
+  ]}
+  edges={[
+    { source: "NATO", target: "USA" },
+    { source: "NATO", target: "UK" },
+    { source: "NATO", target: "France" },
+    { source: "NATO", target: "Canada" },
+    { source: "NATO", target: "WGer" },
+    { source: "NATO", target: "Italy" },
+    { source: "NATO", target: "Belgium" },
+    { source: "NATO", target: "Netherlands" },
+    { source: "Warsaw Pact", target: "USSR" },
+    { source: "Warsaw Pact", target: "EGer" },
+    { source: "Warsaw Pact", target: "Poland" },
+    { source: "Warsaw Pact", target: "Czechoslovakia" },
+    { source: "Warsaw Pact", target: "Hungary" },
+    { source: "Warsaw Pact", target: "Romania" },
+    { source: "Warsaw Pact", target: "Bulgaria" }
+  ]}
+  layout="cose"
+  height={500}
+/>
+
+### NATO members at a glance
+
+<div class="not-prose my-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+  <div class="text-center"><Flag code="US" size={48} /><p class="text-xs mt-1">USA</p></div>
+  <div class="text-center"><Flag code="CA" size={48} /><p class="text-xs mt-1">Canada</p></div>
+  <div class="text-center"><Flag code="GB" size={48} /><p class="text-xs mt-1">UK</p></div>
+  <div class="text-center"><Flag code="FR" size={48} /><p class="text-xs mt-1">France</p></div>
+  <div class="text-center"><Flag code="BE" size={48} /><p class="text-xs mt-1">Belgium</p></div>
+  <div class="text-center"><Flag code="NL" size={48} /><p class="text-xs mt-1">Netherlands</p></div>
+  <div class="text-center"><Flag code="LU" size={48} /><p class="text-xs mt-1">Luxembourg</p></div>
+  <div class="text-center"><Flag code="DK" size={48} /><p class="text-xs mt-1">Denmark</p></div>
+  <div class="text-center"><Flag code="NO" size={48} /><p class="text-xs mt-1">Norway</p></div>
+  <div class="text-center"><Flag code="IS" size={48} /><p class="text-xs mt-1">Iceland</p></div>
+  <div class="text-center"><Flag code="IT" size={48} /><p class="text-xs mt-1">Italy</p></div>
+  <div class="text-center"><Flag code="PT" size={48} /><p class="text-xs mt-1">Portugal</p></div>
+</div>
+
+### Warsaw Pact members at a glance
+
+<div class="not-prose my-6 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
+  <div class="text-center"><Flag code="RU" size={48} /><p class="text-xs mt-1">USSR</p></div>
+  <div class="text-center"><Flag code="DE" size={48} /><p class="text-xs mt-1">East Germany</p></div>
+  <div class="text-center"><Flag code="PL" size={48} /><p class="text-xs mt-1">Poland</p></div>
+  <div class="text-center"><Flag code="CZ" size={48} /><p class="text-xs mt-1">Czechoslovakia</p></div>
+  <div class="text-center"><Flag code="HU" size={48} /><p class="text-xs mt-1">Hungary</p></div>
+  <div class="text-center"><Flag code="RO" size={48} /><p class="text-xs mt-1">Romania</p></div>
+  <div class="text-center"><Flag code="BG" size={48} /><p class="text-xs mt-1">Bulgaria</p></div>
+</div>
+
+<Callout type="note" title="The non-aligned bloc">
+  India and China refused to join either alliance. They led the **Non-Aligned Movement** of countries that wanted to chart their own course. Many newly independent African and Asian nations followed.
+</Callout>
+
+## 1.12 The arms race
+
+Nuclear weapons made the Cold War terrifying. By 1953, both sides had hydrogen bombs. By the 1960s, both had intercontinental ballistic missiles (ICBMs). By the 1980s, the combined stockpile could destroy human civilization several times over.
+
+<RechartsLine
+  title="Nuclear warhead stockpiles, 1945 to 1991"
+  data={[
+    { year: "1945", USA: 6, USSR: 0 },
+    { year: "1950", USA: 369, USSR: 5 },
+    { year: "1955", USA: 3057, USSR: 200 },
+    { year: "1960", USA: 20434, USSR: 1605 },
+    { year: "1965", USA: 31139, USSR: 6129 },
+    { year: "1970", USA: 26008, USSR: 11643 },
+    { year: "1975", USA: 27519, USSR: 19055 },
+    { year: "1980", USA: 24304, USSR: 30062 },
+    { year: "1985", USA: 23368, USSR: 39197 },
+    { year: "1990", USA: 21392, USSR: 37000 }
+  ]}
+  xKey="year"
+  lines={[
+    { key: "USA", color: "#b91c1c", name: "United States" },
+    { key: "USSR", color: "#000000", name: "Soviet Union" }
+  ]}
+/>
+
+<TremorCard label="U.S. hydrogen bomb test" value="Nov 1, 1952" helper="The Ivy Mike test on Enewetak Atoll. 1,000 times more powerful than the Hiroshima atomic bomb." />
+
+<TremorCard label="USSR hydrogen bomb test" value="Aug 12, 1953" helper="Less than a year behind the Americans. The arms race was now a level playing field." />
+
+<Callout type="warning" title="Mutually Assured Destruction">
+  By the late 1960s, both sides had so many nuclear weapons that any first strike would be answered by a second strike that would destroy the attacker. This logic, called MAD, was the only thing keeping the peace.
+</Callout>
+
+## 1.13 The Space Race
+
+When the USSR launched **Sputnik** in October 1957, Americans panicked. If the Soviets could put a satellite over the U.S., they could put a nuclear warhead there too.
+
+<VisTimeline
+  height="320px"
+  start="1957-01-01"
+  end="1972-12-31"
+  items={[
+    { id: 1, group: "USSR", content: "Sputnik 1 launched", start: "1957-10-04" },
+    { id: 2, group: "USSR", content: "Laika in space", start: "1957-11-03" },
+    { id: 3, group: "USA", content: "Explorer 1 launched", start: "1958-01-31" },
+    { id: 4, group: "USA", content: "NASA founded", start: "1958-07-29" },
+    { id: 5, group: "USSR", content: "Luna 2 hits the Moon", start: "1959-09-13" },
+    { id: 6, group: "USSR", content: "Yuri Gagarin first in space", start: "1961-04-12" },
+    { id: 7, group: "USA", content: "Alan Shepard suborbital", start: "1961-05-05" },
+    { id: 8, group: "USA", content: "JFK 'Moon by end of decade' speech", start: "1961-05-25" },
+    { id: 9, group: "USA", content: "John Glenn orbits Earth", start: "1962-02-20" },
+    { id: 10, group: "USSR", content: "Valentina Tereshkova first woman in space", start: "1963-06-16" },
+    { id: 11, group: "USA", content: "Apollo 11 lands on the Moon", start: "1969-07-20" },
+    { id: 12, group: "USA + USSR", content: "Apollo-Soyuz handshake in orbit", start: "1975-07-17" }
+  ]}
+  groups={[
+    { id: "USSR", content: "Soviet Union" },
+    { id: "USA", content: "United States" },
+    { id: "USA + USSR", content: "Joint" }
+  ]}
+/>
+
+<Callout type="insight" title="Why Sputnik mattered">
+  Sputnik was a beach-ball-sized hunk of metal that beeped. But it proved the USSR had ICBM-class rockets, and that the U.S. did not. American school curriculums rebuilt around math and science overnight. The National Defense Education Act poured federal money into universities.
+</Callout>
+
+## 1.14 The U-2 Incident, 1960
+
+A perfect example of espionage colliding with brinkmanship.
+
+<SpeechBubble variant="say" speaker="Eisenhower (1955)">
+  We propose mutual flyovers. Each side flies over the other so neither can plan a surprise attack.
+</SpeechBubble>
+
+<SpeechBubble variant="say" speaker="Khrushchev">
+  No. We will not allow American planes over Soviet airspace.
+</SpeechBubble>
+
+<SpeechBubble variant="think" speaker="Eisenhower (privately)">
+  Then we'll fly anyway. Build me a plane that flies higher than any Soviet missile can reach.
+</SpeechBubble>
+
+The result was the **U-2 spy plane**. The CIA flew secret reconnaissance missions over Soviet territory for years. Then on May 1, 1960, the Soviets shot one down.
+
+<TremorCard label="Pilot captured" value="Francis Gary Powers" helper="Convicted in a Soviet show trial. Sentenced to 10 years. Exchanged in 1962 for a Soviet spy on the Glienicke 'Bridge of Spies' in Berlin." />
+
+<BadFact source="every confused student ever" certainty="0%" title="MISCONCEPTION">
+  The U-2 Incident started the Cold War.
+</BadFact>
+
+The Cold War had already been going for 15 years by the time Powers got shot down. The U-2 Incident **escalated** tensions, ruined the planned Eisenhower-Khrushchev summit, and made it harder to negotiate. But it didn't start the war.
+
+## Section 1 self-quiz
+
+<Quiz
+  title="Origins, division, escalation"
+  questions={[
+    {
+      q: "What was the Cold War?",
+      choices: [
+        "A direct military conflict between the U.S. and USSR",
+        "A political and ideological conflict marked by tension and competition, but no direct fighting",
+        "A series of UN peacekeeping missions",
+        "A trade war over oil"
+      ],
+      answer: 1,
+      explain: "The Cold War was political and ideological. Hot wars happened in proxy locations (Korea, Vietnam) but never directly between the two superpowers."
+    },
+    {
+      q: "At which conference did Stalin promise free elections in Eastern Europe (a promise he later broke)?",
+      choices: ["Potsdam", "Tehran", "Yalta", "San Francisco"],
+      answer: 2,
+      explain: "Yalta, February 1945. Stalin agreed to free elections in liberated Eastern European countries. The promise was broken almost immediately."
+    },
+    {
+      q: "Why did the alliance break down at Potsdam in July 1945?",
+      choices: [
+        "Truman demanded Stalin honor the free-elections promise; Stalin refused",
+        "Stalin invaded Iran",
+        "The U.S. dropped the atomic bomb on Moscow",
+        "Churchill insulted Stalin"
+      ],
+      answer: 0,
+      explain: "Truman replaced FDR after FDR's death. He pushed Stalin to keep the Yalta promise. Stalin refused and stated communism and capitalism could not coexist."
+    },
+    {
+      q: "How many founding members did the United Nations have?",
+      choices: ["50", "100", "25", "75"],
+      answer: 0,
+      explain: "50 nations signed the UN Charter on October 24, 1945, in San Francisco. Headquarters were established in New York City."
+    },
+    {
+      q: "Which is NOT one of the five permanent veto-holding members of the UN Security Council?",
+      choices: ["United States", "United Kingdom", "Germany", "China"],
+      answer: 2,
+      explain: "The five permanent members are Britain, China, France, the U.S., and the Soviet Union (now Russia). Germany was a defeated power in 1945 and never joined as a permanent member."
+    },
+    {
+      q: "Which Cold War strategy involved giving money and aid to win allies?",
+      choices: ["Brinkmanship", "Espionage", "Foreign Aid", "Surrogate Wars"],
+      answer: 2,
+      explain: "Foreign Aid bought allies. The Marshall Plan (U.S. to Western Europe) and Soviet aid for the Aswan High Dam (USSR to Egypt) are textbook examples."
+    },
+    {
+      q: "What did the Berlin Airlift accomplish?",
+      choices: [
+        "Bombed East Germany",
+        "Supplied West Berlin by air for 11 months while the USSR blockaded ground access",
+        "Evacuated Allied troops from East Berlin",
+        "Built the Berlin Wall"
+      ],
+      answer: 1,
+      explain: "When Stalin blocked highway, water, and rail access to West Berlin in 1948, the U.S. and Britain flew in 2.3 million tons of supplies over 11 months. Stalin lifted the blockade in May 1949."
+    },
+    {
+      q: "How much money did the Marshall Plan provide?",
+      choices: ["1 billion dollars", "12.5 billion dollars", "100 billion dollars", "500 million dollars"],
+      answer: 1,
+      explain: "12.5 billion dollars in 1948 money. The largest foreign-aid program in human history at the time."
+    }
+  ]}
+/>
+
+---
+
+# Section 2 · Going Global
+
+<div class="not-prose relative my-6 rounded-2xl overflow-hidden" style="min-height: 220px;">
+  <Particles preset="links" backgroundColor="#1a0606" particleColor="#fbbf24" height={220} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Day 4 · 1959 to 1988</p>
+    <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">Cuba and Iran</h2>
+    <p class="text-white/80 max-w-xl">The Cold War leaves Europe. Three Worlds emerge. Cuba goes communist. The world holds its breath. Iran has a revolution and an 8-year war with Iraq.</p>
+  </div>
+</div>
+
+## 2.1 Three Worlds
+
+After 1945, the globe split into three political blocs. Newly independent third-world countries became battlegrounds for influence between the first and second worlds.
+
+<NivoSunburst
+  title="Three Worlds, 1960"
+  data={{
+    name: "World",
+    children: [
+      {
+        name: "First World (Capitalist)",
+        color: "#1d4ed8",
+        children: [
+          { name: "USA", value: 1 },
+          { name: "Canada", value: 1 },
+          { name: "Western Europe", value: 4 },
+          { name: "Japan", value: 1 },
+          { name: "Australia", value: 1 },
+          { name: "South Korea", value: 1 }
+        ]
+      },
+      {
+        name: "Second World (Communist)",
+        color: "#b91c1c",
+        children: [
+          { name: "USSR", value: 1 },
+          { name: "Eastern Europe", value: 5 },
+          { name: "China", value: 1 },
+          { name: "North Korea", value: 1 },
+          { name: "Cuba", value: 1 },
+          { name: "Vietnam", value: 1 }
+        ]
+      },
+      {
+        name: "Third World (Non-Aligned)",
+        color: "#a3a3a3",
+        children: [
+          { name: "India", value: 1 },
+          { name: "Egypt", value: 1 },
+          { name: "Indonesia", value: 1 },
+          { name: "Yugoslavia", value: 1 },
+          { name: "Sub-Saharan Africa", value: 4 },
+          { name: "Latin America", value: 4 }
+        ]
+      }
+    ]
+  }}
+  height={460}
+/>
+
+<DiffView
+  before={`FIRST WORLD                  SECOND WORLD
+
+  Government:                  Government:
+  Democracy + free elections   One-party communist state
+  Multiple political parties   Communist Party only
+  Free press                   State-controlled press
+
+  Economy:                     Economy:
+  Capitalism + free markets    Central planning by state
+  Private property             State owns the means
+  Profit motive                of production
+
+  Examples:                    Examples:
+  USA, UK, France,             USSR, China, Cuba,
+  West Germany, Japan          North Korea, Vietnam`}
+  after={`THIRD WORLD
+
+  Diverse, often newly independent. Many were
+  former colonies of European empires.
+
+  Choices facing them in 1960:
+  - Align with the U.S. for trade and aid
+  - Align with the USSR for trade and aid
+  - Stay non-aligned and play both sides
+
+  The Non-Aligned Movement, led by Nehru's
+  India and Tito's Yugoslavia, gathered ~120
+  countries that refused both Cold War blocs.
+
+  Examples of non-aligned: India, Indonesia,
+  Egypt, Yugoslavia, Ghana, Cuba (briefly).
+
+  Battlegrounds: Korea, Vietnam, Angola,
+  Mozambique, Nicaragua, Afghanistan,
+  Cambodia, Congo, Ethiopia.`}
+  mode="side-by-side"
+  fileName="The three worlds, side by side"
+/>
+
+## 2.2 Cold War hot spots, 1948 to 1975
+
+The Cold War touched almost every region. Click each marker to see what happened.
+
+<MapLibreView
+  center={[20, 20]}
+  zoom={1.5}
+  height={460}
+  style="https://demotiles.maplibre.org/style.json"
+  markers={[
+    { lng: 21.8243, lat: 39.0742, name: "Greece (1946-1949)", description: "U.S. helps defeat communist rebels via Truman Doctrine and Marshall Plan aid." },
+    { lng: 35.2433, lat: 38.9637, name: "Turkey (1947-1950)", description: "U.S. economic and military aid prevents Soviet expansion." },
+    { lng: 127.7669, lat: 35.9078, name: "Korea (1950-1953)", description: "U.S./UN forces fight North Korean and Chinese communists. Ends in stalemate at the 38th parallel." },
+    { lng: 108.2772, lat: 14.0583, name: "Vietnam (1955-1975)", description: "U.S. fights communist North Vietnam. Ends with U.S. withdrawal and communist victory." },
+    { lng: -82.3666, lat: 23.1136, name: "Cuba (1962)", description: "Cuban Missile Crisis. Closest the world ever came to nuclear war." },
+    { lng: 60.0000, lat: 30.0000, name: "Iran (1979-1981)", description: "Revolution overthrows U.S.-backed Shah. 52 hostages held 444 days." },
+    { lng: 18.4904, lat: -2.0469, name: "Congo (1960)", description: "Soviet aid to anticolonial struggles." },
+    { lng: 34.8888, lat: -19.8439, name: "Mozambique (1971)", description: "Soviet-backed liberation movement." },
+    { lng: 17.8739, lat: -11.2027, name: "Angola (1974-2002)", description: "Cold War proxy war between communist MPLA and U.S./South Africa-backed UNITA." },
+    { lng: 113.9213, lat: -0.7893, name: "Indonesia (1965)", description: "Britain helps repress communist uprising." },
+    { lng: -90.2308, lat: 15.7835, name: "Guatemala (1954)", description: "U.S. CIA-backed coup overthrows leftist president Arbenz." },
+    { lng: -71.5430, lat: -35.6751, name: "Chile (1973)", description: "U.S.-backed coup overthrows socialist president Allende." }
+  ]}
+/>
+
+## 2.3 The Cuban Revolution
+
+Cuba is 90 miles from Florida. Throughout the 1950s, it was ruled by **Fulgencio Batista**, a brutal U.S.-backed dictator. American companies owned most of Cuba's sugar industry, casinos, and resorts. The Cuban people were poor and angry.
+
+In 1953, a young lawyer named **Fidel Castro** launched an armed rebellion from the mountains. After six years of guerrilla war, he marched into Havana on January 1, 1959.
+
+<StepThrough
+  title="Cuba goes communist, 1959 to 1962"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Step 1: Castro overthrows Batista</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">January 1, 1959. Castro's rebels capture Havana. Batista flees to the Dominican Republic with his fortune. Castro establishes a revolutionary government.</p></div>`,
+      caption: "Castro is initially seen as a nationalist, not a communist."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Step 2: Castro seizes U.S. assets</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">Castro nationalizes U.S.-owned sugar mills, oil refineries, and businesses. Worth billions. The U.S. is furious.</p></div>`,
+      caption: "Castro is choosing economic independence over American capital."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Step 3: Eisenhower imposes embargo</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">U.S. cuts off trade with Cuba. The Cuban economy crashes. Castro now needs a new patron.</p></div>`,
+      caption: "The embargo pushes Cuba toward the only other superpower."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Step 4: Castro turns to the USSR</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">Khrushchev offers Cuba economic and military aid. Castro accepts. Cuba is now a Soviet ally 90 miles from Florida.</p></div>`,
+      caption: "The Cold War now has a permanent base in the Western Hemisphere."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Step 5: Bay of Pigs Invasion (April 1961)</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">CIA trains 1,400 Cuban exiles to invade Cuba and overthrow Castro. The invasion fails catastrophically. Most exiles are captured or killed.</p><p style="font-size:13px;color:#b91c1c;margin-top:10px;font-style:italic;">Result: U.S. looks weak. Castro looks invincible. Soviet-Cuban alliance strengthens.</p></div>`,
+      caption: "Kennedy's first foreign-policy disaster. The opening setup for what comes next."
+    }
+  ]}
+  height={300}
+/>
+
+## 2.4 The Cuban Missile Crisis, October 1962
+
+For 13 days in October 1962, the world stood on the edge of nuclear war. This is the marquee event of the entire Cold War.
+
+<HistoryAnimation
+  title="Thirteen Days"
+  scenes={[
+    {
+      duration: 4,
+      caption: "October 14, 1962. A U.S. U-2 spy plane photographs Cuba.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#bfdbfe"/>
+        <ellipse cx="200" cy="220" rx="180" ry="30" fill="#22c55e"/>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="14">CUBA</text>
+        <g transform="translate(280,80)">
+          <ellipse cx="0" cy="0" rx="40" ry="6" fill="#000"/>
+          <line x1="-30" y1="0" x2="-30" y2="-12" stroke="#000" stroke-width="2"/>
+          <text x="0" y="-15" text-anchor="middle" font-family="serif" font-size="11">U-2</text>
+        </g>
+        <line x1="280" y1="86" x2="200" y2="200" stroke="#b91c1c" stroke-width="1" stroke-dasharray="4 3"/>
+        <circle cx="200" cy="200" r="6" fill="none" stroke="#b91c1c" stroke-width="2"/>
+        <text x="200" y="60" text-anchor="middle" font-family="serif" font-size="13" fill="#b91c1c">photographing missile sites</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "October 16. Photos reach President Kennedy. Soviet missiles. 90 miles from Florida.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <rect x="40" y="40" width="320" height="160" fill="none" stroke="#000" stroke-width="2"/>
+        <rect x="50" y="50" width="120" height="140" fill="#a3a3a3"/>
+        <text x="110" y="120" text-anchor="middle" font-family="serif" font-size="14" fill="#000">[U-2 PHOTO]</text>
+        <text x="270" y="80" font-family="serif" font-size="14" fill="#b91c1c">SOVIET</text>
+        <text x="270" y="100" font-family="serif" font-size="14" fill="#b91c1c">MISSILES</text>
+        <text x="270" y="120" font-family="serif" font-size="14" fill="#b91c1c">in</text>
+        <text x="270" y="140" font-family="serif" font-size="14" fill="#b91c1c">CUBA</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="13">Kennedy: "We have a problem."</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "October 22. Kennedy addresses the nation: a naval QUARANTINE around Cuba.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#bfdbfe"/>
+        <ellipse cx="200" cy="160" rx="60" ry="14" fill="#22c55e"/>
+        <text x="200" y="164" text-anchor="middle" font-family="serif" font-size="11">CUBA</text>
+        <circle cx="200" cy="160" r="100" fill="none" stroke="#b91c1c" stroke-width="3" stroke-dasharray="6 4"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="16" font-weight="bold" fill="#b91c1c">NAVAL QUARANTINE</text>
+        <g transform="translate(110,100)">
+          <rect x="-10" y="-4" width="20" height="8" fill="#1d4ed8"/>
+          <text x="0" y="-10" text-anchor="middle" font-family="serif" font-size="9">USA</text>
+        </g>
+        <g transform="translate(290,100)">
+          <rect x="-10" y="-4" width="20" height="8" fill="#1d4ed8"/>
+          <text x="0" y="-10" text-anchor="middle" font-family="serif" font-size="9">USA</text>
+        </g>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "October 24. Soviet ships approach the quarantine line. Then they turn back.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#bfdbfe"/>
+        <line x1="200" y1="20" x2="200" y2="220" stroke="#b91c1c" stroke-width="3" stroke-dasharray="6 4"/>
+        <text x="200" y="14" text-anchor="middle" font-family="serif" font-size="11" fill="#b91c1c">QUARANTINE LINE</text>
+        <g transform="translate(80,120)">
+          <rect x="-12" y="-5" width="24" height="10" fill="#000"/>
+          <text x="0" y="-10" text-anchor="middle" font-family="serif" font-size="10">USSR ship</text>
+          <path d="M -20 0 L 20 0 L 14 -4 M 20 0 L 14 4" fill="none" stroke="#000" stroke-width="2"/>
+          <text x="40" y="14" font-family="serif" font-size="11" fill="#b91c1c">→ TURNS BACK</text>
+        </g>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="13" fill="#000">Khrushchev blinks.</text>
+      </svg>`
+    },
+    {
+      duration: 6,
+      caption: "October 28. Deal: USSR removes Cuba missiles. U.S. secretly removes missiles from Turkey.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <g transform="translate(100,100)">
+          <ellipse cx="0" cy="0" rx="60" ry="15" fill="#22c55e"/>
+          <text x="0" y="4" text-anchor="middle" font-family="serif" font-size="12">CUBA</text>
+          <line x1="0" y1="-10" x2="0" y2="-40" stroke="#b91c1c" stroke-width="2" stroke-dasharray="3 2"/>
+          <text x="0" y="-50" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c">missile out</text>
+        </g>
+        <g transform="translate(300,100)">
+          <ellipse cx="0" cy="0" rx="50" ry="12" fill="#fbbf24"/>
+          <text x="0" y="4" text-anchor="middle" font-family="serif" font-size="11">TURKEY</text>
+          <line x1="0" y1="-10" x2="0" y2="-40" stroke="#b91c1c" stroke-width="2" stroke-dasharray="3 2"/>
+          <text x="0" y="-50" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c">missile out (secret)</text>
+        </g>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold" fill="#000">CRISIS ENDS. WORLD EXHALES.</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+### The eight steps in detail
+
+<StepThrough
+  title="Cuban Missile Crisis, step by step"
+  steps={[
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">1</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Castro seizes U.S.-owned sugar mills</h3><p style="font-size:14px;color:#52525b;">To control Cuba's economy, Castro nationalizes U.S. property.</p></div>`, caption: "Setup. Castro takes control of the Cuban economy from American owners." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">2</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Eisenhower imposes embargo</h3><p style="font-size:14px;color:#52525b;">U.S. cuts off trade. Cuban economy collapses.</p></div>`, caption: "U.S. response. Cuba scrambles for a new patron." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">3</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Castro turns to the USSR for aid</h3><p style="font-size:14px;color:#52525b;">Khrushchev offers economic and military support. Castro accepts.</p></div>`, caption: "The Soviet-Cuban alliance is born." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">4</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Bay of Pigs (April 1961)</h3><p style="font-size:14px;color:#52525b;">Failed CIA-backed invasion by Cuban exiles. Made U.S. look weak. Strengthened the Soviet-Cuban alliance.</p></div>`, caption: "Kennedy's first big foreign-policy disaster." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">5</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Khrushchev places nuclear missiles in Cuba</h3><p style="font-size:14px;color:#52525b;">Soviet medium-range and intermediate-range ballistic missiles, capable of hitting most of the U.S.</p></div>`, caption: "Khrushchev wants to balance U.S. missiles in Turkey." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">6</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">U.S. spy planes discover the missiles</h3><p style="font-size:14px;color:#52525b;">October 14, 1962. U-2 photos show launch sites under construction.</p></div>`, caption: "Kennedy is informed October 16. The 13 days begin." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">7</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Kennedy demands removal + naval quarantine</h3><p style="font-size:14px;color:#52525b;">October 22 speech to the nation. U.S. Navy intercepts any Soviet ship trying to deliver more missiles.</p></div>`, caption: "Kennedy chose 'quarantine' over 'blockade' because a blockade is technically an act of war." },
+    { html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">8</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Resolution (October 28)</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">USSR removes missiles from Cuba.<br/>U.S. promises not to invade Cuba.<br/>U.S. secretly removes missiles from Turkey.</p></div>`, caption: "Both sides walked away claiming victory. The world stopped holding its breath." }
+  ]}
+  height={280}
+/>
+
+<TremorCard label="Closest moment to nuclear war" value="13 days" delta="Crisis resolved" deltaType="moderateIncrease" helper="October 16 to October 28, 1962. After this, both sides set up a direct Moscow-Washington Hot Line and signed the 1963 Limited Test Ban Treaty." />
+
+<Callout type="insight" title="Why Khrushchev backed down">
+  Khrushchev knew the U.S. had massively more nuclear weapons. Soviet first-strike doctrine called for surprise. Once Kennedy publicly demanded removal, surprise was impossible. The smart play was to take the deal (including the secret Turkey concession) and walk away looking peaceful.
+</Callout>
+
+## 2.5 Iran under the Shah
+
+Halfway around the world, another Cold War flashpoint was building. **Iran** sits between the Persian Gulf and the USSR. It has more oil than almost anywhere on Earth.
+
+In 1953, the U.S. and Britain ran a CIA coup that installed **Mohammad Reza Pahlavi**, known as **the Shah**, as Iran's all-powerful monarch. The Shah was pro-Western, modernized Iran, and let American companies pump Iranian oil. He also ran a brutal secret police (SAVAK) that tortured opponents.
+
+<DiffView
+  before={`THE SHAH'S MODERNIZATION (1953-1979)
+
+  Pro-American foreign policy.
+  Built modern roads, hospitals, schools.
+  Westernized education and dress.
+  Granted women the right to vote (1963).
+  Industrial growth from oil revenue.
+
+  Iran became a strong U.S. ally and the
+  "policeman of the Persian Gulf."
+
+  In 1971 the Shah threw a 2,500-year-anniversary
+  celebration of the Persian Empire that cost
+  more than 100 million dollars.`}
+  after={`THE SHAH'S PROBLEMS (1953-1979)
+
+  Wealth inequality: oil profits enriched
+  a tiny elite, not ordinary Iranians.
+
+  Political repression: SAVAK secret police
+  jailed, tortured, and disappeared dissidents.
+
+  Religious resentment: Shia clerics opposed
+  Westernization as un-Islamic.
+
+  Anti-American anger: many Iranians blamed
+  the U.S. for installing and propping up
+  the Shah.
+
+  By 1978, mass protests filled the streets.`}
+  mode="side-by-side"
+  fileName="The Shah, two pictures"
+/>
+
+## 2.6 The Iranian Revolution, 1979
+
+By late 1978, millions of Iranians were marching against the Shah. The leader of the opposition was **Ayatollah Khomeini**, a Shia cleric who had been exiled to Paris.
+
+In January 1979, the Shah fled Iran. Khomeini returned. Iran became an **Islamic theocracy**: a government based on religious law, hostile to both the U.S. and the USSR.
+
+<SpeechBubble variant="shout" speaker="Khomeini">
+  Death to the Great Satan! (the United States)
+</SpeechBubble>
+
+<SpeechBubble variant="shout" speaker="Khomeini">
+  Death to the Lesser Satan! (the Soviet Union)
+</SpeechBubble>
+
+<Callout type="warning" title="Why the Iranian Revolution mattered">
+  Iran had been a major U.S. ally. Now it was hostile. The revolution showed that not every conflict in the Cold War world was East vs. West. Sometimes a third force, like religious nationalism, could overturn both blocs.
+</Callout>
+
+## 2.7 The Iran Hostage Crisis, 1979 to 1981
+
+In October 1979, the U.S. allowed the deposed Shah into the country for cancer treatment. Iran was furious. They demanded the Shah's return for trial. The U.S. refused.
+
+On November 4, 1979, Iranian student revolutionaries climbed the wall of the U.S. embassy in Tehran and seized everyone inside.
+
+<TremorCard label="Hostages held" value="52 Americans" helper="Embassy staff, military attachés, and a few civilian visitors. Most were diplomats." />
+
+<TremorCard label="Days held captive" value="444 days" delta="A national humiliation" deltaType="decrease" helper="From November 4, 1979 to January 20, 1981. They were released the moment Reagan was inaugurated (Iran's last insult to Carter)." />
+
+<TremorCard label="Failed rescue mission" value="Operation Eagle Claw" helper="April 24, 1980. Eight U.S. servicemen died when a helicopter crashed in the Iranian desert. The mission was aborted before it reached Tehran." />
+
+<Callout type="insight" title="Why Carter lost the 1980 election">
+  Jimmy Carter could not free the hostages. Television showed Americans the same footage night after night for over a year. Carter looked weak. Reagan's promise to be tougher won him a landslide. Iran released the hostages literally minutes after Reagan was sworn in, a final humiliation aimed at Carter.
+</Callout>
+
+## 2.8 Iran-Iraq War, 1980 to 1988
+
+In September 1980, Iraq's dictator **Saddam Hussein** invaded Iran. Saddam thought the post-revolution chaos would make Iran easy to conquer. He was wrong.
+
+<TremorCard label="Duration" value="8 years" helper="September 1980 to August 1988. The longest conventional war of the 20th century." />
+
+<TremorCard label="Estimated dead" value="1,000,000+" delta="Both sides combined" deltaType="decrease" helper="Including soldiers and civilians. Both sides used chemical weapons. Trench warfare reminiscent of WWI." />
+
+<TremorCard label="Outcome" value="Stalemate" helper="No territory changed hands. Both economies devastated. The war ended with a UN-brokered ceasefire. Both Iran and Iraq blamed each other and the U.S." />
+
+<Callout type="warning" title="The Cold War's role">
+  Both the U.S. and USSR sold weapons to both sides at various points. The U.S. tilted toward Iraq, fearing an Iranian victory would spread Islamic revolution. The USSR also tilted toward Iraq. Saddam used Western and Soviet weapons to fight a war he eventually lost in slow motion.
+</Callout>
+
+## Section 2 self-quiz
+
+<Quiz
+  title="Going Global"
+  questions={[
+    {
+      q: "Which of the following best describes the Three Worlds?",
+      choices: [
+        "First World capitalist, Second World communist, Third World developing/non-aligned",
+        "First World rich, Second World middle-income, Third World poor",
+        "First World North, Second World South, Third World East",
+        "First World ancient, Second World modern, Third World postmodern"
+      ],
+      answer: 0,
+      explain: "The First World was the U.S. and capitalist allies. The Second World was the USSR and communist allies. The Third World was the developing, often newly independent countries that frequently chose to stay non-aligned."
+    },
+    {
+      q: "Who was Cuba's leader before Castro?",
+      choices: ["Khrushchev", "Fulgencio Batista", "Ho Chi Minh", "Salvador Allende"],
+      answer: 1,
+      explain: "Batista was a U.S.-backed dictator. Castro overthrew him on January 1, 1959."
+    },
+    {
+      q: "Which of the following is NOT a step in the Cuban Missile Crisis?",
+      choices: [
+        "Castro seized U.S.-owned sugar mills",
+        "Eisenhower imposed an embargo",
+        "Castro turned to the USSR for aid",
+        "Khrushchev invaded West Berlin"
+      ],
+      answer: 3,
+      explain: "Khrushchev did not invade West Berlin during the Cuban Missile Crisis. He placed nuclear missiles in Cuba, which is what the crisis was about."
+    },
+    {
+      q: "What ended the Cuban Missile Crisis?",
+      choices: [
+        "U.S. invasion of Cuba",
+        "USSR removed missiles from Cuba; U.S. promised not to invade and secretly removed missiles from Turkey",
+        "UN peacekeepers separated the two",
+        "Khrushchev resigned"
+      ],
+      answer: 1,
+      explain: "The deal had two halves: the public removal of Soviet missiles from Cuba, and the secret removal of U.S. missiles from Turkey. The secret part was kept quiet for years to make Khrushchev look like he had backed down."
+    },
+    {
+      q: "Who led the Iranian Revolution in 1979?",
+      choices: ["The Shah", "Ayatollah Khomeini", "Saddam Hussein", "Yasser Arafat"],
+      answer: 1,
+      explain: "Ayatollah Khomeini, a Shia cleric who had been exiled to Paris, led the revolution. He returned to Iran in February 1979 to lead the new Islamic Republic."
+    },
+    {
+      q: "How many Americans were held in the Iran Hostage Crisis, and for how long?",
+      choices: [
+        "100 hostages, 100 days",
+        "52 hostages, 444 days",
+        "20 hostages, 30 days",
+        "1,000 hostages, 1,000 days"
+      ],
+      answer: 1,
+      explain: "52 Americans were held for 444 days, from November 4, 1979 to January 20, 1981. They were released the moment Reagan was inaugurated."
+    },
+    {
+      q: "How long did the Iran-Iraq War last?",
+      choices: ["6 months", "2 years", "8 years", "20 years"],
+      answer: 2,
+      explain: "1980 to 1988. Eight years. Over a million dead. No territory changed hands. The longest conventional war of the 20th century."
+    },
+    {
+      q: "Which country invaded the other to start the Iran-Iraq War?",
+      choices: ["Iran invaded Iraq", "Iraq invaded Iran", "Both invaded simultaneously", "Neither, it was a civil war"],
+      answer: 1,
+      explain: "Iraq's Saddam Hussein invaded Iran in September 1980, expecting a quick victory over the chaotic post-revolution Iranian state. He miscalculated."
+    }
+  ]}
+/>
+
+---
+
+# Section 3 · The Thaw
+
+<div class="not-prose relative my-6 rounded-2xl overflow-hidden" style="min-height: 220px;">
+  <Particles preset="snow" backgroundColor="#0c1f2c" particleColor="#ffffff" height={220} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Day 5 · 1969 to 1991</p>
+    <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">From Crisis to Cooperation</h2>
+    <p class="text-white/80 max-w-xl">Brinkmanship breaks down. Détente begins. The Soviet-Chinese Split. Reagan re-freezes. Gorbachev opens up. The wall falls. The USSR dissolves.</p>
+  </div>
+</div>
+
+## 3.1 Brinkmanship breaks down
+
+After the Cuban Missile Crisis, both sides realized brinkmanship was too dangerous. One miscalculation could end civilization. Three U.S. presidents had pushed it to the limit:
+
+<StepThrough
+  title="Three brinkmanship moments"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Eisenhower (1960)</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">U-2 spy plane shot down by USSR. Pilot Francis Gary Powers captured. Eisenhower-Khrushchev summit canceled.</p></div>`,
+      caption: "First crack in brinkmanship."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Kennedy (1962)</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">Cuban Missile Crisis. World stood 13 days from nuclear war. Both sides agreed never to come this close again.</p></div>`,
+      caption: "Brinkmanship's near-fatal high water mark."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:22px;color:#b91c1c;margin-bottom:14px;">Johnson (1965-1968)</h3><p style="font-size:15px;color:#52525b;line-height:1.5;">Massive U.S. escalation in Vietnam. 500,000 troops at peak. Anti-war protests at home. Johnson declines to seek re-election.</p></div>`,
+      caption: "The bill comes due. Vietnam shows what brinkmanship looks like when it actually fights."
+    }
+  ]}
+  height={300}
+/>
+
+<Callout type="insight" title="The takeaway">
+  Repeated near-misses showed that brinkmanship was too risky in a nuclear age. By 1969, when Nixon entered office, both sides were ready for a different approach.
+</Callout>
+
+## 3.2 Nixon turns to Détente
+
+**Détente** is French for "relaxing of tension." It was Nixon's complete pivot away from brinkmanship.
+
+The architect of détente was Nixon's Secretary of State, **Henry Kissinger**. Kissinger was a believer in **realpolitik**: foreign policy based on practical power, not ideology. He didn't care if a country was communist or capitalist. He cared what they could do for the United States.
+
+<Sankey
+  title="Détente in Action"
+  nodes={[
+    { id: "Détente Policy" },
+    { id: "Open China" },
+    { id: "Negotiate with USSR" },
+    { id: "Helsinki Accords" },
+    { id: "Nixon visits Beijing 1972" },
+    { id: "SALT I Treaty 1972" },
+    { id: "Wedge USSR-China apart" },
+    { id: "Cap nuclear weapons" },
+    { id: "Recognize human rights 1975" }
+  ]}
+  links={[
+    { source: "Détente Policy", target: "Open China", value: 8 },
+    { source: "Détente Policy", target: "Negotiate with USSR", value: 10 },
+    { source: "Détente Policy", target: "Helsinki Accords", value: 5 },
+    { source: "Open China", target: "Nixon visits Beijing 1972", value: 8 },
+    { source: "Negotiate with USSR", target: "SALT I Treaty 1972", value: 10 },
+    { source: "Nixon visits Beijing 1972", target: "Wedge USSR-China apart", value: 8 },
+    { source: "SALT I Treaty 1972", target: "Cap nuclear weapons", value: 10 },
+    { source: "Helsinki Accords", target: "Recognize human rights 1975", value: 5 }
+  ]}
+  height={420}
+/>
+
+### Three big moves of détente
+
+<TremorCard label="Nixon visits China (Feb 1972)" value="22 years of silence broken" helper="First U.S. president ever to visit communist China. Drove a wedge between the USSR and China. The famous handshake with Mao changed the geopolitical balance overnight." />
+
+<TremorCard label="SALT I Treaty (May 1972)" value="First nuclear cap" helper="Signed in Moscow by Nixon and Brezhnev. Limited Inter-Continental Ballistic Missiles (ICBMs) and Submarine-Launched Ballistic Missiles (SLBMs). The first arms-control treaty between the two superpowers." />
+
+<TremorCard label="Helsinki Accords (1975)" value="35-nation agreement" helper="USSR signed off on respecting human rights and current European borders. Soviet dissidents quoted Helsinki to demand freedom for decades." />
+
+## 3.3 The Soviet-Chinese Split
+
+China and the USSR were both communist. They should have been close allies. Instead, they had one of the most bitter splits of the Cold War.
+
+<SpeechBubble variant="say" speaker="Mao Zedong (China)">
+  We will follow our own version of communism. Not Stalin's. Not Khrushchev's. Mine.
+</SpeechBubble>
+
+<SpeechBubble variant="say" speaker="Khrushchev (USSR)">
+  Then we will stop sending you economic aid. We will not share nuclear technology with you. You can fend for yourself.
+</SpeechBubble>
+
+<TremorCard label="The break" value="1959" helper="USSR cut off all economic aid to China. Withdrew Soviet engineers and refused to share nuclear weapons technology." />
+
+<TremorCard label="Border clashes" value="1969" helper="Brief but shooting war along the Ussuri River border. Hundreds dead. Both sides backed off but tensions remained for decades." />
+
+<Callout type="insight" title="Why this mattered">
+  Nixon and Kissinger spotted the split and exploited it. By visiting Beijing in 1972, they made clear that the U.S. would side with whichever communist power was less threatening. The USSR suddenly had to worry about the U.S. AND China simultaneously.
+</Callout>
+
+## 3.4 Destalinization, the Khrushchev years
+
+When Stalin died on March 5, 1953, the USSR exhaled. Stalin had murdered millions of his own people. His successor, **Nikita Khrushchev**, decided enough was enough.
+
+In 1956, Khrushchev gave a secret speech to Soviet party leaders denouncing Stalin's crimes. The speech leaked. The world learned what the USSR had done to itself.
+
+<DiffView
+  before={`STALIN (1924-1953)
+
+  Personality cult: portraits everywhere.
+  Great Purge (1936-1938): millions executed
+  or sent to Gulag labor camps.
+  Forced collectivization of farms.
+  Mass deportations of ethnic minorities.
+  Ironclad censorship.
+
+  Foreign policy: aggressive expansion.
+  Eastern European satellites installed
+  by Red Army.
+
+  Death toll, internal: ~20 million.`}
+  after={`KHRUSHCHEV (1953-1964)
+
+  Destalinization: Stalin's portraits removed.
+  Statues torn down. Stalingrad renamed Volgograd.
+  Many political prisoners released from Gulag.
+  Some censorship eased ("the Thaw" in literature).
+  Limited reforms; party kept absolute power.
+
+  Foreign policy: tense but flexible.
+  Crushed 1956 Hungarian uprising with tanks.
+  Built Berlin Wall (1961).
+  Backed down at Cuban Missile Crisis (1962).
+
+  Removed from power 1964 after Cuba humiliation.`}
+  mode="side-by-side"
+  fileName="Stalin vs Khrushchev"
+/>
+
+<Callout type="warning" title="The limits of destalinization">
+  When Hungary tried to break out of the Soviet bloc in 1956, Khrushchev sent in tanks. Thousands of Hungarians died. The same thing happened in Czechoslovakia in 1968 (Prague Spring) under Khrushchev's successor, Brezhnev. The USSR would let you criticize Stalin but not leave the empire.
+</Callout>
+
+## 3.5 Reagan and Renewed Tension
+
+By 1981, when **Ronald Reagan** took office, détente had run its course. Reagan came in believing the Soviets were an "Evil Empire" and that the U.S. should win the Cold War, not just manage it.
+
+<TremorCard label="Defense spending under Reagan" value="+35% in real terms" delta="1981-1985" deltaType="moderateIncrease" helper="Reagan poured money into the military. New aircraft carriers, new bombers, the B-2 stealth, the M1 Abrams tank, and the controversial MX missile." />
+
+<TremorCard label="Strategic Defense Initiative" value="SDI 'Star Wars'" helper="March 23, 1983. Reagan proposed a space-based missile defense system. Lasers and satellites that would shoot down Soviet missiles in flight. Critics called it impossible. The USSR called it dangerous." />
+
+<HistoryAnimation
+  title="Star Wars"
+  scenes={[
+    {
+      duration: 4,
+      caption: "1983. Reagan announces the Strategic Defense Initiative.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#0c1f2c"/>
+        <circle cx="200" cy="200" r="180" fill="#1d4ed8" opacity="0.3"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="20" fill="#fbbf24">STRATEGIC DEFENSE INITIATIVE</text>
+        <g fill="#fff">
+          <circle cx="100" cy="80" r="3"/>
+          <circle cx="200" cy="60" r="3"/>
+          <circle cx="300" cy="80" r="3"/>
+          <text x="100" y="100" text-anchor="middle" font-family="serif" font-size="11">satellite</text>
+          <text x="200" y="80" text-anchor="middle" font-family="serif" font-size="11">satellite</text>
+          <text x="300" y="100" text-anchor="middle" font-family="serif" font-size="11">satellite</text>
+        </g>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "Soviet missiles launch...",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#0c1f2c"/>
+        <rect x="0" y="200" width="400" height="40" fill="#b91c1c" opacity="0.4"/>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="11" fill="#fff">USSR</text>
+        <g stroke="#fbbf24" stroke-width="2" fill="none">
+          <path d="M 80 200 Q 120 100 160 60"/>
+          <path d="M 200 200 Q 200 100 200 60"/>
+          <path d="M 320 200 Q 280 100 240 60"/>
+        </g>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="14" fill="#fbbf24">missiles in flight</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Space-based lasers shoot them down before they can hit America.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#0c1f2c"/>
+        <g fill="#fff">
+          <circle cx="100" cy="80" r="4"/>
+          <circle cx="200" cy="60" r="4"/>
+          <circle cx="300" cy="80" r="4"/>
+        </g>
+        <g stroke="#dc2626" stroke-width="2">
+          <line x1="100" y1="80" x2="160" y2="120"/>
+          <line x1="200" y1="60" x2="200" y2="130"/>
+          <line x1="300" y1="80" x2="240" y2="120"/>
+        </g>
+        <g fill="#fbbf24">
+          <circle cx="160" cy="120" r="6"/>
+          <circle cx="200" cy="130" r="6"/>
+          <circle cx="240" cy="120" r="6"/>
+        </g>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="12" fill="#fbbf24">lasers vs missiles</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="12" fill="#fff">No Soviet warhead reaches U.S. soil.</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "It was never built. But the threat alone forced the USSR to spend money it didn't have.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="60" text-anchor="middle" font-family="serif" font-size="22" fill="#b91c1c">USSR military spending:</text>
+        <text x="200" y="100" text-anchor="middle" font-family="serif" font-size="36" font-weight="bold" fill="#000">↑ ↑ ↑</text>
+        <text x="200" y="160" text-anchor="middle" font-family="serif" font-size="22" fill="#b91c1c">USSR economy:</text>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="36" font-weight="bold" fill="#000">↓ ↓ ↓</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+## 3.6 Gorbachev and the End of the Cold War
+
+In March 1985, **Mikhail Gorbachev** became leader of the USSR. He was 54. He was the first Soviet leader born after the Russian Revolution. He understood that the USSR could not keep up with Reagan's military buildup. The Soviet economy was rotting from the inside.
+
+He launched three massive reforms.
+
+<TremorCard label="Glasnost" value="Openness" helper="Lifted censorship. Allowed criticism of the government. Released political prisoners. Newspapers could finally print true stories about Soviet history." />
+
+<TremorCard label="Perestroika" value="Restructuring" helper="Limited free markets. Allowed small businesses. Tried to inject competition into the moribund Soviet economy." />
+
+<TremorCard label="Democratization" value="Limited elections" helper="First contested Soviet elections in 1989. Multi-candidate ballots. Communist Party lost monopoly on power." />
+
+<Callout type="insight" title="What Gorbachev never intended">
+  Gorbachev was trying to save communism by reforming it. He believed a more honest, more efficient USSR could survive. Instead, his reforms unleashed forces he could not control. By 1989 the Eastern European satellites were breaking free. By 1991 the USSR itself was gone.
+</Callout>
+
+## 3.7 The Berlin Wall falls, November 9, 1989
+
+For 28 years the Berlin Wall stood as the symbol of a divided world. In the fall of 1989, it came down in a single night.
+
+<HistoryAnimation
+  title="The Wall Falls"
+  scenes={[
+    {
+      duration: 4,
+      caption: "Summer 1989. Hungary opens its border with Austria. East Germans flee through Hungary to the West.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <rect x="40" y="60" width="320" height="80" fill="none" stroke="#000" stroke-width="2"/>
+        <line x1="120" y1="60" x2="120" y2="140" stroke="#000" stroke-width="2"/>
+        <line x1="200" y1="60" x2="200" y2="140" stroke="#000" stroke-width="2"/>
+        <line x1="280" y1="60" x2="280" y2="140" stroke="#000" stroke-width="2"/>
+        <text x="80" y="105" text-anchor="middle" font-family="serif" font-size="11">Austria</text>
+        <text x="160" y="105" text-anchor="middle" font-family="serif" font-size="11">Hungary</text>
+        <text x="240" y="105" text-anchor="middle" font-family="serif" font-size="11">E. Germany</text>
+        <text x="320" y="105" text-anchor="middle" font-family="serif" font-size="11">Poland</text>
+        <g stroke="#1d4ed8" stroke-width="2" fill="none">
+          <path d="M 240 100 L 80 100" marker-end="url(#arrow)"/>
+        </g>
+        <text x="200" y="180" text-anchor="middle" font-family="serif" font-size="13" fill="#1d4ed8">East Germans flee west via Hungary</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "October 1989. Mass protests in Leipzig and East Berlin. 'We are the people!'",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="20" font-weight="bold" fill="#b91c1c">"WIR SIND DAS VOLK!"</text>
+        <text x="200" y="60" text-anchor="middle" font-family="serif" font-size="11" fill="#52525b">"We are the people"</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="60" cy="120" r="8"/>
+          <line x1="60" y1="128" x2="60" y2="160"/>
+          <line x1="60" y1="140" x2="50" y2="150"/>
+          <line x1="60" y1="140" x2="70" y2="150"/>
+          <line x1="60" y1="160" x2="55" y2="180"/>
+          <line x1="60" y1="160" x2="65" y2="180"/>
+          <circle cx="120" cy="120" r="8"/>
+          <line x1="120" y1="128" x2="120" y2="160"/>
+          <line x1="120" y1="140" x2="110" y2="150"/>
+          <line x1="120" y1="140" x2="130" y2="150"/>
+          <line x1="120" y1="160" x2="115" y2="180"/>
+          <line x1="120" y1="160" x2="125" y2="180"/>
+          <circle cx="180" cy="120" r="8"/>
+          <line x1="180" y1="128" x2="180" y2="160"/>
+          <line x1="180" y1="140" x2="170" y2="150"/>
+          <line x1="180" y1="140" x2="190" y2="150"/>
+          <line x1="180" y1="160" x2="175" y2="180"/>
+          <line x1="180" y1="160" x2="185" y2="180"/>
+          <circle cx="240" cy="120" r="8"/>
+          <line x1="240" y1="128" x2="240" y2="160"/>
+          <line x1="240" y1="140" x2="230" y2="150"/>
+          <line x1="240" y1="140" x2="250" y2="150"/>
+          <line x1="240" y1="160" x2="235" y2="180"/>
+          <line x1="240" y1="160" x2="245" y2="180"/>
+          <circle cx="300" cy="120" r="8"/>
+          <line x1="300" y1="128" x2="300" y2="160"/>
+          <line x1="300" y1="140" x2="290" y2="150"/>
+          <line x1="300" y1="140" x2="310" y2="150"/>
+          <line x1="300" y1="160" x2="295" y2="180"/>
+          <line x1="300" y1="160" x2="305" y2="180"/>
+          <circle cx="340" cy="120" r="8"/>
+          <line x1="340" y1="128" x2="340" y2="160"/>
+          <line x1="340" y1="140" x2="330" y2="150"/>
+          <line x1="340" y1="140" x2="350" y2="150"/>
+          <line x1="340" y1="160" x2="335" y2="180"/>
+          <line x1="340" y1="160" x2="345" y2="180"/>
+        </g>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="12">Hundreds of thousands. Every Monday night.</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "November 9, 1989. East German government announces border crossings will open. By accident, immediately.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="22" font-weight="bold" fill="#b91c1c">NOVEMBER 9, 1989</text>
+        <rect x="194" y="60" width="12" height="120" fill="#52525b" stroke="#000" stroke-width="2"/>
+        <g stroke="#1d4ed8" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="100" cy="130" r="6"/>
+          <line x1="100" y1="136" x2="100" y2="160"/>
+          <path d="M 100 145 L 130 145" marker-end="url(#arrow2)"/>
+        </g>
+        <g stroke="#b91c1c" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="300" cy="130" r="6"/>
+          <line x1="300" y1="136" x2="300" y2="160"/>
+          <path d="M 300 145 L 270 145" marker-end="url(#arrow3)"/>
+        </g>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="13">Crowds from both sides converge on the wall.</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Hammers come out. People climb the wall. By morning, chunks of concrete are souvenirs.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <g fill="#52525b" stroke="#000" stroke-width="2">
+          <polygon points="180,60 210,60 200,180 190,180"/>
+          <polygon points="160,80 175,80 165,170 158,170" fill="#a3a3a3"/>
+          <polygon points="220,90 240,90 235,170 225,170" fill="#a3a3a3"/>
+        </g>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="20" font-weight="bold" fill="#b91c1c">THE WALL FALLS</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="14">28 years of division, gone in a night.</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Two years later, December 25, 1991, the USSR itself dissolves. The Cold War is over.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="50" text-anchor="middle" font-family="serif" font-size="20" fill="#b91c1c">DECEMBER 25, 1991</text>
+        <text x="200" y="100" text-anchor="middle" font-family="serif" font-size="42" font-weight="bold" fill="#000">USSR</text>
+        <line x1="120" y1="100" x2="280" y2="100" stroke="#b91c1c" stroke-width="6"/>
+        <text x="200" y="160" text-anchor="middle" font-family="serif" font-size="14" fill="#000">15 republics independent</text>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="18" font-weight="bold" fill="#b91c1c">THE COLD WAR IS OVER</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+<TremorCard label="Berlin Wall stood for" value="28 years" helper="August 13, 1961 to November 9, 1989." />
+
+<TremorCard label="Germany reunified" value="Oct 3, 1990" helper="Less than a year after the wall fell. East and West Germany merged into a single democratic federal republic." />
+
+<TremorCard label="USSR dissolved" value="Dec 25, 1991" delta="Cold War ends" deltaType="moderateIncrease" helper="Gorbachev resigned. The 15 Soviet republics each became independent: Russia, Ukraine, Belarus, Kazakhstan, Uzbekistan, Tajikistan, Turkmenistan, Kyrgyzstan, Azerbaijan, Armenia, Georgia, Moldova, Estonia, Latvia, Lithuania." />
+
+## 3.8 1989 in fast forward
+
+A single calendar year ended an empire. Country after country broke from Soviet control without Soviet tanks rolling in to stop them, because Gorbachev refused to send the tanks.
+
+<VisTimeline
+  height="320px"
+  start="1989-01-01"
+  end="1989-12-31"
+  items={[
+    { id: 1, group: "Poland", content: "Solidarity wins free elections (June)", start: "1989-06-04" },
+    { id: 2, group: "Hungary", content: "Opens border to Austria (May)", start: "1989-05-02" },
+    { id: 3, group: "Hungary", content: "Declares Republic (October)", start: "1989-10-23" },
+    { id: 4, group: "East Germany", content: "Mass protests in Leipzig (October)", start: "1989-10-09" },
+    { id: 5, group: "East Germany", content: "Berlin Wall falls (November 9)", start: "1989-11-09" },
+    { id: 6, group: "Bulgaria", content: "Communist leader resigns (November)", start: "1989-11-10" },
+    { id: 7, group: "Czechoslovakia", content: "Velvet Revolution (November)", start: "1989-11-17" },
+    { id: 8, group: "Romania", content: "Ceausescu overthrown + executed (December)", start: "1989-12-25" }
+  ]}
+  groups={[
+    { id: "Poland", content: "Poland" },
+    { id: "Hungary", content: "Hungary" },
+    { id: "East Germany", content: "East Germany" },
+    { id: "Bulgaria", content: "Bulgaria" },
+    { id: "Czechoslovakia", content: "Czechoslovakia" },
+    { id: "Romania", content: "Romania" }
+  ]}
+/>
+
+## Section 3 self-quiz
+
+<Quiz
+  title="The Thaw"
+  questions={[
+    {
+      q: "What does détente mean?",
+      choices: [
+        "Aggressive military buildup",
+        "Easing of Cold War tensions through diplomacy",
+        "Trade embargo",
+        "Nuclear arms race"
+      ],
+      answer: 1,
+      explain: "Détente is French for 'relaxing of tension.' It was Nixon's 1970s policy of easing Cold War hostilities through negotiation."
+    },
+    {
+      q: "What is realpolitik?",
+      choices: [
+        "Idealistic foreign policy based on values",
+        "Pragmatic foreign policy based on practical power, not ideology",
+        "A type of Russian opera",
+        "A military doctrine"
+      ],
+      answer: 1,
+      explain: "Realpolitik is foreign policy based on what's practical, not what's ideologically pure. Kissinger and Nixon used it to open relations with communist China."
+    },
+    {
+      q: "What did SALT I do?",
+      choices: [
+        "Banned all nuclear weapons",
+        "Limited the number of strategic nuclear weapons (ICBMs and SLBMs)",
+        "Started the arms race",
+        "Built the Berlin Wall"
+      ],
+      answer: 1,
+      explain: "Strategic Arms Limitation Treaty I, 1972. Capped the number of long-range nuclear missiles each side could deploy. First arms-control treaty between the superpowers."
+    },
+    {
+      q: "What caused the Soviet-Chinese Split in 1959?",
+      choices: [
+        "China invaded the USSR",
+        "China wanted its own version of communism; USSR cut off aid and refused to share nuclear tech",
+        "The U.S. forced them apart",
+        "Mao died"
+      ],
+      answer: 1,
+      explain: "China wanted to follow its own path. The USSR responded by cutting off aid and refusing to share nuclear technology. Border clashes followed in 1969."
+    },
+    {
+      q: "Who succeeded Stalin and began destalinization?",
+      choices: ["Brezhnev", "Khrushchev", "Gorbachev", "Putin"],
+      answer: 1,
+      explain: "Nikita Khrushchev took over after Stalin's death in 1953. He gave a 1956 secret speech denouncing Stalin's crimes and began removing Stalin's image from Soviet society."
+    },
+    {
+      q: "What was Reagan's Strategic Defense Initiative (SDI)?",
+      choices: [
+        "A trade agreement with the USSR",
+        "A space-based missile defense system, nicknamed Star Wars",
+        "A nuclear treaty",
+        "A jobs program"
+      ],
+      answer: 1,
+      explain: "Announced March 1983. A proposed network of satellites and lasers that would shoot down Soviet missiles in flight. Never fully built, but pressured the Soviet economy by forcing them to plan countermeasures."
+    },
+    {
+      q: "What were Gorbachev's three reforms?",
+      choices: [
+        "Communism, capitalism, socialism",
+        "Glasnost, perestroika, democratization",
+        "NATO, Warsaw Pact, Non-Aligned",
+        "Containment, brinkmanship, détente"
+      ],
+      answer: 1,
+      explain: "Glasnost (openness, free speech), perestroika (economic restructuring), and democratization (multi-candidate elections). All three together unintentionally ended the USSR."
+    },
+    {
+      q: "When did the Berlin Wall fall?",
+      choices: ["November 9, 1989", "December 25, 1991", "October 3, 1990", "August 13, 1961"],
+      answer: 0,
+      explain: "November 9, 1989. After mass protests, the East German government opened the border. Crowds from both sides immediately began climbing and dismantling the wall."
+    }
+  ]}
+/>
+
+---
+
+# Putting it all together
+
+## The big picture
+
+<MindMap
+  title="The Cold War in one map"
+  data={{
+    name: "Cold War 1945-1991",
+    children: [
+      {
+        name: "Origins",
+        children: [
+          { name: "Yalta + Potsdam" },
+          { name: "Iron Curtain" },
+          { name: "Containment" },
+          { name: "Berlin Airlift" },
+          { name: "NATO + Warsaw Pact" }
+        ]
+      },
+      {
+        name: "Strategies",
+        children: [
+          { name: "Foreign Aid" },
+          { name: "Espionage" },
+          { name: "Multinational Alliances" },
+          { name: "Propaganda" },
+          { name: "Brinkmanship" },
+          { name: "Surrogate Wars" }
+        ]
+      },
+      {
+        name: "Going Global",
+        children: [
+          { name: "Three Worlds" },
+          { name: "Cuban Revolution" },
+          { name: "Cuban Missile Crisis" },
+          { name: "Iranian Revolution" },
+          { name: "Iran Hostage Crisis" }
+        ]
+      },
+      {
+        name: "Thaw + End",
+        children: [
+          { name: "Détente" },
+          { name: "SALT I" },
+          { name: "Soviet-Chinese Split" },
+          { name: "Reagan + SDI" },
+          { name: "Gorbachev reforms" },
+          { name: "Berlin Wall falls" },
+          { name: "USSR dissolves" }
+        ]
+      }
+    ]
+  }}
+  height={520}
+/>
+
+## Major Cold War leaders, side by side
+
+<MatchPairs
+  title="Leader to country"
+  pairs={[
+    { left: "Truman", right: "USA (Containment, Marshall Plan)" },
+    { left: "Eisenhower", right: "USA (Brinkmanship, U-2)" },
+    { left: "Kennedy", right: "USA (Cuban Missile Crisis)" },
+    { left: "Nixon", right: "USA (Détente, China visit)" },
+    { left: "Reagan", right: "USA (SDI, Evil Empire)" },
+    { left: "Stalin", right: "USSR (Yalta, Iron Curtain)" },
+    { left: "Khrushchev", right: "USSR (Sputnik, Cuba, Berlin Wall)" },
+    { left: "Brezhnev", right: "USSR (SALT I, Prague Spring)" },
+    { left: "Gorbachev", right: "USSR (Glasnost, Perestroika)" },
+    { left: "Castro", right: "Cuba (Communism + USSR alliance)" },
+    { left: "Mao Zedong", right: "China (Communist victory 1949)" },
+    { left: "Khomeini", right: "Iran (Islamic Revolution)" }
+  ]}
+/>
+
+## Put these in chronological order
+
+<DragSort
+  title="Order Cold War events from earliest to latest"
+  items={[
+    "Yalta Conference",
+    "Potsdam Conference",
+    "Truman Doctrine + Marshall Plan announced",
+    "Berlin Airlift begins",
+    "NATO formed",
+    "Warsaw Pact formed",
+    "Sputnik launched",
+    "Castro overthrows Batista",
+    "Bay of Pigs",
+    "Berlin Wall built",
+    "Cuban Missile Crisis",
+    "Nixon visits China",
+    "SALT I signed",
+    "Iranian Revolution",
+    "Reagan announces SDI",
+    "Gorbachev takes power",
+    "Berlin Wall falls",
+    "USSR dissolves"
+  ]}
+/>
+
+## Find them on the map
+
+Click each numbered marker to identify the Cold War flashpoint.
+
+<Hotspots
+  src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/1024px-World_map_-_low_resolution.svg.png"
+  alt="World map for Cold War flashpoints"
+  spots={[
+    { x: 25, y: 38, label: "Berlin", description: "Divided 1949. Wall built 1961, fell 1989." },
+    { x: 50, y: 40, label: "Moscow", description: "Capital of the USSR." },
+    { x: 18, y: 65, label: "Havana", description: "Castro's communist Cuba. Missile Crisis 1962." },
+    { x: 56, y: 50, label: "Tehran", description: "Iranian Revolution 1979. Hostage Crisis 1979-1981." },
+    { x: 75, y: 45, label: "Beijing", description: "Mao's communist China. Nixon visits 1972." },
+    { x: 78, y: 55, label: "Vietnam", description: "Surrogate war. U.S. fights communist North Vietnam 1955-1975." }
+  ]}
+/>
+
+---
+
+# Final exam cram
+
+## Mock final test, 50 minutes
+
+<TestTimer minutes={50} />
+
+<Quiz
+  title="Cold War mock final, 25 questions"
+  questions={[
+    { q: "When did the Cold War begin and end?", choices: ["1939-1989", "1945-1991", "1950-1990", "1948-1989"], answer: 1, explain: "1945 (end of WWII) to 1991 (USSR dissolves on Dec 25)." },
+    { q: "Who were the two leaders at Yalta along with Stalin?", choices: ["Truman + Attlee", "Roosevelt + Churchill", "Eisenhower + Churchill", "Truman + Churchill"], answer: 1, explain: "Yalta Feb 1945: FDR, Churchill, Stalin. (FDR died April 1945, replaced by Truman at Potsdam.)" },
+    { q: "Stalin broke which Yalta promise?", choices: ["German reparations", "Free elections in Eastern Europe", "Joining the Pacific war", "UN membership"], answer: 1, explain: "Stalin promised free elections in liberated Eastern European countries. He broke the promise immediately." },
+    { q: "How many founding members did the UN have?", choices: ["50", "100", "25", "150"], answer: 0, explain: "50 nations signed the UN Charter on October 24, 1945." },
+    { q: "Which country is NOT a permanent UN Security Council veto member?", choices: ["USA", "USSR/Russia", "Germany", "China"], answer: 2, explain: "The five permanent vetoes: Britain, China, France, USA, USSR. Germany was a defeated WWII power." },
+    { q: "Who coined the term 'Iron Curtain'?", choices: ["Stalin", "Truman", "Churchill", "FDR"], answer: 2, explain: "Winston Churchill, March 5, 1946, in Fulton, Missouri." },
+    { q: "Which is NOT a Soviet satellite nation?", choices: ["Poland", "Hungary", "Yugoslavia", "Czechoslovakia"], answer: 2, explain: "Yugoslavia under Tito broke from Stalin in 1948 and was non-aligned. The five satellites were Poland, Hungary, Romania, Bulgaria, Czechoslovakia (plus East Germany)." },
+    { q: "How long did the Berlin Airlift last?", choices: ["3 months", "11 months", "1 year", "2 years"], answer: 1, explain: "11 months, from June 1948 to May 1949." },
+    { q: "How much money did the Marshall Plan provide?", choices: ["12.5 billion dollars", "1 billion dollars", "100 billion dollars", "500 million dollars"], answer: 0, explain: "12.5 billion dollars to rebuild Western Europe." },
+    { q: "When was NATO formed?", choices: ["1945", "1947", "1949", "1955"], answer: 2, explain: "1949. Warsaw Pact came in 1955 as a response." },
+    { q: "What did the Warsaw Pact respond to?", choices: ["The Marshall Plan", "NATO + West Germany joining NATO", "The Berlin Wall", "Sputnik"], answer: 1, explain: "The Warsaw Pact (1955) was the Soviet response to NATO and especially to West Germany joining NATO." },
+    { q: "When did the USSR test its first hydrogen bomb?", choices: ["1945", "1949", "1953", "1957"], answer: 2, explain: "August 1953. The U.S. tested first in November 1952." },
+    { q: "What was Sputnik?", choices: ["A Soviet leader", "The first artificial satellite, launched by USSR in 1957", "A nuclear bomb", "A Cold War treaty"], answer: 1, explain: "Sputnik 1, October 4, 1957. First artificial satellite. Started the Space Race." },
+    { q: "Which strategy involves pushing conflict to the edge of war?", choices: ["Containment", "Brinkmanship", "Détente", "Realpolitik"], answer: 1, explain: "Brinkmanship. Eisenhower and Dulles invented the term." },
+    { q: "Who led the Cuban Revolution?", choices: ["Khrushchev", "Castro", "Batista", "Khomeini"], answer: 1, explain: "Fidel Castro overthrew Fulgencio Batista on January 1, 1959." },
+    { q: "What was the Bay of Pigs?", choices: [
+      "A successful U.S. invasion of Cuba",
+      "A failed U.S.-backed invasion of Cuba by Cuban exiles in 1961",
+      "A Soviet invasion of Cuba",
+      "A naval blockade"
+    ], answer: 1, explain: "April 1961. CIA-trained Cuban exiles invaded Cuba and were quickly defeated. Embarrassed Kennedy. Strengthened the Soviet-Cuban alliance." },
+    { q: "Why did Kennedy choose 'quarantine' over 'blockade' for Cuba?", choices: [
+      "Blockades are slower",
+      "A blockade is technically an act of war",
+      "Quarantine sounds friendlier",
+      "It was a political slogan"
+    ], answer: 1, explain: "A blockade is legally an act of war. 'Quarantine' was a careful word choice to avoid escalating to formal war." },
+    { q: "What concession did Kennedy make secretly to end the Cuban Missile Crisis?", choices: [
+      "Gave Cuba to Castro forever",
+      "Promised not to invade Cuba AND secretly removed U.S. missiles from Turkey",
+      "Sold Cuba to the USSR",
+      "Recognized communist China"
+    ], answer: 1, explain: "Public part: not invade Cuba. Secret part: remove U.S. missiles from Turkey." },
+    { q: "Who led the Iranian Revolution?", choices: ["The Shah", "Khomeini", "Saddam Hussein", "Castro"], answer: 1, explain: "Ayatollah Khomeini. He returned from exile in February 1979 and made Iran an Islamic theocracy." },
+    { q: "How many Americans were taken hostage in Tehran, and for how long?", choices: ["100 hostages, 100 days", "52 hostages, 444 days", "20 hostages, 60 days", "300 hostages, 30 days"], answer: 1, explain: "52 hostages, 444 days. Released minutes after Reagan was inaugurated." },
+    { q: "How long did the Iran-Iraq War last?", choices: ["2 years", "5 years", "8 years", "12 years"], answer: 2, explain: "1980 to 1988. 8 years. Stalemate. Over a million dead." },
+    { q: "Who introduced détente?", choices: ["Kennedy", "Nixon", "Reagan", "Carter"], answer: 1, explain: "Richard Nixon, advised by Henry Kissinger, introduced détente in the early 1970s." },
+    { q: "What did SALT I do?", choices: ["Banned nukes", "Limited ICBMs and SLBMs", "Built nukes", "Tested nukes"], answer: 1, explain: "Limited the number of intercontinental and submarine-launched ballistic missiles." },
+    { q: "What were Gorbachev's three reforms?", choices: [
+      "Containment, brinkmanship, détente",
+      "Glasnost, perestroika, democratization",
+      "NATO, Warsaw Pact, UN",
+      "Truman, Marshall, Eisenhower"
+    ], answer: 1, explain: "Glasnost (openness), perestroika (restructuring), democratization (limited elections)." },
+    { q: "When did the Berlin Wall fall?", choices: ["November 9, 1989", "October 3, 1990", "December 25, 1991", "August 13, 1961"], answer: 0, explain: "November 9, 1989. The USSR itself dissolved on December 25, 1991. Germany reunified October 3, 1990. The wall was built August 13, 1961." }
+  ]}
+  extraBanks={[
+    [
+      { q: "Which conference broke the U.S.-USSR alliance?", choices: ["Yalta", "Potsdam", "Tehran", "Casablanca"], answer: 1, explain: "Potsdam, July 1945. Truman demanded free elections. Stalin refused." },
+      { q: "Where is the UN headquartered?", choices: ["Geneva", "Brussels", "New York City", "Paris"], answer: 2, explain: "New York City. The five permanent veto members are Britain, China, France, USA, USSR/Russia." },
+      { q: "Which strategy involves giving money to win allies?", choices: ["Espionage", "Foreign Aid", "Brinkmanship", "Propaganda"], answer: 1, explain: "Foreign Aid. Examples: Marshall Plan (U.S. to Europe) and Soviet aid for the Aswan High Dam." },
+      { q: "Which is NOT a satellite nation?", choices: ["Poland", "Hungary", "Yugoslavia", "Czechoslovakia"], answer: 2, explain: "Yugoslavia broke from Stalin in 1948 and was non-aligned." },
+      { q: "How many flights did the Berlin Airlift fly?", choices: ["27,000", "277,000", "2.7 million", "27 million"], answer: 1, explain: "About 277,000 flights over 11 months." },
+      { q: "What started the Space Race?", choices: ["U-2 incident", "Sputnik", "Apollo 11", "SDI"], answer: 1, explain: "Sputnik launched October 4, 1957." },
+      { q: "Which president was in office during the Cuban Missile Crisis?", choices: ["Eisenhower", "Kennedy", "Johnson", "Nixon"], answer: 1, explain: "John F. Kennedy. October 1962." },
+      { q: "Iran's revolution turned the country into what?", choices: ["A democracy", "A monarchy", "An Islamic theocracy", "A communist state"], answer: 2, explain: "An Islamic theocracy under Ayatollah Khomeini." },
+      { q: "Which Soviet leader signed SALT I?", choices: ["Stalin", "Khrushchev", "Brezhnev", "Gorbachev"], answer: 2, explain: "Leonid Brezhnev signed SALT I with Nixon in May 1972." },
+      { q: "What does perestroika mean?", choices: ["Openness", "Restructuring", "Democratization", "Brinkmanship"], answer: 1, explain: "Russian for 'restructuring.' Gorbachev's economic reform." }
+    ],
+    [
+      { q: "What is containment?", choices: [
+        "Direct invasion of communist countries",
+        "U.S. policy to stop the spread of communism without direct war",
+        "USSR strategy to expand",
+        "Trade agreement"
+      ], answer: 1, explain: "Containment was the U.S. master strategy throughout the Cold War." },
+      { q: "Where did the Truman Doctrine first apply?", choices: ["Cuba and Vietnam", "Greece and Turkey", "Korea and Japan", "Germany and Austria"], answer: 1, explain: "Greece and Turkey, 1947." },
+      { q: "Who said 'communism and capitalism cannot coexist'?", choices: ["Truman", "Churchill", "Stalin", "Mao"], answer: 2, explain: "Stalin at the Potsdam Conference, July 1945." },
+      { q: "Which is the closest the world came to nuclear war?", choices: ["Berlin Airlift", "U-2 Incident", "Cuban Missile Crisis", "Iran Hostage Crisis"], answer: 2, explain: "Cuban Missile Crisis, October 1962. 13 days." },
+      { q: "Bay of Pigs occurred in which year?", choices: ["1959", "1961", "1962", "1963"], answer: 1, explain: "April 1961, early in Kennedy's presidency." },
+      { q: "What is the Non-Aligned Movement?", choices: [
+        "U.S. allies who weren't in NATO",
+        "Newly independent third-world countries that refused to join either superpower bloc",
+        "Soviet allies who weren't in Warsaw Pact",
+        "UN peacekeepers"
+      ], answer: 1, explain: "Non-Aligned Movement: third-world countries (notably India) that refused to join either bloc." },
+      { q: "Which president visited communist China first?", choices: ["FDR", "Truman", "Kennedy", "Nixon"], answer: 3, explain: "Nixon visited Beijing in February 1972." },
+      { q: "What was SDI nicknamed?", choices: ["Iron Dome", "Star Wars", "Sky Shield", "Patriot"], answer: 1, explain: "Star Wars, after the popular movie." },
+      { q: "What does glasnost mean?", choices: ["Openness", "Restructuring", "Democratization", "Containment"], answer: 0, explain: "Russian for 'openness.' Gorbachev's free-speech and political-openness reform." },
+      { q: "When did Germany reunify?", choices: ["November 9, 1989", "October 3, 1990", "December 25, 1991", "August 1989"], answer: 1, explain: "October 3, 1990. East and West Germany merged into one country less than a year after the wall fell." }
+    ]
+  ]}
+/>
+
+## Flashcards
+
+<Flashcards
+  cards={[
+    { front: "Cold War", back: "1945-1991 political and ideological conflict between the U.S. and USSR. No direct fighting, just tension, competition, and threats." },
+    { front: "Yalta Conference", back: "February 1945. FDR + Churchill + Stalin. Germany divided. Free-elections promise (broken)." },
+    { front: "Potsdam Conference", back: "July 1945. Truman + Attlee + Stalin. Alliance breaks down over free elections." },
+    { front: "United Nations", back: "Founded 1945. 50 nations. NYC HQ. 5 permanent veto powers (UK, China, France, USA, USSR)." },
+    { front: "Iron Curtain", back: "Churchill's 1946 phrase for the line dividing democratic Western Europe from Soviet-controlled Eastern Europe." },
+    { front: "Satellite nation", back: "Officially independent country actually controlled by the USSR. Examples: Poland, Hungary, Romania, Bulgaria, Czechoslovakia." },
+    { front: "Containment", back: "U.S. master strategy: stop the spread of communism without direct war." },
+    { front: "Truman Doctrine 1947", back: "U.S. aid to any country resisting communism. First applied to Greece and Turkey." },
+    { front: "Marshall Plan 1947", back: "12.5 billion dollars to rebuild Western Europe and undercut communism." },
+    { front: "Berlin Airlift 1948-49", back: "U.S. and Britain flew 2.3 million tons of supplies into West Berlin for 11 months while Stalin blocked ground access." },
+    { front: "Berlin Wall 1961", back: "Built by East Germany overnight to stop people escaping to West Berlin. Stood 28 years until November 9, 1989." },
+    { front: "NATO 1949", back: "North Atlantic Treaty Organization. U.S., Canada, Western Europe. Mutual defense: attack on one = attack on all." },
+    { front: "Warsaw Pact 1955", back: "USSR + 7 satellite nations. Direct response to NATO." },
+    { front: "Six Cold War strategies", back: "Foreign Aid, Espionage, Multinational Alliances, Propaganda, Brinkmanship, Surrogate Wars." },
+    { front: "Brinkmanship", back: "Pushing a conflict to the edge of nuclear war so the other side backs down. Eisenhower/Dulles strategy." },
+    { front: "Arms Race", back: "Competition to build nuclear weapons. U.S. H-bomb 1952. USSR H-bomb 1953." },
+    { front: "Sputnik 1957", back: "First artificial satellite, launched by the USSR. Started the Space Race." },
+    { front: "U-2 Incident 1960", back: "U.S. spy plane shot down over USSR. Pilot Francis Gary Powers captured. Wrecked Eisenhower-Khrushchev summit." },
+    { front: "Three Worlds", back: "First (capitalist), Second (communist), Third (developing/non-aligned)." },
+    { front: "Non-Aligned Movement", back: "Third-world countries (notably India) that refused to join either superpower bloc." },
+    { front: "Fidel Castro", back: "Overthrew Cuban dictator Batista on January 1, 1959. Allied Cuba with the USSR." },
+    { front: "Bay of Pigs 1961", back: "Failed CIA-backed invasion of Cuba by Cuban exiles. Embarrassed Kennedy. Strengthened Soviet-Cuban ties." },
+    { front: "Cuban Missile Crisis 1962", back: "13 days, October 16-28. Closest the world came to nuclear war. Resolved when USSR removed Cuba missiles + U.S. secretly removed Turkey missiles." },
+    { front: "Naval quarantine", back: "Kennedy's term for the Cuba blockade. He chose 'quarantine' because a 'blockade' is technically an act of war." },
+    { front: "The Shah", back: "Mohammad Reza Pahlavi. U.S.-backed monarch of Iran 1953-1979. Modernized but repressive." },
+    { front: "Ayatollah Khomeini", back: "Shia cleric who led the 1979 Iranian Revolution. Made Iran an Islamic theocracy." },
+    { front: "Iran Hostage Crisis", back: "November 4, 1979 to January 20, 1981. 52 Americans held 444 days at the U.S. embassy in Tehran." },
+    { front: "Iran-Iraq War", back: "1980-1988. Saddam Hussein invaded Iran. 8 years, 1 million dead, no winner." },
+    { front: "Détente", back: "French for 'relaxing of tension.' Nixon's 1970s policy of easing Cold War hostilities through diplomacy." },
+    { front: "Realpolitik", back: "Pragmatic foreign policy based on practical power, not ideology. Kissinger's approach." },
+    { front: "SALT I 1972", back: "Strategic Arms Limitation Treaty. First cap on strategic nuclear weapons. Nixon + Brezhnev." },
+    { front: "Soviet-Chinese Split 1959", back: "USSR cut off aid to China and refused to share nuclear tech. Border clashes in 1969." },
+    { front: "Destalinization", back: "Khrushchev's policy after 1953 of dismantling Stalin's cult of personality and easing the worst repression." },
+    { front: "SDI 1983", back: "Strategic Defense Initiative. Reagan's space-based missile defense. Nicknamed 'Star Wars.' Never built but pressured the USSR." },
+    { front: "Mikhail Gorbachev", back: "Last leader of the USSR (1985-1991). Introduced glasnost, perestroika, democratization." },
+    { front: "Glasnost", back: "Russian for 'openness.' Gorbachev's free-speech and political-transparency reform." },
+    { front: "Perestroika", back: "Russian for 'restructuring.' Gorbachev's limited free-market economic reform." },
+    { front: "Berlin Wall falls", back: "November 9, 1989. East German border opened. Crowds dismantled the wall overnight." },
+    { front: "USSR dissolves", back: "December 25, 1991. Gorbachev resigned. 15 republics independent. Cold War over." }
+  ]}
+/>
+
+## Mnemonics
+
+### MAINS (six Cold War strategies)
+**M**ultinational alliances · **A**id (foreign) · **I**ntelligence (espionage) · **N**uclear brinkmanship · **S**urrogate wars · plus Propaganda  
+(Six strategies, not five. The mnemonic is a memory crutch, not a complete list.)
+
+### YPN (the three big 1945 events)
+**Y**alta · **P**otsdam · **N**ations (United)
+
+### CCCP (the four 1947-1949 containment moves)
+**C**ontainment doctrine · **C**ouncil aid (Truman Doctrine) · **C**ash (Marshall Plan) · **P**act (NATO)
+
+### GPD (Gorbachev's three reforms)
+**G**lasnost · **P**erestroika · **D**emocratization
+
+### CRUSH (Cuban Missile Crisis steps)
+**C**astro takes power · **R**uthless embargo by U.S. · **U**SSR aid to Cuba · **S**urprise: Bay of Pigs fails · **H**eads-up: U-2 spots Soviet missiles  
+(Then: quarantine, deal, missiles out.)
+
+## Common pitfalls
+
+<BadFact source="every confused student" certainty="0%" title="MISCONCEPTION 1">
+  The Cold War was a war between the U.S. and USSR.
+</BadFact>
+
+It was NOT. The Cold War was political and ideological. The two superpowers never directly fought each other. Korea and Vietnam were proxy wars: U.S. fighting communist forces, but never directly fighting Soviet troops.
+
+<BadFact source="rushed last-minute crammers" certainty="0%" title="MISCONCEPTION 2">
+  Yalta and Potsdam are basically the same thing.
+</BadFact>
+
+They are not. Yalta = the agreement (Feb 1945, FDR + Churchill + Stalin, cooperative). Potsdam = the breakdown (July 1945, Truman + Attlee + Stalin, hostile). The free-elections promise is at Yalta. The argument over keeping it is at Potsdam.
+
+<BadFact source="bad textbooks" certainty="0%" title="MISCONCEPTION 3">
+  Gorbachev wanted to end the USSR.
+</BadFact>
+
+He absolutely did not. Gorbachev was trying to **save** the USSR by reforming it. He believed a more open, more efficient Soviet Union could survive. His reforms unleashed forces (nationalism, free press, economic chaos) that he could not control. By 1991 the USSR was gone. He was the last person to want that outcome.
+
+<BadFact source="confused study aids" certainty="0%" title="MISCONCEPTION 4">
+  The Berlin Wall and the Iron Curtain are the same thing.
+</BadFact>
+
+Different things. The **Iron Curtain** is the metaphorical line dividing all of Eastern Europe from Western Europe (Churchill's 1946 phrase). The **Berlin Wall** is one specific concrete wall, built in 1961, that divided just the city of Berlin. The wall was a physical piece of the larger curtain.
+
+## Cheat sheet
+
+<div class="not-prose my-6 overflow-x-auto rounded-2xl border border-ink-200 dark:border-ink-800">
+  <table class="w-full text-sm">
+    <thead class="bg-ink-50 dark:bg-ink-950">
+      <tr>
+        <th class="text-left px-4 py-3 font-serif">Year</th>
+        <th class="text-left px-4 py-3 font-serif">Event</th>
+        <th class="text-left px-4 py-3 font-serif">Why it matters</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-ink-200 dark:divide-ink-800">
+      <tr><td class="px-4 py-2">1945 Feb</td><td class="px-4 py-2">Yalta Conference</td><td class="px-4 py-2">Germany divided. Free-elections promise made.</td></tr>
+      <tr><td class="px-4 py-2">1945 Jul</td><td class="px-4 py-2">Potsdam Conference</td><td class="px-4 py-2">Promise broken. Alliance ends.</td></tr>
+      <tr><td class="px-4 py-2">1945 Oct</td><td class="px-4 py-2">UN founded</td><td class="px-4 py-2">50 nations. NYC HQ. 5 permanent vetoes.</td></tr>
+      <tr><td class="px-4 py-2">1946</td><td class="px-4 py-2">Iron Curtain speech</td><td class="px-4 py-2">Churchill names the divide.</td></tr>
+      <tr><td class="px-4 py-2">1947</td><td class="px-4 py-2">Truman Doctrine + Marshall Plan</td><td class="px-4 py-2">Containment policy launches. 12.5 billion dollars to Europe.</td></tr>
+      <tr><td class="px-4 py-2">1948-49</td><td class="px-4 py-2">Berlin Airlift</td><td class="px-4 py-2">First Cold War showdown. U.S. wins, Stalin lifts blockade.</td></tr>
+      <tr><td class="px-4 py-2">1949</td><td class="px-4 py-2">NATO formed</td><td class="px-4 py-2">12-nation Western defense alliance.</td></tr>
+      <tr><td class="px-4 py-2">1949</td><td class="px-4 py-2">USSR tests A-bomb + Mao wins China</td><td class="px-4 py-2">Cold War goes global.</td></tr>
+      <tr><td class="px-4 py-2">1952-53</td><td class="px-4 py-2">U.S. + USSR test H-bomb</td><td class="px-4 py-2">Arms race in full swing.</td></tr>
+      <tr><td class="px-4 py-2">1953</td><td class="px-4 py-2">Stalin dies</td><td class="px-4 py-2">Khrushchev begins destalinization.</td></tr>
+      <tr><td class="px-4 py-2">1955</td><td class="px-4 py-2">Warsaw Pact formed</td><td class="px-4 py-2">Soviet response to NATO.</td></tr>
+      <tr><td class="px-4 py-2">1957</td><td class="px-4 py-2">Sputnik launched</td><td class="px-4 py-2">Space Race begins.</td></tr>
+      <tr><td class="px-4 py-2">1959</td><td class="px-4 py-2">Castro takes Cuba + Soviet-Chinese Split</td><td class="px-4 py-2">Communism gains an ally and loses one.</td></tr>
+      <tr><td class="px-4 py-2">1960</td><td class="px-4 py-2">U-2 Incident</td><td class="px-4 py-2">Eisenhower's spy plane shot down.</td></tr>
+      <tr><td class="px-4 py-2">1961</td><td class="px-4 py-2">Bay of Pigs + Berlin Wall built</td><td class="px-4 py-2">Kennedy stumbles. East Germany seals off.</td></tr>
+      <tr><td class="px-4 py-2">1962</td><td class="px-4 py-2">Cuban Missile Crisis</td><td class="px-4 py-2">13 days from nuclear war.</td></tr>
+      <tr><td class="px-4 py-2">1972</td><td class="px-4 py-2">Nixon visits China + SALT I</td><td class="px-4 py-2">Détente in action.</td></tr>
+      <tr><td class="px-4 py-2">1979</td><td class="px-4 py-2">Iranian Revolution + Hostage Crisis</td><td class="px-4 py-2">Khomeini overthrows Shah. 52 Americans held.</td></tr>
+      <tr><td class="px-4 py-2">1980-88</td><td class="px-4 py-2">Iran-Iraq War</td><td class="px-4 py-2">8 years. 1 million dead. Stalemate.</td></tr>
+      <tr><td class="px-4 py-2">1983</td><td class="px-4 py-2">Reagan announces SDI</td><td class="px-4 py-2">Tension renewed. Soviet economy strained.</td></tr>
+      <tr><td class="px-4 py-2">1985</td><td class="px-4 py-2">Gorbachev takes power</td><td class="px-4 py-2">Glasnost, perestroika, democratization.</td></tr>
+      <tr><td class="px-4 py-2">1989</td><td class="px-4 py-2">Berlin Wall falls</td><td class="px-4 py-2">Eastern Europe breaks free.</td></tr>
+      <tr><td class="px-4 py-2">1991</td><td class="px-4 py-2">USSR dissolves</td><td class="px-4 py-2">Cold War over. 15 republics independent.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+## Vocab crossword
+
+<Crossword
+  title="Cold War vocab"
+  words={[
+    { word: "YALTA", clue: "Feb 1945 conference where Germany was divided" },
+    { word: "POTSDAM", clue: "July 1945 conference that broke the alliance" },
+    { word: "SPUTNIK", clue: "First artificial satellite, 1957" },
+    { word: "BERLIN", clue: "Capital city divided by a wall" },
+    { word: "CASTRO", clue: "Cuban revolutionary who allied with the USSR" },
+    { word: "KENNEDY", clue: "U.S. president during the Cuban Missile Crisis" },
+    { word: "DETENTE", clue: "1970s policy of easing Cold War tensions" },
+    { word: "NATO", clue: "1949 Western mutual-defense alliance" },
+    { word: "WARSAW", clue: "Soviet bloc's response to NATO (Pact)" },
+    { word: "MARSHALL", clue: "1947 Plan that gave 12.5 billion dollars to Europe" },
+    { word: "GORBACHEV", clue: "Last Soviet leader" },
+    { word: "GLASNOST", clue: "Russian for openness" }
+  ]}
+/>
+
+## Memorize the eight crisis steps
+
+<Memorize
+  title="Cuban Missile Crisis: list the 8 steps"
+  text={`1. Castro seized U.S.-owned sugar mills.
+2. Eisenhower imposed an embargo.
+3. Castro turned to the USSR for aid.
+4. Bay of Pigs Invasion failed (1961).
+5. Khrushchev placed nuclear missiles in Cuba.
+6. U.S. spy planes discovered the missiles.
+7. Kennedy demanded removal and imposed a naval quarantine.
+8. Resolution: USSR removed Cuba missiles, U.S. promised not to invade Cuba and secretly removed missiles from Turkey.`}
+/>
+
+## Study session
+
+<Pomodoro defaultMinutes={25} />
+
+<Poll
+  question="Which Cold War topic feels hardest right now?"
+  options={["Yalta vs Potsdam", "The 6 strategies", "Cuban Missile Crisis steps", "Iran (Revolution + Hostages + War)", "Détente vs Brinkmanship", "Gorbachev's three reforms"]}
+  storageKey="cold-war-difficult-poll"
+/>
+
+<div class="not-prose relative my-12 rounded-2xl overflow-hidden" style="min-height:200px;">
+  <AuroraBackground />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-serif text-2xl text-white italic mb-3">"The Cold War is the longest war we've ever fought, and the only one we won without firing a shot."</p>
+    <p class="text-white/70 text-sm">Margaret Thatcher, 1990</p>
+  </div>
+</div>
+
+<Callout type="tip" title="One last study tip">
+  Visual learners remember stories, not lists. Watch each animation in this guide one more time. Trace the timeline. Spin the globe. The dates and names will follow the picture, not the other way around.
+</Callout>
