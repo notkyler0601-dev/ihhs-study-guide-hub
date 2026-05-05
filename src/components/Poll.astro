@@ -1,23 +1,191 @@
 ---
-// Live polls/quizzes via an external open-source instance (Particify or
-// ClassQuiz). Provide a room/session URL from your instance.
-// For quick single-question polls with no self-hosting, you can also embed
-// a StrawPoll or similar service via the `src` prop.
+// Poll: two modes.
+//
+// 1. INLINE self-contained poll. Pass `question` + `options` and (optional)
+//    `storageKey`. Renders an interactive client-side poll with localStorage
+//    persistence; once the user votes, results bars are revealed. Useful for
+//    quick "what would you do?" reflection prompts inside a guide.
+//
+//    <Poll
+//      question="If you were Stalin in 1945, which goal would matter most?"
+//      options={["Spread communism", "Protect Soviet borders", "Rebuild USSR economy", "Keep Germany down"]}
+//      storageKey="cold-war-stalin"
+//    />
+//
+// 2. EMBEDDED external poll. Pass `src` (e.g. a StrawPoll/Particify embed
+//    URL). Renders an iframe.
+//
+//    <Poll src="https://strawpoll.com/embed/abc123" provider="strawpoll" />
+//
 interface Props {
   title?: string;
-  src: string;
+  // External-iframe mode
+  src?: string;
   provider?: 'particify' | 'classquiz' | 'strawpoll' | 'custom';
   height?: number;
+  // Inline-poll mode
+  question?: string;
+  options?: string[];
+  storageKey?: string;
 }
-const { title = 'Live poll', src, provider = 'custom', height = 540 } = Astro.props;
+const {
+  title = 'Live poll',
+  src,
+  provider = 'custom',
+  height = 540,
+  question,
+  options,
+  storageKey,
+} = Astro.props;
+
+const id = 'poll-' + Math.random().toString(36).slice(2, 9);
+const isInline = !src && question && options && options.length > 0;
+const conf = isInline
+  ? JSON.stringify({ question, options, storageKey: storageKey ?? id })
+  : null;
 ---
 
-<figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
-  <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
-    <span class="font-serif text-base font-semibold">{title}</span>
-    <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold capitalize">{provider}</span>
-  </figcaption>
-  <div class="relative w-full bg-ink-100 dark:bg-ink-800" style={`height:${height}px`}>
-    <iframe src={src} title={title} class="absolute inset-0 w-full h-full border-0" loading="lazy"></iframe>
-  </div>
-</figure>
+{isInline ? (
+  <figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft" id={id} data-poll data-conf={conf}>
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold">Quick poll</span>
+    </figcaption>
+    <div class="p-6">
+      <p data-poll-q class="font-serif text-lg font-semibold text-ink-800 dark:text-ink-200 mb-5">{question}</p>
+      <div data-poll-options class="space-y-2"></div>
+      <p data-poll-meta class="mt-4 text-xs text-ink-500 hidden">
+        <span data-poll-total>0</span> total votes ·
+        <button data-poll-reset type="button" class="ml-1 underline hover:text-accent-700 dark:hover:text-accent-400">Reset my vote</button>
+      </p>
+    </div>
+  </figure>
+) : (
+  <figure class="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft">
+    <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 flex items-center justify-between gap-3">
+      <span class="font-serif text-base font-semibold">{title}</span>
+      <span class="text-[10px] uppercase tracking-[0.16em] text-ink-500 font-semibold capitalize">{provider}</span>
+    </figcaption>
+    <div class="relative w-full bg-ink-100 dark:bg-ink-800" style={`height:${height}px`}>
+      <iframe src={src} title={title} class="absolute inset-0 w-full h-full border-0" loading="lazy"></iframe>
+    </div>
+  </figure>
+)}
+
+<script>
+  type PollConf = { question: string; options: string[]; storageKey: string };
+  type PollState = { votes: number[]; choice: number | null };
+
+  const readState = (key: string, n: number): PollState => {
+    try {
+      const raw = localStorage.getItem('ihhs:poll:' + key);
+      if (!raw) return { votes: new Array(n).fill(0), choice: null };
+      const parsed = JSON.parse(raw);
+      const votes = Array.isArray(parsed.votes) && parsed.votes.length === n
+        ? parsed.votes.map((v: any) => Number(v) || 0)
+        : new Array(n).fill(0);
+      const choice = typeof parsed.choice === 'number' && parsed.choice >= 0 && parsed.choice < n
+        ? parsed.choice
+        : null;
+      return { votes, choice };
+    } catch {
+      return { votes: new Array(n).fill(0), choice: null };
+    }
+  };
+
+  const writeState = (key: string, state: PollState) => {
+    try { localStorage.setItem('ihhs:poll:' + key, JSON.stringify(state)); } catch (_) {}
+  };
+
+  const render = (root: HTMLElement, conf: PollConf, state: PollState) => {
+    const optsHost = root.querySelector('[data-poll-options]') as HTMLElement;
+    const meta = root.querySelector('[data-poll-meta]') as HTMLElement;
+    const total = state.votes.reduce((a, b) => a + b, 0);
+    optsHost.innerHTML = '';
+
+    conf.options.forEach((opt, i) => {
+      const isChoice = state.choice === i;
+      const pct = total > 0 ? Math.round((state.votes[i] / total) * 100) : 0;
+
+      if (state.choice === null) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'block w-full text-left px-4 py-3 rounded-xl border border-ink-200 dark:border-ink-800 hover:border-accent-500 dark:hover:border-accent-400 hover:bg-accent-50 dark:hover:bg-accent-950/30 transition text-sm';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          state.votes[i] = (state.votes[i] || 0) + 1;
+          state.choice = i;
+          writeState(conf.storageKey, state);
+          render(root, conf, state);
+        });
+        optsHost.appendChild(btn);
+      } else {
+        const row = document.createElement('div');
+        row.className = isChoice
+          ? 'relative overflow-hidden rounded-xl border-2 border-accent-600 dark:border-accent-500 bg-white dark:bg-ink-900'
+          : 'relative overflow-hidden rounded-xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900';
+        const bar = document.createElement('div');
+        bar.className = isChoice
+          ? 'absolute inset-y-0 left-0 bg-accent-100 dark:bg-accent-900/40 transition-all duration-500'
+          : 'absolute inset-y-0 left-0 bg-ink-100 dark:bg-ink-800 transition-all duration-500';
+        bar.style.width = pct + '%';
+        const inner = document.createElement('div');
+        inner.className = 'relative flex items-center justify-between gap-3 px-4 py-3 text-sm';
+        const label = document.createElement('span');
+        label.className = isChoice ? 'font-semibold text-accent-800 dark:text-accent-200' : 'text-ink-800 dark:text-ink-200';
+        label.textContent = (isChoice ? '✓ ' : '') + opt;
+        const pctEl = document.createElement('span');
+        pctEl.className = 'font-mono text-xs text-ink-600 dark:text-ink-400 tabular-nums';
+        pctEl.textContent = pct + '%';
+        inner.appendChild(label);
+        inner.appendChild(pctEl);
+        row.appendChild(bar);
+        row.appendChild(inner);
+        optsHost.appendChild(row);
+      }
+    });
+
+    if (state.choice !== null) {
+      meta.classList.remove('hidden');
+      const totalEl = meta.querySelector('[data-poll-total]');
+      if (totalEl) totalEl.textContent = String(total);
+    } else {
+      meta.classList.add('hidden');
+    }
+  };
+
+  const initOne = (root: HTMLElement) => {
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+    let conf: PollConf;
+    try {
+      conf = JSON.parse(root.dataset.conf || '{}');
+    } catch {
+      console.warn('Poll: failed to parse conf');
+      return;
+    }
+    if (!conf.question || !conf.options || conf.options.length === 0) return;
+
+    const state = readState(conf.storageKey, conf.options.length);
+    render(root, conf, state);
+
+    const resetBtn = root.querySelector('[data-poll-reset]') as HTMLElement | null;
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (state.choice !== null) {
+          state.votes[state.choice] = Math.max(0, state.votes[state.choice] - 1);
+        }
+        state.choice = null;
+        writeState(conf.storageKey, state);
+        render(root, conf, state);
+      });
+    }
+  };
+
+  const initAll = () => {
+    document.querySelectorAll<HTMLElement>('[data-poll]:not([data-bound])').forEach(initOne);
+  };
+
+  initAll();
+  document.addEventListener('astro:after-swap', initAll);
+</script>
