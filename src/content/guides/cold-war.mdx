@@ -20,7 +20,6 @@ import VisTimeline from '../../components/VisTimeline.astro';
 import MapView from '../../components/MapView.astro';
 import MapLibreView from '../../components/MapLibreView.astro';
 import StepThrough from '../../components/StepThrough.astro';
-import DiffView from '../../components/DiffView.astro';
 import TremorCard from '../../components/TremorCard.astro';
 import RechartsBar from '../../components/RechartsBar.astro';
 import RechartsLine from '../../components/RechartsLine.astro';
@@ -29,14 +28,11 @@ import SpeechBubble from '../../components/SpeechBubble.astro';
 import Flag from '../../components/Flag.astro';
 import GuideLoader from '../../components/GuideLoader.astro';
 import Typewriter from '../../components/Typewriter.astro';
-import VantaBackground from '../../components/VantaBackground.astro';
 import Particles from '../../components/Particles.astro';
 import AuroraBackground from '../../components/AuroraBackground.astro';
-import RoughNotation from '../../components/RoughNotation.astro';
 import BadFact from '../../components/BadFact.astro';
 import MindMap from '../../components/MindMap.astro';
 import NetworkGraph from '../../components/NetworkGraph.astro';
-import CompareSlider from '../../components/CompareSlider.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 import ReadingProgress from '../../components/ReadingProgress.astro';
 import Crossword from '../../components/Crossword.astro';
@@ -56,8 +52,8 @@ import Choropleth from '../../components/Choropleth.astro';
 <ReadingProgress />
 
 <div class="not-prose relative my-8 rounded-3xl overflow-hidden shadow-soft" style="min-height: 360px;">
-  <VantaBackground effect="net" color="#b91c1c" backgroundColor="#0a0a0a" height={360} />
-  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+  <Particles preset="links" backgroundColor="#0a0a0a" particleColor="#f87171" height={360} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
     <p class="font-mono uppercase tracking-[0.3em] text-xs text-white/70 mb-4">Chapter 17 + 19</p>
     <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">The Cold War</h1>
     <div class="text-white/90 font-serif text-lg md:text-2xl italic max-w-2xl">
@@ -73,7 +69,7 @@ import Choropleth from '../../components/Choropleth.astro';
 
 ## Where it all happened
 
-Drag to spin. Scroll to zoom. Click any marker for context. The arcs show key Cold War flights: the Berlin Airlift, the U-2 spy mission, and Soviet missiles bound for Cuba.
+Drag to spin. Scroll to zoom. Click any marker for context.
 
 <Cesium
   target={[40, 10, 14000000]}
@@ -91,11 +87,6 @@ Drag to spin. Scroll to zoom. Click any marker for context. The arcs show key Co
     { lat: 35.6892, lng: 51.3890, name: "Tehran", note: "1979 Iranian Revolution. 52 hostages held 444 days." },
     { lat: 33.3152, lng: 44.3661, name: "Baghdad", note: "Iran-Iraq War (1980-1988). Saddam Hussein invades Iran." },
     { lat: 39.9042, lng: 116.4074, name: "Beijing", note: "Mao's communist China. Splits with USSR 1959. Nixon visits 1972." }
-  ]}
-  arcs={[
-    { from: [50.0379, 8.5622], to: [52.5200, 13.4050], name: "Berlin Airlift, 1948-49" },
-    { from: [37.6, -116.0], to: [55.7558, 37.6173], name: "U-2 spy plane route, 1960" },
-    { from: [55.7558, 37.6173], to: [23.1136, -82.3666], name: "Soviet missiles to Cuba, 1962" }
   ]}
 />
 
@@ -221,41 +212,28 @@ These terms are in **every** quiz, every essay prompt, every multiple choice. Me
 
 The U.S. and USSR fought side-by-side in WWII. They beat Hitler. Then, almost overnight, they turned on each other. The reason was a stack of grievances each side had been carrying for decades, plus a fundamental clash of ideologies.
 
-<DiffView
-  before={`SOVIET GRIEVANCES against the West
-
-  1918-1920  Western powers tried to overthrow
-             communism during the Russian Civil War.
-
-  1919       Excluded from the Treaty of Versailles
-             negotiations and the new League of Nations.
-
-  1938       Not invited to the Munich Conference where
-             Britain and France handed Hitler the Sudetenland.
-
-  1942-1944  U.S. and Britain delayed opening a second front
-             in WWII while the USSR took the brunt on the
-             Eastern Front. 27 million Soviets died.
-
-  RESULT     Stalin viewed the West as untrustworthy.`}
-  after={`WESTERN GRIEVANCES against the USSR
-
-  1917-1920  Bolsheviks pulled Russia out of WWI early,
-             then murdered the royal family.
-
-  1939       Stalin signed the Nazi-Soviet Nonaggression
-             Pact, freeing Hitler to invade Poland.
-
-  1940-1945  Fear that communism would spread globally
-             through revolution, propaganda, and force.
-
-  1945       Stalin's Red Army occupied every country
-             his troops liberated. He kept them.
-
-  RESULT     Truman viewed Stalin as the next Hitler.`}
-  mode="side-by-side"
-  fileName="Why the alliance broke"
-/>
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-3">Soviet grievances against the West</p>
+    <ul class="space-y-3 text-sm text-ink-800 dark:text-ink-200">
+      <li><span class="font-semibold text-accent-800 dark:text-accent-300">1918 to 1920</span> · Western powers tried to overthrow communism during the Russian Civil War.</li>
+      <li><span class="font-semibold text-accent-800 dark:text-accent-300">1919</span> · Excluded from the Treaty of Versailles and the new League of Nations.</li>
+      <li><span class="font-semibold text-accent-800 dark:text-accent-300">1938</span> · Not invited to the Munich Conference where Britain and France handed Hitler the Sudetenland.</li>
+      <li><span class="font-semibold text-accent-800 dark:text-accent-300">1942 to 1944</span> · U.S. and Britain delayed opening a second front in WWII while 27 million Soviets died on the Eastern Front.</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-accent-300 dark:border-accent-800 text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300">Result: Stalin viewed the West as untrustworthy.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-ink-800 dark:text-ink-200 mb-3">Western grievances against the USSR</p>
+    <ul class="space-y-3 text-sm text-ink-800 dark:text-ink-200">
+      <li><span class="font-semibold text-ink-900 dark:text-ink-100">1917 to 1920</span> · Bolsheviks pulled Russia out of WWI early, then murdered the royal family.</li>
+      <li><span class="font-semibold text-ink-900 dark:text-ink-100">1939</span> · Stalin signed the Nazi-Soviet Nonaggression Pact, freeing Hitler to invade Poland.</li>
+      <li><span class="font-semibold text-ink-900 dark:text-ink-100">1940 to 1945</span> · Fear that communism would spread globally through revolution, propaganda, and force.</li>
+      <li><span class="font-semibold text-ink-900 dark:text-ink-100">1945</span> · Stalin's Red Army occupied every country his troops liberated. He kept them.</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-ink-300 dark:border-ink-700 text-xs font-semibold uppercase tracking-wider text-ink-800 dark:text-ink-200">Result: Truman viewed Stalin as the next Hitler.</p>
+  </div>
+</div>
 
 <Callout type="insight" title="The alliance was always tactical">
   The U.S. and USSR allied because Hitler was a bigger problem than each other. The moment Hitler fell, the bigger problem was each other.
@@ -265,42 +243,34 @@ The U.S. and USSR fought side-by-side in WWII. They beat Hitler. Then, almost ov
 
 This is a top-three exam topic. Memorize both columns.
 
-<DiffView
-  before={`UNITED STATES GOALS
-
-  1. Encourage democracy in other countries to
-     prevent the rise of Communist governments.
-
-  2. Gain access to raw materials and markets
-     to fuel booming American industries.
-
-  3. Rebuild European governments to promote
-     stability and create new markets for U.S. goods.
-
-  4. Reunite Germany to stabilize it and increase
-     the security of Europe.
-
-  Driver: Capitalism + Democracy.`}
-  after={`SOVIET UNION GOALS
-
-  1. Encourage communism in other countries as
-     part of a worldwide workers' revolution.
-
-  2. Rebuild its war-ravaged economy using
-     Eastern Europe's industrial equipment and
-     raw materials.
-
-  3. Control Eastern Europe to protect Soviet
-     borders and balance U.S. influence in the West.
-
-  4. Keep Germany divided to prevent it from
-     waging war again. Russia had been invaded by
-     Germany twice in 25 years.
-
-  Driver: Communism + Security.`}
-  mode="side-by-side"
-  fileName="U.S. vs USSR postwar goals"
-/>
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <div class="flex items-center gap-3 mb-4">
+      <Flag code="US" size={36} />
+      <p class="font-serif text-lg font-bold text-blue-900 dark:text-blue-100">United States goals</p>
+    </div>
+    <ol class="space-y-3 text-sm text-ink-800 dark:text-ink-200 list-decimal list-inside">
+      <li>Encourage <strong>democracy</strong> in other countries to prevent the rise of Communist governments.</li>
+      <li>Gain access to <strong>raw materials and markets</strong> to fuel booming American industries.</li>
+      <li>Rebuild European governments to promote stability and create <strong>new markets for U.S. goods</strong>.</li>
+      <li><strong>Reunite Germany</strong> to stabilize it and increase the security of Europe.</li>
+    </ol>
+    <p class="mt-4 pt-3 border-t border-blue-300 dark:border-blue-800 text-xs font-semibold uppercase tracking-wider text-blue-900 dark:text-blue-200">Driver: Capitalism + Democracy</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <div class="flex items-center gap-3 mb-4">
+      <Flag code="RU" size={36} />
+      <p class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100">Soviet Union goals</p>
+    </div>
+    <ol class="space-y-3 text-sm text-ink-800 dark:text-ink-200 list-decimal list-inside">
+      <li>Encourage <strong>communism</strong> in other countries as part of a worldwide workers' revolution.</li>
+      <li>Rebuild its war-ravaged economy using Eastern Europe's <strong>industrial equipment and raw materials</strong>.</li>
+      <li><strong>Control Eastern Europe</strong> to protect Soviet borders and balance U.S. influence.</li>
+      <li><strong>Keep Germany divided</strong> to prevent it from waging war again. Russia had been invaded by Germany twice in 25 years.</li>
+    </ol>
+    <p class="mt-4 pt-3 border-t border-accent-300 dark:border-accent-800 text-xs font-semibold uppercase tracking-wider text-accent-900 dark:text-accent-200">Driver: Communism + Security</p>
+  </div>
+</div>
 
 <Poll
   question="If you were Stalin in 1945, which goal would matter most?"
@@ -316,47 +286,41 @@ Two conferences. Five months apart. They look similar on paper. They are not.
 
 <TremorCard label="Potsdam Conference" value="Jul 1945" delta="Alliance breaks" deltaType="decrease" helper="Truman replaces FDR (FDR died April 12). Truman pushes Stalin to honor the free-elections promise. Stalin refuses. Stalin says communism and capitalism cannot coexist." />
 
-<DiffView
-  before={`YALTA, FEBRUARY 1945
-
-  Location:   Crimea, on the Black Sea.
-  Leaders:    Franklin D. Roosevelt (USA)
-              Winston Churchill (UK)
-              Joseph Stalin (USSR)
-
-  Mood:       Cooperative. Germany not yet defeated.
-              All three sides need each other.
-
-  Decisions:
-  + Germany divided into 4 occupation zones
-    (U.S., UK, France, USSR).
-  + USSR receives reparations from Germany.
-  + USSR will join the Pacific war against Japan.
-  + Eastern European countries get FREE ELECTIONS
-    after liberation.
-  + United Nations to be founded after war.`}
-  after={`POTSDAM, JULY 1945
-
-  Location:   Just outside Berlin.
-  Leaders:    Harry S. Truman (USA, replaces FDR)
-              Clement Attlee (UK, replaces Churchill)
-              Joseph Stalin (USSR)
-
-  Mood:       Hostile. Germany has surrendered.
-              The U.S. has just tested an atomic bomb.
-
-  Conflict:
-  - Truman demands Stalin honor the free-elections
-    promise from Yalta.
-  - Stalin refuses. Soviet troops already occupy
-    Eastern Europe.
-  - Stalin states: "Communism and capitalism
-    cannot coexist."
-
-  RESULT: The alliance is over. The Cold War begins.`}
-  mode="side-by-side"
-  fileName="Yalta vs Potsdam"
-/>
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">February 1945</p>
+    <h3 class="font-serif text-2xl font-bold text-emerald-900 dark:text-emerald-100 mb-4">Yalta Conference</h3>
+    <dl class="text-sm text-ink-800 dark:text-ink-200 space-y-2">
+      <div><dt class="font-semibold inline">Location:</dt> Crimea, on the Black Sea.</div>
+      <div><dt class="font-semibold inline">Leaders:</dt> Roosevelt (USA), Churchill (UK), Stalin (USSR).</div>
+      <div><dt class="font-semibold inline">Mood:</dt> Cooperative. Germany not yet defeated. All three need each other.</div>
+    </dl>
+    <p class="mt-4 mb-2 font-semibold text-emerald-800 dark:text-emerald-300 text-sm">Decisions made:</p>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Germany divided into 4 occupation zones.</li>
+      <li>USSR receives reparations from Germany.</li>
+      <li>USSR will join the Pacific war against Japan.</li>
+      <li>Eastern Europe promised <strong>free elections</strong>.</li>
+      <li>United Nations to be founded after the war.</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">July 1945</p>
+    <h3 class="font-serif text-2xl font-bold text-accent-900 dark:text-accent-100 mb-4">Potsdam Conference</h3>
+    <dl class="text-sm text-ink-800 dark:text-ink-200 space-y-2">
+      <div><dt class="font-semibold inline">Location:</dt> Just outside Berlin.</div>
+      <div><dt class="font-semibold inline">Leaders:</dt> Truman (replaces FDR), Attlee (replaces Churchill), Stalin.</div>
+      <div><dt class="font-semibold inline">Mood:</dt> Hostile. Germany has surrendered. The U.S. has just tested an atomic bomb.</div>
+    </dl>
+    <p class="mt-4 mb-2 font-semibold text-accent-800 dark:text-accent-300 text-sm">Conflict:</p>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Truman demands Stalin honor the free-elections promise.</li>
+      <li>Stalin refuses. Soviet troops already occupy Eastern Europe.</li>
+      <li>Stalin says <em>communism and capitalism cannot coexist</em>.</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-accent-300 dark:border-accent-800 text-xs font-semibold uppercase tracking-wider text-accent-900 dark:text-accent-200">Result: The alliance is over. The Cold War begins.</p>
+  </div>
+</div>
 
 <Callout type="warning" title="Common test trap">
   Don't confuse the two conferences. Yalta = the agreement. Potsdam = the breakdown. The free-elections promise is at Yalta. The argument over keeping it is at Potsdam.
@@ -974,45 +938,58 @@ After 1945, the globe split into three political blocs. Newly independent third-
   height={460}
 />
 
-<DiffView
-  before={`FIRST WORLD                  SECOND WORLD
-
-  Government:                  Government:
-  Democracy + free elections   One-party communist state
-  Multiple political parties   Communist Party only
-  Free press                   State-controlled press
-
-  Economy:                     Economy:
-  Capitalism + free markets    Central planning by state
-  Private property             State owns the means
-  Profit motive                of production
-
-  Examples:                    Examples:
-  USA, UK, France,             USSR, China, Cuba,
-  West Germany, Japan          North Korea, Vietnam`}
-  after={`THIRD WORLD
-
-  Diverse, often newly independent. Many were
-  former colonies of European empires.
-
-  Choices facing them in 1960:
-  - Align with the U.S. for trade and aid
-  - Align with the USSR for trade and aid
-  - Stay non-aligned and play both sides
-
-  The Non-Aligned Movement, led by Nehru's
-  India and Tito's Yugoslavia, gathered ~120
-  countries that refused both Cold War blocs.
-
-  Examples of non-aligned: India, Indonesia,
-  Egypt, Yugoslavia, Ghana, Cuba (briefly).
-
-  Battlegrounds: Korea, Vietnam, Angola,
-  Mozambique, Nicaragua, Afghanistan,
-  Cambodia, Congo, Ethiopia.`}
-  mode="side-by-side"
-  fileName="The three worlds, side by side"
-/>
+<div class="not-prose my-8 grid md:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-blue-800 dark:text-blue-300 mb-2">First World</p>
+    <h3 class="font-serif text-xl font-bold text-blue-900 dark:text-blue-100 mb-4">Capitalist</h3>
+    <p class="text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-300 mb-1">Government</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>Democracy + free elections</li>
+      <li>Multiple political parties</li>
+      <li>Free press</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-300 mb-1">Economy</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>Capitalism, free markets</li>
+      <li>Private property</li>
+      <li>Profit motive</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-300 mb-1">Examples</p>
+    <p class="text-sm text-ink-800 dark:text-ink-200">USA, UK, France, West Germany, Japan</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Second World</p>
+    <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100 mb-4">Communist</h3>
+    <p class="text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300 mb-1">Government</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>One-party communist state</li>
+      <li>Communist Party only</li>
+      <li>State-controlled press</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300 mb-1">Economy</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>Central planning by state</li>
+      <li>State owns means of production</li>
+      <li>No private profit</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300 mb-1">Examples</p>
+    <p class="text-sm text-ink-800 dark:text-ink-200">USSR, China, Cuba, North Korea, Vietnam</p>
+  </div>
+  <div class="rounded-2xl border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-amber-700 dark:text-amber-300 mb-2">Third World</p>
+    <h3 class="font-serif text-xl font-bold text-amber-800 dark:text-amber-100 mb-4">Non-Aligned</h3>
+    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">Profile</p>
+    <p class="text-sm text-ink-800 dark:text-ink-200 mb-3">Diverse, often newly independent. Many former colonies of European empires.</p>
+    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">Choices in 1960</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>Align with the U.S.</li>
+      <li>Align with the USSR</li>
+      <li>Stay non-aligned and play both sides</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">Examples</p>
+    <p class="text-sm text-ink-800 dark:text-ink-200">India, Indonesia, Egypt, Yugoslavia, Ghana</p>
+  </div>
+</div>
 
 ## 2.2 Cold War hot spots, 1948 to 1975
 
@@ -1199,40 +1176,31 @@ Halfway around the world, another Cold War flashpoint was building. **Iran** sit
 
 In 1953, the U.S. and Britain ran a CIA coup that installed **Mohammad Reza Pahlavi**, known as **the Shah**, as Iran's all-powerful monarch. The Shah was pro-Western, modernized Iran, and let American companies pump Iranian oil. He also ran a brutal secret police (SAVAK) that tortured opponents.
 
-<DiffView
-  before={`THE SHAH'S MODERNIZATION (1953-1979)
-
-  Pro-American foreign policy.
-  Built modern roads, hospitals, schools.
-  Westernized education and dress.
-  Granted women the right to vote (1963).
-  Industrial growth from oil revenue.
-
-  Iran became a strong U.S. ally and the
-  "policeman of the Persian Gulf."
-
-  In 1971 the Shah threw a 2,500-year-anniversary
-  celebration of the Persian Empire that cost
-  more than 100 million dollars.`}
-  after={`THE SHAH'S PROBLEMS (1953-1979)
-
-  Wealth inequality: oil profits enriched
-  a tiny elite, not ordinary Iranians.
-
-  Political repression: SAVAK secret police
-  jailed, tortured, and disappeared dissidents.
-
-  Religious resentment: Shia clerics opposed
-  Westernization as un-Islamic.
-
-  Anti-American anger: many Iranians blamed
-  the U.S. for installing and propping up
-  the Shah.
-
-  By 1978, mass protests filled the streets.`}
-  mode="side-by-side"
-  fileName="The Shah, two pictures"
-/>
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">1953 to 1979</p>
+    <h3 class="font-serif text-xl font-bold text-emerald-900 dark:text-emerald-100 mb-4">Modernization, the bright picture</h3>
+    <ul class="space-y-3 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Pro-American foreign policy.</li>
+      <li>Built modern roads, hospitals, schools.</li>
+      <li>Westernized education and dress.</li>
+      <li>Granted women the right to vote (1963).</li>
+      <li>Industrial growth from oil revenue.</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-emerald-300 dark:border-emerald-800 text-xs italic text-emerald-800 dark:text-emerald-200">Iran became a strong U.S. ally and the "policeman of the Persian Gulf." In 1971 the Shah threw a 2,500-year-anniversary celebration of the Persian Empire that cost more than 100 million dollars.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">1953 to 1979</p>
+    <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100 mb-4">Problems, the dark picture</h3>
+    <ul class="space-y-3 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong class="text-accent-800 dark:text-accent-300">Wealth inequality.</strong> Oil profits enriched a tiny elite, not ordinary Iranians.</li>
+      <li><strong class="text-accent-800 dark:text-accent-300">Political repression.</strong> SAVAK secret police jailed, tortured, and disappeared dissidents.</li>
+      <li><strong class="text-accent-800 dark:text-accent-300">Religious resentment.</strong> Shia clerics opposed Westernization as un-Islamic.</li>
+      <li><strong class="text-accent-800 dark:text-accent-300">Anti-American anger.</strong> Many Iranians blamed the U.S. for installing and propping up the Shah.</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-accent-300 dark:border-accent-800 text-xs font-semibold uppercase tracking-wider text-accent-900 dark:text-accent-200">By 1978, mass protests filled the streets.</p>
+  </div>
+</div>
 
 ## 2.6 The Iranian Revolution, 1979
 
@@ -1464,38 +1432,38 @@ When Stalin died on March 5, 1953, the USSR exhaled. Stalin had murdered million
 
 In 1956, Khrushchev gave a secret speech to Soviet party leaders denouncing Stalin's crimes. The speech leaked. The world learned what the USSR had done to itself.
 
-<DiffView
-  before={`STALIN (1924-1953)
-
-  Personality cult: portraits everywhere.
-  Great Purge (1936-1938): millions executed
-  or sent to Gulag labor camps.
-  Forced collectivization of farms.
-  Mass deportations of ethnic minorities.
-  Ironclad censorship.
-
-  Foreign policy: aggressive expansion.
-  Eastern European satellites installed
-  by Red Army.
-
-  Death toll, internal: ~20 million.`}
-  after={`KHRUSHCHEV (1953-1964)
-
-  Destalinization: Stalin's portraits removed.
-  Statues torn down. Stalingrad renamed Volgograd.
-  Many political prisoners released from Gulag.
-  Some censorship eased ("the Thaw" in literature).
-  Limited reforms; party kept absolute power.
-
-  Foreign policy: tense but flexible.
-  Crushed 1956 Hungarian uprising with tanks.
-  Built Berlin Wall (1961).
-  Backed down at Cuban Missile Crisis (1962).
-
-  Removed from power 1964 after Cuba humiliation.`}
-  mode="side-by-side"
-  fileName="Stalin vs Khrushchev"
-/>
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-ink-800 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-ink-800 dark:text-ink-200 mb-2">1924 to 1953</p>
+    <h3 class="font-serif text-2xl font-bold text-ink-900 dark:text-ink-100 mb-4">Stalin</h3>
+    <p class="text-xs font-semibold uppercase tracking-wider text-ink-800 dark:text-ink-200 mb-1">Domestic policy</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>Personality cult, portraits everywhere</li>
+      <li>Great Purge (1936-1938): millions executed or sent to Gulag</li>
+      <li>Forced collectivization of farms</li>
+      <li>Mass deportations of ethnic minorities</li>
+      <li>Ironclad censorship</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-ink-800 dark:text-ink-200 mb-1">Foreign policy</p>
+    <p class="text-sm text-ink-800 dark:text-ink-200 mb-3">Aggressive expansion. Eastern European satellites installed by the Red Army.</p>
+    <p class="mt-2 pt-3 border-t border-ink-300 dark:border-ink-700 text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300">Internal death toll: ~20 million</p>
+  </div>
+  <div class="rounded-2xl border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-amber-700 dark:text-amber-300 mb-2">1953 to 1964</p>
+    <h3 class="font-serif text-2xl font-bold text-amber-800 dark:text-amber-100 mb-4">Khrushchev</h3>
+    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">Destalinization</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 mb-3 list-disc list-inside space-y-1">
+      <li>Stalin's portraits removed, statues torn down</li>
+      <li>Stalingrad renamed Volgograd</li>
+      <li>Many political prisoners released from Gulag</li>
+      <li>Some censorship eased ("the Thaw" in literature)</li>
+      <li>Limited reforms; the Party kept absolute power</li>
+    </ul>
+    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1">Foreign policy</p>
+    <p class="text-sm text-ink-800 dark:text-ink-200 mb-3">Tense but flexible. Crushed 1956 Hungarian uprising. Built the Berlin Wall (1961). Backed down at the Cuban Missile Crisis (1962).</p>
+    <p class="mt-2 pt-3 border-t border-amber-300 dark:border-amber-800 text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-200">Removed from power 1964 after Cuba humiliation</p>
+  </div>
+</div>
 
 <Callout type="warning" title="The limits of destalinization">
   When Hungary tried to break out of the Soviet bloc in 1956, Khrushchev sent in tanks. Thousands of Hungarians died. The same thing happened in Czechoslovakia in 1968 (Prague Spring) under Khrushchev's successor, Brezhnev. The USSR would let you criticize Stalin but not leave the empire.
