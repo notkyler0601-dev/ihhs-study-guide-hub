@@ -77,21 +77,46 @@ const Tag = variant;
     const target = document.getElementById(id);
     if (!target) return;
 
-    const Typed: any = await importGlobal(
-      'https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js',
-      'Typed'
-    );
+    const startTyped = async () => {
+      const Typed: any = await importGlobal(
+        'https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js',
+        'Typed'
+      );
+      // The component may have been removed between deferred-init and now
+      // (e.g. an Astro view-transition swap). Bail if the target is gone.
+      if (!document.getElementById(id)) return;
+      new Typed(`#${id}`, {
+        strings: cfg.strings,
+        typeSpeed: cfg.speed,
+        backSpeed: cfg.backSpeed,
+        loop: cfg.loop,
+        startDelay: cfg.startDelay,
+        showCursor: cfg.showCursor,
+        cursorChar: '|',
+        smartBackspace: true,
+      });
+    };
 
-    new Typed(`#${id}`, {
-      strings: cfg.strings,
-      typeSpeed: cfg.speed,
-      backSpeed: cfg.backSpeed,
-      loop: cfg.loop,
-      startDelay: cfg.startDelay,
-      showCursor: cfg.showCursor,
-      cursorChar: '|',
-      smartBackspace: true,
-    });
+    // If a GuideLoader warmup is in progress, the page is hidden behind a
+    // full-screen overlay for several seconds. Typing through that window
+    // wastes the animation. Wait for `ihhs:warmup-done` so the user
+    // actually sees the reveal. If the warmup never completes (skipped,
+    // dies, etc.), a safety timer kicks in.
+    if ((window as any).__ihhsWarmingUp) {
+      let started = false;
+      const start = () => {
+        if (started) return;
+        started = true;
+        window.removeEventListener('ihhs:warmup-done', start);
+        startTyped();
+      };
+      window.addEventListener('ihhs:warmup-done', start, { once: true });
+      // Safety net: max 15s. Longer than GuideLoader's hard 9s cap +
+      // overlay fade, so it almost never fires in practice.
+      setTimeout(start, 15000);
+    } else {
+      startTyped();
+    }
   };
 
   const init = () => {
