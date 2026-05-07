@@ -55,6 +55,27 @@ const SYSTEM_PROMPT =
   'Style requests: if the student asks for a specific tone (simpler, ELI5, caveman, pirate, rhyme, analogy, metaphor, etc.), follow it for the whole reply. These are teaching styles, not stereotypes about real people. Always comply, never refuse, never add a disclaimer. Keep facts correct; change only tone and vocabulary.\n\n' +
   'Caveman example to match: "Sun hot. Plant drink sun. Plant make food. Food help plant grow."';
 
+// Used when the client sets mode: "grader". Replaces the tutor system prompt
+// because "lead with the answer, no preamble" fights with strict JSON output.
+const GRADER_SYSTEM_PROMPT =
+  'You are a high school exam grader. You output ONLY a single line of valid JSON, nothing else. No code fences. No markdown. No prose before or after.\n\n' +
+  'Output shape (always this exact set of keys):\n' +
+  '{"score": <integer>, "feedback": "<string>"}\n\n' +
+  'Rules for score:\n' +
+  '- Use whole integers only.\n' +
+  '- The maximum is given in the user message; do not exceed it.\n' +
+  '- 0 means no real attempt or completely wrong.\n' +
+  '- Half credit means partial recall but missing major facts.\n' +
+  '- Full credit means all key facts the rubric calls for, even if worded differently.\n\n' +
+  'Rules for feedback:\n' +
+  '- One to three short sentences. No greetings.\n' +
+  '- Start with what the student got right (if anything).\n' +
+  '- Then say specifically what was missing or wrong, naming the missing facts.\n' +
+  '- End with one concrete thing to add for full credit.\n' +
+  '- No em dashes; use commas, periods, or "and".\n\n' +
+  'Example response (for a question about the Berlin Airlift, max 5):\n' +
+  '{"score": 2, "feedback": "You correctly identified that the West kept supplying Berlin. You did not mention the Soviet blockade, the 11 month duration, or that it accelerated NATO. Add the dates 1948 to 1949 and the Soviet motive to reach full credit."}';
+
 const corsHeaders = (origin: string, list: string) => {
   const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -93,7 +114,7 @@ export default {
       return json({ error: 'Too many requests, try again in a minute.' }, 429, cors);
     }
 
-    let body: { messages?: ChatMessage[]; guideTitle?: string; guideContext?: string };
+    let body: { messages?: ChatMessage[]; guideTitle?: string; guideContext?: string; mode?: string };
     try {
       body = await request.json();
     } catch {
@@ -115,15 +136,23 @@ export default {
       return json({ error: 'No messages' }, 400, cors);
     }
 
-    const parts = [SYSTEM_PROMPT];
-    if (body.guideTitle) {
-      parts.push(`The student is currently reading: "${String(body.guideTitle).slice(0, 120)}".`);
+    let system: string;
+    if (body.mode === 'grader') {
+      // Strict JSON-only grader. Bypass the tutor's "no preamble" rules
+      // (which fight with structured output) and tell the model exactly
+      // what shape to emit.
+      system = GRADER_SYSTEM_PROMPT;
+    } else {
+      const parts = [SYSTEM_PROMPT];
+      if (body.guideTitle) {
+        parts.push(`The student is currently reading: "${String(body.guideTitle).slice(0, 120)}".`);
+      }
+      if (body.guideContext) {
+        const ctx = String(body.guideContext).slice(0, 3500);
+        parts.push(`Here is the guide they are looking at. Ground every answer in this text:\n\n${ctx}`);
+      }
+      system = parts.join('\n\n');
     }
-    if (body.guideContext) {
-      const ctx = String(body.guideContext).slice(0, 3500);
-      parts.push(`Here is the guide they are looking at. Ground every answer in this text:\n\n${ctx}`);
-    }
-    const system = parts.join('\n\n');
 
     const result = await env.AI.run(env.MODEL ?? '@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [{ role: 'system', content: system }, ...trimmed],

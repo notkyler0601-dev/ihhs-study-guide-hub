@@ -159,24 +159,26 @@ const conf = JSON.stringify({ questions });
       status.textContent = 'Grading...';
       wrap.classList.add('hidden');
 
-      // Ask the AI tutor Worker to grade. We push a single user message that
-      // includes the rubric and ask it to return a strict JSON envelope so we
-      // can parse the score and feedback even though the underlying transport
-      // is a streaming chat completion.
-      const grader = `You are a high school exam grader. Grade the student's short answer below.\n\n` +
-        `Question: ${q.q}\n` +
-        `Reference answer (what a full-credit response covers): ${q.rubric}\n` +
-        `Maximum points: ${points}\n\n` +
-        `Student's answer:\n"""\n${answer}\n"""\n\n` +
-        `Reply with EXACTLY this JSON, no preamble, no fences, no extra prose:\n` +
-        `{"score": <integer 0..${points}>, "feedback": "<one or two short sentences>"}`;
+      // Send the question, rubric, and student response to the Worker in
+      // grader mode. The Worker swaps in a JSON-only system prompt so the
+      // model returns {"score": N, "feedback": "..."} cleanly.
+      const grader =
+        `Grade this short answer. Maximum score is ${points}.\n\n` +
+        `QUESTION:\n${q.q}\n\n` +
+        `RUBRIC (what a full credit answer covers):\n${q.rubric}\n\n` +
+        `STUDENT'S ANSWER:\n${answer}\n\n` +
+        `Output one line of JSON: {"score": INTEGER_FROM_0_TO_${points}, "feedback": "what they got right; what they missed; one concrete addition for full credit"}.\n` +
+        `Do not write anything except that JSON line.`;
 
       let raw = '';
       try {
         const res = await fetch(`${endpoint.replace(/\/$/, '')}/tutor`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: [{ role: 'user', content: grader }] }),
+          body: JSON.stringify({
+            mode: 'grader',
+            messages: [{ role: 'user', content: grader }],
+          }),
         });
         if (!res.ok || !res.body) {
           status.textContent = 'Grading failed. Try again.';
@@ -203,19 +205,35 @@ const conf = JSON.stringify({ questions });
         return;
       }
 
-      // Pull JSON out of whatever the model returned. The model may wrap it
-      // in code fences, prepend a sentence, or add trailing punctuation.
-      const jsonMatch = raw.match(/\{[\s\S]*?"score"[\s\S]*?\}/);
+      // Pull score and feedback out of whatever the model returned. We don't
+      // trust strict JSON because models occasionally drop the score value
+      // entirely ({"score": , "feedback": "..."}), wrap output in code
+      // fences, or trail extra prose. So: try strict JSON first, then fall
+      // back to regex extraction of each field.
       let score: number | null = null;
       let feedback: string = raw.trim();
+
+      const cleaned = raw
+        .replace(/^[\s\S]*?(\{)/, '$1')        // drop preamble before first {
+        .replace(/```(?:json)?\s*|\s*```/g, '') // strip code fences
+        .trim();
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
           const parsed = JSON.parse(jsonMatch[0]);
           if (typeof parsed.score === 'number') score = parsed.score;
           if (typeof parsed.feedback === 'string') feedback = parsed.feedback;
         } catch {
-          // fall through, we'll show the raw reply
+          // strict parse failed, fall through to regex recovery
         }
+      }
+      if (score === null) {
+        const sm = raw.match(/"score"\s*:\s*(\d+)/);
+        if (sm) score = Number(sm[1]);
+      }
+      const fm = raw.match(/"feedback"\s*:\s*"((?:\\.|[^"\\])*)"/);
+      if (fm) {
+        try { feedback = JSON.parse('"' + fm[1] + '"'); } catch { feedback = fm[1]; }
       }
 
       if (score !== null) {
