@@ -1,0 +1,139 @@
+---
+// Fill-in-the-blanks recall exercise. Pure client-side string matching, no AI.
+//
+// Each prompt has a `text` containing one or more "___" placeholders and an
+// `answers` array, one per blank. Each blank's answer can be a single string
+// or an array of acceptable variants. Matching is case-insensitive and trims
+// whitespace, so "1948" and " 1948 " both pass for "1948".
+//
+// Usage:
+//   <FillInBlanks
+//     title="Cold War dates"
+//     prompts={[
+//       { text: "Berlin Airlift: ___ to ___.", answers: ["1948", "1949"] },
+//       { text: "NATO founded in ___ ; Warsaw Pact in ___.", answers: [["1949"], ["1955"]] },
+//     ]}
+//   />
+type Answer = string | string[];
+interface Prompt { text: string; answers: Answer[]; }
+interface Props {
+  title?: string;
+  prompts: Prompt[];
+}
+const { title = 'Fill in the blanks', prompts } = Astro.props;
+const id = 'fib-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ prompts });
+---
+
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-6" id={id} data-fib-root data-fib-conf={conf}>
+  <header class="flex items-center justify-between gap-3 mb-5">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 font-serif font-semibold">_</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+        <p class="text-xs text-ink-500 mt-1"><span data-fib-correct>0</span> of <span data-fib-total>0</span> correct</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" data-fib-check class="px-3 py-1.5 rounded-md bg-accent-700 hover:bg-accent-800 text-white text-xs font-medium">Check all</button>
+      <button type="button" data-fib-reset class="px-2 py-1 text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Reset</button>
+    </div>
+  </header>
+
+  <ol class="space-y-4" data-fib-list></ol>
+</section>
+
+<script>
+  type Answer = string | string[];
+  interface Prompt { text: string; answers: Answer[]; }
+
+  const init = (root: HTMLElement) => {
+    if (root.dataset.fibReady) return;
+    root.dataset.fibReady = '1';
+
+    const conf = JSON.parse(root.dataset.fibConf || '{"prompts":[]}') as { prompts: Prompt[] };
+    const list = root.querySelector<HTMLElement>('[data-fib-list]')!;
+    const totalEl = root.querySelector<HTMLElement>('[data-fib-total]')!;
+    const correctEl = root.querySelector<HTMLElement>('[data-fib-correct]')!;
+
+    let totalBlanks = 0;
+    list.innerHTML = conf.prompts.map((p, pi) => {
+      const segments = p.text.split('___');
+      const blanks = segments.length - 1;
+      totalBlanks += blanks;
+      const inputs: string[] = [];
+      for (let bi = 0; bi < blanks; bi++) {
+        inputs.push(`<input
+          type="text"
+          data-fib-input
+          data-fib-prompt="${pi}"
+          data-fib-blank="${bi}"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          class="inline-block min-w-[6rem] mx-1 px-2 py-0.5 border-b-2 border-ink-300 dark:border-ink-600 bg-transparent focus:border-accent-500 focus:outline-none text-sm font-mono text-center"
+        />`);
+      }
+      const interleaved = segments.map((seg, i) => seg + (i < blanks ? inputs[i] : '')).join('');
+      return `
+        <li class="flex items-start gap-3" data-fib-row="${pi}">
+          <span class="text-xs font-mono text-ink-400 mt-1 shrink-0">${String(pi + 1).padStart(2, '0')}</span>
+          <div class="flex-1 leading-8 text-sm text-ink-800 dark:text-ink-200">${interleaved}</div>
+        </li>
+      `;
+    }).join('');
+    totalEl.textContent = String(totalBlanks);
+
+    const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+    const matches = (input: string, ans: Answer): boolean => {
+      const variants = Array.isArray(ans) ? ans : [ans];
+      const got = norm(input);
+      return variants.some((v) => norm(v) === got);
+    };
+
+    const grade = () => {
+      let correct = 0;
+      conf.prompts.forEach((p, pi) => {
+        p.answers.forEach((ans, bi) => {
+          const input = root.querySelector<HTMLInputElement>(
+            `[data-fib-input][data-fib-prompt="${pi}"][data-fib-blank="${bi}"]`,
+          );
+          if (!input) return;
+          const ok = matches(input.value, ans);
+          input.classList.remove('border-emerald-500', 'border-red-500', 'text-emerald-700', 'text-red-700', 'dark:text-emerald-300', 'dark:text-red-300');
+          input.classList.add(
+            ok ? 'border-emerald-500' : 'border-red-500',
+            ok ? 'text-emerald-700' : 'text-red-700',
+            ok ? 'dark:text-emerald-300' : 'dark:text-red-300',
+          );
+          if (!ok) {
+            const variants = Array.isArray(ans) ? ans : [ans];
+            input.title = `Expected: ${variants.join(' / ')}`;
+          } else {
+            input.title = '';
+          }
+          if (ok) correct++;
+        });
+      });
+      correctEl.textContent = String(correct);
+    };
+
+    const reset = () => {
+      root.querySelectorAll<HTMLInputElement>('[data-fib-input]').forEach((i) => {
+        i.value = '';
+        i.classList.remove('border-emerald-500', 'border-red-500', 'text-emerald-700', 'text-red-700', 'dark:text-emerald-300', 'dark:text-red-300');
+        i.title = '';
+      });
+      correctEl.textContent = '0';
+    };
+
+    root.querySelector<HTMLButtonElement>('[data-fib-check]')?.addEventListener('click', grade);
+    root.querySelector<HTMLButtonElement>('[data-fib-reset]')?.addEventListener('click', reset);
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-fib-root]').forEach(init);
+  document.addEventListener('astro:after-swap', () => {
+    document.querySelectorAll<HTMLElement>('[data-fib-root]').forEach(init);
+  });
+</script>

@@ -46,6 +46,8 @@ import Pomodoro from '../../components/Pomodoro.astro';
 import Sankey from '../../components/Sankey.astro';
 import NivoSunburst from '../../components/NivoSunburst.astro';
 import Choropleth from '../../components/Choropleth.astro';
+import ShortAnswer from '../../components/ShortAnswer.astro';
+import FillInBlanks from '../../components/FillInBlanks.astro';
 
 <GuideLoader maxSeconds={10} stepPx={700} stepMs={130} />
 
@@ -2221,3 +2223,53 @@ Different things. The **Iron Curtain** is the metaphorical line dividing all of 
 <Callout type="tip" title="One last study tip">
   Visual learners remember stories, not lists. Watch each animation in this guide one more time. Trace the timeline. Spin the globe. The dates and names will follow the picture, not the other way around.
 </Callout>
+
+## Short answer (AI graded)
+
+Type a real answer in your own words. The AI tutor will score each response out of 5 and tell you what it would mark down. No half measures, write a real paragraph.
+
+<ShortAnswer
+  title="Cold War short answer"
+  questions={[
+    {
+      q: "Why was the Berlin Airlift (1948 to 1949) a turning point in the early Cold War?",
+      rubric: "Stalin blocked all road, rail, and canal access into West Berlin to force the Western Allies out. Truman, Britain, and France responded with a year-long airlift that delivered food, fuel, and supplies. Stalin lifted the blockade in May 1949 without a shot fired. The crisis hardened the East to West split, accelerated the founding of NATO in April 1949, and locked in the partition of Germany into West (FRG) and East (GDR) later that year.",
+      points: 5,
+    },
+    {
+      q: "Compare the goals of the Truman Doctrine (1947) and the Marshall Plan (1948).",
+      rubric: "Both were containment policies, but they pursued it differently. The Truman Doctrine pledged U.S. military and economic aid to any nation resisting communist takeover, framed initially around Greece and Turkey. The Marshall Plan offered roughly $13 billion in U.S. economic aid to rebuild Western European economies, betting that prosperous democracies would not turn communist. The Soviets rejected the plan and forced satellite states to refuse it. Together they defined the U.S. strategy: military containment plus economic stabilization.",
+      points: 5,
+    },
+    {
+      q: "Explain why the Cuban Missile Crisis (1962) is the closest the Cold War came to nuclear war, and how it ended.",
+      rubric: "Khrushchev secretly placed nuclear missiles 90 miles from Florida to offset U.S. missiles in Turkey and protect Castro after the Bay of Pigs. U.S. spy planes spotted them in October 1962. Kennedy chose a naval quarantine over an airstrike or invasion. For 13 days the world stood at the brink while Soviet ships approached the line. Resolution: the USSR publicly withdrew the missiles in exchange for a U.S. pledge not to invade Cuba and a secret promise to remove Jupiter missiles from Turkey.",
+      points: 5,
+    },
+    {
+      q: "Identify Gorbachev's three reforms (glasnost, perestroika, demokratizatsiya) and explain why they accelerated the Soviet collapse instead of saving the system.",
+      rubric: "Glasnost (openness) lifted censorship, which let citizens criticize the government and exposed decades of failure. Perestroika (restructuring) tried to inject market mechanisms into the planned economy, but the half-measures broke supply chains without replacing them. Demokratizatsiya (democratization) introduced contested elections, which in practice empowered nationalist movements in the satellite states and the Soviet republics. Together the reforms removed the fear that held the system together while failing to deliver the prosperity that would have replaced it. The result: 1989 revolutions across Eastern Europe and the USSR's dissolution on December 25, 1991.",
+      points: 5,
+    },
+  ]}
+/>
+
+## Fill in the blanks
+
+Quick recall pass over the dates, names, and acronyms. Click **Check all** when you're done. Wrong answers light up red and the tooltip shows the expected value.
+
+<FillInBlanks
+  title="Dates, names, acronyms"
+  prompts={[
+    { text: "The Berlin Airlift began in ___ and ended in ___.", answers: ["1948", "1949"] },
+    { text: "NATO was founded in ___ ; the Warsaw Pact answered in ___.", answers: ["1949", "1955"] },
+    { text: "The Truman Doctrine was announced in ___, the Marshall Plan in ___.", answers: ["1947", "1948"] },
+    { text: "The Soviets launched ___ in 1957; the U.S. landed astronauts on the moon in ___.", answers: [["Sputnik"], ["1969"]] },
+    { text: "The Cuban Missile Crisis took place in October of ___ and lasted ___ days.", answers: ["1962", ["13", "thirteen"]] },
+    { text: "Mutually Assured Destruction is abbreviated ___.", answers: [["MAD"]] },
+    { text: "Gorbachev's three reforms were ___ (openness), ___ (restructuring), and ___ (democratization).", answers: [["glasnost"], ["perestroika"], ["demokratizatsiya", "democratization"]] },
+    { text: "The Berlin Wall fell on November 9, ___ ; the Soviet Union dissolved on December 25, ___.", answers: ["1989", "1991"] },
+    { text: "The Iranian Revolution overthrew the Shah in ___ ; the U.S. embassy hostage crisis lasted ___ days.", answers: ["1979", ["444"]] },
+    { text: "The Korean War ran from ___ to ___ and ended in an armistice, not a treaty.", answers: ["1950", "1953"] },
+  ]}
+/>
