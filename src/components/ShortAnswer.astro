@@ -1,0 +1,261 @@
+---
+// AI-graded short-answer questions. Sends the question + reference answer +
+// student response to the existing AI tutor Worker (PUBLIC_AI_TUTOR_URL),
+// asks for structured JSON {score, feedback}, and renders that inline.
+//
+// Falls back to a "tutor not configured" notice if the env var is missing.
+//
+// Usage:
+//   <ShortAnswer
+//     title="Cold War short answer"
+//     questions={[
+//       {
+//         q: "Why was the Berlin Airlift a turning point?",
+//         rubric: "Stalin tried to force the Allies out of West Berlin by blocking ground access. The U.S. and UK flew supplies in for ~11 months. It showed Western resolve, ended the blockade without war, and accelerated NATO's formation in 1949.",
+//         points: 5,
+//       },
+//     ]}
+//   />
+interface Question {
+  q: string;
+  rubric: string;
+  points?: number;
+}
+interface Props {
+  title?: string;
+  questions: Question[];
+}
+const { title = 'Short answer', questions } = Astro.props;
+const id = 'sa-' + Math.random().toString(36).slice(2, 9);
+const endpoint = import.meta.env.PUBLIC_AI_TUTOR_URL as string | undefined;
+const conf = JSON.stringify({ questions });
+---
+
+<section
+  class="not-prose my-8 surface rounded-2xl shadow-soft p-6"
+  id={id}
+  data-sa-root
+  data-sa-conf={conf}
+  data-sa-endpoint={endpoint ?? ''}
+>
+  <header class="flex items-center justify-between gap-3 mb-5">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-600 to-accent-800 text-white font-serif font-semibold">SA</span>
+      <div>
+        <h3 class="font-serif text-lg font-semibold leading-none">{title}</h3>
+        <p class="text-xs text-ink-500 mt-1">AI-graded. Score and feedback after each submission.</p>
+      </div>
+    </div>
+    <button type="button" data-sa-reset class="px-2 py-1 text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-300">Reset</button>
+  </header>
+
+  <div data-sa-offline class="hidden mb-4 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 p-3 text-xs text-amber-900 dark:text-amber-200">
+    Grading not configured. Ask a site admin to set <code class="font-mono">PUBLIC_AI_TUTOR_URL</code>.
+  </div>
+
+  <ol class="space-y-6" data-sa-list></ol>
+</section>
+
+<script>
+  interface Question { q: string; rubric: string; points?: number; }
+
+  const escape = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+  const parseSSELine = (line: string): string | null => {
+    if (!line.startsWith('data:')) return null;
+    const payload = line.slice(5).trim();
+    if (!payload || payload === '[DONE]') return null;
+    try {
+      const obj = JSON.parse(payload);
+      if (typeof obj.response === 'string') return obj.response;
+      if (typeof obj.delta === 'string') return obj.delta;
+      const choice = Array.isArray(obj.choices) ? obj.choices[0] : null;
+      if (choice) {
+        if (typeof choice.delta?.content === 'string') return choice.delta.content;
+        if (typeof choice.message?.content === 'string') return choice.message.content;
+        if (typeof choice.text === 'string') return choice.text;
+        if (typeof choice.delta?.text === 'string') return choice.delta.text;
+        if (typeof choice.delta?.reasoning === 'string') return choice.delta.reasoning;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const init = (root: HTMLElement) => {
+    if (root.dataset.saReady) return;
+    root.dataset.saReady = '1';
+
+    const endpoint = root.dataset.saEndpoint || '';
+    const conf = JSON.parse(root.dataset.saConf || '{"questions":[]}') as { questions: Question[] };
+    const list = root.querySelector<HTMLElement>('[data-sa-list]')!;
+    const offline = root.querySelector<HTMLElement>('[data-sa-offline]')!;
+
+    list.innerHTML = conf.questions.map((q, i) => {
+      const points = q.points ?? 5;
+      return `
+        <li class="space-y-3" data-sa-q="${i}">
+          <div class="flex items-start gap-3">
+            <span class="text-xs font-mono text-ink-400 mt-1 shrink-0">${String(i + 1).padStart(2, '0')}</span>
+            <div class="flex-1">
+              <p class="font-medium text-ink-900 dark:text-ink-100">${escape(q.q)}</p>
+              <p class="text-[11px] text-ink-500 mt-1">${points} points</p>
+            </div>
+          </div>
+          <div class="ml-7 space-y-2">
+            <textarea
+              data-sa-input
+              rows="3"
+              placeholder="Type your answer..."
+              class="w-full resize-y rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
+            ></textarea>
+            <div class="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                data-sa-grade
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-accent-700 hover:bg-accent-800 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >Grade my answer</button>
+              <span data-sa-status class="text-xs text-ink-500"></span>
+            </div>
+            <div data-sa-feedback class="hidden rounded-lg border border-ink-200 dark:border-ink-800 bg-ink-50/60 dark:bg-ink-900/40 p-3 text-sm leading-relaxed">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-500">Score</span>
+                <span data-sa-score class="font-mono font-semibold"></span>
+              </div>
+              <div data-sa-text class="text-ink-700 dark:text-ink-200"></div>
+            </div>
+          </div>
+        </li>
+      `;
+    }).join('');
+
+    if (!endpoint) {
+      offline.classList.remove('hidden');
+      root.querySelectorAll<HTMLButtonElement>('[data-sa-grade]').forEach((b) => (b.disabled = true));
+      return;
+    }
+
+    const grade = async (idx: number) => {
+      const li = root.querySelector<HTMLElement>(`[data-sa-q="${idx}"]`);
+      if (!li) return;
+      const q = conf.questions[idx];
+      const points = q.points ?? 5;
+      const input = li.querySelector<HTMLTextAreaElement>('[data-sa-input]')!;
+      const btn = li.querySelector<HTMLButtonElement>('[data-sa-grade]')!;
+      const status = li.querySelector<HTMLElement>('[data-sa-status]')!;
+      const wrap = li.querySelector<HTMLElement>('[data-sa-feedback]')!;
+      const scoreEl = li.querySelector<HTMLElement>('[data-sa-score]')!;
+      const textEl = li.querySelector<HTMLElement>('[data-sa-text]')!;
+
+      const answer = (input.value || '').trim();
+      if (!answer) {
+        status.textContent = 'Type an answer first.';
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = 'Grading...';
+      wrap.classList.add('hidden');
+
+      // Ask the AI tutor Worker to grade. We push a single user message that
+      // includes the rubric and ask it to return a strict JSON envelope so we
+      // can parse the score and feedback even though the underlying transport
+      // is a streaming chat completion.
+      const grader = `You are a high school exam grader. Grade the student's short answer below.\n\n` +
+        `Question: ${q.q}\n` +
+        `Reference answer (what a full-credit response covers): ${q.rubric}\n` +
+        `Maximum points: ${points}\n\n` +
+        `Student's answer:\n"""\n${answer}\n"""\n\n` +
+        `Reply with EXACTLY this JSON, no preamble, no fences, no extra prose:\n` +
+        `{"score": <integer 0..${points}>, "feedback": "<one or two short sentences>"}`;
+
+      let raw = '';
+      try {
+        const res = await fetch(`${endpoint.replace(/\/$/, '')}/tutor`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [{ role: 'user', content: grader }] }),
+        });
+        if (!res.ok || !res.body) {
+          status.textContent = 'Grading failed. Try again.';
+          btn.disabled = false;
+          return;
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split('\n');
+          buf = lines.pop() ?? '';
+          for (const line of lines) {
+            const chunk = parseSSELine(line);
+            if (chunk) raw += chunk;
+          }
+        }
+      } catch {
+        status.textContent = 'Network error. Try again.';
+        btn.disabled = false;
+        return;
+      }
+
+      // Pull JSON out of whatever the model returned. The model may wrap it
+      // in code fences, prepend a sentence, or add trailing punctuation.
+      const jsonMatch = raw.match(/\{[\s\S]*?"score"[\s\S]*?\}/);
+      let score: number | null = null;
+      let feedback: string = raw.trim();
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (typeof parsed.score === 'number') score = parsed.score;
+          if (typeof parsed.feedback === 'string') feedback = parsed.feedback;
+        } catch {
+          // fall through, we'll show the raw reply
+        }
+      }
+
+      if (score !== null) {
+        const clamped = Math.max(0, Math.min(points, Math.round(score)));
+        const color = clamped >= points * 0.8
+          ? 'text-emerald-700 dark:text-emerald-300'
+          : clamped >= points * 0.5
+            ? 'text-amber-700 dark:text-amber-300'
+            : 'text-red-700 dark:text-red-300';
+        scoreEl.className = 'font-mono font-semibold ' + color;
+        scoreEl.textContent = `${clamped} / ${points}`;
+      } else {
+        scoreEl.className = 'font-mono font-semibold text-ink-700 dark:text-ink-200';
+        scoreEl.textContent = '— / ' + points;
+      }
+      textEl.textContent = feedback;
+      wrap.classList.remove('hidden');
+      status.textContent = '';
+      btn.disabled = false;
+    };
+
+    list.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-sa-grade]');
+      if (!btn) return;
+      const li = btn.closest<HTMLElement>('[data-sa-q]');
+      if (!li) return;
+      const idx = Number(li.dataset.saQ);
+      if (Number.isNaN(idx)) return;
+      grade(idx);
+    });
+
+    root.querySelector<HTMLButtonElement>('[data-sa-reset]')?.addEventListener('click', () => {
+      root.querySelectorAll<HTMLTextAreaElement>('[data-sa-input]').forEach((t) => (t.value = ''));
+      root.querySelectorAll<HTMLElement>('[data-sa-feedback]').forEach((f) => f.classList.add('hidden'));
+      root.querySelectorAll<HTMLElement>('[data-sa-status]').forEach((s) => (s.textContent = ''));
+    });
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-sa-root]').forEach(init);
+  document.addEventListener('astro:after-swap', () => {
+    document.querySelectorAll<HTMLElement>('[data-sa-root]').forEach(init);
+  });
+</script>
