@@ -717,23 +717,26 @@ The two alliance blocs that defined Europe for 40 years.
 Nuclear weapons made the Cold War terrifying. By 1953, both sides had hydrogen bombs. By the 1960s, both had intercontinental ballistic missiles (ICBMs). By the 1980s, the combined stockpile could destroy human civilization several times over.
 
 <RechartsLine
-  title="Nuclear warhead stockpiles, 1945 to 1991"
+  title="Nuclear warhead stockpiles, 1945 to 1990"
   data={[
-    { year: "1945", USA: 6, USSR: 0 },
-    { year: "1950", USA: 369, USSR: 5 },
-    { year: "1955", USA: 3057, USSR: 200 },
-    { year: "1960", USA: 20434, USSR: 1605 },
-    { year: "1965", USA: 31139, USSR: 6129 },
-    { year: "1970", USA: 26008, USSR: 11643 },
-    { year: "1975", USA: 27519, USSR: 19055 },
-    { year: "1980", USA: 24304, USSR: 30062 },
-    { year: "1985", USA: 23368, USSR: 39197 },
-    { year: "1990", USA: 21392, USSR: 37000 }
+    { year: "1945", USA: 6, USSR: 0, UK: 0, France: 0, China: 0 },
+    { year: "1950", USA: 369, USSR: 5, UK: 0, France: 0, China: 0 },
+    { year: "1955", USA: 3057, USSR: 200, UK: 14, France: 0, China: 0 },
+    { year: "1960", USA: 20434, USSR: 1605, UK: 30, France: 0, China: 0 },
+    { year: "1965", USA: 31139, USSR: 6129, UK: 271, France: 32, China: 5 },
+    { year: "1970", USA: 26008, USSR: 11643, UK: 280, France: 36, China: 75 },
+    { year: "1975", USA: 27519, USSR: 19055, UK: 350, France: 188, China: 185 },
+    { year: "1980", USA: 24304, USSR: 30062, UK: 350, France: 250, China: 205 },
+    { year: "1985", USA: 23368, USSR: 39197, UK: 350, France: 360, China: 243 },
+    { year: "1990", USA: 21392, USSR: 37000, UK: 300, France: 505, China: 232 }
   ]}
   xKey="year"
   lines={[
-    { key: "USA", color: "#b91c1c", name: "United States" },
-    { key: "USSR", color: "#000000", name: "Soviet Union" }
+    { dataKey: "USA", color: "#b91c1c", name: "United States" },
+    { dataKey: "USSR", color: "#000000", name: "Soviet Union" },
+    { dataKey: "UK", color: "#525252", name: "United Kingdom" },
+    { dataKey: "France", color: "#a3a3a3", name: "France" },
+    { dataKey: "China", color: "#f87171", name: "China" }
   ]}
 />
 
