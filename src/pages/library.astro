@@ -13,11 +13,23 @@ const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
     return b.data.date.valueOf() - a.data.date.valueOf();
   });
 
+const FINALS_LABEL = 'Finals';
+
+// Finals guides are pulled out into their own headlined section at the top
+// of the library. They are ALSO removed from the main grid below so they
+// only appear once on the page.
+const finalsGuides = allGuides.filter((g) => (g.data.categories ?? []).includes(FINALS_LABEL));
+const restGuides = allGuides.filter((g) => !(g.data.categories ?? []).includes(FINALS_LABEL));
+
 // Collect every subject label across primary + categories so the filter covers all of them.
+// We deliberately exclude "Finals" from the subject filter chips because it now has its
+// own dedicated section above the grid.
 const subjectSet = new Set<string>();
 for (const g of allGuides) {
-  subjectSet.add(g.data.subject);
-  for (const c of g.data.categories ?? []) subjectSet.add(c);
+  if (g.data.subject !== FINALS_LABEL) subjectSet.add(g.data.subject);
+  for (const c of g.data.categories ?? []) {
+    if (c !== FINALS_LABEL) subjectSet.add(c);
+  }
 }
 const subjects = [...subjectSet].sort();
 ---
@@ -33,6 +45,46 @@ const subjects = [...subjectSet].sort();
         {allGuides.length} guide{allGuides.length === 1 ? '' : 's'} across {subjects.length} subject{subjects.length === 1 ? '' : 's'}. Filter, search, dive in.
       </p>
     </div>
+
+    {finalsGuides.length > 0 && (
+      <section id="finals-section" class="mb-12">
+        <div class="relative overflow-hidden rounded-3xl border-2 border-accent-700 dark:border-accent-600 bg-gradient-to-br from-accent-50 via-white to-white dark:from-accent-950/40 dark:via-ink-950 dark:to-ink-950 p-6 sm:p-8 mb-6">
+          <div class="absolute -top-3 -right-3 rotate-12 bg-accent-700 dark:bg-accent-600 text-white text-[10px] font-mono font-bold tracking-[0.18em] px-4 py-1.5 rounded-bl-md shadow-lift">
+            FINAL EXAMS
+          </div>
+          <div class="text-xs uppercase tracking-[0.18em] text-accent-700 dark:text-accent-400 font-semibold mb-2">Finals</div>
+          <h2 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance mb-2">
+            Cram for the <span class="gradient-text">big one</span>
+          </h2>
+          <p class="text-base text-ink-600 dark:text-ink-300 leading-relaxed max-w-2xl">
+            {finalsGuides.length} guide{finalsGuides.length === 1 ? '' : 's'} built specifically for end-of-semester finals: comprehensive coverage, mock tests, and study aids you can drill the night before.
+          </p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {finalsGuides.map((g) => (
+            <GuideCard
+              href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
+              title={g.data.title}
+              description={g.data.description}
+              subject={g.data.subject}
+              categories={g.data.categories}
+              estimatedTime={g.data.estimatedTime}
+              tags={g.data.tags}
+              date={g.data.date}
+              comingSoon={g.data.comingSoon}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {finalsGuides.length > 0 && (
+      <div class="flex items-center gap-3 mb-8">
+        <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800"></div>
+        <div class="text-[11px] uppercase tracking-[0.18em] font-semibold text-ink-500">All other guides</div>
+        <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800"></div>
+      </div>
+    )}
 
     <div class="surface rounded-2xl p-5 mb-8">
       <div class="flex flex-col gap-4">
@@ -55,7 +107,7 @@ const subjects = [...subjectSet].sort();
     </div>
 
     <div id="lib-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {allGuides.map((g) => (
+      {restGuides.map((g) => (
         <div data-guide
           data-subjects={[g.data.subject, ...(g.data.categories ?? [])].join('|')}
           data-search={(g.data.title + ' ' + g.data.description + ' ' + g.data.tags.join(' ') + ' ' + [g.data.subject, ...(g.data.categories ?? [])].join(' ')).toLowerCase()}
