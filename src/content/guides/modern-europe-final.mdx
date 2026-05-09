@@ -1833,4 +1833,657 @@ They massively grew heavy industry, yes. But they **caused famine** in Ukraine (
   ]}
 />
 
-{/* SECTION_3_MARKER */}
+---
+
+# Section 3 · Interwar Years
+
+<div class="not-prose relative my-6 rounded-2xl overflow-hidden" style="min-height: 220px;">
+  <Particles preset="snow" backgroundColor="#0a0a0a" particleColor="#a3a3a3" height={220} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+    <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Chapter 15 · 1919 to 1939</p>
+    <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">Between the Wars</h2>
+    <p class="text-white/80 max-w-xl italic">Democracy fails. Fascism rises. Appeasement breaks.</p>
+  </div>
+</div>
+
+<div class="not-prose my-4 grid grid-cols-2 gap-3">
+  <TremorCard label="Years of fragile peace" value="20" helper="November 1918 armistice to September 1939 invasion of Poland" />
+  <TremorCard label="Weimar bread cost (1923)" value="200 billion marks" delta="Hyperinflation peak" deltaType="decrease" helper="Up from under 1 mark in 1918" />
+</div>
+
+<Callout type="insight" title="Why this section matters">
+  The Interwar Years are about why peace failed. Democracies were weak. Economies cratered. Fascism filled the vacuum. Appeasement encouraged aggressors. Every Cause-Effect-Significance arc here ends with the same Significance: WWII becomes inevitable. The teacher specifically tests **why democracies weakened, why fascism rose, why appeasement failed.**
+</Callout>
+
+## Section timeline
+
+<VisTimeline
+  height="280px"
+  start="1919-01-01"
+  end="1939-10-01"
+  items={[
+    { id: 1, group: "Democracy", content: "Weimar Republic founded", start: "1919-08-11" },
+    { id: 2, group: "Fascism", content: "Mussolini's March on Rome", start: "1922-10-28" },
+    { id: 3, group: "Fascism", content: "Beer Hall Putsch", start: "1923-11-08" },
+    { id: 4, group: "Democracy", content: "German hyperinflation peaks", start: "1923-11-15" },
+    { id: 5, group: "Democracy", content: "Dawes Plan", start: "1924-08-30" },
+    { id: 6, group: "Democracy", content: "Locarno Pact", start: "1925-10-16" },
+    { id: 7, group: "Democracy", content: "Kellogg-Briand Pact", start: "1928-08-27" },
+    { id: 8, group: "Crash", content: "Black Tuesday", start: "1929-10-29" },
+    { id: 9, group: "Aggression", content: "Japan invades Manchuria", start: "1931-09-18" },
+    { id: 10, group: "Fascism", content: "Hitler becomes Chancellor", start: "1933-01-30" },
+    { id: 11, group: "Fascism", content: "Reichstag Fire / Enabling Act", start: "1933-02-27" },
+    { id: 12, group: "Fascism", content: "Nuremberg Laws", start: "1935-09-15" },
+    { id: 13, group: "Aggression", content: "Italy invades Ethiopia", start: "1935-10-03" },
+    { id: 14, group: "Aggression", content: "Hitler remilitarizes Rhineland", start: "1936-03-07" },
+    { id: 15, group: "Aggression", content: "Spanish Civil War begins", start: "1936-07-17" },
+    { id: 16, group: "Aggression", content: "Anschluss (Austria)", start: "1938-03-12" },
+    { id: 17, group: "Aggression", content: "Munich Agreement", start: "1938-09-30" },
+    { id: 18, group: "Aggression", content: "Kristallnacht", start: "1938-11-09" },
+    { id: 19, group: "Aggression", content: "Hitler takes rest of Czechoslovakia", start: "1939-03-15" },
+    { id: 20, group: "Aggression", content: "Nazi-Soviet Pact", start: "1939-08-23" },
+    { id: 21, group: "Aggression", content: "Germany invades Poland", start: "1939-09-01" }
+  ]}
+  groups={[
+    { id: "Democracy", content: "Weak democracies" },
+    { id: "Crash", content: "Economic collapse" },
+    { id: "Fascism", content: "Rise of fascism" },
+    { id: "Aggression", content: "Aggression + appeasement" }
+  ]}
+/>
+
+## Cause
+
+### Why democracies weakened after WWI
+
+Postwar Europe had more democracies than ever before. Most of them failed within 20 years. Why?
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">No democratic tradition</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Germany, Austria, Hungary, Poland, Czechoslovakia were all new democracies in 1919. They had no muscle memory for compromise or rule of law.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Weimar weakness</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Germany's new democracy was blamed for signing the hated Treaty of Versailles ("November Criminals"). It started its life dishonored.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Proportional representation</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Tiny parties got seats. Coalitions had to include 5 to 8 parties. Decisions were impossible.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Article 48</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">The Weimar Constitution let the President rule by emergency decree. Hitler used it to suspend civil liberties after the Reichstag Fire.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Economic chaos</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Reparations, hyperinflation, then the Great Depression. People lost faith in democratic institutions to fix anything.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Communist + fascist threats</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Both extremes pulled voters away from the moderate center. Streets became battlegrounds.</p>
+  </div>
+</div>
+
+### Hyperinflation: 1923
+
+Germany owed reparations in gold. To pay them, the government printed money. Then printed more. Then more. The math broke.
+
+<RechartsLine
+  title="Cost of one loaf of bread in Germany, 1918 to 1923 (marks)"
+  data={[
+    { year: "Jan 1918", marks: 1 },
+    { year: "Jan 1922", marks: 4 },
+    { year: "Jan 1923", marks: 250 },
+    { year: "Jul 1923", marks: 3500 },
+    { year: "Sep 1923", marks: 1500000 },
+    { year: "Oct 1923", marks: 1500000000 },
+    { year: "Nov 1923", marks: 200000000000 }
+  ]}
+  xKey="year"
+  lines={[{ dataKey: "marks", color: "#b91c1c", name: "Marks per loaf of bread" }]}
+/>
+
+<Callout type="warning" title="What hyperinflation feels like">
+  In November 1923, Germans paid wages twice a day because money lost value by the hour. Workers ran from the factory to buy bread before prices doubled again. Lifelong savings vanished overnight. The middle class was wiped out. They blamed democracy.
+</Callout>
+
+### Dawes Plan rescues Germany (briefly)
+
+In **1924**, the US-led **Dawes Plan** loaned Germany 200 million dollars. New currency was issued. Reparations were restructured. Stability returned.
+
+<div class="not-prose my-6 rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+  <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">1924 to 1929</p>
+  <h3 class="font-serif text-xl font-bold text-emerald-900 dark:text-emerald-100 mb-3">"The Golden Twenties"</h3>
+  <p class="text-sm text-ink-800 dark:text-ink-200 mb-3">A brief period of stability. American loans flooded into Germany. Germany paid reparations to France and Britain. France and Britain paid war debts back to the US. The whole house of cards depended on US loans continuing.</p>
+  <p class="text-xs text-ink-600 dark:text-ink-400 italic">When Black Tuesday hit in 1929, US loans stopped. The whole interlocked system collapsed.</p>
+</div>
+
+### The Great Depression goes global
+
+October 29, 1929: **Black Tuesday**. The US stock market lost 25 percent of its value in a day. The cascade went global through American loans.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+  <TremorCard label="US stock market loss" value="-25% in 1 day" delta="Black Tuesday" deltaType="decrease" helper="Wiped out millions in savings overnight." />
+  <TremorCard label="Global trade decline" value="-62%" delta="1929 to 1932" deltaType="decrease" helper="Tariffs (especially Smoot-Hawley) choked international trade." />
+  <TremorCard label="Peak unemployment" value="~30%" delta="USA + Germany 1932" deltaType="decrease" helper="One in three workers without a job." />
+  <TremorCard label="US bank failures" value="9,000+" delta="1929 to 1933" deltaType="decrease" helper="Depositors lost everything. FDIC didn't exist yet." />
+</div>
+
+### How tariffs made it worse
+
+When the crash hit, governments tried to protect their own economies by raising **tariffs** (taxes on imports). The US's **Smoot-Hawley Tariff (1930)** was the worst offender. Other countries retaliated. International trade collapsed.
+
+<Callout type="warning" title="Tariff trap">
+  Tariffs feel protective in the short term. They wreck things in the long term: domestic prices rise, foreign markets close, exporters lose customers, factories close, unemployment grows. Smoot-Hawley turned a recession into a global depression.
+</Callout>
+
+### How Roosevelt's New Deal responded (US)
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-blue-900 dark:text-blue-100">Public works</h4><p class="text-xs text-ink-700 dark:text-ink-300">CCC, WPA, TVA built highways, dams, parks. Created jobs.</p></div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-blue-900 dark:text-blue-100">Social Security</h4><p class="text-xs text-ink-700 dark:text-ink-300">Pensions for the elderly, unemployment insurance.</p></div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-blue-900 dark:text-blue-100">Minimum wage</h4><p class="text-xs text-ink-700 dark:text-ink-300">Fair Labor Standards Act 1938. Set a wage floor and a 40-hour week.</p></div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-blue-900 dark:text-blue-100">Banking reform</h4><p class="text-xs text-ink-700 dark:text-ink-300">FDIC insured deposits. SEC regulated stock market.</p></div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-blue-900 dark:text-blue-100">Agricultural support</h4><p class="text-xs text-ink-700 dark:text-ink-300">AAA paid farmers to reduce overproduction and stabilize prices.</p></div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-blue-900 dark:text-blue-100">Net effect</h4><p class="text-xs text-ink-700 dark:text-ink-300">Saved US democracy. Bought time until WWII industrial mobilization fully ended the Depression.</p></div>
+</div>
+
+In Germany, there was no Roosevelt. There was Hitler.
+
+## Effect
+
+### Mussolini and the birth of fascism (1922)
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">1919 to 1922</p>
+    <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100 mb-3">How Mussolini took power</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Founded the Fascist Party 1919</li>
+      <li>Recruited <strong>Black Shirt</strong> paramilitaries</li>
+      <li>Beat up socialists and communists in the streets</li>
+      <li><strong>March on Rome</strong> Oct 1922</li>
+      <li>King Victor Emmanuel III appoints him Prime Minister rather than fight</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">1922 to 1939</p>
+    <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100 mb-3">What Mussolini did with it</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Banned other parties; total state control</li>
+      <li><strong>Lateran Treaty 1929</strong> with the Pope (settled the "Roman Question")</li>
+      <li>Public works to fight unemployment</li>
+      <li>Invaded <strong>Ethiopia 1935</strong> for an empire</li>
+      <li>Allied with Hitler</li>
+    </ul>
+  </div>
+</div>
+
+### Defining fascism
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Authoritarianism</h4><p class="text-xs text-ink-700 dark:text-ink-300">One leader, one party, no opposition. The Führer Principle in Germany.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Extreme nationalism</h4><p class="text-xs text-ink-700 dark:text-ink-300">"Italy first" or "Germany first." The nation matters more than individual rights.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Militarism</h4><p class="text-xs text-ink-700 dark:text-ink-300">Glorify war and the armed forces. Soldiers parade. Civilians wear uniforms.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Anti-communism</h4><p class="text-xs text-ink-700 dark:text-ink-300">Crush left-wing parties and unions. Win business support by promising order.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Cult of the leader</h4><p class="text-xs text-ink-700 dark:text-ink-300">Mussolini "Il Duce." Hitler "Führer." The leader is infallible. The leader is the state.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Propaganda + censorship</h4><p class="text-xs text-ink-700 dark:text-ink-300">Mass rallies, films, radio, posters. Opposition press shut down.</p></div>
+</div>
+
+### Fascism vs Communism
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100 mb-3">Fascism</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Right-wing</li>
+      <li>Hyper-nationalist (one nation supreme)</li>
+      <li>Private property kept; big business kept</li>
+      <li>Ethnic/racial hierarchy</li>
+      <li>Glorifies tradition, military, "the leader"</li>
+      <li>Crushes labor unions</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <h3 class="font-serif text-xl font-bold text-blue-900 dark:text-blue-100 mb-3">Communism</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Left-wing</li>
+      <li>Internationalist (workers of the world unite)</li>
+      <li>Private property abolished</li>
+      <li>Class struggle (workers vs owners)</li>
+      <li>Glorifies revolution, workers, "the party"</li>
+      <li>Promotes labor unions (state-controlled)</li>
+    </ul>
+  </div>
+</div>
+
+<Callout type="tip" title="Both totalitarian, opposite ideologies">
+  Fascism and communism are political opposites in theory, but in practice they look the same to ordinary citizens: secret police, single party, no rights, propaganda, prison camps. They hated each other and fought constantly (Spanish Civil War, Eastern Front).
+</Callout>
+
+### Hitler's path to power (1923-1933)
+
+<StepThrough
+  title="From beer hall to Reichstag"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">1</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">1923 · Beer Hall Putsch</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Hitler tries to overthrow the Bavarian government with a small Nazi force. Police crush it. He gets 5 years prison (serves 9 months). Writes <strong>Mein Kampf</strong> in prison.</p></div>`,
+      caption: "Lesson learned: get power legally, not by coup."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">2</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">1929-1932 · Depression boosts Nazis</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Stock crash hits Germany hardest because of dependence on US loans. Unemployment 30 percent. Nazi Party vote share goes from 2.6 percent (1928) to 37 percent (1932). Largest party in the Reichstag.</p></div>`,
+      caption: "Hitler rises with the unemployment line."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">3</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Jan 30, 1933 · Hitler appointed Chancellor</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">President Hindenburg appoints Hitler Chancellor (head of government). Conservatives think they can control him. They are wrong.</p></div>`,
+      caption: "Power handed over legally."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">4</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Feb 27, 1933 · Reichstag Fire</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">German parliament burns down. Hitler blames communists. Uses Article 48 emergency powers to ban opposition parties and arrest leftists.</p></div>`,
+      caption: "Crisis becomes opportunity."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">5</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">March 23, 1933 · Enabling Act</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Reichstag passes a law letting Hitler issue any law for 4 years without parliamentary approval. Democracy ends. Weimar Republic dies. The Third Reich begins.</p></div>`,
+      caption: "From democracy to dictatorship in 53 days."
+    }
+  ]}
+  height={300}
+/>
+
+### Nazi ideology in practice
+
+<TextAnnotate
+  title="From Mein Kampf (1925) — heavily framed for educational purposes"
+  text="The state exists for the racial preservation of the German people. The German citizen must be Aryan blood. Foreigners and Jews shall not be German citizens. The strong must dominate the weak. This is the eternal law of nature."
+  notes={[
+    { quote: "racial preservation", note: "Core Nazi ideology: race purity above everything." },
+    { quote: "Aryan blood", note: "Nazi pseudo-science of a 'master race.' Has no scientific basis." },
+    { quote: "Foreigners and Jews shall not be German citizens", note: "Foreshadows Nuremberg Laws (1935) which legally stripped Jews of citizenship." },
+    { quote: "The strong must dominate the weak", note: "Justification for Lebensraum and the Holocaust." }
+  ]}
+/>
+
+<Callout type="warning" title="Why we read Mein Kampf with framing">
+  This material is included to teach how the Nazi state weaponized rhetoric, not to endorse it. Hitler's ideology was put into action through the Nuremberg Laws (1935), Kristallnacht (1938), and ultimately the Holocaust. Understanding the ideology is necessary to understand how a modern state committed genocide.
+</Callout>
+
+### Nazi terror in stages
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">1933 · Boycott of Jewish businesses</h4><p class="text-xs text-ink-700 dark:text-ink-300">SA stormtroopers stand outside Jewish-owned shops to discourage customers.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">1935 · Nuremberg Laws</h4><p class="text-xs text-ink-700 dark:text-ink-300">Strip German Jews of citizenship. Ban marriage between Jews and Germans. Define "who is a Jew" by descent.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">1938 · Kristallnacht (Nov 9-10)</h4><p class="text-xs text-ink-700 dark:text-ink-300">"Night of Broken Glass." 7,000 Jewish businesses, 267 synagogues destroyed. 30,000 Jewish men sent to concentration camps.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">1939+ · Concentration camps</h4><p class="text-xs text-ink-700 dark:text-ink-300">Dachau, Buchenwald, Sachsenhausen. Detention without trial. Forced labor. Murder.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">1941+ · Death camps</h4><p class="text-xs text-ink-700 dark:text-ink-300">Auschwitz, Treblinka, Sobibor, Belzec. Industrial-scale extermination of Jews and others.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">By 1945 · The Holocaust</h4><p class="text-xs text-ink-700 dark:text-ink-300">~6 million Jews and ~5 million others (Roma, disabled, Soviet POWs, political prisoners) murdered.</p></div>
+</div>
+
+## Significance
+
+### Aggression goes unchecked
+
+The 1930s were a decade of aggressors testing the postwar order. Each time the international community failed to respond, the next test got bolder.
+
+<StepThrough
+  title="The road to WWII"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">1931 · Japan invades Manchuria</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Japan seizes Manchuria, sets up puppet state Manchukuo. League of Nations condemns. Japan walks out of the League. <strong>League fails its first big test.</strong></p></div>`,
+      caption: "Lesson for aggressors: the League is toothless."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">1935 · Italy invades Ethiopia</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Mussolini wants an empire. Ethiopia is one of two African countries not yet colonized. League imposes weak sanctions. Italy wins anyway. League fails again.</p></div>`,
+      caption: "Mussolini ignores the League."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">March 1936 · Hitler remilitarizes Rhineland</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Treaty of Versailles forbade German troops in the Rhineland. Hitler sends them in anyway. France and Britain do nothing. <strong>Appeasement begins.</strong></p></div>`,
+      caption: "Hitler's biggest gamble. He wins it."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">1936-1939 · Spanish Civil War</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Fascist Franco rebels against Spanish Republic. Hitler and Mussolini back Franco; USSR backs the Republic; Britain/France stay neutral. Franco wins. Test run for WWII alliances.</p></div>`,
+      caption: "Western democracies abandon Spanish democracy."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">March 1938 · Anschluss with Austria</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Hitler annexes his birth country, Austria. No shots fired. World does nothing. Versailles forbade this. Doesn't matter.</p></div>`,
+      caption: "Greater Germany expands."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Sept 1938 · Munich Agreement</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Hitler demands the Sudetenland (German-speaking part of Czechoslovakia). Britain (Chamberlain), France (Daladier), Germany, Italy meet in Munich. <strong>Czechoslovakia is not invited.</strong> Hand over Sudetenland. Chamberlain returns: "Peace for our time."</p></div>`,
+      caption: "The textbook example of appeasement."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">March 1939 · Hitler takes the rest of Czechoslovakia</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Six months after promising "peace," Hitler invades the rest of Czechoslovakia. Britain and France realize appeasement is dead. They pledge to defend Poland.</p></div>`,
+      caption: "Appeasement officially fails."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Aug 1939 · Nazi-Soviet Pact</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Hitler and Stalin shock the world by signing a nonaggression pact. Secret protocol: divide Poland. Hitler now has no Eastern Front to worry about.</p></div>`,
+      caption: "The path is clear."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Sept 1, 1939 · Germany invades Poland</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Britain and France honor their pledge. Sept 3: WWII begins.</p></div>`,
+      caption: "20 years of fragile peace, ended."
+    }
+  ]}
+  height={300}
+/>
+
+### Why appeasement failed
+
+<Callout type="warning" title="Appeasement, defined">
+  Giving in to an aggressor's demands in hopes of avoiding war. Britain and France did this with Hitler from 1933 to 1939, hoping each concession would be the last. Each one made the next demand bigger and easier.
+</Callout>
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">Why they tried it</p>
+    <h3 class="font-serif text-lg font-bold text-emerald-900 dark:text-emerald-100 mb-3">Reasonable fears</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>WWI memory: 20 million dead. Nobody wanted another one.</li>
+      <li>Britain and France hadn't rearmed. Needed time.</li>
+      <li>Germany's grievances about Versailles seemed legitimate.</li>
+      <li>Many in the West saw Hitler as a useful counterweight to Stalin.</li>
+      <li>Public opinion was strongly anti-war.</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Why it failed</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-3">Encouraged Hitler</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Each concession told Hitler the West wouldn't fight.</li>
+      <li>Each concession made Germany stronger relative to its neighbors.</li>
+      <li>Czechoslovakia (1938 to 1939) showed promises meant nothing.</li>
+      <li>By 1939, war was inevitable AND the West was now weaker.</li>
+      <li>"Peace for our time" became "war within a year."</li>
+    </ul>
+  </div>
+</div>
+
+### International cooperation breaks down
+
+The League of Nations was supposed to prevent exactly this. Why didn't it?
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">No US membership</h4><p class="text-xs text-ink-700 dark:text-ink-300">Senate refused to ratify the Treaty of Versailles. World's strongest economy never joined.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">No army</h4><p class="text-xs text-ink-700 dark:text-ink-300">League could only impose sanctions or condemn. No teeth.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Members walked out</h4><p class="text-xs text-ink-700 dark:text-ink-300">Japan left after Manchuria condemnation. Germany left when Hitler took power. Italy left after Ethiopia sanctions.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Slow + indecisive</h4><p class="text-xs text-ink-700 dark:text-ink-300">Required unanimous votes. Discussions dragged on while crises moved faster.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Major powers ignored it</h4><p class="text-xs text-ink-700 dark:text-ink-300">Britain and France went around the League when it suited them (Munich 1938).</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Lesson for the UN</h4><p class="text-xs text-ink-700 dark:text-ink-300">When the UN was founded in 1945, it was given a Security Council with permanent members AND the ability to authorize military force. Lesson learned.</p></div>
+</div>
+
+### Marquee: "Appeasement Lessons"
+
+<HistoryAnimation
+  title="Appeasement"
+  scenes={[
+    {
+      duration: 4,
+      caption: "September 1938. Chamberlain returns from Munich waving a paper.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="14">SEPTEMBER 1938 · LONDON</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="200" cy="120" r="12"/>
+          <line x1="200" y1="132" x2="200" y2="170"/>
+          <line x1="200" y1="145" x2="180" y2="155"/>
+          <line x1="200" y1="145" x2="220" y2="155"/>
+          <rect x="225" y="148" width="40" height="20" fill="#fff" stroke="#000" stroke-width="1"/>
+          <text x="245" y="162" text-anchor="middle" font-family="serif" font-size="9">PEACE</text>
+          <line x1="200" y1="170" x2="190" y2="200"/>
+          <line x1="200" y1="170" x2="210" y2="200"/>
+        </g>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="13" fill="#b91c1c">"Peace for our time."</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "Hitler watches the West celebrate. He learns: they will not fight.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="14">BERLIN · OCTOBER 1938</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="200" cy="120" r="14"/>
+          <line x1="186" y1="118" x2="194" y2="120"/>
+          <line x1="200" y1="134" x2="200" y2="170"/>
+          <line x1="200" y1="170" x2="190" y2="200"/>
+          <line x1="200" y1="170" x2="210" y2="200"/>
+        </g>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="13" fill="#b91c1c">"They will not stop me."</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "March 1939. Hitler takes the rest of Czechoslovakia. The promise was a lie.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="50" text-anchor="middle" font-family="serif" font-size="22" fill="#b91c1c" font-weight="bold">PROMISE BROKEN</text>
+        <text x="200" y="100" text-anchor="middle" font-family="serif" font-size="14">Sept 1938: Sudetenland only</text>
+        <text x="200" y="125" text-anchor="middle" font-family="serif" font-size="14">March 1939: ALL of Czechoslovakia</text>
+        <text x="200" y="180" text-anchor="middle" font-family="serif" font-size="13">Britain and France: "We were lied to."</text>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="13">Pledge to defend Poland.</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="13" fill="#b91c1c">Too late.</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "The lesson: aggressors don't stop. Each concession invites the next.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="50" text-anchor="middle" font-family="serif" font-size="20" font-weight="bold">APPEASEMENT</text>
+        <text x="200" y="100" text-anchor="middle" font-family="serif" font-size="14">1936 · Rhineland</text>
+        <text x="200" y="125" text-anchor="middle" font-family="serif" font-size="14">1938 · Anschluss + Sudetenland</text>
+        <text x="200" y="150" text-anchor="middle" font-family="serif" font-size="14">1939 · Czechoslovakia + Danzig</text>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c" font-weight="bold">Sept 1, 1939: Poland</text>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="11">WWII begins.</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+## Common pitfalls
+
+<BadFact source="rushed essay writers" certainty="0%" title="MISCONCEPTION 1">
+  Hitler took over Germany in a violent coup.
+</BadFact>
+
+He did NOT. The Beer Hall Putsch (1923) was a failed coup. Hitler became Chancellor in **January 1933 by legal appointment** by President Hindenburg. He used emergency powers (Article 48) and the Enabling Act (March 1933) to dismantle democracy from within. The terrifying lesson: democracies can vote themselves out of existence.
+
+<BadFact source="oversimplifiers" certainty="0%" title="MISCONCEPTION 2">
+  Fascism and communism are basically the same.
+</BadFact>
+
+In **practice** (secret police, single party, no rights, propaganda) they look similar. In **ideology** they are opposites. Fascism: ultra-nationalist, hierarchy of races, private property kept, glorifies tradition. Communism: internationalist workers' revolution, classless society, no private property. They hated each other and fought constantly (Spanish Civil War, Eastern Front).
+
+<BadFact source="confused chronology" certainty="0%" title="MISCONCEPTION 3">
+  The Munich Agreement was signed in 1939.
+</BadFact>
+
+It was signed in **September 1938**, six months before WWII. Germany invaded the rest of Czechoslovakia in **March 1939**. Germany invaded Poland (starting WWII) in **September 1939**. The Munich Agreement is a 1938 event, and its failure is what made WWII inevitable.
+
+## Check yourself
+
+<Quiz
+  title="Section 3 practice"
+  questions={[
+    {
+      q: "Which best describes the Weimar Republic?",
+      choices: [
+        "A strong, stable democracy",
+        "A fragile German democracy weakened by Versailles guilt, Article 48, hyperinflation, and the Depression",
+        "A communist state",
+        "A monarchy"
+      ],
+      answer: 1,
+      explain: "Weimar was set up to fail: blamed for Versailles, weak constitution, economic shocks, extremist parties on both flanks."
+    },
+    {
+      q: "What was Hyperinflation in Germany 1923?",
+      choices: [
+        "A gradual rise in prices",
+        "Money lost so much value that 1 loaf of bread cost 200 billion marks by November",
+        "A stock market boom",
+        "A trade surplus"
+      ],
+      answer: 1,
+      explain: "Germans paid wages twice a day. Lifelong savings vanished. Wiped out the middle class."
+    },
+    {
+      q: "What did the Dawes Plan do?",
+      choices: [
+        "Started WWII",
+        "Loaned Germany 200 million dollars from the US to restructure reparations",
+        "Banned reparations",
+        "Built the Berlin Wall"
+      ],
+      answer: 1,
+      explain: "1924. Briefly stabilized Europe. Made Germany dependent on US loans. When the loans stopped in 1929, the system collapsed."
+    },
+    {
+      q: "When did the US stock market crash?",
+      choices: [
+        "October 29, 1929 (Black Tuesday)",
+        "December 7, 1941",
+        "September 1, 1939",
+        "June 28, 1914"
+      ],
+      answer: 0,
+      explain: "Black Tuesday, Oct 29, 1929. Triggered the Great Depression."
+    },
+    {
+      q: "How did tariffs make the Great Depression worse?",
+      choices: [
+        "Lowered prices everywhere",
+        "Choked international trade as countries retaliated; global trade dropped ~62 percent",
+        "Created jobs",
+        "Boosted consumer spending"
+      ],
+      answer: 1,
+      explain: "Smoot-Hawley (1930) and retaliations turned a recession into a global depression."
+    },
+    {
+      q: "Who was Mussolini?",
+      choices: [
+        "Soviet leader",
+        "Italian fascist dictator who took power via the March on Rome 1922",
+        "British prime minister",
+        "American president"
+      ],
+      answer: 1,
+      explain: "Mussolini founded fascism. March on Rome 1922. King appointed him PM rather than fight."
+    },
+    {
+      q: "Define FASCISM:",
+      choices: [
+        "Internationalist communist movement",
+        "A democracy",
+        "Authoritarian, hyper-nationalist, militaristic ideology with cult of the leader and crushing of opposition",
+        "A trade agreement"
+      ],
+      answer: 2,
+      explain: "Fascism: one party, one leader, ultra-nationalism, glorifies military, crushes opposition. Italy under Mussolini, Germany under Hitler."
+    },
+    {
+      q: "What was Hitler's failed 1923 coup attempt called?",
+      choices: [
+        "Reichstag Fire",
+        "Kristallnacht",
+        "Beer Hall Putsch",
+        "Anschluss"
+      ],
+      answer: 2,
+      explain: "Beer Hall Putsch, Munich, 1923. Failed. Hitler imprisoned. Wrote Mein Kampf in prison."
+    },
+    {
+      q: "How did Hitler become Chancellor?",
+      choices: [
+        "Won a coup",
+        "Was legally appointed by President Hindenburg in January 1933 after Nazi Party became largest in parliament",
+        "Inherited from his father",
+        "Won a popular election with 90 percent"
+      ],
+      answer: 1,
+      explain: "Legally appointed in January 1933. Conservatives thought they could control him. They were wrong."
+    },
+    {
+      q: "What was LEBENSRAUM?",
+      choices: [
+        "A treaty",
+        "Hitler's claim that Germany needed Eastern European 'living space' for its growing population",
+        "An economic plan",
+        "A political party"
+      ],
+      answer: 1,
+      explain: "Lebensraum justified invading Poland and the USSR. Pseudo-scientific racism turned into state policy."
+    },
+    {
+      q: "What were the Nuremberg Laws?",
+      choices: [
+        "An economic stimulus",
+        "1935 Nazi laws that stripped German Jews of citizenship and banned Jewish-German marriages",
+        "WWI peace terms",
+        "A military doctrine"
+      ],
+      answer: 1,
+      explain: "1935. Legalized Nazi anti-Semitism. Defined 'who is a Jew' by descent. Foreshadowed the Holocaust."
+    },
+    {
+      q: "Define APPEASEMENT:",
+      choices: [
+        "Aggressively confronting an enemy",
+        "Giving in to an aggressor's demands in hopes of avoiding war",
+        "Forming military alliances",
+        "Building up arms"
+      ],
+      answer: 1,
+      explain: "Appeasement: concede to avoid war. Britain and France did this with Hitler 1936-1938. Encouraged him."
+    },
+    {
+      q: "What happened at the Munich Agreement (Sept 1938)?",
+      choices: [
+        "WWII began",
+        "Britain, France, Germany, Italy met. They handed Hitler the Sudetenland. Czechoslovakia was not invited.",
+        "Hitler was overthrown",
+        "Germany surrendered"
+      ],
+      answer: 1,
+      explain: "Munich is the textbook example of appeasement. Czechoslovakia got no say in losing its own territory."
+    },
+    {
+      q: "Why did appeasement fail?",
+      choices: [
+        "It worked perfectly",
+        "Each concession told Hitler the West wouldn't fight, encouraging the next demand",
+        "Hitler died",
+        "The League of Nations stopped it"
+      ],
+      answer: 1,
+      explain: "Appeasement made Germany stronger relative to its neighbors and emboldened Hitler. By 1939, war was inevitable AND the West was weaker."
+    },
+    {
+      q: "What was the Nazi-Soviet Pact (Aug 1939)?",
+      choices: [
+        "An alliance between Hitler and Stalin to attack the US",
+        "A nonaggression pact between Hitler and Stalin that secretly divided Poland; cleared Hitler's path to invade",
+        "A peace treaty ending WWI",
+        "A trade agreement"
+      ],
+      answer: 1,
+      explain: "Stunned the world. Hitler now had no Eastern Front to fear. Two weeks later, Germany invaded Poland."
+    },
+    {
+      q: "Why did the League of Nations fail?",
+      choices: [
+        "It had too much power",
+        "No US membership, no army, members walked out when condemned, slow and indecisive, major powers ignored it",
+        "It was too short-lived to matter",
+        "It only had one member"
+      ],
+      answer: 1,
+      explain: "All of these. The League had no teeth. The UN was designed in 1945 to fix every one of these problems."
+    }
+  ]}
+/>
+
+{/* SECTION_4_MARKER */}
