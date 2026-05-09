@@ -496,4 +496,704 @@ Every key term from the official Final Exam Study Guide and chapter-specific key
 
 <KeyTerm term="Berlin Wall">Built August 13, 1961, by East Germany. Stopped people fleeing to the West. Fell November 9, 1989. Symbol of the Cold War.</KeyTerm>
 
-{/* SECTION_1_MARKER */}
+---
+
+# Section 1 · World War I
+
+<div class="not-prose relative my-6 rounded-2xl overflow-hidden" style="min-height: 220px;">
+  <Particles preset="links" backgroundColor="#1a0606" particleColor="#7f1d1d" height={220} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+    <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Chapter 13 · 1914 to 1919</p>
+    <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">The Great War</h2>
+    <p class="text-white/80 max-w-xl italic">"It will be over by Christmas." It wasn't.</p>
+  </div>
+</div>
+
+<div class="not-prose my-4 grid grid-cols-2 gap-3">
+  <TremorCard label="Duration" value="4 years 3 months" helper="July 28, 1914 to November 11, 1918" />
+  <TremorCard label="Total casualties" value="~40 million" helper="20 million dead, 21 million wounded across all powers" />
+</div>
+
+<Callout type="insight" title="Why this section matters">
+  WWI is where the modern world starts. Empires fall, communism takes power in Russia, the US enters Europe for the first time, and the bad peace at Versailles plants every seed of WWII. Master the **MAIN** causes, the trench-warfare stalemate, why the US entered late, and why the Treaty of Versailles created instability instead of stability.
+</Callout>
+
+## Section timeline
+
+<VisTimeline
+  height="280px"
+  start="1914-06-01"
+  end="1919-07-01"
+  items={[
+    { id: 1, group: "Cause", content: "Franz Ferdinand assassinated", start: "1914-06-28" },
+    { id: 2, group: "Cause", content: "Austria-Hungary declares war", start: "1914-07-28" },
+    { id: 3, group: "Cause", content: "Britain enters", start: "1914-08-04" },
+    { id: 4, group: "Effect", content: "1st Battle of the Marne", start: "1914-09-05" },
+    { id: 5, group: "Effect", content: "Gallipoli", start: "1915-04-25" },
+    { id: 6, group: "Effect", content: "Italy joins Allies", start: "1915-05-23" },
+    { id: 7, group: "Effect", content: "Verdun begins", start: "1916-02-21" },
+    { id: 8, group: "Effect", content: "Somme begins", start: "1916-07-01" },
+    { id: 9, group: "Effect", content: "US enters", start: "1917-04-06" },
+    { id: 10, group: "Effect", content: "Russia exits (Brest-Litovsk)", start: "1918-03-03" },
+    { id: 11, group: "Effect", content: "2nd Battle of the Marne", start: "1918-07-15" },
+    { id: 12, group: "Effect", content: "Armistice", start: "1918-11-11" },
+    { id: 13, group: "Significance", content: "Treaty of Versailles", start: "1919-06-28" }
+  ]}
+  groups={[
+    { id: "Cause", content: "Cause" },
+    { id: "Effect", content: "Effect" },
+    { id: "Significance", content: "Significance" }
+  ]}
+/>
+
+## Cause
+
+Europe had been mostly peaceful for 30 years. By 1914, four pressures had built underneath that peace until any spark would set it off.
+
+### The MAIN causes
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-700 dark:text-accent-400 mb-2">M</p>
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Militarism</h4>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Glorifying the military and racing to build the strongest army. Germany and Britain ran a naval arms race for two decades.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-700 dark:text-accent-400 mb-2">A</p>
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Alliances</h4>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Secret defense agreements. When one country fell into war, every signatory got dragged in by treaty obligation.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-700 dark:text-accent-400 mb-2">I</p>
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Imperialism</h4>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Stronger nations carving up the rest of the world. By 1914 most of Africa and Asia was European-owned. Friction over colonies.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-700 dark:text-accent-400 mb-2">N</p>
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Nationalism</h4>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Pride in one's nation or ethnic group. Unified Germans and Italians. Tore Austria-Hungary and the Ottomans apart from inside.</p>
+  </div>
+</div>
+
+<Callout type="tip" title="Memory hook: MAIN">
+  **M**ilitarism · **A**lliances · **I**mperialism · **N**ationalism. Memorize this acronym. It's the backbone of any WWI essay answer.
+</Callout>
+
+### The two pre-war alliances
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-blue-800 dark:text-blue-300 mb-2">1882</p>
+    <h3 class="font-serif text-2xl font-bold text-blue-900 dark:text-blue-100 mb-3">Triple Alliance</h3>
+    <div class="flex items-center gap-3 mb-2"><Flag code="DE" size={28} /><span>Germany</span></div>
+    <div class="flex items-center gap-3 mb-2"><Flag code="AT" size={28} /><span>Austria-Hungary</span></div>
+    <div class="flex items-center gap-3 mb-2"><Flag code="IT" size={28} /><span>Italy <span class="text-xs text-ink-500">(switches sides 1915)</span></span></div>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">1907</p>
+    <h3 class="font-serif text-2xl font-bold text-accent-900 dark:text-accent-100 mb-3">Triple Entente</h3>
+    <div class="flex items-center gap-3 mb-2"><Flag code="FR" size={28} /><span>France</span></div>
+    <div class="flex items-center gap-3 mb-2"><Flag code="RU" size={28} /><span>Russia</span></div>
+    <div class="flex items-center gap-3 mb-2"><Flag code="GB" size={28} /><span>Great Britain</span></div>
+  </div>
+</div>
+
+### The Balkan powder keg
+
+The Balkan Peninsula had everything needed for an explosion: many ethnic groups, a long history of revolts, multiple empires colliding (Austrian, Ottoman, Russian), and newly independent countries trying to expand.
+
+<MapLibreView
+  center={[20, 43]}
+  zoom={5}
+  height={360}
+  style="https://demotiles.maplibre.org/style.json"
+  markers={[
+    { lng: 18.4131, lat: 43.8563, name: "Sarajevo", description: "June 28, 1914. Franz Ferdinand assassinated here. Trigger of WWI." },
+    { lng: 20.4633, lat: 44.8176, name: "Belgrade", description: "Capital of Serbia. Slavic nationalist leadership." },
+    { lng: 16.3738, lat: 48.2082, name: "Vienna", description: "Capital of Austria-Hungary. The empire that was insulted." },
+    { lng: 28.9784, lat: 41.0082, name: "Constantinople", description: "Capital of the dying Ottoman Empire." },
+    { lng: 23.7275, lat: 37.9838, name: "Athens", description: "Greece, eventually Allied." }
+  ]}
+/>
+
+In **1908**, Austria-Hungary annexed Bosnia and Herzegovina, infuriating Serbia, which wanted to rule the Slavic populations there. The fuse was lit. It only needed a match.
+
+### The July Crisis (1914): step by step
+
+<StepThrough
+  title="From assassination to world war in 5 weeks"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">1</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">June 28, 1914 · Sarajevo</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Archduke <strong>Franz Ferdinand</strong>, heir to Austria-Hungary, is assassinated by <strong>Gavrilo Princip</strong>, a 19-year-old Serbian nationalist tied to the <strong>Black Hand</strong>.</p></div>`,
+      caption: "The spark."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">2</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Germany's "Blank Check"</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Germany promises Austria-Hungary unconditional support against Serbia. This emboldens A-H to demand the impossible.</p></div>`,
+      caption: "The escalation."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">3</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">July 28 · A-H declares war on Serbia</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Serbia accepts most of A-H's harsh ultimatum, but not all. Austria-Hungary declares war anyway. Russia begins mobilizing to defend Serbia.</p></div>`,
+      caption: "The first declaration."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">4</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Aug 1-3 · Germany declares war on Russia and France</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">The alliance system kicks in like dominoes. Germany invades neutral Belgium en route to France.</p></div>`,
+      caption: "The cascade."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:48px;font-weight:bold;color:#b91c1c;">5</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Aug 4 · Britain enters</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Britain had a treaty obligation to defend Belgian neutrality. The local Serbia conflict is now a European war. Within months, Japan and the Ottomans join. The world is at war.</p></div>`,
+      caption: "Six weeks. Five great powers. One world war."
+    }
+  ]}
+  height={300}
+/>
+
+<HistoryAnimation
+  title="The Domino Falls"
+  scenes={[
+    {
+      duration: 4,
+      caption: "June 28, 1914. A 19-year-old steps out of a Sarajevo café.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="14" fill="#52525b">SARAJEVO</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="200" cy="120" r="10"/>
+          <line x1="200" y1="130" x2="200" y2="170"/>
+          <line x1="200" y1="145" x2="180" y2="155"/>
+          <line x1="200" y1="145" x2="220" y2="155"/>
+          <line x1="200" y1="170" x2="190" y2="200"/>
+          <line x1="200" y1="170" x2="210" y2="200"/>
+        </g>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="12" fill="#000">Princip · 19 · tuberculosis · two pistol shots</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "Within 5 weeks, every alliance treaty triggers.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="30" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold">DOMINOES FALL</text>
+        <g fill="#b91c1c" stroke="#000" stroke-width="1">
+          <rect x="40" y="80" width="20" height="80" transform="rotate(-15 50 120)"/>
+          <text x="50" y="180" text-anchor="middle" font-family="serif" font-size="10">A-H</text>
+          <rect x="100" y="100" width="20" height="80" transform="rotate(-30 110 140)"/>
+          <text x="110" y="200" text-anchor="middle" font-family="serif" font-size="10">RUS</text>
+          <rect x="170" y="120" width="20" height="80" transform="rotate(-45 180 160)"/>
+          <text x="180" y="220" text-anchor="middle" font-family="serif" font-size="10">GER</text>
+          <rect x="240" y="120" width="20" height="80" transform="rotate(-60 250 160)"/>
+          <text x="250" y="220" text-anchor="middle" font-family="serif" font-size="10">FRA</text>
+          <rect x="310" y="120" width="20" height="80" transform="rotate(-75 320 160)"/>
+          <text x="320" y="220" text-anchor="middle" font-family="serif" font-size="10">UK</text>
+        </g>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "All of Europe at war. Within months, Japan, Italy, the Ottomans. Eventually the United States.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="50" text-anchor="middle" font-family="serif" font-size="22" font-weight="bold" fill="#b91c1c">WORLD WAR</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="100" cy="130" r="6"/>
+          <circle cx="160" cy="130" r="6"/>
+          <circle cx="220" cy="130" r="6"/>
+          <circle cx="280" cy="130" r="6"/>
+          <circle cx="340" cy="130" r="6"/>
+        </g>
+        <text x="200" y="180" text-anchor="middle" font-family="serif" font-size="14" fill="#000">~70 million troops mobilized</text>
+        <text x="200" y="210" text-anchor="middle" font-family="serif" font-size="14" fill="#000">From a single bullet in Bosnia.</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+### The two sides during the war
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border border-ink-300 dark:border-ink-700 p-5">
+    <h3 class="font-serif text-xl font-bold mb-3 text-ink-900 dark:text-ink-100">Central Powers</h3>
+    <ul class="space-y-2 text-sm text-ink-700 dark:text-ink-300">
+      <li class="flex items-center gap-3"><Flag code="DE" size={24} /> Germany</li>
+      <li class="flex items-center gap-3"><Flag code="AT" size={24} /> Austria-Hungary</li>
+      <li class="flex items-center gap-3"><Flag code="TR" size={24} /> Ottoman Empire <span class="text-xs text-ink-500">(joins late 1914)</span></li>
+      <li class="flex items-center gap-3"><Flag code="BG" size={24} /> Bulgaria <span class="text-xs text-ink-500">(joins 1915)</span></li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border border-ink-300 dark:border-ink-700 p-5">
+    <h3 class="font-serif text-xl font-bold mb-3 text-ink-900 dark:text-ink-100">Allied Powers</h3>
+    <ul class="space-y-2 text-sm text-ink-700 dark:text-ink-300">
+      <li class="flex items-center gap-3"><Flag code="GB" size={24} /> Great Britain</li>
+      <li class="flex items-center gap-3"><Flag code="FR" size={24} /> France</li>
+      <li class="flex items-center gap-3"><Flag code="RU" size={24} /> Russia <span class="text-xs text-ink-500">(exits 1918)</span></li>
+      <li class="flex items-center gap-3"><Flag code="IT" size={24} /> Italy <span class="text-xs text-ink-500">(joins 1915)</span></li>
+      <li class="flex items-center gap-3"><Flag code="JP" size={24} /> Japan</li>
+      <li class="flex items-center gap-3"><Flag code="US" size={24} /> United States <span class="text-xs text-ink-500">(joins 1917)</span></li>
+      <li class="flex items-center gap-3"><Flag code="BE" size={24} /> Belgium, Serbia, Romania, Greece, Portugal</li>
+    </ul>
+  </div>
+</div>
+
+## Effect
+
+### The Schlieffen Plan and how it failed
+
+Germany feared a **two-front war**: France in the west, Russia in the east. The **Schlieffen Plan** said: smash France quickly through Belgium, then turn east before Russia could finish mobilizing.
+
+It depended on speed. It got neither.
+
+<StepThrough
+  title="Why the Schlieffen Plan failed"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">1. Belgium fights back</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Belgium was supposed to be a quick highway to France. Instead, the Belgian army held up the German advance for weeks. The clock was already broken.</p></div>`,
+      caption: "Plan: speed. Reality: resistance."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">2. Russia mobilizes faster than predicted</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Germany expected Russia to take 6 weeks. It took 10 days. Germany had to peel off troops to defend the Eastern Front, weakening the western drive.</p></div>`,
+      caption: "Plan: one front at a time. Reality: two fronts immediately."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">3. First Battle of the Marne (Sept 1914)</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">German forces were 30 miles from Paris. The Allies regrouped along the Marne River and pushed them back. Schlieffen Plan dies. Quick war becomes long war.</p></div>`,
+      caption: "Stalemate begins. Trenches start being dug."
+    }
+  ]}
+  height={300}
+/>
+
+### Trench warfare and the Western Front stalemate
+
+<div class="not-prose my-6 rounded-xl border border-ink-300 dark:border-ink-700 bg-ink-50 dark:bg-ink-950 p-6">
+  <p class="text-sm text-ink-700 dark:text-ink-300 mb-4 font-mono uppercase tracking-[0.18em] text-[11px] font-semibold">A typical trench cross-section</p>
+  <pre class="text-xs leading-tight font-mono text-ink-800 dark:text-ink-200 overflow-x-auto">
+   own side                 NO MAN'S LAND                    enemy side
+   ────────────             ────────────────────             ────────────
+   ║ trench  ║ → barbed wire → craters/mud/corpses → barbed wire ← ║ trench  ║
+   ║ sandbag ║                                                     ║ sandbag ║
+   ║ duck-   ║   machine guns sweep at any movement                ║ duck-   ║
+   ║ board   ║   poison gas drifts on the wind                     ║ board   ║
+   ║ dug-out ║   artillery shells obliterate fortifications        ║ dug-out ║
+  </pre>
+</div>
+
+By early 1915, both sides had dug 400+ miles of trenches stretching from the English Channel to Switzerland. The land between, **No Man's Land**, became a wasteland of barbed wire, mud, and craters.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+  <TremorCard label="Western Front length" value="~440 miles" helper="From the English Channel to the Swiss border" />
+  <TremorCard label="Trench depth" value="6-8 feet" helper="Deep enough to stand and walk hidden from artillery" />
+  <TremorCard label="Conditions" value="Rats, mud, lice" helper="Standing water in waist-deep trenches caused 'trench foot' that rotted toes" />
+  <TremorCard label="Stalemate duration" value="~4 years" helper="The lines barely moved between 1914 and 1918" />
+</div>
+
+### Modern warfare = mass casualties
+
+Industrial-era weapons collided with 19th-century tactics. The result was massacre.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Machine guns</h4><p class="text-xs text-ink-700 dark:text-ink-300">600 rounds per minute. One gun could mow down a battalion.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Poison gas</h4><p class="text-xs text-ink-700 dark:text-ink-300">Chlorine and mustard gas. Burned lungs, blinded soldiers. Drifted with the wind.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Tanks</h4><p class="text-xs text-ink-700 dark:text-ink-300">First used by Britain at the Somme (1916). Slow, unreliable, but unstoppable when they worked.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Submarines (U-boats)</h4><p class="text-xs text-ink-700 dark:text-ink-300">Germany sank merchant ships to starve Britain. Caused the Lusitania crisis (1915).</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Airplanes</h4><p class="text-xs text-ink-700 dark:text-ink-300">First used for reconnaissance, then for dogfights and bombing. Aerial warfare was born.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Artillery</h4><p class="text-xs text-ink-700 dark:text-ink-300">Long-range guns lobbed shells miles. Caused the majority of WWI deaths and "shell shock."</p></div>
+</div>
+
+### Casualties by major battle
+
+<RechartsBar
+  title="Estimated total casualties (killed + wounded + missing) by battle"
+  data={[
+    { battle: "1st Marne (1914)", casualties: 500000 },
+    { battle: "Gallipoli (1915-16)", casualties: 470000 },
+    { battle: "Verdun (1916)", casualties: 700000 },
+    { battle: "Somme (1916)", casualties: 1100000 },
+    { battle: "Passchendaele (1917)", casualties: 700000 },
+    { battle: "2nd Marne (1918)", casualties: 280000 }
+  ]}
+  xKey="battle"
+  bars={[{ dataKey: "casualties", color: "#b91c1c", name: "Total casualties" }]}
+/>
+
+### Why the United States entered the war
+
+For three years (1914-1917), the US held to its policy of **isolationism**. Then three things changed Wilson's mind.
+
+<StepThrough
+  title="Three reasons the US declared war (April 6, 1917)"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">1</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Unrestricted submarine warfare</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Germany announced it would sink any ship in war zones, including civilian. The 1915 sinking of the British liner <strong>Lusitania</strong> killed 128 Americans. Germany resumed unrestricted U-boat attacks in 1917.</p></div>`,
+      caption: "Civilian deaths radicalized US public opinion."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">2</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">Strong economic ties to the Allies</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">US factories and banks had loaned billions to Britain and France. If they lost, the loans would default. The US economy was effectively backing the Allied side.</p></div>`,
+      caption: "Money followed the British, then the troops did."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">3</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">The Zimmerman Note (Jan 1917)</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Germany secretly proposed an alliance with Mexico against the US. British intelligence intercepted the telegram and shared it. Public outrage exploded. Wilson asked Congress for war.</p></div>`,
+      caption: "The final straw."
+    }
+  ]}
+  height={300}
+/>
+
+### Total war on the home front
+
+<Callout type="insight" title="What 'Total War' means">
+  Every part of society is mobilized for the war effort. Civilian factories build weapons. Food is rationed. Women take on industrial jobs. Propaganda saturates the press. The line between soldier and civilian disappears.
+</Callout>
+
+<div class="not-prose my-6 grid sm:grid-cols-2 gap-4">
+  <div class="rounded-xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <h4 class="font-serif text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">Allied home fronts</h4>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Britain rationed sugar, butter, meat by 1918.</li>
+      <li>US Liberty Bonds raised billions.</li>
+      <li>Women filled factory and munitions jobs in record numbers.</li>
+      <li>Propaganda demonized "the Hun" (Germans).</li>
+      <li>Press freedom restricted. Anti-war voices arrested.</li>
+    </ul>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Central Powers home fronts</h4>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>British naval blockade caused starvation in Germany by 1917.</li>
+      <li>"Turnip winter" 1916-1917: Germans survived on turnips.</li>
+      <li>Strikes erupted in Berlin and Vienna.</li>
+      <li>Austria-Hungary's ethnic minorities began deserting.</li>
+      <li>By 1918, civilian morale collapsed.</li>
+    </ul>
+  </div>
+</div>
+
+### Russia exits the war
+
+The Eastern Front had been catastrophic for Russia. Over **5.5 million** Russian soldiers were dead, wounded, or captured by 1917. The food supply collapsed. The Tsar fell (March 1917). The new **Bolshevik** government, led by Lenin, signed the **Treaty of Brest-Litovsk** in March 1918, exiting the war and giving up huge territory: Poland, Ukraine, the Baltics, Finland.
+
+<TremorCard label="Russian WWI casualties by 1917" value="~5.5 million" delta="Worst on either side" deltaType="decrease" helper="Dead, wounded, or captured. Drove the revolution that toppled the Tsar." />
+
+For Germany, this was a brief gift: troops freed from the East could now flood west for a final offensive. But the gift came too late.
+
+### The end: 1918
+
+<StepThrough
+  title="How WWI ended"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Spring 1918 · Germany's last gamble</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">With Russia out, Germany launched a massive Western offensive. Pushed within 50 miles of Paris. Then ran out of supplies and troops.</p></div>`,
+      caption: "All in. Came up short."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">July 1918 · Second Battle of the Marne</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Two million fresh US troops break the German offensive. The Allies counter-attack and don't stop pushing.</p></div>`,
+      caption: "American Expeditionary Force tips the balance."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Fall 1918 · Central Powers collapse</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Bulgaria surrenders Sept 29. Ottomans surrender Oct 30. Austria-Hungary surrenders Nov 3. Kaiser Wilhelm II abdicates Nov 9. Germany is alone.</p></div>`,
+      caption: "Dominoes fall the other way."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Nov 11, 1918 · Armistice</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">11 a.m. on the 11th day of the 11th month. Germany signs a ceasefire in a railway car in France. WWI is over.</p></div>`,
+      caption: "20 million dead. 21 million wounded. 4 empires destroyed."
+    }
+  ]}
+  height={300}
+/>
+
+### Marquee: Trench warfare simulator
+
+Step into the trenches. Click through tactical decisions and feel the impossibility of the Western Front.
+
+<TrenchWarfareSim />
+
+## Significance
+
+### The Paris Peace Conference (1919)
+
+Four men decided the postwar order. None of them were German, Russian, or Austro-Hungarian.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4 text-center">
+    <Flag code="US" size={32} />
+    <h4 class="font-serif font-bold mt-2">Wilson</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">United States. Wanted his Fourteen Points. Idealist.</p>
+  </div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4 text-center">
+    <Flag code="FR" size={32} />
+    <h4 class="font-serif font-bold mt-2">Clemenceau</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">France. Wanted Germany crippled. Vengeful.</p>
+  </div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4 text-center">
+    <Flag code="GB" size={32} />
+    <h4 class="font-serif font-bold mt-2">Lloyd George</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Britain. Wanted to weaken Germany economically. Pragmatic.</p>
+  </div>
+  <div class="rounded-xl border border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4 text-center">
+    <Flag code="IT" size={32} />
+    <h4 class="font-serif font-bold mt-2">Orlando</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Italy. Wanted territory promised in 1915. Sidelined.</p>
+  </div>
+</div>
+
+### Wilson's Fourteen Points
+
+Wilson came with a vision: a fairer world after the war. The other three Allies humored him.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 gap-3">
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">1. End secret alliances</h4><p class="text-xs text-ink-700 dark:text-ink-300">No more backroom defense pacts that drag everyone into war.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">2. Freedom of the seas</h4><p class="text-xs text-ink-700 dark:text-ink-300">Free passage for civilian shipping in peacetime.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">3. Reduce militaries</h4><p class="text-xs text-ink-700 dark:text-ink-300">Disarmament to prevent another arms race.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">4. Fair colonial claims</h4><p class="text-xs text-ink-700 dark:text-ink-300">Consider the wishes of colonized peoples.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">5. Self-determination</h4><p class="text-xs text-ink-700 dark:text-ink-300">Ethnic groups should govern themselves. Birth of new nations.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">14. League of Nations</h4><p class="text-xs text-ink-700 dark:text-ink-300">A global body to prevent future wars. The crown jewel.</p></div>
+</div>
+
+### Treaty of Versailles vs Wilson's vision
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">Wilson wanted</p>
+    <h3 class="font-serif text-lg font-bold text-emerald-900 dark:text-emerald-100 mb-3">"Peace without victory"</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>No punishment, just stability</li>
+      <li>Germany rejoins the family of nations</li>
+      <li>Self-determination for all peoples</li>
+      <li>League of Nations as global referee</li>
+      <li>Open diplomacy</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Versailles delivered</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-3">"Peace with revenge"</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li><strong>Article 231</strong> War Guilt Clause: Germany blamed for everything</li>
+      <li>33 billion dollars in reparations to be paid by Germany</li>
+      <li>German army capped at 100,000 troops</li>
+      <li>Germany loses 13 percent of territory and all colonies</li>
+      <li>Rhineland demilitarized</li>
+      <li>League of Nations created, but US Senate refused to join</li>
+    </ul>
+  </div>
+</div>
+
+### Why the treaty made future war more likely
+
+<Callout type="warning" title="The seeds of WWII">
+  The Treaty of Versailles humiliated Germany without crippling its capacity to recover. Reparations bred resentment. War Guilt clause bred shame. The League of Nations had no teeth (and no US membership). Self-determination created a patchwork of new nations in Eastern Europe with disputed borders. Every grievance Hitler later exploited was created by this treaty.
+</Callout>
+
+### The map of Europe redrawn
+
+Four empires fell: German, Austro-Hungarian, Russian, Ottoman. New nations were carved out of their corpses.
+
+<div class="not-prose my-6 rounded-2xl border border-ink-300 dark:border-ink-700 p-5 bg-white dark:bg-ink-900">
+  <p class="font-mono uppercase tracking-[0.16em] text-[11px] font-bold text-ink-600 dark:text-ink-400 mb-3">New nations created from former empires</p>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+    <div class="flex items-center gap-2"><Flag code="PL" size={20} /> Poland</div>
+    <div class="flex items-center gap-2"><Flag code="CZ" size={20} /> Czechoslovakia</div>
+    <div class="flex items-center gap-2"><Flag code="HU" size={20} /> Hungary</div>
+    <div class="flex items-center gap-2"><Flag code="AT" size={20} /> Austria</div>
+    <div class="flex items-center gap-2"><Flag code="YU" size={20} /> Yugoslavia</div>
+    <div class="flex items-center gap-2"><Flag code="FI" size={20} /> Finland</div>
+    <div class="flex items-center gap-2"><Flag code="EE" size={20} /> Estonia</div>
+    <div class="flex items-center gap-2"><Flag code="LV" size={20} /> Latvia</div>
+    <div class="flex items-center gap-2"><Flag code="LT" size={20} /> Lithuania</div>
+    <div class="flex items-center gap-2"><Flag code="IQ" size={20} /> Iraq <span class="text-xs text-ink-500">(British mandate)</span></div>
+    <div class="flex items-center gap-2"><Flag code="SY" size={20} /> Syria <span class="text-xs text-ink-500">(French mandate)</span></div>
+    <div class="flex items-center gap-2"><Flag code="LB" size={20} /> Lebanon <span class="text-xs text-ink-500">(French mandate)</span></div>
+  </div>
+</div>
+
+### The US Senate rejects the treaty
+
+Despite Wilson's pleas, the **US Senate refused to ratify** the Treaty of Versailles in 1919-1920. The US never joined the League of Nations. The world's strongest economic power retreated into isolation. The League was crippled before it began.
+
+## Common pitfalls
+
+<BadFact source="every confused student ever" certainty="0%" title="MISCONCEPTION 1">
+  WWI started because Franz Ferdinand was assassinated.
+</BadFact>
+
+The assassination was the **trigger**, not the cause. The MAIN forces (Militarism, Alliances, Imperialism, Nationalism) were the actual causes. Without them, the assassination would have been a regional incident. Always lead with MAIN, then mention the trigger.
+
+<BadFact source="rushed essay writers" certainty="0%" title="MISCONCEPTION 2">
+  The US joined WWI because of the Lusitania.
+</BadFact>
+
+The Lusitania sank in **1915**. The US declared war in **1917**, two years later. The actual triggers were the resumption of unrestricted submarine warfare in early 1917 plus the Zimmerman Note. The Lusitania was a contributing factor to public opinion, not the proximate cause.
+
+<BadFact source="confused chronology" certainty="0%" title="MISCONCEPTION 3">
+  The Treaty of Versailles ended WWI.
+</BadFact>
+
+The **Armistice** of November 11, 1918 ended the fighting. The Treaty of Versailles was signed June 28, 1919, seven months later. Different events. Different documents.
+
+## Check yourself
+
+<Quiz
+  title="Section 1 practice"
+  questions={[
+    {
+      q: "Which mnemonic captures the four main causes of WWI?",
+      choices: ["MAIN", "PIES", "WARS", "BOOM"],
+      answer: 0,
+      explain: "MAIN: Militarism, Alliances, Imperialism, Nationalism."
+    },
+    {
+      q: "Who was assassinated on June 28, 1914 in Sarajevo?",
+      choices: [
+        "Kaiser Wilhelm II",
+        "Tsar Nicholas II",
+        "Archduke Franz Ferdinand",
+        "Otto von Bismarck"
+      ],
+      answer: 2,
+      explain: "Archduke Franz Ferdinand, heir to Austria-Hungary, was killed by Gavrilo Princip."
+    },
+    {
+      q: "What was Germany's pre-war plan to avoid a two-front war?",
+      choices: ["The Bismarck Doctrine", "The Schlieffen Plan", "The Marne Strategy", "The Berlin Plan"],
+      answer: 1,
+      explain: "The Schlieffen Plan: defeat France quickly through Belgium, then turn east to fight Russia."
+    },
+    {
+      q: "Which battle ruined the Schlieffen Plan?",
+      choices: ["Battle of Verdun", "Battle of the Somme", "Gallipoli", "First Battle of the Marne"],
+      answer: 3,
+      explain: "September 1914. The Allies pushed Germany back from Paris. Stalemate began."
+    },
+    {
+      q: "Trench warfare led to which outcome?",
+      choices: [
+        "A quick German victory",
+        "A 4-year stalemate on the Western Front",
+        "A Russian breakthrough",
+        "Naval supremacy for Britain"
+      ],
+      answer: 1,
+      explain: "Trenches plus machine guns plus barbed wire made attacks suicidal. Lines barely moved for 4 years."
+    },
+    {
+      q: "Which was NOT a reason the US entered WWI?",
+      choices: [
+        "Unrestricted submarine warfare",
+        "The Zimmerman Note",
+        "Strong economic ties to the Allies",
+        "British invasion of US territory"
+      ],
+      answer: 3,
+      explain: "Britain never invaded the US. The other three are the actual reasons (the famous '3 reasons')."
+    },
+    {
+      q: "What did the Zimmerman Note propose?",
+      choices: [
+        "A US-German alliance",
+        "A German-Mexican alliance against the US",
+        "An end to the war",
+        "Submarine restrictions"
+      ],
+      answer: 1,
+      explain: "Germany secretly proposed Mexico join an anti-US alliance. British intelligence intercepted it."
+    },
+    {
+      q: "TOTAL WAR most nearly means:",
+      choices: [
+        "A short, decisive war",
+        "Civilian and military spheres are blurred; entire society mobilizes",
+        "Nuclear war",
+        "A war fought entirely at sea"
+      ],
+      answer: 1,
+      explain: "Total war mobilizes the entire society: rationing, women in factories, propaganda, censorship."
+    },
+    {
+      q: "Why did Russia exit WWI in 1918?",
+      choices: [
+        "Russia won the war",
+        "The Bolshevik Revolution overthrew the Tsar; Lenin signed Brest-Litovsk to focus on civil war",
+        "Russia ran out of soldiers",
+        "Russia switched to the Central Powers"
+      ],
+      answer: 1,
+      explain: "March Revolution toppled the Tsar; November Revolution put Lenin in power; he signed Brest-Litovsk to exit WWI."
+    },
+    {
+      q: "When did Germany sign the armistice?",
+      choices: [
+        "November 11, 1918",
+        "June 28, 1919",
+        "July 4, 1918",
+        "January 1, 1919"
+      ],
+      answer: 0,
+      explain: "11 a.m., November 11, 1918. The Treaty of Versailles came 7 months later."
+    },
+    {
+      q: "Which document blamed Germany for WWI and demanded reparations?",
+      choices: [
+        "Wilson's Fourteen Points",
+        "The Treaty of Brest-Litovsk",
+        "Article 231 of the Treaty of Versailles (War Guilt Clause)",
+        "The Munich Agreement"
+      ],
+      answer: 2,
+      explain: "Article 231 forced Germany to accept full blame, justifying reparations and breeding the resentment Hitler exploited."
+    },
+    {
+      q: "Wilson's Fourteen Points did NOT include:",
+      choices: [
+        "Self-determination for ethnic groups",
+        "League of Nations",
+        "Reparations from Germany",
+        "End to secret alliances"
+      ],
+      answer: 2,
+      explain: "Reparations came from the OTHER Allied leaders (Clemenceau, Lloyd George). Wilson opposed harsh punishment."
+    },
+    {
+      q: "Why did the US Senate reject the Treaty of Versailles?",
+      choices: [
+        "They wanted harsher punishment for Germany",
+        "Concerns over League of Nations limiting US sovereignty",
+        "They wanted to keep fighting",
+        "Wilson refused to negotiate"
+      ],
+      answer: 1,
+      explain: "Senate Republicans worried the League could drag the US into future wars. Wilson refused to compromise. Treaty rejected."
+    },
+    {
+      q: "TRENCH WARFARE most nearly means:",
+      choices: [
+        "Naval combat",
+        "Soldiers fighting from long defensive ditches with machine guns and artillery dominating no-man's-land between",
+        "Aerial dogfights",
+        "Cavalry charges"
+      ],
+      answer: 1,
+      explain: "Trench warfare: dug-in defenses, machine guns, barbed wire, artillery. Made offensive movement nearly impossible."
+    },
+    {
+      q: "Italy was originally in the Triple Alliance. What did it do during WWI?",
+      choices: [
+        "Stayed neutral the whole war",
+        "Switched sides and joined the Allies in 1915",
+        "Stayed loyal to Germany throughout",
+        "Was occupied by Austria-Hungary"
+      ],
+      answer: 1,
+      explain: "Italy joined the Allies in 1915 after Britain promised it Italian-speaking land currently in Austria-Hungary."
+    },
+    {
+      q: "What turned the tide in 1918 against Germany?",
+      choices: [
+        "Russian counter-offensive",
+        "Two million fresh US troops arrived",
+        "British naval invasion of Berlin",
+        "Italian invasion from the south"
+      ],
+      answer: 1,
+      explain: "After the US entered in 1917, fresh American troops broke Germany's last 1918 offensive at the 2nd Battle of the Marne."
+    }
+  ]}
+/>
+
+{/* SECTION_2_MARKER */}
