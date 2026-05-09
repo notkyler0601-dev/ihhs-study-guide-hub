@@ -1196,4 +1196,641 @@ The **Armistice** of November 11, 1918 ended the fighting. The Treaty of Versail
   ]}
 />
 
-{/* SECTION_2_MARKER */}
+---
+
+# Section 2 · Russian Revolution
+
+<div class="not-prose relative my-6 rounded-2xl overflow-hidden" style="min-height: 220px;">
+  <Particles preset="links" backgroundColor="#1a0606" particleColor="#b91c1c" height={220} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+    <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Chapter 14 · 1917 to 1939</p>
+    <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">From the Tsar to Stalin</h2>
+    <p class="text-white/80 max-w-xl italic">"Peace, Land, Bread." Then the price.</p>
+  </div>
+</div>
+
+<div class="not-prose my-4 grid grid-cols-2 gap-3">
+  <TremorCard label="Tsar to USSR" value="22 years" helper="Nicholas II abdicates March 1917, USSR founded December 1922" />
+  <TremorCard label="Stalin's victims" value="~20 million" delta="Internal deaths" deltaType="decrease" helper="Great Purge + collectivization famine + gulags + executions" />
+</div>
+
+<Callout type="insight" title="Why this section matters">
+  The Russian Revolution is two stories layered on each other. **First**: how WWI broke the 300-year-old Romanov dynasty in eight months. **Second**: how Stalin turned a revolution about peace and bread into one of the most brutal totalitarian states in history. The teacher tests both arcs.
+</Callout>
+
+## Section timeline
+
+<VisTimeline
+  height="280px"
+  start="1916-12-01"
+  end="1940-01-01"
+  items={[
+    { id: 1, group: "Collapse", content: "Rasputin assassinated", start: "1916-12-30" },
+    { id: 2, group: "Collapse", content: "March Revolution", start: "1917-03-08" },
+    { id: 3, group: "Collapse", content: "Tsar abdicates", start: "1917-03-15" },
+    { id: 4, group: "Bolsheviks", content: "Lenin returns from exile", start: "1917-04-16" },
+    { id: 5, group: "Bolsheviks", content: "November Revolution", start: "1917-11-07" },
+    { id: 6, group: "Bolsheviks", content: "Brest-Litovsk (exits WWI)", start: "1918-03-03" },
+    { id: 7, group: "Bolsheviks", content: "Civil War (Reds vs Whites)", start: "1918-06-01", end: "1921-10-01" },
+    { id: 8, group: "Bolsheviks", content: "NEP announced", start: "1921-03-15" },
+    { id: 9, group: "Bolsheviks", content: "USSR formed", start: "1922-12-30" },
+    { id: 10, group: "Stalin", content: "Lenin dies", start: "1924-01-21" },
+    { id: 11, group: "Stalin", content: "First Five-Year Plan", start: "1928-10-01" },
+    { id: 12, group: "Stalin", content: "Collectivization", start: "1929-01-01" },
+    { id: 13, group: "Stalin", content: "Great Purge", start: "1936-08-01", end: "1938-11-01" },
+    { id: 14, group: "Stalin", content: "Nazi-Soviet Pact", start: "1939-08-23" }
+  ]}
+  groups={[
+    { id: "Collapse", content: "Tsar falls" },
+    { id: "Bolsheviks", content: "Lenin era" },
+    { id: "Stalin", content: "Stalin era" }
+  ]}
+/>
+
+## Cause
+
+### How WWI broke Nicholas II
+
+Russia entered WWI proud and confident. By 1917, it had lost more soldiers than any other power and the country was starving.
+
+<RechartsBar
+  title="Russian WWI casualties year by year (millions)"
+  data={[
+    { year: "1914", casualties: 1.0 },
+    { year: "1915", casualties: 2.0 },
+    { year: "1916", casualties: 1.7 },
+    { year: "1917", casualties: 0.9 }
+  ]}
+  xKey="year"
+  bars={[{ dataKey: "casualties", color: "#b91c1c", name: "Casualties (millions)" }]}
+/>
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Military disaster</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Russia's army was huge but poorly equipped. Soldiers shared rifles. Generals were incompetent. ~5.5 million casualties by 1917.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Tsar takes command</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">In 1915 Nicholas II personally took control of the army. Now every defeat was his fault, not his generals'.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Czarina + Rasputin</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">With the Tsar at the front, his wife Alexandra ruled. She fell under the spell of Rasputin, a mystical "holy man." Scandal everywhere.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Food collapses</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Cities ran out of bread. Workers struck. Soldiers refused to fire on protesters.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Soviets emerge</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Worker and soldier councils formed in factories and barracks. Parallel power to the failing government.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Loss of legitimacy</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">300 years of Romanov rule. Six months of WWI. The dynasty was finished.</p>
+  </div>
+</div>
+
+### The March Revolution (1917)
+
+<StepThrough
+  title="From bread riots to abdication in 8 days"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">1</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">March 8 · International Women's Day strike</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Petrograd's women textile workers walk out demanding bread. Other workers join. By March 10, ~200,000 are on strike.</p></div>`,
+      caption: "The first crack."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">2</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">March 11 · Soldiers refuse to fire on crowds</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Tsar Nicholas orders the army to disperse the protesters by force. Soldiers refuse. Many join the protesters. The military backbone snaps.</p></div>`,
+      caption: "The army turned."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">3</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">March 12 · Petrograd Soviet forms</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">A council of workers and soldiers seizes the city. Same day, the Duma declares a Provisional Government. Two centers of power, one country.</p></div>`,
+      caption: "Dual power begins."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><div style="font-size:44px;font-weight:bold;color:#b91c1c;">4</div><h3 style="font-family:serif;font-size:20px;margin:8px 0;">March 15 · Tsar Nicholas II abdicates</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Generals tell Nicholas the army won't follow him. He abdicates for himself and his son. 300 years of Romanov rule, ended in a railway car.</p></div>`,
+      caption: "The dynasty dies."
+    }
+  ]}
+  height={300}
+/>
+
+### Why the Provisional Government failed
+
+The Provisional Government inherited the throne but not its problems.
+
+<div class="not-prose my-6 grid md:grid-cols-3 gap-3">
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900">
+    <p class="text-xs font-mono uppercase tracking-wider text-accent-700 mb-1">Problem 1</p>
+    <h4 class="font-serif font-bold mb-1">Stayed in WWI</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Russia was already collapsing under WWI casualties. The Provisional Government promised the Allies it would fight on. The army melted.</p>
+  </div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900">
+    <p class="text-xs font-mono uppercase tracking-wider text-accent-700 mb-1">Problem 2</p>
+    <h4 class="font-serif font-bold mb-1">No land redistribution</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">90 percent of Russians were peasants who wanted noble land redistributed. The Provisional Government delayed reform. Peasants started seizing land themselves.</p>
+  </div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900">
+    <p class="text-xs font-mono uppercase tracking-wider text-accent-700 mb-1">Problem 3</p>
+    <h4 class="font-serif font-bold mb-1">No popular base</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">It was an unelected committee of liberals and moderates. The Petrograd Soviet had real loyalty from workers and soldiers. The Provisional Government had paperwork.</p>
+  </div>
+</div>
+
+### Lenin's three-word slogan
+
+In April 1917, Germany helped the exiled Bolshevik leader **Vladimir Lenin** travel home in a sealed train (Germany hoped he'd destabilize Russia further). He showed up at the Petrograd railway station with a slogan:
+
+<div class="not-prose my-8 rounded-2xl border-l-4 border-accent-700 bg-ink-50 dark:bg-ink-950 p-6">
+  <blockquote class="font-serif text-3xl italic text-ink-900 dark:text-ink-100 mb-3">
+    "Peace · Land · Bread"
+  </blockquote>
+  <p class="text-sm text-ink-600 dark:text-ink-400">Three words. Each one solved a problem the Provisional Government could not.</p>
+</div>
+
+<div class="not-prose my-6 grid sm:grid-cols-3 gap-3">
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100">Peace</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Get out of WWI. Soldiers wanted to go home. Lenin promised.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100">Land</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Take from nobles, give to peasants. Lenin promised.</p>
+  </div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4">
+    <h4 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100">Bread</h4>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Feed the cities. End the rationing crisis. Lenin promised.</p>
+  </div>
+</div>
+
+## Effect
+
+### The November Revolution (1917)
+
+On the night of **November 7, 1917**, Bolshevik Red Guards seized telegraph offices, train stations, the Winter Palace. The Provisional Government surrendered without much resistance. Lenin was now in charge.
+
+His first acts in office:
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Decree on Peace</h4><p class="text-xs text-ink-700 dark:text-ink-300">Russia exits WWI. Treaty of Brest-Litovsk signed March 1918.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Decree on Land</h4><p class="text-xs text-ink-700 dark:text-ink-300">Noble estates seized and redistributed to peasant councils.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Workers' control of factories</h4><p class="text-xs text-ink-700 dark:text-ink-300">Worker committees took over industrial production.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Banks nationalized</h4><p class="text-xs text-ink-700 dark:text-ink-300">All private banks merged into one state bank.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Church separated from state</h4><p class="text-xs text-ink-700 dark:text-ink-300">Religious institutions stripped of property and political power.</p></div>
+  <div class="rounded-xl border border-ink-300 dark:border-ink-700 p-4 bg-white dark:bg-ink-900"><h4 class="font-serif font-bold mb-1">Romanovs executed</h4><p class="text-xs text-ink-700 dark:text-ink-300">July 1918. Tsar Nicholas, his wife, and all five children shot in a basement in Yekaterinburg.</p></div>
+</div>
+
+### The Russian Civil War (1918-1921)
+
+Most of the country wasn't ready for a Bolshevik takeover. Civil war erupted between the **Reds** (Bolsheviks) and the **Whites** (everyone else).
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100 mb-2">The Reds</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Bolsheviks under Lenin</li>
+      <li>Red Army organized and led by <strong>Trotsky</strong></li>
+      <li>Held the central core (Petrograd, Moscow)</li>
+      <li>Single ideology, single command</li>
+      <li>Used "War Communism" (forced grain seizures, total state control of economy)</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <h3 class="font-serif text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">The Whites</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Tsarists, liberals, moderate socialists, Mensheviks, ethnic separatists</li>
+      <li>Foreign interventionists (Britain, France, US, Japan, Czech Legion)</li>
+      <li>Held the periphery (Siberia, Far East, Caucasus)</li>
+      <li>No common ideology, multiple commands</li>
+      <li>Couldn't agree on what came after winning</li>
+    </ul>
+  </div>
+</div>
+
+The Reds won by 1921. They had unity, geography (interior lines), and ruthlessness. The Whites had chaos.
+
+### NEP: a tactical retreat
+
+By 1921, Russia was destroyed. **War Communism** (the policy of seizing peasants' grain to feed the cities) had triggered famine. Strikes broke out. The Bolshevik base started cracking.
+
+Lenin's response: **NEP (New Economic Policy)**.
+
+<Callout type="insight" title="What NEP did">
+  Peasants could keep their surplus crops and sell them. Small businesses (under 20 employees) could operate privately. State retained big industry, banks, and foreign trade. **Tactical retreat from full communism. Ideological compromise to keep power.**
+</Callout>
+
+NEP worked. Production recovered. But many Bolsheviks called it a betrayal of the revolution. The fight over what came next would define the 1920s.
+
+### From Lenin to Stalin
+
+Lenin died in **January 1924**. He left no clear successor. Two men competed:
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-blue-800 dark:text-blue-300 mb-2">Frontrunner</p>
+    <h3 class="font-serif text-2xl font-bold text-blue-900 dark:text-blue-100 mb-3">Leon Trotsky</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>Hero of the Civil War; built the Red Army</li>
+      <li>Brilliant orator and theorist</li>
+      <li>Wanted "permanent revolution" abroad</li>
+      <li>Lenin's preferred successor (per his testament)</li>
+    </ul>
+    <p class="mt-3 text-xs text-ink-600 dark:text-ink-400 italic">Outmaneuvered. Exiled 1929. Assassinated by a Soviet agent in Mexico, 1940.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Underdog</p>
+    <h3 class="font-serif text-2xl font-bold text-accent-900 dark:text-accent-100 mb-3">Joseph Stalin</h3>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>General Secretary of the Communist Party (boring administrative job)</li>
+      <li>Used the position to install loyalists in every regional party</li>
+      <li>Wanted "socialism in one country" (focus on USSR)</li>
+      <li>Patient, ruthless, willing to wait years</li>
+    </ul>
+    <p class="mt-3 text-xs text-ink-600 dark:text-ink-400 italic">Won. Ruled the USSR from 1928 to his death in 1953.</p>
+  </div>
+</div>
+
+## Significance
+
+### Stalin's totalitarianism
+
+By 1929, Stalin had crushed his rivals. He launched the most controlled society in history.
+
+<Callout type="warning" title="Defining totalitarianism">
+  A government that tries to control **every aspect** of public AND private life: the economy, religion, education, family, art, news, even thought. The leader is the state; the state is the ideology; the ideology is the truth.
+</Callout>
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">One-party state</h4><p class="text-xs text-ink-700 dark:text-ink-300">Communist Party only. No opposition allowed. No real elections.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Secret police</h4><p class="text-xs text-ink-700 dark:text-ink-300">NKVD watched everyone. Neighbors informed on neighbors. Trust collapsed.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Cult of personality</h4><p class="text-xs text-ink-700 dark:text-ink-300">Stalin's portrait everywhere. Schools taught his greatness. Cities renamed (Volgograd became Stalingrad).</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Censored media</h4><p class="text-xs text-ink-700 dark:text-ink-300">All press state-run. Foreign radio jammed. History rewritten to center Stalin.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">State-controlled economy</h4><p class="text-xs text-ink-700 dark:text-ink-300">Five-Year Plans set every output target. Markets abolished. Profit motive replaced with quotas.</p></div>
+  <div class="rounded-xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-4"><h4 class="font-serif font-bold mb-1 text-accent-900 dark:text-accent-100">Gulag system</h4><p class="text-xs text-ink-700 dark:text-ink-300">Vast forced-labor camps in Siberia. Millions arrested for trivial or fabricated offenses. Many died.</p></div>
+</div>
+
+### The Five-Year Plans (1928 onward)
+
+Stalin's goal: industrialize the USSR fast enough to survive the next inevitable war. The cost was paid in lives.
+
+<RechartsLine
+  title="Soviet industrial output, 1928 to 1940 (1928 = 100)"
+  data={[
+    { year: "1928", output: 100 },
+    { year: "1932", output: 200 },
+    { year: "1937", output: 380 },
+    { year: "1940", output: 460 }
+  ]}
+  xKey="year"
+  lines={[{ dataKey: "output", color: "#b91c1c", name: "Industrial output index" }]}
+/>
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <TremorCard label="Steel production" value="4x growth" delta="1928 to 1937" deltaType="increase" helper="USSR became the world's third largest steel producer." />
+  <TremorCard label="Cities built" value="Hundreds" helper="Magnitogorsk and Komsomolsk built from nothing in the wilderness." />
+  <TremorCard label="Workers conscripted" value="Tens of millions" helper="Forced labor and 'voluntary' shock workers. Few opted out." />
+</div>
+
+### Collectivization disaster
+
+The Five-Year Plans needed grain to feed industrial workers and to export for foreign currency. Stalin's solution: force the 25 million peasant family farms into giant state-run **collective farms**.
+
+<StepThrough
+  title="Why collectivization killed millions"
+  steps={[
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Step 1 · Targeting kulaks</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Stalin labeled successful peasants <strong>kulaks</strong> and declared class war on them. Confiscated their land, deported them, executed many.</p></div>`,
+      caption: "The wealthier you were, the more dangerous it was to live."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Step 2 · Peasant resistance</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Peasants slaughtered their own livestock and burned their own crops rather than surrender to collective farms. Half the cattle, two-thirds of the sheep, killed.</p></div>`,
+      caption: "Better dead than collectivized."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Step 3 · Famine, especially in Ukraine</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">Crops collapsed. Stalin took grain anyway and exported it for foreign currency. <strong>Holodomor</strong> in Ukraine killed ~4 million in 1932-1933 alone.</p></div>`,
+      caption: "Engineered famine."
+    },
+    {
+      html: `<div style="padding:20px;max-width:560px;text-align:center;"><h3 style="font-family:serif;font-size:20px;color:#b91c1c;margin-bottom:14px;">Step 4 · Total death toll</h3><p style="font-size:14px;color:#52525b;line-height:1.5;">~6 to 8 million dead from starvation, deportation, and execution during collectivization. Soviet agriculture never fully recovered.</p></div>`,
+      caption: "The price of forced industrialization."
+    }
+  ]}
+  height={300}
+/>
+
+### The Great Purge (1936-1938)
+
+Stalin's paranoia turned inward. He eliminated everyone who might oppose him.
+
+<HistoryAnimation
+  title="Stalin's Great Purge"
+  scenes={[
+    {
+      duration: 4,
+      caption: "1936. Stalin orders show trials of Old Bolsheviks. Public confessions. Executions.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold">SHOW TRIAL · 1936</text>
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linecap="round">
+          <circle cx="200" cy="120" r="12"/>
+          <line x1="200" y1="132" x2="200" y2="170"/>
+          <line x1="200" y1="145" x2="180" y2="160"/>
+          <line x1="200" y1="145" x2="220" y2="160"/>
+          <line x1="200" y1="170" x2="190" y2="200"/>
+          <line x1="200" y1="170" x2="210" y2="200"/>
+        </g>
+        <text x="200" y="225" text-anchor="middle" font-family="serif" font-size="11" fill="#b91c1c">"I confess to everything"</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "Then the army. Stalin executes 3 of 5 marshals, 13 of 15 army commanders.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="40" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold">RED ARMY DECAPITATED</text>
+        <g stroke="#000" stroke-width="2" fill="none">
+          <line x1="80" y1="100" x2="120" y2="140"/>
+          <line x1="120" y1="100" x2="80" y2="140"/>
+          <line x1="160" y1="100" x2="200" y2="140"/>
+          <line x1="200" y1="100" x2="160" y2="140"/>
+          <line x1="240" y1="100" x2="280" y2="140"/>
+          <line x1="280" y1="100" x2="240" y2="140"/>
+        </g>
+        <text x="200" y="180" text-anchor="middle" font-family="serif" font-size="13">3 of 5 marshals</text>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="13">13 of 15 army commanders</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="11" fill="#b91c1c">All shot. Two years before WWII.</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Then ordinary citizens. Neighbors denounce neighbors. Quotas filled. Trains roll east.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="30" text-anchor="middle" font-family="serif" font-size="14" font-weight="bold">GULAG ARCHIPELAGO</text>
+        <rect x="60" y="100" width="280" height="60" fill="none" stroke="#000" stroke-width="2"/>
+        <line x1="60" y1="160" x2="60" y2="180" stroke="#000" stroke-width="2"/>
+        <line x1="120" y1="160" x2="120" y2="180" stroke="#000" stroke-width="2"/>
+        <line x1="180" y1="160" x2="180" y2="180" stroke="#000" stroke-width="2"/>
+        <line x1="240" y1="160" x2="240" y2="180" stroke="#000" stroke-width="2"/>
+        <line x1="300" y1="160" x2="300" y2="180" stroke="#000" stroke-width="2"/>
+        <line x1="340" y1="160" x2="340" y2="180" stroke="#000" stroke-width="2"/>
+        <text x="200" y="135" text-anchor="middle" font-family="serif" font-size="11" fill="#52525b">prisoner train · destination Siberia</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="11" fill="#b91c1c">~8 to 13 million dead. Most never charged with anything.</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "By 1938, Stalin had killed almost every revolutionary who had been with Lenin in 1917.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <text x="200" y="60" text-anchor="middle" font-family="serif" font-size="22" font-weight="bold" fill="#b91c1c">1917 BOLSHEVIKS</text>
+        <text x="200" y="100" text-anchor="middle" font-family="serif" font-size="56" font-weight="bold" fill="#000">28 →</text>
+        <text x="280" y="100" text-anchor="start" font-family="serif" font-size="56" font-weight="bold" fill="#b91c1c">3</text>
+        <text x="200" y="180" text-anchor="middle" font-family="serif" font-size="13">28 members of original Central Committee</text>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="13">Only 3 survived Stalin's Great Purge</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+<TremorCard label="Great Purge total dead" value="~8 to 13 million" delta="1936-1938" deltaType="decrease" helper="Executions, gulag deaths, deportation deaths combined." />
+
+### Marquee: Five-Year Plan strategy game
+
+You are Stalin's planning commissar. Hit the targets. Pay the price.
+
+<FiveYearPlanGame />
+
+### Communist theory vs Stalin's practice
+
+<div class="not-prose my-6 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">Marx promised</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>"Workers of the world, unite"</li>
+      <li>Classless society</li>
+      <li>State withers away</li>
+      <li>Production for human need, not profit</li>
+      <li>Free, equal cooperative society</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Stalin delivered</p>
+    <ul class="text-sm text-ink-800 dark:text-ink-200 list-disc list-inside space-y-1">
+      <li>One man on top, one party in control</li>
+      <li>New class of party elites with privileges</li>
+      <li>State stronger than any tsarist regime</li>
+      <li>Production for state quotas, not human need</li>
+      <li>Coerced, surveilled, terrorized society</li>
+    </ul>
+  </div>
+</div>
+
+## Common pitfalls
+
+<BadFact source="confused chronology" certainty="0%" title="MISCONCEPTION 1">
+  Lenin and Stalin ruled the USSR together.
+</BadFact>
+
+Lenin died in **January 1924**. Stalin took over by **1928**. They overlapped in the Communist Party but never co-ruled. Lenin's New Economic Policy (NEP) was the OPPOSITE of Stalin's Five-Year Plans.
+
+<BadFact source="oversimplifiers" certainty="0%" title="MISCONCEPTION 2">
+  The Russian Revolution happened in October.
+</BadFact>
+
+There were **two revolutions in 1917**: the **March Revolution** (overthrew the Tsar) and the **November Revolution** (Bolsheviks took power). The November Revolution is sometimes called the "October Revolution" because Russia was on the Julian calendar at the time. On the modern Gregorian calendar it's November 7.
+
+<BadFact source="rushed essay writers" certainty="0%" title="MISCONCEPTION 3">
+  The Five-Year Plans worked perfectly.
+</BadFact>
+
+They massively grew heavy industry, yes. But they **caused famine** in Ukraine (Holodomor), **slaughtered livestock** as peasants resisted collectivization, and produced **terrible consumer goods**. Always pair "rapid industrialization" with "massive human cost."
+
+## Check yourself
+
+<Quiz
+  title="Section 2 practice"
+  questions={[
+    {
+      q: "Why did WWI weaken Tsar Nicholas II?",
+      choices: [
+        "He won every battle but became unpopular",
+        "He took personal command of the army, so every defeat was his fault",
+        "He refused to fight at all",
+        "He surrendered to Germany in 1915"
+      ],
+      answer: 1,
+      explain: "Taking command in 1915 made him personally responsible for the disastrous casualties."
+    },
+    {
+      q: "What started the March Revolution of 1917?",
+      choices: [
+        "A military coup",
+        "Women textile workers striking on International Women's Day",
+        "Lenin's speech at the Finland Station",
+        "A naval mutiny"
+      ],
+      answer: 1,
+      explain: "March 8 (International Women's Day). Petrograd women textile workers walked out demanding bread."
+    },
+    {
+      q: "Why did the Provisional Government fail?",
+      choices: [
+        "It stayed in WWI, didn't redistribute land, and lacked popular support",
+        "It moved too fast on reforms",
+        "Lenin assassinated its leaders",
+        "Foreign powers invaded"
+      ],
+      answer: 0,
+      explain: "Three problems: continued WWI, failed land reform, and no real popular base."
+    },
+    {
+      q: "What was Lenin's three-word slogan?",
+      choices: [
+        "Workers, Unite, Now",
+        "Peace, Land, Bread",
+        "Liberty, Equality, Fraternity",
+        "Communism, Socialism, Marxism"
+      ],
+      answer: 1,
+      explain: "Peace, Land, Bread. Each word solved a problem the Provisional Government could not."
+    },
+    {
+      q: "When did the Bolsheviks take power?",
+      choices: [
+        "March 1917",
+        "July 1917",
+        "November 1917",
+        "December 1922"
+      ],
+      answer: 2,
+      explain: "November 7, 1917 (the 'October Revolution' on the old Russian calendar)."
+    },
+    {
+      q: "Which treaty took Russia out of WWI?",
+      choices: [
+        "Treaty of Versailles",
+        "Treaty of Brest-Litovsk",
+        "Treaty of Rapallo",
+        "Treaty of Trianon"
+      ],
+      answer: 1,
+      explain: "Treaty of Brest-Litovsk, March 1918. Russia gave up huge territory to exit the war."
+    },
+    {
+      q: "Who built and led the Red Army during the Civil War?",
+      choices: [
+        "Stalin",
+        "Trotsky",
+        "Lenin",
+        "Khrushchev"
+      ],
+      answer: 1,
+      explain: "Leon Trotsky. He's the reason the Reds won. Stalin later exiled and assassinated him for it."
+    },
+    {
+      q: "What was the NEP?",
+      choices: [
+        "Stalin's purge",
+        "Lenin's New Economic Policy: tactical retreat from full communism, allowing some private business",
+        "A military doctrine",
+        "Russia's WWI exit treaty"
+      ],
+      answer: 1,
+      explain: "NEP let peasants sell extra crops and small businesses operate. Pragmatic, not ideological."
+    },
+    {
+      q: "TOTALITARIANISM most nearly means:",
+      choices: [
+        "A democracy",
+        "A government that tries to control every aspect of public AND private life",
+        "A monarchy",
+        "Anarchy"
+      ],
+      answer: 1,
+      explain: "Total control: economy, religion, family, education, art, news, even thought."
+    },
+    {
+      q: "What were the Five-Year Plans?",
+      choices: [
+        "Stalin's forced industrialization with state-set production targets",
+        "Five years of NEP",
+        "Lenin's Civil War strategy",
+        "Trotsky's foreign policy"
+      ],
+      answer: 0,
+      explain: "Stalin's plan to industrialize fast. Worked for heavy industry. Killed millions in the process."
+    },
+    {
+      q: "What did COLLECTIVIZATION do?",
+      choices: [
+        "Created free-market farming",
+        "Forced peasant farms into state-run collective farms; caused massive famine",
+        "Distributed land to all citizens equally",
+        "Restored Tsarist agriculture"
+      ],
+      answer: 1,
+      explain: "Forced merger of family farms into giant collectives. Peasants resisted by killing livestock. Famine killed millions, especially in Ukraine."
+    },
+    {
+      q: "What was the Great Purge?",
+      choices: [
+        "An economic reform",
+        "Stalin's mass arrests, show trials, and executions of perceived rivals (1936-1938)",
+        "A medical campaign",
+        "A famine relief effort"
+      ],
+      answer: 1,
+      explain: "1936-1938. ~8-13 million dead from executions, gulags, and deportations. Decapitated the army on the eve of WWII."
+    },
+    {
+      q: "What is a CULT OF PERSONALITY?",
+      choices: [
+        "A religious sect",
+        "A leader treated as godlike and infallible through propaganda",
+        "A dance craze",
+        "A political coalition"
+      ],
+      answer: 1,
+      explain: "Stalin's portraits everywhere. History rewritten. Cities renamed for him (Stalingrad). Worship instead of governance."
+    },
+    {
+      q: "Who succeeded Lenin as Soviet leader?",
+      choices: [
+        "Trotsky",
+        "Khrushchev",
+        "Stalin",
+        "Brezhnev"
+      ],
+      answer: 2,
+      explain: "Stalin outmaneuvered Trotsky from his administrative position as General Secretary."
+    },
+    {
+      q: "When was the USSR formally founded?",
+      choices: [
+        "November 1917",
+        "March 1918",
+        "December 1922",
+        "January 1924"
+      ],
+      answer: 2,
+      explain: "December 30, 1922. Russia, Ukraine, Belarus, Transcaucasia merged into the Union of Soviet Socialist Republics."
+    },
+    {
+      q: "How does communist theory compare to Stalin's practice?",
+      choices: [
+        "They were identical",
+        "Stalin practiced what Marx preached perfectly",
+        "Theory promised classless equality; practice delivered one-man rule and a privileged party elite",
+        "Theory was more violent than practice"
+      ],
+      answer: 2,
+      explain: "Marx promised a classless workers' society. Stalin delivered totalitarian rule with a new ruling class of party elites."
+    }
+  ]}
+/>
+
+{/* SECTION_3_MARKER */}
