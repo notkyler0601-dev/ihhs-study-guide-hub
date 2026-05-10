@@ -184,27 +184,51 @@ const id = 'particles-' + Math.random().toString(36).slice(2, 9);
       'tsParticles'
     );
 
-    await tsParticles.load({ id, options: buildOptions(preset, density) });
+    const container = await tsParticles.load({ id, options: buildOptions(preset, density) });
+    if (container) {
+      // Stash the container handle on the DOM node so the visibility observer
+      // can pause/resume animation when the field scrolls out of view.
+      (root as any).__particlesContainer = container;
+    }
   };
 
   // Lazy-init each particle field on viewport entry so a long page with many
   // backgrounds does not pay the WebGL setup cost up front.
-  const observer = typeof IntersectionObserver !== 'undefined'
+  const initObserver = typeof IntersectionObserver !== 'undefined'
     ? new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             initOne(entry.target as HTMLElement);
-            observer!.unobserve(entry.target);
+            initObserver!.unobserve(entry.target);
           }
         });
       }, { rootMargin: '300px 0px' })
     : null;
 
+  // After init, pause animation when the field scrolls fully out of view and
+  // resume when it comes back. A long guide can have 5+ particle backgrounds;
+  // letting them all run 60fps WebGL while invisible is the #1 source of
+  // mid-scroll lag.
+  const visibilityObserver = typeof IntersectionObserver !== 'undefined'
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const container = (entry.target as any).__particlesContainer;
+          if (!container) return;
+          if (entry.isIntersecting) {
+            try { container.play(); } catch (_) {}
+          } else {
+            try { container.pause(); } catch (_) {}
+          }
+        });
+      }, { rootMargin: '50px 0px', threshold: 0 })
+    : null;
+
   const init = () => {
     document.querySelectorAll<HTMLElement>('[data-particles-root]').forEach((root) => {
       if (root.dataset.bound) return;
-      if (observer) observer.observe(root);
+      if (initObserver) initObserver.observe(root);
       else initOne(root);
+      if (visibilityObserver) visibilityObserver.observe(root);
     });
   };
   init();
