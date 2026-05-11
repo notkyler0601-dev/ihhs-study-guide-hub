@@ -464,6 +464,18 @@ Europe had been mostly peaceful for 30 years. By 1914, four pressures had built 
   **M**ilitarism · **A**lliances · **I**mperialism · **N**ationalism. Memorize this acronym. It's the backbone of any WWI essay answer.
 </Callout>
 
+How those four causes plus the assassination trigger combined to start a world war:
+
+```mermaid
+flowchart LR
+  M[Militarism<br/>European arms race] --> WAR[WWI<br/>begins August 1914]
+  A[Alliances<br/>Triple Entente vs Triple Alliance] --> WAR
+  I[Imperialism<br/>colonial rivalries] --> WAR
+  N[Nationalism<br/>Balkans tensions] --> WAR
+  T[Trigger:<br/>Franz Ferdinand assassinated<br/>June 28, 1914] --> WAR
+  WAR --> S[Within 6 weeks:<br/>all great powers at war]
+```
+
 ### The two pre-war alliances
 
 <div class="not-prose my-6 grid md:grid-cols-2 gap-4">
@@ -1176,6 +1188,21 @@ Russia entered WWI proud and confident. By 1917, it had lost more soldiers than 
     <p class="text-xs text-ink-700 dark:text-ink-300">300 years of Romanov rule. Six months of WWI. The dynasty was finished.</p>
   </div>
 </div>
+
+The cascade from war to abdication, in one diagram:
+
+```mermaid
+flowchart TD
+  W[WWI begins 1914<br/>Russia mobilizes] --> C[5.5 million Russian<br/>casualties by 1917]
+  W --> F[Food shortages<br/>in cities]
+  C --> A[Army morale collapses]
+  F --> P[Women textile workers<br/>strike March 8, 1917]
+  P --> R[Soldiers refuse<br/>to fire on protesters]
+  A --> R
+  R --> S[Petrograd Soviet forms<br/>March 12]
+  S --> AB[Tsar Nicholas II abdicates<br/>March 15, 1917]
+  AB --> END[300 years of<br/>Romanov rule ends]
+```
 
 ### The March Revolution (1917)
 
@@ -2052,6 +2079,21 @@ The 1930s were a decade of aggressors testing the postwar order. Each time the i
   ]}
   height={300}
 />
+
+The chain of concessions that ended in war:
+
+```mermaid
+flowchart LR
+  R[March 1936<br/>Rhineland remilitarized] --> A1[Britain + France:<br/>no response]
+  A1 --> AN[March 1938<br/>Anschluss with Austria]
+  AN --> A2[Britain + France:<br/>no response]
+  A2 --> SU[Sept 1938<br/>Sudetenland<br/>Munich Agreement]
+  SU --> A3[Chamberlain:<br/>'Peace for our time']
+  A3 --> CZ[March 1939<br/>Hitler takes the rest<br/>of Czechoslovakia]
+  CZ --> NSP[Aug 1939<br/>Nazi-Soviet Pact]
+  NSP --> P[Sept 1, 1939<br/>Germany invades Poland]
+  P --> WWII[WWII begins]
+```
 
 ### Why appeasement failed
 
@@ -3022,6 +3064,21 @@ In **1946**, US diplomat George Kennan sent a "Long Telegram" from Moscow arguin
 <Callout type="insight" title="Containment in three doctrines">
   **Truman Doctrine (1947)** — economic and military aid to any country resisting communism. First applied to Greece and Turkey ($400M). **Marshall Plan (1947)** — $12.5 billion in aid to rebuild Western Europe. Both economic recovery AND containment of communism. **NATO (1949)** — mutual-defense alliance of 12 Western nations. An attack on one is an attack on all.
 </Callout>
+
+The three pillars of containment, all branching from the same doctrine:
+
+```mermaid
+flowchart TD
+  C[Containment Doctrine<br/>George Kennan, 1946] --> T[Truman Doctrine<br/>1947]
+  C --> M[Marshall Plan<br/>1947]
+  C --> N[NATO<br/>1949]
+  T --> G[Aid to Greece + Turkey<br/>400 million dollars]
+  M --> E[12.5 billion dollars<br/>to rebuild Western Europe]
+  N --> A[12 Western nations<br/>mutual defense alliance]
+  G --> S[Stop communist spread<br/>without direct war]
+  E --> S
+  A --> S
+```
 
 ## Effect: escalation
 
