@@ -40,8 +40,7 @@ const conf = JSON.stringify({ items, groups, start, end });
 </div>
 
 <script>
-  import { Timeline, DataSet } from 'vis-timeline/standalone';
-  import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
+  import { mountWhenVisible } from '../lib/loadScript';
 
   type Conf = {
     items: any[];
@@ -50,7 +49,7 @@ const conf = JSON.stringify({ items, groups, start, end });
     end?: string;
   };
 
-  const initOne = (el: HTMLElement) => {
+  const initOne = async (el: HTMLElement) => {
     if (el.dataset.bound) return;
     el.dataset.bound = '1';
     let conf: Conf;
@@ -61,6 +60,13 @@ const conf = JSON.stringify({ items, groups, start, end });
       return;
     }
     if (!conf.items || conf.items.length === 0) return;
+
+    // Defer the vis-timeline lib + CSS until the element is near the
+    // viewport so guides with multiple timelines don't pay the cost upfront.
+    const [{ Timeline, DataSet }] = await Promise.all([
+      import('vis-timeline/standalone'),
+      import('vis-timeline/styles/vis-timeline-graph2d.min.css'),
+    ]);
 
     try {
       const ds = new DataSet(conf.items);
@@ -84,12 +90,7 @@ const conf = JSON.stringify({ items, groups, start, end });
     }
   };
 
-  const initAll = () => {
-    document.querySelectorAll<HTMLElement>('[data-vis-timeline]:not([data-bound])').forEach(initOne);
-  };
-
-  initAll();
-  document.addEventListener('astro:after-swap', initAll);
+  mountWhenVisible('[data-vis-timeline]:not([data-bound])', (roots) => roots.forEach(initOne));
 </script>
 
 <style is:global>

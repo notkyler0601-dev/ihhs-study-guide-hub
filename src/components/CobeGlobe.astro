@@ -25,9 +25,9 @@ const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
 </div>
 
 <script>
-  import createGlobe from 'cobe';
+  import { mountWhenVisible, isPerfMode, pauseWhenOffscreen } from '../lib/loadScript';
 
-  const initOne = (root: HTMLElement) => {
+  const initOne = async (root: HTMLElement) => {
     if (root.dataset.bound) return;
     root.dataset.bound = '1';
     const id = root.dataset.cobeId!;
@@ -37,25 +37,30 @@ const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
     if (!canvas || !dataEl) return;
     const markers: { lat: number; lng: number; size?: number }[] = JSON.parse(dataEl.textContent || '[]');
 
+    const createGlobe = (await import('cobe')).default;
+    const dpr = isPerfMode() ? 1 : 2;
+
     let phi = 0;
     let pointerInteracting: number | null = null;
     let pointerInteractionMovement = 0;
+    let paused = false;
 
-    createGlobe(canvas, {
-      devicePixelRatio: 2,
-      width: size * 2,
-      height: size * 2,
+    const globe = createGlobe(canvas, {
+      devicePixelRatio: dpr,
+      width: size * dpr,
+      height: size * dpr,
       phi: 0,
       theta: 0.25,
       dark: 1,
       diffuse: 3,
-      mapSamples: 20000,
+      mapSamples: isPerfMode() ? 8000 : 20000,
       mapBrightness: 12,
       baseColor: [0.05, 0.05, 0.08],
       markerColor: [1, 0.35, 0.35],
       glowColor: [0.7, 0.18, 0.18],
       markers: markers.map((m) => ({ location: [m.lat, m.lng] as [number, number], size: m.size ?? 0.06 })),
       onRender: (state) => {
+        if (paused) return;
         if (pointerInteracting === null) phi += 0.004;
         state.phi = phi + pointerInteractionMovement / 200;
       },
@@ -73,11 +78,16 @@ const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
     });
     canvas.style.cursor = 'grab';
     setTimeout(() => { canvas.style.opacity = '1'; }, 80);
+
+    // Cobe runs its render loop via requestAnimationFrame inside the lib. The
+    // public API doesn't expose a pause method, so we gate the onRender body
+    // with a `paused` flag and let the rAF keep ticking. CPU cost of an empty
+    // onRender is negligible compared to the shader work it normally does.
+    pauseWhenOffscreen(root, {
+      play: () => { paused = false; },
+      pause: () => { paused = true; },
+    });
   };
 
-  const init = () => {
-    document.querySelectorAll<HTMLElement>('[data-cobe-root]').forEach(initOne);
-  };
-  init();
-  document.addEventListener('astro:after-swap', init);
+  mountWhenVisible('[data-cobe-root]:not([data-bound])', (roots) => roots.forEach(initOne));
 </script>

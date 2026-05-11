@@ -101,7 +101,7 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
 </style>
 
 <script>
-  import { loadScript, loadStyle, waitForGlobal } from '../lib/loadScript';
+  import { loadScript, loadStyle, waitForGlobal, isPerfMode, pauseWhenOffscreen } from '../lib/loadScript';
 
   type Marker = { lat: number; lng: number; name?: string; note?: string };
   type Arc = { from: [number, number]; to: [number, number]; name?: string };
@@ -229,6 +229,27 @@ const token = (import.meta.env.PUBLIC_CESIUM_TOKEN as string | undefined) ?? '';
         // Tone down the default Cesium chrome so it fits the site theme.
         viewer.scene.globe.enableLighting = !!token;
         viewer.scene.skyAtmosphere.show = true;
+        // Perf mode: kill the expensive shader passes, cap resolution at 1x.
+        // Globe still renders accurately, just flatter shading and no fog.
+        if (isPerfMode()) {
+          try {
+            viewer.resolutionScale = 1.0;
+            viewer.scene.fog.enabled = false;
+            viewer.scene.globe.enableLighting = false;
+            viewer.scene.skyAtmosphere.show = false;
+            viewer.scene.requestRenderMode = true;
+            viewer.scene.maximumRenderTimeChange = Infinity;
+          } catch (_) {}
+        }
+
+        // Pause Cesium's render loop while the globe is offscreen. Cesium
+        // burns CPU each frame even when nothing animates, especially with
+        // lighting/atmosphere on, so a mega-guide with one globe per
+        // section can stutter scrolls just by leaving the loop running.
+        pauseWhenOffscreen(root, {
+          play: () => { try { viewer.useDefaultRenderLoop = true; viewer.scene.requestRender(); } catch (_) {} },
+          pause: () => { try { viewer.useDefaultRenderLoop = false; } catch (_) {} },
+        });
         // Hide the credit container's bulky toolbar (still keeps attribution).
         const creditContainer = viewer.cesiumWidget.creditContainer as HTMLElement;
         if (creditContainer) creditContainer.style.display = 'none';

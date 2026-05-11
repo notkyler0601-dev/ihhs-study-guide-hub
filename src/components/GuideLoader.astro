@@ -52,6 +52,10 @@ const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
       if (sessionStorage.getItem('ihhs:warmed:' + location.pathname)) return;
     } catch (_) {}
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Perf mode: skip the warmup entirely. The warmup forces every lazy
+    // component to init regardless of whether the user scrolls there,
+    // which is the opposite of what a low-end device needs.
+    if (document.documentElement.classList.contains('perf-mode')) return;
     window.__ihhsWarmingUp = true;
   })();
 </script>
@@ -286,6 +290,15 @@ const { maxSeconds = 9, stepPx = 700, stepMs = 130 } = Astro.props;
     // If reduced-motion media query says no, hide and bail.
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       els.overlay.remove();
+      return;
+    }
+
+    // Perf mode: hide the overlay and skip warmup entirely. Lazy components
+    // now correctly init on scroll-entry so the warmup is unnecessary; on
+    // low-end devices it just front-loads work the user may never reach.
+    if (document.documentElement.classList.contains('perf-mode')) {
+      els.overlay.remove();
+      try { sessionStorage.setItem(KEY(), '1'); } catch (_) {}
       return;
     }
 

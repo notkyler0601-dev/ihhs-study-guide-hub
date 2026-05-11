@@ -4,18 +4,62 @@
 <div id="reading-progress" class="reading-progress" aria-hidden="true"></div>
 
 <script is:inline>
+  // Reading progress bar. Two perf concerns the previous version got wrong:
+  //   1. It read scrollHeight + clientHeight on every scroll event. Layout
+  //      reads inside a scroll handler cost a few ms each on long pages and
+  //      block 60fps scroll, especially on low-end devices.
+  //   2. It wrote bar.style.width on every raw scroll event, which on a
+  //      trackpad fires 60+/sec. Combined with the box-shadow glow, that
+  //      forces a paint every event.
+  // Fix: rAF-throttle the write, cache the total in a closure, and recompute
+  // only on resize / body mutation (ResizeObserver) / view transition.
+  let _setup_ro = null;
+  let _setup_swap = null;
   const setup = () => {
     const bar = document.getElementById('reading-progress');
     if (!bar) return;
-    const update = () => {
-      const h = document.documentElement;
-      const total = h.scrollHeight - h.clientHeight;
-      const pct = total > 0 ? Math.min(100, (h.scrollTop / total) * 100) : 0;
-      bar.style.width = pct + '%';
+    const h = document.documentElement;
+    let total = Math.max(0, h.scrollHeight - h.clientHeight);
+    let ticking = false;
+    let lastPct = -1;
+
+    const recompute = () => {
+      total = Math.max(0, h.scrollHeight - h.clientHeight);
     };
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    const apply = () => {
+      ticking = false;
+      const pct = total > 0 ? Math.min(100, (h.scrollTop / total) * 100) : 0;
+      // Skip the style write if the integer percent hasn't changed. Saves
+      // paint work on tiny scroll deltas.
+      const rounded = Math.round(pct * 10) / 10;
+      if (rounded !== lastPct) {
+        lastPct = rounded;
+        bar.style.width = rounded + '%';
+      }
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(apply);
+    };
+    const onResize = () => {
+      recompute();
+      onScroll();
+    };
+
+    apply();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+
+    // Lazy-mounted components can grow the document height as the user
+    // scrolls past them. A ResizeObserver on <body> picks up those height
+    // changes without us having to listen for component-specific events.
+    if (typeof ResizeObserver !== 'undefined') {
+      try {
+        _setup_ro = new ResizeObserver(() => { recompute(); onScroll(); });
+        _setup_ro.observe(document.body);
+      } catch (_) {}
+    }
   };
   setup();
   document.addEventListener('astro:after-swap', setup);

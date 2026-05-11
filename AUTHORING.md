@@ -121,3 +121,16 @@ If I default to my old ten without consulting this list, I'm leaving 90% of the 
 - **Color tokens**: `accent-50` through `accent-950` (red), `ink-50` through `ink-950` (neutral)
 - **Dark mode detect**: `document.documentElement.classList.contains('dark')`
 - **Embedded SVG/canvas color picks**: `#b91c1c` (light) or `#f87171` (dark)
+
+---
+
+## Performance budget
+
+A guide that drags scroll on a school Chromebook is not a finished guide. The renderer can lazy-mount and pause individual widgets, but it cannot save a guide that asks for ten globes at once. Budget per guide:
+
+- **At most one full-page WebGL widget** (`<Cesium>` / `<MapLibreView>` / `<Babylon>` / `<R3FScene>` / `<GlobeTheatre3D>` / `<DeckMap>`). Pick the one that earns its weight; use lighter alternatives (`<MapView>` for 2D, `<CobeGlobe>` for a tiny shader-only globe, static images for the rest) elsewhere.
+- **At most two `<Particles>` / `<VantaBackground>` fields.** Each one is a full-screen WebGL canvas. Two atmospheres bookend a guide nicely; a third is just heat.
+- **At most one auto-playing `<HistoryAnimation>` per screen.** They're cheap individually but they all tick a `requestAnimationFrame` loop, and on a long page that adds up. If you need three in a row, switch the middle ones to `<StepThrough>`.
+- **If you exceed any of these, add `<GuideLoader />` at the top.** The loader hides the first-load jank by warming components in a controlled scroll. It is automatically a no-op on devices in perf-mode, so the underlying budget still has to be defensible.
+
+Perf-mode (auto-enabled on low-end devices, toggleable at `/settings`) drops aurora, blur, and particles, caps WebGL pixel ratio at 1, and pauses 3D widgets while scrolled offscreen. It does **not** save a guide from a bad budget — it just keeps the budget you set survivable on weaker hardware.

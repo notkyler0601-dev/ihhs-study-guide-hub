@@ -103,3 +103,42 @@ export function mountWhenVisible(
   queue();
   document.addEventListener('astro:after-swap', queue);
 }
+
+// Single source of truth: is the page running in perf-mode?
+// BaseLayout's inline boot script sets <html class="perf-mode"> before paint
+// based on (1) explicit user pref in localStorage 'a11y:perf-mode' or
+// (2) auto-detect via navigator.hardwareConcurrency / deviceMemory / connection.
+// Components that want to skip an expensive effect (Particles, pixel-ratio
+// caps, GuideLoader warmup) read this single flag.
+export function isPerfMode(): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.classList.contains('perf-mode');
+}
+
+// Pause an animation handle when the element scrolls fully out of view and
+// resume it on re-entry. Wraps the IntersectionObserver pattern that
+// Particles.astro already uses. Pass an object with optional play/pause
+// methods (matches tsParticles' container API; for other libs you supply
+// closures that call into your render loop).
+export function pauseWhenOffscreen(
+  el: Element,
+  handle: { play?: () => void; pause?: () => void },
+  opts: { rootMargin?: string; threshold?: number | number[] } = {}
+): void {
+  if (typeof IntersectionObserver === 'undefined') return;
+  const rootMargin = opts.rootMargin ?? '50px 0px';
+  const threshold = opts.threshold ?? 0;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          try { handle.play && handle.play(); } catch (_) {}
+        } else {
+          try { handle.pause && handle.pause(); } catch (_) {}
+        }
+      }
+    },
+    { rootMargin, threshold }
+  );
+  observer.observe(el);
+}
