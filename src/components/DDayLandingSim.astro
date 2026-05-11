@@ -200,10 +200,11 @@
       const padKeys = new Set<string>();
 
       // ----- Depth helpers -----
-      // Map a sprite's relative depth (worldZ - playerZ, with offset) to a
-      // y position on canvas and a scale factor.
-      // The horizon (playerZ + 1.0) sits at top of beach band (y ~= H * 0.35).
-      // The player feet (playerZ + 0.0) sits at y ~= H * 0.85.
+      // Sprites positioned in worldZ in [0, 1.2]. Player advances by decreasing
+      // playerZ (surf 1.0 -> seawall 0.0), so anything in front has worldZ <
+      // playerZ. relZ = playerZ - worldZ + nearPlane, where nearPlane=0.1
+      // lifts a sprite at the player's feet just above y = H * 0.85.
+      // The horizon is at relZ ~= 1.2 (top of beach band, y ~= H * 0.35).
       const depthToY = (relZ: number) => {
         // relZ in [0, 1.2]; clamp.
         const r = Math.max(0, Math.min(1.2, relZ));
@@ -384,10 +385,10 @@
       };
 
       const drawHedgehogs = () => {
-        // Sort by depth so closer ones draw last
-        const sorted = [...hedgehogs].sort((a, b) => (b.worldZ - playerZ) - (a.worldZ - playerZ));
+        // Sort by depth so closer ones draw last (painter's, farthest first)
+        const sorted = [...hedgehogs].sort((a, b) => a.worldZ - b.worldZ);
         for (const h of sorted) {
-          const relZ = h.worldZ - playerZ + 0.1;
+          const relZ = playerZ - h.worldZ + 0.1;
           if (relZ < 0.05 || relZ > 1.2) continue;
           const sx = worldXToScreenX(h.worldX, relZ);
           const sy = depthToY(relZ);
@@ -408,9 +409,9 @@
       };
 
       const drawBodies = () => {
-        const sorted = [...bodies].sort((a, b) => (b.worldZ - playerZ) - (a.worldZ - playerZ));
+        const sorted = [...bodies].sort((a, b) => a.worldZ - b.worldZ);
         for (const b of sorted) {
-          const relZ = b.worldZ - playerZ + 0.1;
+          const relZ = playerZ - b.worldZ + 0.1;
           if (relZ < 0.05 || relZ > 1.2) continue;
           const sx = worldXToScreenX(b.worldX, relZ);
           const sy = depthToY(relZ);
@@ -430,8 +431,14 @@
       };
 
       const drawSurf = () => {
-        // Tide rises with tideZ. When tideZ - playerZ < 0 the surf is past us.
-        const surfRel = tideZ - playerZ + 0.1;
+        // Tide rises with tideZ shrinking. While tide is still behind the
+        // player (tideZ > playerZ) we paint a wet-sand strip near the
+        // player's feet as a visible threat-from-behind cue. Once tide has
+        // passed the player (tideZ < playerZ) the surf is ahead and shown
+        // with proper depth, but at that point onHit/tide-catch has already
+        // fired so this branch is mostly cosmetic.
+        const behind = tideZ >= playerZ;
+        const surfRel = behind ? (tideZ - playerZ + 0.1) : (playerZ - tideZ + 0.1);
         const surfY = depthToY(surfRel);
         if (surfY < H() * 0.42) return;
         // Wet sand band
@@ -472,7 +479,7 @@
 
       const drawMortars = (now: number) => {
         for (const m of mortars) {
-          const relZ = m.worldZ - playerZ + 0.1;
+          const relZ = playerZ - m.worldZ + 0.1;
           if (relZ < 0.05 || relZ > 1.2) continue;
           const sx = worldXToScreenX(m.worldX, relZ);
           const sy = depthToY(relZ);
@@ -619,7 +626,7 @@
             b.nextFlash = 1.5 + Math.random();
           }
           if (b.nextShot <= 0 && alive && !won) {
-            b.nextShot = 0.6 + Math.random() * 1.2;
+            b.nextShot = 1.3 + Math.random() * 1.6;
             const top = H() * 0.15 + H() * 0.20 * 0.5;
             const bx = W() * 0.5 + b.x * W() * 0.4 - playerX * W() * 0.05;
             // Random aim across canvas
@@ -635,15 +642,16 @@
           }
         }
 
-        // Random mortars
-        if (Math.random() < 0.018 && alive && !won) {
-          const targetZ = Math.max(0.1, Math.min(1.0, playerZ + (Math.random() - 0.3) * 0.4));
+        // Random mortars. Bias landing site slightly in front of the player
+        // (lower Z) so the warning ring is visible on screen.
+        if (Math.random() < 0.009 && alive && !won) {
+          const targetZ = Math.max(0.05, Math.min(1.1, playerZ - 0.15 + (Math.random() - 0.5) * 0.5));
           const targetX = (Math.random() - 0.5) * 2.0 + playerX * 0.5;
           mortars.push({
             worldX: targetX,
             worldZ: targetZ,
-            warnUntil: now + 1000,
-            flashUntil: now + 1350,
+            warnUntil: now + 1400,
+            flashUntil: now + 1750,
             radius: 30 + Math.random() * 20,
           });
         }
