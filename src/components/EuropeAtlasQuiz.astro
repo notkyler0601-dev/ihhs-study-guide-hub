@@ -1,0 +1,31 @@
+---
+// Embeds the standalone Europe atlas quiz (parchment-styled D3 map of every
+// European country, click to identify, Quiz/Study modes, microstates toggle).
+//
+// The quiz is a static HTML file in /public/europe-atlas-quiz.html. We host
+// it in an iframe so its custom Spectral/Fraunces font stack and parchment
+// CSS variables don't leak into the rest of the site.
+interface Props {
+  title?: string;
+  height?: string;
+  src?: string;
+}
+const {
+  title = 'Europe atlas quiz',
+  height = '900px',
+  src = '/europe-atlas-quiz.html',
+} = Astro.props;
+---
+
+<figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden">
+  <iframe
+    src={src}
+    title={title}
+    loading="lazy"
+    style={`width:100%; height:${height}; border:0; display:block; background: #f0e6cf;`}
+    allow="fullscreen"
+  ></iframe>
+  <figcaption class="px-5 py-3 text-xs text-ink-500 border-t border-ink-200 dark:border-ink-800">
+    Click a country to identify the one named above the map. Two guesses per country. Toggle <span class="font-mono">Microstates</span> to include Andorra, San Marino, Liechtenstein, Monaco, Vatican, Malta, Cyprus.
+  </figcaption>
+</figure>
