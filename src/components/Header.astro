@@ -34,6 +34,10 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
         isActive('/about') ? 'text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30' : 'text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50']}>
         About
       </a>
+      <a href="/volunteer" class:list={['px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+        isActive('/volunteer') ? 'text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30' : 'text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50']}>
+        Volunteer
+      </a>
     </nav>
 
     <div class="flex items-center gap-2">
