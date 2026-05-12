@@ -1,0 +1,305 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const guides = await getCollection('guides', ({ data }) => !data.draft);
+const guideOptions = guides
+  .map((g) => ({ slug: g.id.replace(/\.(md|mdx)$/, ''), title: g.data.title, subject: g.data.subject }))
+  .sort((a, b) => a.title.localeCompare(b.title));
+---
+
+<BaseLayout
+  title="Volunteer to read a guide"
+  description="Read a study guide, log the hours toward IHHS community service."
+>
+  <section class="container-prose py-14 lg:py-20">
+    <div class="max-w-2xl mb-10 stagger-fade">
+      <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-3">Volunteer</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-semibold tracking-tight text-balance">
+        Read a guide, <span class="gradient-text">earn service hours.</span>
+      </h1>
+      <p class="mt-4 text-lg text-ink-600 dark:text-ink-300 leading-relaxed text-pretty">
+        Pick a guide, read it carefully, and review it for accuracy. We log the time toward your IHHS community service hours. Honest reading and good notes, that's it.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-4 mb-10">
+      <div class="surface rounded-xl p-4">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold mb-1">1.</div>
+        <div class="text-sm font-medium text-ink-900 dark:text-ink-50">Sign up below</div>
+        <div class="text-xs text-ink-500 dark:text-ink-400 mt-1 leading-relaxed">Tell us who you are and which guide you want to read.</div>
+      </div>
+      <div class="surface rounded-xl p-4">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold mb-1">2.</div>
+        <div class="text-sm font-medium text-ink-900 dark:text-ink-50">Read and take notes</div>
+        <div class="text-xs text-ink-500 dark:text-ink-400 mt-1 leading-relaxed">Errors, typos, confusing sections, anything that should change.</div>
+      </div>
+      <div class="surface rounded-xl p-4">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold mb-1">3.</div>
+        <div class="text-sm font-medium text-ink-900 dark:text-ink-50">Submit your hours</div>
+        <div class="text-xs text-ink-500 dark:text-ink-400 mt-1 leading-relaxed">Log time and findings here. We verify and credit you.</div>
+      </div>
+    </div>
+
+    <div id="volunteer-gate" class="surface rounded-2xl p-8 sm:p-10 text-center">
+      <div class="inline-flex items-center justify-center h-14 w-14 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-2xl mb-5">
+        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Sign in to volunteer</h2>
+      <p class="text-ink-600 dark:text-ink-300 max-w-md mx-auto mb-6">
+        An account lets us credit hours to the right person and follow up if your notes turn into a guide update.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="/login?next=/volunteer" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">
+          Log in
+        </a>
+        <a href="/signup?next=/volunteer" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">
+          Create an account
+        </a>
+      </div>
+    </div>
+
+    <form id="volunteer-form" class="hidden surface rounded-2xl p-6 sm:p-8 space-y-6">
+      <div class="text-xs text-ink-500 dark:text-ink-400 flex items-center gap-2 px-3 py-2 rounded-lg bg-ink-50 dark:bg-ink-900/60 border border-ink-200 dark:border-ink-800">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Submitting as <strong data-vol-as-name class="text-ink-900 dark:text-ink-50"></strong>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Grade <span class="text-accent-700">*</span>
+          </span>
+          <select name="grade" required class="form-input mt-2">
+            <option value="">Pick a grade...</option>
+            <option value="9">9th</option>
+            <option value="10">10th</option>
+            <option value="11">11th</option>
+            <option value="12">12th</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+
+        <label class="block">
+          <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+            Hours you want to log <span class="text-accent-700">*</span>
+          </span>
+          <input
+            type="number"
+            name="hours"
+            min="0.5"
+            max="40"
+            step="0.5"
+            required
+            placeholder="e.g. 1.5"
+            class="form-input mt-2"
+          />
+        </label>
+      </div>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+          Guide you read <span class="text-accent-700">*</span>
+        </span>
+        <select name="guide_slug" required class="form-input mt-2">
+          <option value="">Pick a guide...</option>
+          {guideOptions.map((g) => <option value={g.slug}>{g.title} ({g.subject})</option>)}
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+          Notes from your read <span class="text-accent-700">*</span>
+        </span>
+        <textarea
+          name="notes"
+          required
+          rows="5"
+          maxlength="1500"
+          placeholder="What did you learn? Typos or errors you found? Sections that confused you? Suggestions to improve the guide?"
+          class="form-input mt-2 resize-y"
+        ></textarea>
+        <span class="text-[11px] text-ink-400 mt-1 block"><span data-counter="notes">0</span> / 1500</span>
+      </label>
+
+      <label class="block">
+        <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
+          Contact email <span class="text-ink-400 font-normal normal-case tracking-normal">(optional, for hour confirmation)</span>
+        </span>
+        <input
+          type="email"
+          name="contact_email"
+          placeholder="you@school.com"
+          maxlength="200"
+          class="form-input mt-2"
+        />
+      </label>
+
+      <label class="flex items-start gap-3 text-sm text-ink-700 dark:text-ink-300 cursor-pointer">
+        <input type="checkbox" name="affirm" required class="mt-1 h-4 w-4 rounded border-ink-300 text-accent-600 focus:ring-accent-500" />
+        <span>I really read the guide. The hours and notes above are honest. I understand the hours need verification before they're official.</span>
+      </label>
+
+      <div id="volunteer-error" class="hidden text-sm text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30 rounded-lg px-4 py-3"></div>
+
+      <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-ink-200 dark:border-ink-800">
+        <p class="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
+          Submissions go to the guide team for review. You'll get a confirmation once the hours are credited.
+        </p>
+        <button
+          type="submit"
+          id="volunteer-submit"
+          class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white font-medium text-sm shadow-soft hover:shadow-lift transition-all whitespace-nowrap disabled:opacity-50"
+        >
+          Log my hours
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+
+    <div id="volunteer-success" class="hidden surface rounded-2xl p-10 text-center stagger-fade">
+      <div class="inline-flex items-center justify-center h-14 w-14 rounded-full bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 text-2xl mb-5">
+        ✓
+      </div>
+      <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight mb-2">Hours submitted</h2>
+      <p class="text-ink-600 dark:text-ink-300 max-w-md mx-auto mb-6">
+        Thanks for reading. We'll review your notes and credit the hours after verification.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="/library" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all">
+          Read another guide
+        </a>
+        <button
+          type="button"
+          id="volunteer-another"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all"
+        >
+          Log more hours
+        </button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-input {
+    @apply block w-full rounded-lg border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900;
+    @apply px-3 py-2.5 text-sm text-ink-900 dark:text-ink-50;
+    @apply placeholder-ink-400 dark:placeholder-ink-500;
+    @apply focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20;
+    @apply transition-colors;
+  }
+</style>
+
+<script>
+  import { supabase, isCloudMode } from '../lib/supabase';
+  import { currentUser, onAuthChange } from '../lib/auth';
+
+  const setup = () => {
+    const form = document.getElementById('volunteer-form') as HTMLFormElement | null;
+    const success = document.getElementById('volunteer-success');
+    const gate = document.getElementById('volunteer-gate');
+    const again = document.getElementById('volunteer-another');
+    const errEl = document.getElementById('volunteer-error');
+    const submitBtn = document.getElementById('volunteer-submit') as HTMLButtonElement | null;
+    const asName = document.querySelector('[data-vol-as-name]');
+    if (!form || !success || !gate || !errEl || !submitBtn) return;
+
+    const showForUser = () => {
+      const me = currentUser();
+      if (me) {
+        gate.classList.add('hidden');
+        form.classList.remove('hidden');
+        success.classList.add('hidden');
+        if (asName) asName.textContent = `${me.displayName} (@${me.username})`;
+      } else {
+        gate.classList.remove('hidden');
+        form.classList.add('hidden');
+        success.classList.add('hidden');
+      }
+    };
+    showForUser();
+    onAuthChange(showForUser);
+
+    document.querySelectorAll('[data-counter]').forEach((el) => {
+      const name = el.getAttribute('data-counter');
+      const field = form.querySelector<HTMLTextAreaElement>(`[name="${name}"]`);
+      if (!field) return;
+      const update = () => { (el as HTMLElement).textContent = String(field.value.length); };
+      field.addEventListener('input', update);
+      update();
+    });
+
+    const reset = () => {
+      form.reset();
+      success.classList.add('hidden');
+      const me = currentUser();
+      if (me) form.classList.remove('hidden');
+      else gate.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelectorAll('[data-counter]').forEach((el) => { (el as HTMLElement).textContent = '0'; });
+    };
+    again?.addEventListener('click', reset);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errEl.classList.add('hidden');
+
+      const me = currentUser();
+      if (!me) {
+        errEl.textContent = 'Please sign in to volunteer.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+      const payload = {
+        guide_slug: data.guide_slug,
+        grade: data.grade,
+        hours: Number(data.hours),
+        notes: data.notes,
+        contact_email: data.contact_email || null,
+        name: me.displayName,
+        email: me.email ?? data.contact_email ?? null,
+        user_id: me.id,
+      };
+
+      // Cloud mode: insert into Supabase volunteer_signups table.
+      if (isCloudMode()) {
+        const sb = supabase();
+        if (sb) {
+          const { error } = await sb.from('volunteer_signups').insert(payload);
+          submitBtn.disabled = false;
+          if (!error) {
+            form.classList.add('hidden');
+            success.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          errEl.textContent = 'Could not submit: ' + error.message;
+          errEl.classList.remove('hidden');
+          return;
+        }
+      }
+
+      // Local mode fallback: stash in localStorage so an admin can export later.
+      try {
+        const key = 'ihhs:local-volunteer-signups';
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push({ ...payload, at: new Date().toISOString() });
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch {}
+      submitBtn.disabled = false;
+      form.classList.add('hidden');
+      success.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

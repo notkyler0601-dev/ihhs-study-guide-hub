@@ -176,3 +176,55 @@ create trigger on_auth_user_created
 --   update public.profiles set is_admin = true where username = 'YOUR-USERNAME';
 --
 -- That's it. You'll now see /admin/requests.
+
+-- ============================================================
+-- 7. Volunteer signups (read-a-guide-for-service-hours)
+-- ============================================================
+-- Students submit hours read against a specific guide. The guide team
+-- reviews the notes and credits the hours. Schema mirrors `requests`.
+
+create table if not exists public.volunteer_signups (
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  guide_slug    text not null,
+  grade         text,
+  hours         numeric(4,1) not null check (hours > 0 and hours <= 40),
+  notes         text not null,
+  contact_email text,
+  name          text,
+  email         text,
+  user_id       uuid references auth.users on delete set null,
+  status        text not null default 'pending',
+  -- status: 'pending' | 'approved' | 'rejected'
+  reviewer_notes text
+);
+
+create index if not exists volunteer_signups_user_idx
+  on public.volunteer_signups (user_id, created_at desc);
+create index if not exists volunteer_signups_status_idx
+  on public.volunteer_signups (status, created_at desc);
+
+alter table public.volunteer_signups enable row level security;
+
+drop policy if exists "volunteer_signups insert authed"   on public.volunteer_signups;
+drop policy if exists "volunteer_signups read own or admin" on public.volunteer_signups;
+drop policy if exists "volunteer_signups update admin"    on public.volunteer_signups;
+
+create policy "volunteer_signups insert authed"
+  on public.volunteer_signups for insert
+  to authenticated
+  with check (user_id = auth.uid());
+
+create policy "volunteer_signups read own or admin"
+  on public.volunteer_signups for select
+  to authenticated
+  using (
+    user_id = auth.uid()
+    or exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
+  );
+
+create policy "volunteer_signups update admin"
+  on public.volunteer_signups for update
+  to authenticated
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
+  with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
