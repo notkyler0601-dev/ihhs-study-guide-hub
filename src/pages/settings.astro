@@ -51,19 +51,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <span class="block text-sm text-ink-500 dark:text-ink-400 mt-0.5">Show a floating "🔊 Read aloud" control on each guide that reads the text using your browser's built-in voice. Off by default since some browsers vary in voice quality.</span>
           </span>
         </label>
-
-        <label class="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            id="a11y-perf-mode"
-            class="mt-1 h-5 w-5 rounded border-ink-300 dark:border-ink-700 text-accent-700 focus:ring-accent-500"
-          />
-          <span class="flex-1">
-            <span class="block font-medium text-ink-900 dark:text-ink-50">Performance mode</span>
-            <span class="block text-sm text-ink-500 dark:text-ink-400 mt-0.5">Disable heavy animations, particle fields, blur effects, and pause off-screen 3D widgets. Auto-enabled on low-end devices (4 or fewer CPU cores, slow network, or save-data). Interactives still work, just simpler.</span>
-            <span id="a11y-perf-mode-hint" class="block text-xs text-ink-400 mt-1 italic"></span>
-          </span>
-        </label>
       </div>
     </section>
 
@@ -144,62 +131,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
   };
 
-  // Tri-state toggle: explicit on ('1'), explicit off ('0'), or auto (null).
-  // Used for perf-mode where the default behavior depends on device hints.
-  // The checkbox reflects the *effective* state, including auto-detect.
-  const wireA11yTriToggle = (
-    id: string,
-    key: string,
-    htmlClass: string,
-    autoFn: () => boolean,
-    hintId?: string
-  ) => {
-    const el = document.getElementById(id) as HTMLInputElement | null;
-    if (!el) return;
-    const hint = hintId ? document.getElementById(hintId) : null;
-    const stored = localStorage.getItem(key);
-    const auto = autoFn();
-    const effective = stored === '1' || (stored !== '0' && auto);
-    el.checked = effective;
-    if (hint) {
-      if (stored === null) {
-        hint.textContent = auto
-          ? 'Auto-enabled on this device (low-end). Click to override.'
-          : 'Auto: off on this device. Click to force on.';
-      } else {
-        hint.textContent = stored === '1' ? 'Manually on.' : 'Manually off.';
-      }
-    }
-    el.addEventListener('change', () => {
-      if (el.checked) {
-        localStorage.setItem(key, '1');
-        document.documentElement.classList.add(htmlClass);
-        if (hint) hint.textContent = 'Manually on.';
-      } else {
-        localStorage.setItem(key, '0');
-        document.documentElement.classList.remove(htmlClass);
-        if (hint) hint.textContent = 'Manually off.';
-      }
-    });
-  };
-
-  const detectAutoPerf = (): boolean => {
-    try {
-      const nav: any = navigator;
-      const conn = nav && nav.connection;
-      if (nav && typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency > 0 && nav.hardwareConcurrency <= 4) return true;
-      if (nav && typeof nav.deviceMemory === 'number' && nav.deviceMemory > 0 && nav.deviceMemory <= 4) return true;
-      if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''))) return true;
-    } catch (_) {}
-    return false;
-  };
-
   const setup = () => {
     // Run accessibility wiring on every navigation, regardless of auth state.
     wireA11yToggle('a11y-dyslexia', 'a11y:dyslexia-font', 'a11y-dyslexia-font');
     wireA11yToggle('a11y-reduce-motion', 'a11y:reduce-motion', 'a11y-reduce-motion');
     wireA11yToggle('a11y-readaloud', 'a11y:read-aloud');
-    wireA11yTriToggle('a11y-perf-mode', 'a11y:perf-mode', 'perf-mode', detectAutoPerf, 'a11y-perf-mode-hint');
 
     const gate = document.getElementById('auth-gate');
     const required = document.getElementById('auth-required');

@@ -68,7 +68,7 @@ const conf = JSON.stringify({ center, zoom, style, markers, projection });
 </style>
 
 <script>
-  import { mountWhenVisible, isPerfMode, pauseWhenOffscreen } from '../lib/loadScript';
+  import { mountWhenVisible, pauseWhenOffscreen } from '../lib/loadScript';
 
   const escape = (s: string) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'} as Record<string,string>)[c]);
 
@@ -113,11 +113,6 @@ const conf = JSON.stringify({ center, zoom, style, markers, projection });
         play: () => { canvas.style.visibility = ''; map.resize(); },
         pause: () => { canvas.style.visibility = 'hidden'; },
       });
-    }
-    // Perf mode: nothing to set on MapLibre's pixel ratio API directly, but
-    // we can drop pitch to keep the simpler 2D projection.
-    if (isPerfMode()) {
-      try { map.setMaxPitch(0); } catch (_) {}
     }
   };
 

@@ -45,27 +45,6 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
         if (localStorage.getItem('a11y:reduce-motion') === '1') {
           document.documentElement.classList.add('a11y-reduce-motion');
         }
-        // Perf-mode: tri-state stored as 'a11y:perf-mode'.
-        //   '1'  = forced on
-        //   '0'  = forced off
-        //   null = auto-detect from device hints
-        // Auto-detect kicks in only when the user has not made an explicit
-        // choice, so the toggle in /settings always wins. Apply the class
-        // before paint so .perf-mode CSS rules take effect on first frame.
-        (() => {
-          var perfPref = null;
-          try { perfPref = localStorage.getItem('a11y:perf-mode'); } catch (_) {}
-          var autoPerf = false;
-          try {
-            var nav = navigator;
-            var conn = nav && nav.connection;
-            if (nav && typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency > 0 && nav.hardwareConcurrency <= 4) autoPerf = true;
-            if (nav && typeof nav.deviceMemory === 'number' && nav.deviceMemory > 0 && nav.deviceMemory <= 4) autoPerf = true;
-            if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''))) autoPerf = true;
-          } catch (_) {}
-          var perfOn = perfPref === '1' || (perfPref !== '0' && autoPerf);
-          if (perfOn) document.documentElement.classList.add('perf-mode');
-        })();
         // Scroll restoration policy:
         //   - Disable browser auto-restore (it fights lazy components).
         //   - Save scroll position to sessionStorage continuously.

@@ -222,49 +222,6 @@
   scroll-behavior: auto !important;
 }
 
-/* Perf mode: auto-enabled on low-end devices, or forced via /settings.
-   The goal is to keep every interactive functional while killing the most
-   expensive purely-decorative effects. JS components additionally pause
-   WebGL render loops while offscreen and cap devicePixelRatio at 1. */
-.perf-mode *, .perf-mode *::before, .perf-mode *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  scroll-behavior: auto !important;
-}
-/* Hide the page-wide aurora background. Decorative only. */
-.perf-mode [data-aurora-root] { display: none !important; }
-/* Replace glass blur with a solid surface (backdrop-blur is a big paint cost). */
-.perf-mode .glass {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background: theme('colors.ink.50') !important;
-}
-.dark.perf-mode .glass,
-.perf-mode .dark .glass {
-  background: theme('colors.ink.950') !important;
-}
-/* Stop content from flashing in via stagger-fade / fade-up — those animations
-   are already collapsed by the rule above but the starting opacity-0 state
-   leaves elements invisible. Snap them to visible. */
-.perf-mode .stagger-fade > *,
-.perf-mode .animate-fade-up {
-  opacity: 1 !important;
-  animation: none !important;
-}
-/* Drop the glow shadow on the reading progress bar — it repaints with every
-   width update. */
-.perf-mode .reading-progress { box-shadow: none !important; }
-/* Skip rendering of offscreen interactive blocks. Every heavy component
-   ships inside a <div class="not-prose"> wrapper, and the prose container is
-   the only direct parent. Pair every content-visibility with a generous
-   intrinsic size so the layout doesn't shift as the user scrolls past
-   widgets that have never been rendered yet. */
-.perf-mode .prose > .not-prose {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 600px;
-}
-
 /* Accessibility: dyslexia-friendly font. Activated via the toggle on
    /settings. Falls back to the system font if OpenDyslexic isn't loaded. */
 .a11y-dyslexia-font,

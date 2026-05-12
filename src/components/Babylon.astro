@@ -22,7 +22,7 @@ const conf = JSON.stringify({ setup, gltf });
 </figure>
 
 <script>
-  import { loadScript, waitForGlobal, mountWhenVisible, isPerfMode, pauseWhenOffscreen } from '../lib/loadScript';
+  import { loadScript, waitForGlobal, mountWhenVisible, pauseWhenOffscreen } from '../lib/loadScript';
 
   const initOne = async (root: HTMLElement) => {
     if (root.dataset.babReady) return;
@@ -36,10 +36,6 @@ const conf = JSON.stringify({ setup, gltf });
     const conf = JSON.parse(root.dataset.conf || '{}');
     try {
       const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
-      // Perf mode: cap hardware scaling at 1x to keep fragment work bounded.
-      if (isPerfMode()) {
-        try { engine.setHardwareScalingLevel(1); } catch (_) {}
-      }
       const scene = new BABYLON.Scene(engine);
       scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.04, 1);
       const camera = new BABYLON.ArcRotateCamera('cam', Math.PI / 4, Math.PI / 3, 6, BABYLON.Vector3.Zero(), scene);

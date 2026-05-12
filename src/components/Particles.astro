@@ -175,10 +175,6 @@ const id = 'particles-' + Math.random().toString(36).slice(2, 9);
   const initOne = async (root: HTMLElement) => {
     if (root.dataset.bound) return;
     root.dataset.bound = '1';
-    // Perf-mode: leave the static dark-gradient background and slot content
-    // visible, skip the WebGL particle field entirely. The wrapper has a
-    // baked-in linear-gradient so the text doesn't look broken.
-    if (document.documentElement.classList.contains('perf-mode')) return;
     const id = root.dataset.particlesId!;
     const preset = root.dataset.particlesPreset ?? 'stars';
     const density = root.dataset.particlesDensity ? Number(root.dataset.particlesDensity) : undefined;

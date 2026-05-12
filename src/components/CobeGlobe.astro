@@ -25,7 +25,7 @@ const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
 </div>
 
 <script>
-  import { mountWhenVisible, isPerfMode, pauseWhenOffscreen } from '../lib/loadScript';
+  import { mountWhenVisible, pauseWhenOffscreen } from '../lib/loadScript';
 
   const initOne = async (root: HTMLElement) => {
     if (root.dataset.bound) return;
@@ -38,7 +38,6 @@ const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
     const markers: { lat: number; lng: number; size?: number }[] = JSON.parse(dataEl.textContent || '[]');
 
     const createGlobe = (await import('cobe')).default;
-    const dpr = isPerfMode() ? 1 : 2;
 
     let phi = 0;
     let pointerInteracting: number | null = null;
@@ -46,14 +45,14 @@ const id = 'cobe-' + Math.random().toString(36).slice(2, 9);
     let paused = false;
 
     const globe = createGlobe(canvas, {
-      devicePixelRatio: dpr,
-      width: size * dpr,
-      height: size * dpr,
+      devicePixelRatio: 2,
+      width: size * 2,
+      height: size * 2,
       phi: 0,
       theta: 0.25,
       dark: 1,
       diffuse: 3,
-      mapSamples: isPerfMode() ? 8000 : 20000,
+      mapSamples: 20000,
       mapBrightness: 12,
       baseColor: [0.05, 0.05, 0.08],
       markerColor: [1, 0.35, 0.35],

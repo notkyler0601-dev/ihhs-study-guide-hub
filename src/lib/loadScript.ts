@@ -104,17 +104,6 @@ export function mountWhenVisible(
   document.addEventListener('astro:after-swap', queue);
 }
 
-// Single source of truth: is the page running in perf-mode?
-// BaseLayout's inline boot script sets <html class="perf-mode"> before paint
-// based on (1) explicit user pref in localStorage 'a11y:perf-mode' or
-// (2) auto-detect via navigator.hardwareConcurrency / deviceMemory / connection.
-// Components that want to skip an expensive effect (Particles, pixel-ratio
-// caps, GuideLoader warmup) read this single flag.
-export function isPerfMode(): boolean {
-  if (typeof document === 'undefined') return false;
-  return document.documentElement.classList.contains('perf-mode');
-}
-
 // Pause an animation handle when the element scrolls fully out of view and
 // resume it on re-entry. Wraps the IntersectionObserver pattern that
 // Particles.astro already uses. Pass an object with optional play/pause
