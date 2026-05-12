@@ -21,41 +21,39 @@ const id = 'mm-' + Math.random().toString(36).slice(2, 9);
 </figure>
 
 <script>
+  import { mountWhenVisible } from '../lib/loadScript';
+
   // Dynamic ESM imports: avoids the window.markmap global collision between
   // markmap-view and markmap-lib (both register to the same global, so the
   // second load silently clobbers the first).
-  const init = async () => {
-    const roots = document.querySelectorAll<HTMLElement>('[data-mm]:not([data-mm-ready])');
-    if (roots.length === 0) return;
-
-    let Transformer: any, Markmap: any;
-    try {
-      const [libMod, viewMod]: [any, any] = await Promise.all([
-        import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.11/+esm'),
-        import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/markmap-view@0.18.10/+esm'),
-      ]);
-      Transformer = libMod.Transformer;
-      Markmap = viewMod.Markmap;
-    } catch (e) {
-      console.warn('MindMap modules failed to load', e);
-      return;
-    }
-
-    roots.forEach((root) => {
-      root.dataset.mmReady = '1';
-      const srcEl = root.querySelector<HTMLElement>('[data-mm-src]');
-      const svg = root.querySelector<SVGSVGElement>('[data-mm-svg]')!;
-      const md = srcEl?.textContent ?? '';
-      try {
-        const t = new Transformer();
-        const { root: tree } = t.transform(md);
-        const mm = Markmap.create(svg, undefined, tree);
-        setTimeout(() => mm.fit(), 100);
-      } catch (e) {
-        console.warn('MindMap render failed', e);
-      }
-    });
+  let _mmLibs: { Transformer: any; Markmap: any } | null = null;
+  const loadLibs = async () => {
+    if (_mmLibs) return _mmLibs;
+    const [libMod, viewMod]: [any, any] = await Promise.all([
+      import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.11/+esm'),
+      import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/markmap-view@0.18.10/+esm'),
+    ]);
+    _mmLibs = { Transformer: libMod.Transformer, Markmap: viewMod.Markmap };
+    return _mmLibs;
   };
-  init();
-  document.addEventListener('astro:after-swap', init);
+
+  const initOne = async (root: HTMLElement) => {
+    if (root.dataset.mmReady) return;
+    root.dataset.mmReady = '1';
+    let libs;
+    try { libs = await loadLibs(); } catch (e) { console.warn('MindMap modules failed to load', e); return; }
+    const srcEl = root.querySelector<HTMLElement>('[data-mm-src]');
+    const svg = root.querySelector<SVGSVGElement>('[data-mm-svg]')!;
+    const md = srcEl?.textContent ?? '';
+    try {
+      const t = new libs.Transformer();
+      const { root: tree } = t.transform(md);
+      const mm = libs.Markmap.create(svg, undefined, tree);
+      setTimeout(() => mm.fit(), 100);
+    } catch (e) {
+      console.warn('MindMap render failed', e);
+    }
+  };
+
+  mountWhenVisible('[data-mm]:not([data-mm-ready])', (roots) => roots.forEach(initOne));
 </script>

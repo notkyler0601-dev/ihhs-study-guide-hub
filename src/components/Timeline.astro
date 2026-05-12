@@ -49,6 +49,7 @@ const tlData = {
   <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css" />
   <div
     id={id}
+    data-knl-timeline
     class="rounded-2xl border border-ink-200 dark:border-ink-800 overflow-hidden shadow-soft bg-white dark:bg-ink-900"
     style={`height: ${height};`}
   ></div>
@@ -69,10 +70,12 @@ const tlData = {
   .dark .tl-text p, .dark .tl-text h2 { color: #fafafa !important; }
 </style>
 
-<script type="module" define:vars={{ id }}>
-  const ensureTimelineJS = () =>
+<script>
+  import { mountWhenVisible } from '../lib/loadScript';
+
+  const ensureTimelineJS = (): Promise<void> =>
     new Promise((resolve, reject) => {
-      if (window.TL) return resolve();
+      if ((window as any).TL) return resolve();
       const s = document.createElement('script');
       s.src = 'https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js';
       s.onload = () => resolve();
@@ -80,20 +83,20 @@ const tlData = {
       document.head.appendChild(s);
     });
 
-  const setup = async () => {
-    const container = document.getElementById(id);
+  const initOne = async (container: HTMLElement) => {
+    const id = container.id;
     const dataEl = document.getElementById(`${id}-data`);
-    if (!container || !dataEl || container.dataset.initialized === 'true') return;
+    if (!id || !dataEl || container.dataset.initialized === 'true') return;
     container.dataset.initialized = 'true';
     try {
       await ensureTimelineJS();
       const data = JSON.parse(dataEl.textContent ?? '{}');
-      new window.TL.Timeline(id, data);
+      new (window as any).TL.Timeline(id, data);
     } catch (e) {
       console.warn('Timeline failed to load', e);
       container.innerHTML = '<div style="padding:2rem;text-align:center;color:#71717a;font-size:14px;">Timeline unavailable. Check your internet connection.</div>';
     }
   };
-  setup();
-  document.addEventListener('astro:after-swap', setup);
+
+  mountWhenVisible('[data-knl-timeline]:not([data-initialized])', (roots) => roots.forEach(initOne));
 </script>

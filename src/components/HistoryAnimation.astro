@@ -544,6 +544,43 @@ const firstScene = sceneCount > 0 ? scenes[0] : null;
         scheduleAdvance(sec * 1000);
       }
 
+      // Auto-pause when the animation scrolls offscreen. On mega-guides with
+      // 5+ HistoryAnimations, every one keeps its setTimeout chain running
+      // forever once initialized, and the SVG innerHTML swap on each scene
+      // advance is layout-expensive. Pausing the offscreen ones removes
+      // the main source of mid-scroll jank deeper in long guides.
+      //
+      // We track whether the user manually paused via the button so we don't
+      // auto-resume something the user explicitly stopped. autoPaused is the
+      // "we paused this because it was offscreen" flag.
+      let autoPaused = false;
+      const userClickedPause = pauseBtn;
+      let userManuallyPaused = !!conf.startPaused;
+      userClickedPause.addEventListener('click', () => {
+        // After the existing handler runs, sync userManuallyPaused with the
+        // current paused state. The existing handler toggled it.
+        // (The existing listener was registered above; this one runs after.)
+        userManuallyPaused = paused && !autoPaused;
+      });
+      if (typeof IntersectionObserver !== 'undefined') {
+        const visObs = new IntersectionObserver((entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              if (autoPaused && !userManuallyPaused) {
+                autoPaused = false;
+                resume();
+              }
+            } else {
+              if (!paused) {
+                autoPaused = true;
+                pause();
+              }
+            }
+          }
+        }, { rootMargin: '100px 0px' });
+        visObs.observe(root);
+      }
+
       // Cleanup on disconnect: when the player leaves the DOM (SPA nav,
       // teardown) we clear our timer to avoid lingering callbacks.
       const cleanup = () => {
