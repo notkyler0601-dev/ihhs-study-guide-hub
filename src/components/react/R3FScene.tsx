@@ -5,7 +5,7 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, Stage, Bounds, useGLTF, Center, Float } from '@react-three/drei';
-import { Suspense, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import type * as THREE from 'three';
 
 interface Props {
@@ -57,6 +57,20 @@ export default function R3FScene({
   noAutoRotate = false,
   height = 360,
 }: Props) {
+  // Mounted guard: R3F's <Canvas> creates a WebGL context on render. SSR
+  // would throw. With client:visible + this guard, the placeholder ships in
+  // SSR HTML, hydration fires on viewport entry, and only then does the
+  // real <Canvas> mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) {
+    return (
+      <div
+        className="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft"
+        style={{ height: typeof height === 'number' ? `${height}px` : height, background }}
+      />
+    );
+  }
   return (
     <div
       className="not-prose my-8 surface rounded-2xl overflow-hidden shadow-soft"

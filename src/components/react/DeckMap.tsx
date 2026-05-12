@@ -2,6 +2,7 @@ import { DeckGL } from '@deck.gl/react';
 import { ArcLayer, ScatterplotLayer } from '@deck.gl/layers';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Map } from 'react-map-gl/maplibre';
+import { useEffect, useState } from 'react';
 
 interface Arc { from: [number, number]; to: [number, number]; color?: [number, number, number]; width?: number; }
 interface Point { lng: number; lat: number; size?: number; color?: [number, number, number]; }
@@ -13,6 +14,12 @@ interface Props {
 }
 
 export default function DeckMap({ arcs = [], points = [], initialView, height = 480 }: Props) {
+  // Mounted guard: deck.gl + react-map-gl/maplibre touch window on render and
+  // cannot SSR. Returning a sized placeholder keeps client:visible safe.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div style={{ position: 'relative', width: '100%', height }} />;
+
   const view = initialView ?? { longitude: 0, latitude: 30, zoom: 1.6 };
   const layers: any[] = [];
   if (arcs.length) {

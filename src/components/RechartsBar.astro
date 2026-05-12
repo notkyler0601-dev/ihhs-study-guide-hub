@@ -22,5 +22,5 @@ const { data, xKey, bars, height = 320 } = Astro.props;
 ---
 
 <div class="not-prose my-6 surface rounded-xl p-4">
-  <RechartsBarReact client:only="react" data={data} xKey={xKey} bars={bars} height={height} />
+  <RechartsBarReact client:visible data={data} xKey={xKey} bars={bars} height={height} />
 </div>

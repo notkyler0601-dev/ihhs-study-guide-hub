@@ -1,4 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from 'react';
 
 interface Props {
   data: Record<string, any>[];
@@ -8,6 +9,14 @@ interface Props {
 }
 
 export default function RechartsLine({ data, xKey, lines, height = 320 }: Props) {
+  // Mounted guard: SSR + first client render returns a sized placeholder so
+  // this component is safe under client:visible. Real chart mounts on the
+  // second render after useEffect fires (which only runs once the island is
+  // hydrated, which client:visible defers until in viewport).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div style={{ width: '100%', height }} />;
+
   const palette = ['#b91c1c', '#7f1d1d', '#dc2626', '#fca5a5', '#450a0a'];
   return (
     <div style={{ width: '100%', height }}>

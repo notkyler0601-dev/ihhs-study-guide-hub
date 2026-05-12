@@ -47,7 +47,7 @@ const fid = 'fb-' + Math.random().toString(36).slice(2, 9);
   {/* Primary: 3D viewer. Hidden when printing. */}
   <div class="globe3d-primary print:hidden">
     <GlobeTheatre3DReact
-      client:only="react"
+      client:visible
       height={height}
       hotspots={hotspots.map((h) => ({ id: h.id, label: h.label, description: h.description, position: h.position }))}
     />

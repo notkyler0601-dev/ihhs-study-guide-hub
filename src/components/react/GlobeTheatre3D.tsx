@@ -345,8 +345,16 @@ export default function GlobeTheatre3D({ height = 540, hotspots }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [view, setView] = useState<ViewName | null>(null);
   const [autoRotate, setAutoRotate] = useState(false);
+  // Mounted guard: R3F <Canvas> creates a WebGL context on render. SSR
+  // can't, so first render returns a sized placeholder. See R3FScene.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const active = hotspots.find((h) => h.id === activeId);
+
+  if (!mounted) {
+    return <div className="relative" style={{ height: typeof height === 'number' ? `${height}px` : height }} />;
+  }
 
   return (
     <div className="relative" style={{ height: typeof height === 'number' ? `${height}px` : height }}>

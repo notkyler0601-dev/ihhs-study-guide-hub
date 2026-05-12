@@ -16,5 +16,5 @@ const { label, value, delta, deltaType, progress, helper } = Astro.props;
 ---
 
 <div class="not-prose my-4">
-  <TremorCardReact client:only="react" label={label} value={value} delta={delta} deltaType={deltaType} progress={progress} helper={helper} />
+  <TremorCardReact client:visible label={label} value={value} delta={delta} deltaType={deltaType} progress={progress} helper={helper} />
 </div>

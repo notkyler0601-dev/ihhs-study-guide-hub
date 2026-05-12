@@ -11,5 +11,5 @@ const { data, xKey, lines, height = 320 } = Astro.props;
 ---
 
 <div class="not-prose my-6 surface rounded-xl p-4">
-  <RechartsLineReact client:only="react" data={data} xKey={xKey} lines={lines} height={height} />
+  <RechartsLineReact client:visible data={data} xKey={xKey} lines={lines} height={height} />
 </div>
