@@ -3128,19 +3128,34 @@ The US and USSR never fought each other directly. Instead, they backed opposite 
 <RechartsLine
   title="Nuclear warhead stockpiles, 1945 to 1990"
   data={[
-    { year: "1945", USA: 6, USSR: 0 },
-    { year: "1955", USA: 3057, USSR: 200 },
-    { year: "1965", USA: 31139, USSR: 6129 },
-    { year: "1975", USA: 27519, USSR: 19055 },
-    { year: "1985", USA: 23368, USSR: 39197 },
-    { year: "1990", USA: 21392, USSR: 37000 }
+    { year: "1945", USA: 6, USSR: 0, UK: 0, France: 0, China: 0 },
+    { year: "1950", USA: 369, USSR: 5, UK: 0, France: 0, China: 0 },
+    { year: "1955", USA: 3057, USSR: 200, UK: 14, France: 0, China: 0 },
+    { year: "1960", USA: 20434, USSR: 1605, UK: 30, France: 0, China: 0 },
+    { year: "1965", USA: 31139, USSR: 6129, UK: 271, France: 32, China: 5 },
+    { year: "1970", USA: 26008, USSR: 11643, UK: 280, France: 36, China: 75 },
+    { year: "1975", USA: 27519, USSR: 19055, UK: 350, France: 188, China: 185 },
+    { year: "1980", USA: 24304, USSR: 30062, UK: 350, France: 250, China: 205 },
+    { year: "1985", USA: 23368, USSR: 39197, UK: 350, France: 360, China: 243 },
+    { year: "1990", USA: 21392, USSR: 37000, UK: 300, France: 505, China: 232 }
   ]}
   xKey="year"
   lines={[
     { dataKey: "USA", color: "#b91c1c", name: "United States" },
-    { dataKey: "USSR", color: "#000000", name: "Soviet Union" }
+    { dataKey: "USSR", color: "#000000", name: "Soviet Union" },
+    { dataKey: "UK", color: "#525252", name: "United Kingdom" },
+    { dataKey: "France", color: "#a3a3a3", name: "France" },
+    { dataKey: "China", color: "#f87171", name: "China" }
   ]}
 />
+
+<div class="not-prose my-3 grid sm:grid-cols-2 lg:grid-cols-5 gap-2 text-xs">
+  <div class="flex items-center gap-2 rounded-lg surface px-3 py-2"><span class="inline-block w-3 h-3 rounded-sm" style="background:#b91c1c"></span><strong class="font-mono">USA</strong><span class="text-ink-500">peak 1965, 31k</span></div>
+  <div class="flex items-center gap-2 rounded-lg surface px-3 py-2"><span class="inline-block w-3 h-3 rounded-sm" style="background:#000000"></span><strong class="font-mono">USSR</strong><span class="text-ink-500">peak 1985, 39k</span></div>
+  <div class="flex items-center gap-2 rounded-lg surface px-3 py-2"><span class="inline-block w-3 h-3 rounded-sm" style="background:#525252"></span><strong class="font-mono">UK</strong><span class="text-ink-500">~350 sustained</span></div>
+  <div class="flex items-center gap-2 rounded-lg surface px-3 py-2"><span class="inline-block w-3 h-3 rounded-sm" style="background:#a3a3a3"></span><strong class="font-mono">France</strong><span class="text-ink-500">peak 1990, 505</span></div>
+  <div class="flex items-center gap-2 rounded-lg surface px-3 py-2"><span class="inline-block w-3 h-3 rounded-sm" style="background:#f87171"></span><strong class="font-mono">China</strong><span class="text-ink-500">peak 1985, 243</span></div>
+</div>
 
 <TremorCard label="Sputnik" value="Oct 4, 1957" delta="First artificial satellite" deltaType="moderateIncrease" helper="USSR launched it. Proved Soviet ICBM-class rockets. Started the Space Race. Reshaped US science education." />
 
