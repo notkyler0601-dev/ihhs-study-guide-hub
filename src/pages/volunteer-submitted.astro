@@ -1,35 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-// Confirmation page shown after a volunteer-signup submit. The form in the
-// other project should redirect here on success (e.g. via window.location
-// or whatever its routing primitive is) and may pass guide + hours through
-// query params for a personalized confirmation.
-//
-// Example URL:
-//   /volunteer-submitted?guide=apcsp-ap-exam&hours=2
-//
-// All query params are optional; the page degrades to a generic message
-// if they're missing.
-const url = new URL(Astro.request.url);
-const guide = url.searchParams.get('guide');
-const hoursStr = url.searchParams.get('hours');
-const hours = hoursStr && !Number.isNaN(Number(hoursStr)) ? Number(hoursStr) : null;
-
+// Confirmation page shown after a volunteer-signup submit. The volunteer
+// form redirects here on success. No query params required.
 const VERIFY_EMAIL = 'volunteer@ihsgh.org';
-const subject = 'X2VOL volunteer-hours verification';
-const bodyLines = [
-  'Hi,',
-  '',
-  'I just submitted volunteer hours through the IHHS Study Guide Hub and need verification for X2VOL.',
-  '',
-  guide ? `Guide: ${guide}` : 'Guide: (fill in)',
-  hours !== null ? `Hours: ${hours}` : 'Hours: (fill in)',
-  'Date: (fill in)',
-  '',
-  'Thanks,',
-];
-const mailto = `mailto:${VERIFY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
 ---
 
 <BaseLayout
@@ -48,56 +22,8 @@ const mailto = `mailto:${VERIFY_EMAIL}?subject=${encodeURIComponent(subject)}&bo
         Volunteer hours <span class="gradient-text">recorded.</span>
       </h1>
       <p class="mt-4 text-lg text-ink-600 dark:text-ink-300 leading-relaxed text-pretty">
-        We've logged your submission. One more step to get the hours posted in X2VOL.
+        For X2VOL verification, email <span class="font-mono text-ink-900 dark:text-ink-50">{VERIFY_EMAIL}</span>.
       </p>
-    </div>
-
-    <div class="surface rounded-2xl p-6 sm:p-8 space-y-6">
-      <div>
-        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400 mb-2">Step 1</div>
-        <h2 class="font-serif text-2xl font-semibold tracking-tight mb-2">Email verification to the X2VOL coordinator</h2>
-        <p class="text-ink-600 dark:text-ink-300 leading-relaxed">
-          To have these hours show up in X2VOL, send a short verification email to the coordinator below. Use your school email so they can match it to your X2VOL account.
-        </p>
-      </div>
-
-      <div class="rounded-xl border-2 border-accent-600 dark:border-accent-500 bg-accent-50 dark:bg-accent-950/30 p-5 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <div class="text-[11px] uppercase tracking-[0.16em] font-bold text-accent-800 dark:text-accent-200 mb-1">Send to</div>
-          <a href={mailto} class="font-mono text-lg sm:text-xl text-accent-900 dark:text-accent-100 hover:underline break-all" id="verify-email-link">{VERIFY_EMAIL}</a>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <a
-            href={mailto}
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-700 hover:bg-accent-800 dark:bg-accent-600 dark:hover:bg-accent-500 text-white text-sm font-medium transition-all"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-            Open in mail app
-          </a>
-          <button
-            type="button"
-            id="copy-email-btn"
-            data-copy-target={VERIFY_EMAIL}
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl surface text-sm font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <span data-copy-label>Copy address</span>
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <div class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400 mb-2">What to include</div>
-        <ul class="space-y-1.5 text-sm text-ink-700 dark:text-ink-300">
-          <li class="flex gap-2"><span class="text-accent-700 dark:text-accent-400 font-bold">·</span>Your full name as it appears in X2VOL</li>
-          <li class="flex gap-2"><span class="text-accent-700 dark:text-accent-400 font-bold">·</span>The guide you helped with{guide ? <span> (you submitted <strong class="font-mono text-ink-900 dark:text-ink-50">{guide}</strong>)</span> : null}</li>
-          <li class="flex gap-2"><span class="text-accent-700 dark:text-accent-400 font-bold">·</span>The number of hours{hours !== null ? <span> (you submitted <strong class="font-mono text-ink-900 dark:text-ink-50">{hours}</strong>)</span> : null}</li>
-          <li class="flex gap-2"><span class="text-accent-700 dark:text-accent-400 font-bold">·</span>The date you did the work</li>
-        </ul>
-        <p class="text-xs text-ink-500 dark:text-ink-400 mt-3">
-          The "Open in mail app" button above pre-fills most of this for you.
-        </p>
-      </div>
     </div>
 
     <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
@@ -106,36 +32,3 @@ const mailto = `mailto:${VERIFY_EMAIL}?subject=${encodeURIComponent(subject)}&bo
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  const setup = () => {
-    const btn = document.getElementById('copy-email-btn') as HTMLButtonElement | null;
-    if (!btn) return;
-    const label = btn.querySelector('[data-copy-label]') as HTMLElement | null;
-    const target = btn.dataset.copyTarget || '';
-    btn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(target);
-        if (label) {
-          const original = label.textContent;
-          label.textContent = 'Copied';
-          setTimeout(() => { if (label && original) label.textContent = original; }, 1400);
-        }
-      } catch (_) {
-        // Clipboard blocked (insecure context, permissions). Fall back to a
-        // selection-based copy so the user can hit Ctrl/Cmd+C manually.
-        const range = document.createRange();
-        const tmp = document.createElement('span');
-        tmp.textContent = target;
-        document.body.appendChild(tmp);
-        range.selectNode(tmp);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-        setTimeout(() => { tmp.remove(); sel?.removeAllRanges(); }, 1500);
-      }
-    });
-  };
-  setup();
-  document.addEventListener('astro:after-swap', setup);
-</script>
