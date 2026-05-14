@@ -1,0 +1,706 @@
+---
+title: "Adv. Algebra 2 Final Study Guide"
+description: "Comprehensive walkthrough of every topic on the 2nd-semester Algebra 2 final: polynomial graphs and roots, complex zeros, polynomial division, radicals and rational exponents, inverse functions, logarithms, trig (radians, degrees, exact values, equations), and rational expressions and equations."
+subject: "Math"
+categories: ["Math"]
+estimatedTime: 75
+date: 2026-05-14
+tags: ["algebra-2", "final-exam", "polynomials", "logarithms", "trigonometry", "rational-expressions"]
+authors: ["IHHS"]
+draft: false
+---
+
+import Callout from '../../components/Callout.astro';
+import KeyTerm from '../../components/KeyTerm.astro';
+import Collapsible from '../../components/Collapsible.astro';
+import Quiz from '../../components/Quiz.astro';
+import Flashcards from '../../components/Flashcards.astro';
+import Desmos from '../../components/Desmos.astro';
+import FillInBlanks from '../../components/FillInBlanks.astro';
+import ShortAnswer from '../../components/ShortAnswer.astro';
+
+## Learning objectives
+
+By the end of this guide you should be able to:
+
+- Graph polynomial functions and read off **# turns**, **# real zeros**, **relative min/max**, and **end behavior**
+- Solve polynomial equations that have real **and** complex roots
+- Build a polynomial when you're given its roots
+- Divide polynomials with **synthetic** or **long** division
+- Simplify radicals, work with rational exponents, and solve radical equations
+- Find inverse functions algebraically
+- Evaluate, expand, condense, and solve logarithmic equations
+- Convert between **degrees** and **radians**, find **exact** trig values, and solve simple trig equations
+- Simplify, multiply, divide, add, subtract, and solve **rational** expressions and equations
+
+## TL;DR
+
+| Topic | What to remember |
+|---|---|
+| Polynomial of degree $n$ | At most $n$ real zeros and $n-1$ turning points |
+| Complex roots | Come in **conjugate pairs**: if $a+bi$ is a root, so is $a-bi$ |
+| Synthetic division | Use the **opposite sign** of the divisor: dividing by $(x-4)$ -> use $4$ |
+| Inverse function | Swap $x$ and $y$, then solve for $y$ |
+| Log basics | $\log_b(a) = c \iff b^c = a$ |
+| Change of base | $\log_b(x) = \dfrac{\log x}{\log b} = \dfrac{\ln x}{\ln b}$ |
+| Degrees to radians | Multiply by $\dfrac{\pi}{180}$ |
+| Radians to degrees | Multiply by $\dfrac{180}{\pi}$ |
+| Reference angle trick | Find the acute angle to the x-axis, use that for the value, fix sign by quadrant |
+| Rational equation | Multiply everything by the **LCD**, solve, then **check for extraneous solutions** |
+
+## Glossary
+
+<KeyTerm term="Polynomial">An expression like $a_nx^n + a_{n-1}x^{n-1} + \dots + a_0$ with whole-number exponents.</KeyTerm> &nbsp;
+<KeyTerm term="Real zero">An $x$-value where the graph crosses or touches the x-axis. Same thing as a root or solution to $f(x)=0$.</KeyTerm> &nbsp;
+<KeyTerm term="Turning point">A local max or min where the graph changes direction. A polynomial of degree $n$ has at most $n-1$ turning points.</KeyTerm> &nbsp;
+<KeyTerm term="Complex conjugate">$a+bi$ and $a-bi$ are conjugates. Polynomials with real coefficients always have complex roots in conjugate pairs.</KeyTerm> &nbsp;
+<KeyTerm term="LCD">Least Common Denominator. For rational equations, the smallest expression every denominator divides into.</KeyTerm> &nbsp;
+<KeyTerm term="Extraneous solution">A value that pops out of the algebra but makes a denominator zero (or breaks a square root). Always check.</KeyTerm> &nbsp;
+<KeyTerm term="Reference angle">The acute angle (always between $0°$ and $90°$) between the terminal side and the x-axis. Used to get exact trig values.</KeyTerm>
+
+---
+
+## 1. Polynomial graphs, turns, and zeros
+
+A polynomial of degree $n$:
+
+- has **at most $n$ real zeros** (crossings of the x-axis)
+- has **at most $n-1$ turning points** (local mins/maxes)
+- has **end behavior** set by the leading term
+
+<Callout type="insight" title="The leading term tells you the ends">
+Look at the sign of the leading coefficient and the parity of the degree:
+
+- **Even degree, positive lead** -> both ends go **up**
+- **Even degree, negative lead** -> both ends go **down**
+- **Odd degree, positive lead** -> down on left, **up** on right
+- **Odd degree, negative lead** -> up on left, **down** on right
+</Callout>
+
+### Worked example
+
+> Sketch $f(x) = x^4 - 2x^2 - x - 4$. State max turns, # real zeros, and approximate the min/max.
+
+**Step 1.** Degree is 4, leading coefficient is positive -> both ends point up.
+
+**Step 2.** Max turns = $4 - 1 = 3$.
+
+**Step 3.** Plug in a few points or graph it. From the graph below, the curve dips, never quite reaching $y=0$, so it has **0 real zeros**. The relative min is around $(1.4, -7)$, etc.
+
+<Desmos expressions={["f(x) = x^4 - 2x^2 - x - 4"]} caption="Drag, zoom, and click the intersections with the axes to confirm zeros." />
+
+<Callout type="tip" title="On a multiple-choice exam">
+You don't usually need exact zeros. Match the shape and the y-intercept to one of the answer graphs. If $f(0) = -4$, the curve has to cross the y-axis at $-4$. That alone often eliminates 3 of 4 choices.
+</Callout>
+
+<Collapsible question="Try it: For $f(x) = -x^3 - 11x^2 - 35x - 27$, how many real zeros and what are the end behaviors?">
+Degree 3, leading coefficient $-1$. Odd-degree, negative lead -> goes **up on the left, down on the right**. Max turns = 2.
+
+Plug into Desmos to see the curve has 1 real zero near $x \approx -4.8$, with a small local max near $(-3.3, -0.9)$ and a min near $(-4, -1)$.
+</Collapsible>
+
+---
+
+## 2. Solving polynomial equations (real + complex roots)
+
+When a polynomial of degree $n$ has fewer than $n$ real zeros, the rest are **complex**. They come in **conjugate pairs**.
+
+### Method: substitution for biquadratic equations
+
+Equations like $x^4 + bx^2 + c = 0$ are **biquadratic**. Let $u = x^2$:
+
+$$x^4 + bx^2 + c = 0 \;\Longrightarrow\; u^2 + bu + c = 0$$
+
+Solve for $u$, then $x = \pm\sqrt{u}$.
+
+### Worked example
+
+> Solve $x^4 + 4x^2 - 45 = 0$.
+
+**Step 1.** Let $u = x^2$. The equation becomes $u^2 + 4u - 45 = 0$.
+
+**Step 2.** Factor: $(u + 9)(u - 5) = 0$, so $u = -9$ or $u = 5$.
+
+**Step 3.** Substitute back $x^2 = u$:
+
+- $x^2 = 5 \Rightarrow x = \pm\sqrt{5}$ (real)
+- $x^2 = -9 \Rightarrow x = \pm\sqrt{-9} = \pm 3i$ (complex)
+
+**Answer:** $\{\sqrt{5},\, -\sqrt{5},\, 3i,\, -3i\}$.
+
+<Callout type="warning" title="Don't lose the negatives">
+$\sqrt{x^2 = 5}$ has **two** answers, $+\sqrt{5}$ and $-\sqrt{5}$. Same for the $\pm 3i$ pair. A degree-4 polynomial has exactly 4 roots total (counting complex).
+</Callout>
+
+### Worked example: roots of unity
+
+> Solve $x^6 - 1 = 0$.
+
+Factor as a **difference of cubes** after letting $u = x^2$: $u^3 - 1 = (u-1)(u^2+u+1)$.
+
+- From $u - 1 = 0$: $u = 1 \Rightarrow x^2 = 1 \Rightarrow x = \pm 1$.
+- From $u^2 + u + 1 = 0$, use the quadratic formula:
+$$u = \frac{-1 \pm \sqrt{1 - 4}}{2} = \frac{-1 \pm i\sqrt{3}}{2}$$
+Then take $x = \pm\sqrt{u}$ for each.
+
+So $x^6 - 1 = 0$ has six roots: $\{\,1,\, -1,\, \tfrac{-1 + i\sqrt{3}}{2},\, \tfrac{-1 - i\sqrt{3}}{2},\, \tfrac{1 + i\sqrt{3}}{2},\, \tfrac{1 - i\sqrt{3}}{2}\,\}$.
+
+---
+
+## 3. Building a polynomial from its roots
+
+If a polynomial has real coefficients and one of its roots is $a + bi$, then $a - bi$ is **also** a root.
+
+### Method
+
+1. List every root, including conjugates.
+2. For each root $r$, write the factor $(x - r)$.
+3. Multiply factors. Multiply conjugate factors first, they collapse to a real quadratic.
+
+<Callout type="insight" title="The conjugate trick">
+$(x - (a + bi))(x - (a - bi)) = (x - a)^2 + b^2 = x^2 - 2ax + (a^2 + b^2)$.
+
+You'll never have $i$ in your final polynomial as long as you include both conjugates.
+</Callout>
+
+### Worked example
+
+> Find a polynomial with roots $3 - 3i$ and $\sqrt{5}$.
+
+**Step 1.** Conjugates: also include $3 + 3i$ and $-\sqrt{5}$.
+
+**Step 2.** Multiply the complex pair:
+$(x - (3-3i))(x - (3+3i)) = (x-3)^2 + 9 = x^2 - 6x + 18$.
+
+**Step 3.** Multiply the irrational pair:
+$(x - \sqrt{5})(x + \sqrt{5}) = x^2 - 5$.
+
+**Step 4.** Multiply the two quadratics:
+$(x^2 - 6x + 18)(x^2 - 5) = x^4 - 6x^3 + 13x^2 + 30x - 90$.
+
+---
+
+## 4. Polynomial division
+
+You'll be asked to divide a polynomial by a linear factor, like $(x - 4)$. Use **synthetic division** whenever the divisor looks like $(x - c)$.
+
+### Synthetic division steps
+
+1. Write the divisor's zero $c$ on the left.
+2. Write the dividend's coefficients in a row. Use $0$ for missing degrees.
+3. Bring down the first coefficient.
+4. Multiply by $c$, add to the next coefficient. Repeat.
+5. The last number is the **remainder**.
+
+### Worked example
+
+> Divide $(x^3 - 12x^2 + 39x - 37) \div (x - 4)$.
+
+Use $c = 4$. Coefficients: $1, -12, 39, -37$.
+
+```
+ 4 |  1   -12    39   -37
+   |       4   -32    28
+   |  1   -8     7    -9
+```
+
+Quotient: $x^2 - 8x + 7$, remainder $-9$. So the answer is
+
+$$\frac{x^3 - 12x^2 + 39x - 37}{x - 4} = x^2 - 8x + 7 - \frac{9}{x-4}$$
+
+<Callout type="warning" title="Flip the sign">
+Dividing by $(x - 4)$ uses $c = +4$. Dividing by $(x + 9)$ uses $c = -9$. Always the **opposite sign**.
+</Callout>
+
+---
+
+## 5. Radicals and rational exponents
+
+Two identities run everything in this section:
+
+$$\sqrt[n]{x^m} = x^{m/n} \qquad x^a \cdot x^b = x^{a+b}$$
+
+### Worked example: simplify radicals
+
+> Simplify $\sqrt[3]{x^2 y} \cdot \sqrt[3]{xy}$.
+
+Rewrite as rational exponents: $x^{2/3}y^{1/3} \cdot x^{1/3}y^{1/3} = x^{2/3 + 1/3} \cdot y^{1/3 + 1/3} = x \cdot y^{2/3} = x\sqrt[3]{y^2}$.
+
+### Worked example: solve radical equation
+
+> Solve $2 = \sqrt{-10 - 2r}$.
+
+**Step 1.** Square both sides: $4 = -10 - 2r$.
+
+**Step 2.** Solve: $14 = -2r \Rightarrow r = -7$.
+
+**Step 3.** **Check.** Plug back in: $\sqrt{-10 - 2(-7)} = \sqrt{4} = 2$. ✓
+
+<Callout type="warning" title="Always check radical equations">
+Squaring both sides can introduce extraneous solutions. If the value you get makes the radicand negative or the equation false, throw it out.
+</Callout>
+
+---
+
+## 6. Inverse functions
+
+To find $f^{-1}(x)$:
+
+1. Replace $f(x)$ with $y$.
+2. **Swap** $x$ and $y$.
+3. **Solve** for $y$.
+4. Replace $y$ with $f^{-1}(x)$.
+
+### Worked example
+
+> Find the inverse of $g(x) = x^3 + 5x^2$. (Actually for the exam, the easier version is $g(x) = \sqrt[3]{x - 5}$.)
+
+Set $y = \sqrt[3]{x - 5}$. Swap: $x = \sqrt[3]{y - 5}$. Cube both sides: $x^3 = y - 5$. Add 5: $y = x^3 + 5$. So $g^{-1}(x) = x^3 + 5$.
+
+<Callout type="tip" title="Quick sanity check">
+Inverse functions reflect each other across $y = x$. Graph both and you'll see the symmetry.
+</Callout>
+
+<Desmos expressions={[{ latex: "y = \\sqrt[3]{x - 5}", color: "#b91c1c" }, { latex: "y = x^3 + 5", color: "#374151" }, { latex: "y = x", color: "#9ca3af" }]} caption="Original (red) and inverse (gray) reflect across y = x." />
+
+---
+
+## 7. Logarithms
+
+### The core definition
+
+$$\log_b(a) = c \iff b^c = a$$
+
+Read it: "log base $b$ of $a$ is the exponent you put on $b$ to get $a$."
+
+### Common values to memorize
+
+| Expression | Value | Why |
+|---|---|---|
+| $\log_5(25)$ | $2$ | $5^2 = 25$ |
+| $\log_2(8)$ | $3$ | $2^3 = 8$ |
+| $\log_3(81)$ | $4$ | $3^4 = 81$ |
+| $\log_{10}(1)$ | $0$ | $10^0 = 1$ |
+| $\log_b(b)$ | $1$ | $b^1 = b$ |
+
+### Properties
+
+$$\log_b(xy) = \log_b x + \log_b y$$
+$$\log_b\!\left(\frac{x}{y}\right) = \log_b x - \log_b y$$
+$$\log_b(x^n) = n \log_b x$$
+
+### Worked example: condense
+
+> Write $6\log_2 3 + 12\log_2 7$ as a single log.
+
+Pull the coefficients into exponents: $\log_2 3^6 + \log_2 7^{12}$. Use the product rule: $\log_2(3^6 \cdot 7^{12})$.
+
+### Worked example: solve
+
+> Solve $12 \cdot 9^x + 9 = 29$, where $9^x$ means $9$ raised to some power.
+
+**Step 1.** Isolate the exponential: $12 \cdot 9^x = 20 \Rightarrow 9^x = \tfrac{5}{3}$.
+
+**Step 2.** Take log of both sides (any base): $x \log 9 = \log\tfrac{5}{3}$.
+
+**Step 3.** $x = \dfrac{\log(5/3)}{\log 9}$.
+
+### Change of base formula
+
+For any positive $b \ne 1$:
+
+$$\log_b(x) = \frac{\log x}{\log b} = \frac{\ln x}{\ln b}$$
+
+That's how you compute $\log_5(3.5)$ on a calculator: type $\log(3.5)/\log(5)$.
+
+<Callout type="warning" title="Domain alert">
+$\log_b(x)$ requires $x > 0$. After solving a log equation, throw out any solution that makes the argument zero or negative.
+</Callout>
+
+---
+
+## 8. Trigonometry
+
+### Degrees ↔ radians
+
+Multiply by $\dfrac{\pi}{180}$ to go **degrees → radians**.
+
+Multiply by $\dfrac{180}{\pi}$ to go **radians → degrees**.
+
+### Worked example
+
+> Convert $105°$ to radians.
+
+$$105 \cdot \frac{\pi}{180} = \frac{105\pi}{180} = \frac{7\pi}{12}$$
+
+> Convert $\dfrac{9\pi}{4}$ to degrees.
+
+$$\frac{9\pi}{4} \cdot \frac{180}{\pi} = \frac{9 \cdot 180}{4} = 405°$$
+
+### Unit-circle exact values
+
+Memorize these. Everything else is built from them.
+
+| Angle | $\sin$ | $\cos$ | $\tan$ |
+|---|---|---|---|
+| $0°$ | $0$ | $1$ | $0$ |
+| $30°$ ($\pi/6$) | $1/2$ | $\sqrt{3}/2$ | $\sqrt{3}/3$ |
+| $45°$ ($\pi/4$) | $\sqrt{2}/2$ | $\sqrt{2}/2$ | $1$ |
+| $60°$ ($\pi/3$) | $\sqrt{3}/2$ | $1/2$ | $\sqrt{3}$ |
+| $90°$ ($\pi/2$) | $1$ | $0$ | undefined |
+
+### Reference-angle method
+
+For any angle, the trig value's **magnitude** equals the trig value of its **reference angle** (the acute angle to the x-axis). The **sign** is set by the quadrant.
+
+<Callout type="insight" title="ASTC: All Students Take Calculus">
+Which trig functions are **positive** in each quadrant:
+
+- **Q1**: **A**ll positive
+- **Q2**: **S**ine (and csc)
+- **Q3**: **T**angent (and cot)
+- **Q4**: **C**osine (and sec)
+</Callout>
+
+### Worked example: large angle
+
+> Find $\sin(-600°)$.
+
+**Step 1.** Coterminal angle: $-600° + 720° = 120°$. So $\sin(-600°) = \sin(120°)$.
+
+**Step 2.** $120°$ is in Q2. Reference angle = $180° - 120° = 60°$.
+
+**Step 3.** $\sin(60°) = \sqrt{3}/2$. Sine is positive in Q2.
+
+**Answer:** $\sin(-600°) = \sqrt{3}/2$.
+
+### Worked example: solve a trig equation
+
+> Solve $5 - 3\sin\theta = 3 - \sin\theta$.
+
+**Step 1.** Group $\sin$ terms: $5 - 3 = -\sin\theta + 3\sin\theta \Rightarrow 2 = 2\sin\theta$.
+
+**Step 2.** $\sin\theta = 1$, so $\theta = 90°$ (or $\pi/2$).
+
+<Desmos expressions={[{ latex: "y = \\sin(x)", color: "#b91c1c" }, { latex: "y = 1", color: "#9ca3af" }]} caption="Where does sin x equal 1? At 90°, 450°, ... every 360° after that." />
+
+---
+
+## 9. Rational expressions
+
+A rational expression is a fraction with polynomials on top and bottom. To work with them, you **factor, then cancel**.
+
+### Method: simplify
+
+> Simplify $\dfrac{p^2 + 4p - 60}{p^2 - 10p + 24}$.
+
+**Step 1.** Factor numerator: $p^2 + 4p - 60 = (p + 10)(p - 6)$.
+
+**Step 2.** Factor denominator: $p^2 - 10p + 24 = (p - 4)(p - 6)$.
+
+**Step 3.** Cancel the common $(p - 6)$:
+
+$$\frac{(p+10)(p-6)}{(p-4)(p-6)} = \frac{p + 10}{p - 4}$$
+
+### Method: multiply / divide
+
+To **divide**, flip the second fraction and **multiply**.
+
+> Simplify $\dfrac{p^2 + 10p + 16}{5p + 30} \div \dfrac{p + 8}{5p + 30}$.
+
+**Step 1.** Rewrite as multiplication: $\dfrac{p^2 + 10p + 16}{5p + 30} \cdot \dfrac{5p + 30}{p + 8}$.
+
+**Step 2.** Factor: $\dfrac{(p+2)(p+8)}{5(p+6)} \cdot \dfrac{5(p+6)}{p+8} = \dfrac{(p+2)(p+8) \cdot 5(p+6)}{5(p+6)(p+8)} = p + 2$.
+
+### Method: add / subtract
+
+Find the **LCD**, rewrite each fraction with the LCD, combine numerators.
+
+> Simplify $\dfrac{2}{2v + 8} + \dfrac{6}{3v}$.
+
+**Step 1.** Factor denominators: $2v + 8 = 2(v + 4)$, and $3v$ is already factored. LCD = $6v(v+4)$.
+
+**Step 2.** Rewrite: $\dfrac{2 \cdot 3v}{6v(v+4)} + \dfrac{6 \cdot 2(v+4)}{6v(v+4)} = \dfrac{6v + 12(v+4)}{6v(v+4)}$.
+
+**Step 3.** Combine: $\dfrac{6v + 12v + 48}{6v(v+4)} = \dfrac{18v + 48}{6v(v+4)} = \dfrac{6(3v + 8)}{6v(v+4)} = \dfrac{3v + 8}{v(v+4)}$.
+
+---
+
+## 10. Rational equations
+
+### Method
+
+1. Find the **LCD** of every denominator in the equation.
+2. **Multiply both sides by the LCD** to clear all fractions.
+3. Solve the resulting polynomial equation.
+4. **Check** every answer in the original equation. If a value makes any denominator zero, it's **extraneous**, throw it out.
+
+### Worked example
+
+> Solve $1 = \dfrac{1}{5m} - \dfrac{1}{5}$.
+
+**Step 1.** LCD = $5m$.
+
+**Step 2.** Multiply through: $5m = 1 - m$.
+
+**Step 3.** Solve: $6m = 1 \Rightarrow m = \tfrac{1}{6}$.
+
+**Step 4.** Check: $\dfrac{1}{5 \cdot 1/6} - \dfrac{1}{5} = \dfrac{6}{5} - \dfrac{1}{5} = 1$. ✓
+
+---
+
+## Worked example: putting it together
+
+> Solve $\dfrac{x^2 - 11x + 30}{x^3 + 3x^2} = \dfrac{3}{x} + \dfrac{x^2 - 3x + 2}{x^3 + 3x^2}$.
+
+**Step 1.** Factor denominators: $x^3 + 3x^2 = x^2(x + 3)$.
+
+**Step 2.** LCD = $x^2(x + 3)$.
+
+**Step 3.** Multiply through:
+
+$$x^2 - 11x + 30 = 3x(x+3) + (x^2 - 3x + 2)$$
+
+**Step 4.** Expand and simplify:
+
+$$x^2 - 11x + 30 = 3x^2 + 9x + x^2 - 3x + 2 = 4x^2 + 6x + 2$$
+
+**Step 5.** Move everything to one side:
+
+$$0 = 3x^2 + 17x - 28$$
+
+**Step 6.** Factor: $(3x - 4)(x + 7) = 0$, so $x = \tfrac{4}{3}$ or $x = -7$.
+
+**Step 7.** Neither makes a denominator zero. **Both valid.**
+
+---
+
+## Self-quiz
+
+<Quiz
+  title="Algebra 2 final, 12 questions"
+  questions={[
+    {
+      q: "What is the maximum number of turning points for a degree-5 polynomial?",
+      choices: ["3", "4", "5", "6"],
+      answer: 1,
+      explain: "A polynomial of degree n has at most n - 1 turning points. 5 - 1 = 4.",
+    },
+    {
+      q: "If x = 2 + 3i is a root of a polynomial with real coefficients, what other root must it also have?",
+      choices: ["x = -2 - 3i", "x = 2 - 3i", "x = -2 + 3i", "x = 3 + 2i"],
+      answer: 1,
+      explain: "Complex roots of polynomials with real coefficients come in conjugate pairs. The conjugate of 2 + 3i is 2 - 3i.",
+    },
+    {
+      q: "Solve: x^4 + 2x^2 - 15 = 0.",
+      choices: [
+        "{sqrt(3), -sqrt(3), i*sqrt(5), -i*sqrt(5)}",
+        "{sqrt(5), -sqrt(5), 3i, -3i}",
+        "{i*sqrt(3), -i*sqrt(3), sqrt(5), -sqrt(5)}",
+        "{3, -3, 5i, -5i}",
+      ],
+      answer: 0,
+      explain: "Let u = x^2: u^2 + 2u - 15 = 0 -> (u+5)(u-3) = 0. So x^2 = 3 (real) or x^2 = -5 (complex). Gives ±sqrt(3) and ±i*sqrt(5).",
+    },
+    {
+      q: "Synthetic division: divide (x^3 - 12x^2 + 39x - 37) by (x - 4). What's the quotient?",
+      choices: [
+        "x^2 - 8x + 7",
+        "x^2 + 8x + 7",
+        "x^2 - 16x + 71",
+        "x^2 - 4x - 12",
+      ],
+      answer: 0,
+      explain: "Synthetic division with c = 4 gives 1, -8, 7 with remainder -9. Quotient is x^2 - 8x + 7.",
+    },
+    {
+      q: "What value do you use in synthetic division for the divisor (x + 9)?",
+      choices: ["+9", "-9", "9i", "1/9"],
+      answer: 1,
+      explain: "Always the opposite sign. (x + 9) = (x - (-9)), so c = -9.",
+    },
+    {
+      q: "Find f^(-1)(x) for f(x) = (x - 5)^3.",
+      choices: [
+        "f^(-1)(x) = cbrt(x) + 5",
+        "f^(-1)(x) = cbrt(x - 5)",
+        "f^(-1)(x) = cbrt(x) - 5",
+        "f^(-1)(x) = (x + 5)^3",
+      ],
+      answer: 0,
+      explain: "Swap x and y: x = (y - 5)^3. Cube root both sides: cbrt(x) = y - 5. Solve: y = cbrt(x) + 5.",
+    },
+    {
+      q: "Solve: log_3(-2r + 4) = log_3(3r - 1).",
+      choices: ["r = 1", "r = -1", "r = 3", "r = 5/4"],
+      answer: 0,
+      explain: "Same base on both sides means the arguments are equal: -2r + 4 = 3r - 1. So 5 = 5r, r = 1. Check: both args are 2 > 0, valid.",
+    },
+    {
+      q: "Use change of base to evaluate log_5(3.5). Approximately?",
+      choices: ["0.78", "0.92", "1.25", "1.55"],
+      answer: 0,
+      explain: "log(3.5) / log(5) ≈ 0.544 / 0.699 ≈ 0.78.",
+    },
+    {
+      q: "Convert 930° to radians.",
+      choices: ["31π/6", "5π/3", "11π/6", "17π/6"],
+      answer: 0,
+      explain: "930 · (π/180) = 930π/180 = 31π/6.",
+    },
+    {
+      q: "Exact value of tan(495°)?",
+      choices: ["-1", "1", "sqrt(3)", "undefined"],
+      answer: 0,
+      explain: "Coterminal: 495 - 360 = 135°. Reference angle 45°. Q2, tan is negative. tan(45°) = 1, so tan(135°) = -1.",
+    },
+    {
+      q: "Simplify: (r^2 + 9r + 18) / (r^2 - r - 42).",
+      choices: ["(r + 3)/(r - 7)", "(r - 3)/(r + 7)", "(r + 6)/(r + 7)", "(r + 6)/(r - 6)"],
+      answer: 0,
+      explain: "Factor: (r+3)(r+6) over (r-7)(r+6). Cancel (r+6). Left with (r+3)/(r-7).",
+    },
+    {
+      q: "Solve: 1 = 1/(5m) - 1/5. What is m?",
+      choices: ["1/6", "6", "-6", "1/5"],
+      answer: 0,
+      explain: "Multiply by 5m: 5m = 1 - m -> 6m = 1 -> m = 1/6. Check by substituting back.",
+    },
+  ]}
+/>
+
+## Flashcards
+
+<Flashcards
+  cards={[
+    { front: "Max turns for a degree-n polynomial", back: "n - 1" },
+    { front: "How do complex roots come?", back: "In conjugate pairs. If a + bi is a root, so is a - bi (when the coefficients are real)." },
+    { front: "Synthetic division for divisor (x - c)", back: "Use +c as the multiplier on the side." },
+    { front: "How to find an inverse function", back: "Swap x and y, then solve for y." },
+    { front: "log_b(a) = c means what?", back: "b^c = a. A log is just an exponent." },
+    { front: "Change of base formula", back: "log_b(x) = log(x) / log(b) = ln(x) / ln(b)" },
+    { front: "log(xy) = ?", back: "log x + log y" },
+    { front: "log(x/y) = ?", back: "log x - log y" },
+    { front: "log(x^n) = ?", back: "n log x" },
+    { front: "Degrees to radians", back: "Multiply by π/180." },
+    { front: "Radians to degrees", back: "Multiply by 180/π." },
+    { front: "ASTC mnemonic", back: "All-Students-Take-Calculus. Q1 all positive, Q2 sin, Q3 tan, Q4 cos." },
+    { front: "Reference angle in Q3 for angle θ", back: "θ - 180° (or θ - π)" },
+    { front: "How to find LCD for rational equations", back: "Factor every denominator first, then take the product of the highest power of each unique factor." },
+    { front: "After solving a rational or radical equation, what must you do?", back: "Check for extraneous solutions. Throw out any that make a denominator zero or break a square root." },
+    { front: "(x - (a+bi))(x - (a-bi)) = ?", back: "(x - a)^2 + b^2 — a real quadratic. The i's cancel." },
+    { front: "x^(m/n) = ?", back: "nth root of x^m, also written as (nth root of x)^m." },
+    { front: "End behavior of x^4 with positive leading coefficient", back: "Both ends up. Even degree, positive lead." },
+    { front: "End behavior of -x^3", back: "Up on left, down on right. Odd degree, negative lead." },
+    { front: "sin(60°), cos(60°), tan(60°)", back: "√3/2, 1/2, √3" },
+    { front: "sin(45°), cos(45°), tan(45°)", back: "√2/2, √2/2, 1" },
+    { front: "sin(30°), cos(30°), tan(30°)", back: "1/2, √3/2, √3/3" },
+  ]}
+/>
+
+## Mnemonics
+
+- **ASTC** for trig signs: **A**ll **S**tudents **T**ake **C**alculus (Q1, Q2, Q3, Q4 positives).
+- **Conjugate pairs:** "$a+bi$ travels with $a-bi$." If one is a root, the other has to be.
+- **Synthetic flip:** dividing by $(x - 4)$? "**Bring 4**." Dividing by $(x + 4)$? "**Bring -4**." Always the opposite sign.
+- **Radical and rational check:** "If you squared, you check." Same for "if you multiplied out a denominator."
+
+## Common pitfalls
+
+<Callout type="warning" title="Forgetting both ± in radical answers">
+$x^2 = 9$ has **two** solutions, $x = 3$ and $x = -3$. The same goes for $x^2 = -9$, which gives $x = 3i$ and $x = -3i$.
+</Callout>
+
+<Callout type="warning" title="Sign error in synthetic division">
+The most-missed problem in this class. **(x - c) -> use +c. (x + c) -> use -c.** Write the divisor as $(x - \square)$ first, then read off the number.
+</Callout>
+
+<Callout type="warning" title="Log of a negative or zero">
+Logs are only defined for positive arguments. After solving a log equation, plug your answer back into every original log and make sure all arguments are positive.
+</Callout>
+
+<Callout type="warning" title="Trig sign by quadrant">
+Always check what quadrant the angle is in before writing a sign. $\sin(210°)$ is **negative** because 210° is in Q3, even though the reference angle $30°$ gives a positive value.
+</Callout>
+
+<Callout type="warning" title="Not checking rational-equation answers">
+Multiplying both sides by the LCD can introduce values that break the original fractions. **Always plug back in.**
+</Callout>
+
+## Cheat sheet
+
+| Skill | Recipe |
+|---|---|
+| Max # turns | $n - 1$ |
+| Max # real zeros | $n$ |
+| Complex roots | In conjugate pairs |
+| Synthetic divisor sign | Opposite of what's in the parenthesis |
+| Build polynomial from roots | Multiply $(x - r_i)$ for every root, conjugate pairs collapse to real quadratics |
+| Rational exponent | $x^{m/n} = \sqrt[n]{x^m}$ |
+| Solve radical | Isolate radical, raise both sides to the right power, **check** |
+| Inverse | Swap $x$ and $y$, solve for $y$ |
+| Log definition | $\log_b a = c \Leftrightarrow b^c = a$ |
+| Log product | $\log xy = \log x + \log y$ |
+| Log quotient | $\log(x/y) = \log x - \log y$ |
+| Log power | $\log x^n = n \log x$ |
+| Change of base | $\log_b x = \log x / \log b$ |
+| Deg -> rad | Multiply by $\pi/180$ |
+| Rad -> deg | Multiply by $180/\pi$ |
+| Reference angle | Acute angle to the x-axis. Use it for value; quadrant sets the sign. |
+| LCD method | Factor denominators, take highest power of each factor |
+| Always check | Radical equations, rational equations, log equations |
+
+## Final practice
+
+### Fill in the blanks
+
+<FillInBlanks
+  title="Identities and quick recall"
+  prompts={[
+    { text: "A polynomial of degree 4 has at most ___ real zeros and at most ___ turning points.", answers: ["4", "3"] },
+    { text: "If 2 + 5i is a root of a polynomial with real coefficients, then ___ must also be a root.", answers: [["2 - 5i", "2-5i"]] },
+    { text: "Dividing by (x - 7) in synthetic division: use the number ___.", answers: [["7", "+7"]] },
+    { text: "log_b(b) = ___ and log_b(1) = ___.", answers: ["1", "0"] },
+    { text: "To convert degrees to radians, multiply by π/___ ; to go the other way, multiply by ___/π.", answers: ["180", "180"] },
+    { text: "sin(30°) = ___ , and cos(60°) = ___.", answers: [["1/2", "0.5"], ["1/2", "0.5"]] },
+    { text: "After solving any rational equation, you must check for ___ solutions.", answers: [["extraneous"]] },
+    { text: "log(xy) = log x ___ log y; log(x/y) = log x ___ log y.", answers: [["+", "plus"], ["-", "minus"]] },
+  ]}
+/>
+
+### AI-graded short answer
+
+<ShortAnswer
+  title="Show your reasoning"
+  questions={[
+    {
+      q: "Explain the relationship between the degree of a polynomial and the maximum number of real zeros, turning points, and what role complex conjugate roots play.",
+      rubric: "A polynomial of degree n has at most n real zeros and at most n - 1 turning points. The total number of roots, counting complex ones with multiplicity, is exactly n. Complex roots of polynomials with real coefficients always come in conjugate pairs: if a + bi is a root, so is a - bi. So if a degree-4 polynomial has only 2 real zeros, the other two roots must be a complex conjugate pair.",
+      points: 5,
+    },
+    {
+      q: "Describe the full method for solving a rational equation, including the most common mistake students make.",
+      rubric: "1) Factor every denominator. 2) Find the LCD by taking the highest power of each unique factor. 3) Multiply both sides of the equation by the LCD so all denominators clear. 4) Solve the resulting polynomial equation. 5) Check every candidate solution in the original equation; throw out any value that makes a denominator zero (an extraneous solution). The most common mistake is skipping step 5 and reporting an extraneous solution as valid.",
+      points: 5,
+    },
+    {
+      q: "Walk through how to find the exact value of sin(-600°). Cover coterminal angle, quadrant, reference angle, and sign.",
+      rubric: "Add 720° to get a coterminal angle in [0°, 360°): -600° + 720° = 120°. So sin(-600°) = sin(120°). 120° is in Quadrant 2, where sine is positive. The reference angle is 180° - 120° = 60°. sin(60°) = sqrt(3)/2. Therefore sin(-600°) = sqrt(3)/2.",
+      points: 5,
+    },
+    {
+      q: "Explain change of base, when to use it, and how to apply it to compute log_5(3.5).",
+      rubric: "Change of base lets you compute log_b(x) on a calculator that only has common log (base 10) or natural log (base e). The formula is log_b(x) = log(x) / log(b), or equivalently ln(x) / ln(b). For log_5(3.5), compute log(3.5)/log(5), which is roughly 0.544/0.699 ≈ 0.78.",
+      points: 5,
+    },
+  ]}
+/>
+
+<Callout type="tip" title="Day-before-the-final routine">
+1. Read the cheat sheet once.
+2. Run the flashcards until you get them all without thinking.
+3. Try the self-quiz cold; only check answers after all 12.
+4. Re-do any worked example where you were unsure.
+5. Sleep. The cramming gain after 8pm is nearly zero; the loss in sleep is real.
+</Callout>
