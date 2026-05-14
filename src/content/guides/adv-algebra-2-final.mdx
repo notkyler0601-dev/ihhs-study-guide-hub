@@ -16,8 +16,6 @@ import Collapsible from '../../components/Collapsible.astro';
 import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
 import Desmos from '../../components/Desmos.astro';
-import FillInBlanks from '../../components/FillInBlanks.astro';
-import ShortAnswer from '../../components/ShortAnswer.astro';
 
 ## Learning objectives
 
@@ -488,8 +486,8 @@ $$0 = 3x^2 + 17x - 28$$
     },
     {
       q: "If x = 2 + 3i is a root of a polynomial with real coefficients, what other root must it also have?",
-      choices: ["x = -2 - 3i", "x = 2 - 3i", "x = -2 + 3i", "x = 3 + 2i"],
-      answer: 1,
+      choices: ["x = -2 - 3i", "x = -2 + 3i", "x = 3 + 2i", "x = 2 - 3i"],
+      answer: 3,
       explain: "Complex roots of polynomials with real coefficients come in conjugate pairs. The conjugate of 2 + 3i is 2 - 3i.",
     },
     {
@@ -506,12 +504,12 @@ $$0 = 3x^2 + 17x - 28$$
     {
       q: "Synthetic division: divide (x^3 - 12x^2 + 39x - 37) by (x - 4). What's the quotient?",
       choices: [
-        "x^2 - 8x + 7",
         "x^2 + 8x + 7",
         "x^2 - 16x + 71",
+        "x^2 - 8x + 7",
         "x^2 - 4x - 12",
       ],
-      answer: 0,
+      answer: 2,
       explain: "Synthetic division with c = 4 gives 1, -8, 7 with remainder -9. Quotient is x^2 - 8x + 7.",
     },
     {
@@ -533,14 +531,14 @@ $$0 = 3x^2 + 17x - 28$$
     },
     {
       q: "Solve: log_3(-2r + 4) = log_3(3r - 1).",
-      choices: ["r = 1", "r = -1", "r = 3", "r = 5/4"],
-      answer: 0,
+      choices: ["r = -1", "r = 3", "r = 5/4", "r = 1"],
+      answer: 3,
       explain: "Same base on both sides means the arguments are equal: -2r + 4 = 3r - 1. So 5 = 5r, r = 1. Check: both args are 2 > 0, valid.",
     },
     {
       q: "Use change of base to evaluate log_5(3.5). Approximately?",
-      choices: ["0.78", "0.92", "1.25", "1.55"],
-      answer: 0,
+      choices: ["0.92", "1.25", "0.78", "1.55"],
+      answer: 2,
       explain: "log(3.5) / log(5) ≈ 0.544 / 0.699 ≈ 0.78.",
     },
     {
@@ -551,20 +549,20 @@ $$0 = 3x^2 + 17x - 28$$
     },
     {
       q: "Exact value of tan(495°)?",
-      choices: ["-1", "1", "sqrt(3)", "undefined"],
-      answer: 0,
+      choices: ["1", "-1", "sqrt(3)", "undefined"],
+      answer: 1,
       explain: "Coterminal: 495 - 360 = 135°. Reference angle 45°. Q2, tan is negative. tan(45°) = 1, so tan(135°) = -1.",
     },
     {
       q: "Simplify: (r^2 + 9r + 18) / (r^2 - r - 42).",
-      choices: ["(r + 3)/(r - 7)", "(r - 3)/(r + 7)", "(r + 6)/(r + 7)", "(r + 6)/(r - 6)"],
-      answer: 0,
+      choices: ["(r - 3)/(r + 7)", "(r + 6)/(r + 7)", "(r + 6)/(r - 6)", "(r + 3)/(r - 7)"],
+      answer: 3,
       explain: "Factor: (r+3)(r+6) over (r-7)(r+6). Cancel (r+6). Left with (r+3)/(r-7).",
     },
     {
       q: "Solve: 1 = 1/(5m) - 1/5. What is m?",
-      choices: ["1/6", "6", "-6", "1/5"],
-      answer: 0,
+      choices: ["6", "-6", "1/6", "1/5"],
+      answer: 2,
       explain: "Multiply by 5m: 5m = 1 - m -> 6m = 1 -> m = 1/6. Check by substituting back.",
     },
   ]}
@@ -651,48 +649,272 @@ Multiplying both sides by the LCD can introduce values that break the original f
 | LCD method | Factor denominators, take highest power of each factor |
 | Always check | Radical equations, rational equations, log equations |
 
-## Final practice
+## Mock final test, 30 questions
 
-### Fill in the blanks
+Real exam conditions: no notes, no calculator unless you have to. Aim for 30 to 40 minutes. The mix matches the actual exam, three questions per topic block.
 
-<FillInBlanks
-  title="Identities and quick recall"
-  prompts={[
-    { text: "A polynomial of degree 4 has at most ___ real zeros and at most ___ turning points.", answers: ["4", "3"] },
-    { text: "If 2 + 5i is a root of a polynomial with real coefficients, then ___ must also be a root.", answers: [["2 - 5i", "2-5i"]] },
-    { text: "Dividing by (x - 7) in synthetic division: use the number ___.", answers: [["7", "+7"]] },
-    { text: "log_b(b) = ___ and log_b(1) = ___.", answers: ["1", "0"] },
-    { text: "To convert degrees to radians, multiply by π/___ ; to go the other way, multiply by ___/π.", answers: ["180", "180"] },
-    { text: "sin(30°) = ___ , and cos(60°) = ___.", answers: [["1/2", "0.5"], ["1/2", "0.5"]] },
-    { text: "After solving any rational equation, you must check for ___ solutions.", answers: [["extraneous"]] },
-    { text: "log(xy) = log x ___ log y; log(x/y) = log x ___ log y.", answers: [["+", "plus"], ["-", "minus"]] },
-  ]}
-/>
-
-### AI-graded short answer
-
-<ShortAnswer
-  title="Show your reasoning"
+<Quiz
+  title="Mock final test, 30 questions"
   questions={[
     {
-      q: "Explain the relationship between the degree of a polynomial and the maximum number of real zeros, turning points, and what role complex conjugate roots play.",
-      rubric: "A polynomial of degree n has at most n real zeros and at most n - 1 turning points. The total number of roots, counting complex ones with multiplicity, is exactly n. Complex roots of polynomials with real coefficients always come in conjugate pairs: if a + bi is a root, so is a - bi. So if a degree-4 polynomial has only 2 real zeros, the other two roots must be a complex conjugate pair.",
-      points: 5,
+      q: "The graph of f(x) = -x^3 + 6x^2 - 9x + 4 has how many real zeros, and what are the end behaviors?",
+      choices: [
+        "1 real zero; up on left, down on right",
+        "2 real zeros; up on left, up on right",
+        "2 real zeros; up on left, down on right",
+        "3 real zeros; down on left, up on right",
+      ],
+      answer: 2,
+      explain: "Degree 3, negative lead -> up on left, down on right. Graph touches the x-axis at a double root then crosses, giving 2 distinct real zeros.",
     },
     {
-      q: "Describe the full method for solving a rational equation, including the most common mistake students make.",
-      rubric: "1) Factor every denominator. 2) Find the LCD by taking the highest power of each unique factor. 3) Multiply both sides of the equation by the LCD so all denominators clear. 4) Solve the resulting polynomial equation. 5) Check every candidate solution in the original equation; throw out any value that makes a denominator zero (an extraneous solution). The most common mistake is skipping step 5 and reporting an extraneous solution as valid.",
-      points: 5,
+      q: "Which statement is true for a degree-6 polynomial?",
+      choices: [
+        "It has exactly 6 real zeros.",
+        "It has at most 6 real zeros and at most 5 turning points.",
+        "It has at most 5 real zeros and 6 turning points.",
+        "It must have at least one complex root.",
+      ],
+      answer: 1,
+      explain: "Degree n: at most n real zeros, at most n-1 turning points. Total roots (real + complex) is exactly n.",
     },
     {
-      q: "Walk through how to find the exact value of sin(-600°). Cover coterminal angle, quadrant, reference angle, and sign.",
-      rubric: "Add 720° to get a coterminal angle in [0°, 360°): -600° + 720° = 120°. So sin(-600°) = sin(120°). 120° is in Quadrant 2, where sine is positive. The reference angle is 180° - 120° = 60°. sin(60°) = sqrt(3)/2. Therefore sin(-600°) = sqrt(3)/2.",
-      points: 5,
+      q: "Approximate the relative minimum of f(x) = x^4 - 2x^2 - x - 4.",
+      choices: [
+        "(1.4, -7.0)",
+        "(0, -4)",
+        "(-1, -2)",
+        "(2, 6)",
+      ],
+      answer: 0,
+      explain: "Taking the derivative and finding the lowest critical point, or graphing, gives a minimum near x = 1.4, y ≈ -7.0.",
     },
     {
-      q: "Explain change of base, when to use it, and how to apply it to compute log_5(3.5).",
-      rubric: "Change of base lets you compute log_b(x) on a calculator that only has common log (base 10) or natural log (base e). The formula is log_b(x) = log(x) / log(b), or equivalently ln(x) / ln(b). For log_5(3.5), compute log(3.5)/log(5), which is roughly 0.544/0.699 ≈ 0.78.",
-      points: 5,
+      q: "Find all roots of x^4 + 4x^2 - 45 = 0.",
+      choices: [
+        "{i*sqrt(7), -i*sqrt(7), 3i, -3i}",
+        "{2i, -2i, 3i, -3i}",
+        "{sqrt(5), -sqrt(5), i*sqrt(11), -i*sqrt(11)}",
+        "{sqrt(5), -sqrt(5), 3i, -3i}",
+      ],
+      answer: 3,
+      explain: "Let u = x^2. Then u^2 + 4u - 45 = (u+9)(u-5) = 0. So x^2 = 5 -> ±sqrt(5), and x^2 = -9 -> ±3i.",
+    },
+    {
+      q: "x^6 - 1 = 0 has how many total roots (including complex)?",
+      choices: ["3", "4", "5", "6"],
+      answer: 3,
+      explain: "By the fundamental theorem of algebra, a degree-n polynomial has exactly n roots when counted with multiplicity. Degree 6 -> 6 roots.",
+    },
+    {
+      q: "If x = 3 - 3i is one root of a polynomial with real coefficients, which must also be a root?",
+      choices: ["-3 + 3i", "-3 - 3i", "3 + 3i", "3i"],
+      answer: 2,
+      explain: "Complex roots come in conjugate pairs. The conjugate of 3 - 3i is 3 + 3i.",
+    },
+    {
+      q: "Write a polynomial with roots sqrt(6), -sqrt(6), and 3.",
+      choices: [
+        "x^3 - 3x^2 + 6x - 18",
+        "x^3 - 3x^2 - 6x + 18",
+        "x^3 + 3x^2 - 6x - 18",
+        "x^3 + 6x - 18",
+      ],
+      answer: 1,
+      explain: "(x - sqrt(6))(x + sqrt(6))(x - 3) = (x^2 - 6)(x - 3) = x^3 - 3x^2 - 6x + 18.",
+    },
+    {
+      q: "A degree-4 polynomial with real coefficients has roots 2 and 1 + i. What is the full root set?",
+      choices: [
+        "{2, 1+i}",
+        "{2, -2, 1+i, 1-i}",
+        "{2, 1+i, 1-i, -1}",
+        "{2, 1+i, 1-i, with one root having multiplicity 2}",
+      ],
+      answer: 3,
+      explain: "Conjugate pairs force 1 - i to also be a root. That's three roots; for a degree-4 polynomial, one of these has multiplicity 2 (usually the real root).",
+    },
+    {
+      q: "Build a polynomial of lowest degree with roots 2i and -5.",
+      choices: [
+        "x^3 + 5x^2 + 4x + 20",
+        "x^3 - 5x^2 - 4x + 20",
+        "x^3 + 5x^2 - 4x - 20",
+        "x^3 - 4x + 20",
+      ],
+      answer: 0,
+      explain: "Conjugate forces -2i too. (x - 2i)(x + 2i)(x + 5) = (x^2 + 4)(x + 5) = x^3 + 5x^2 + 4x + 20.",
+    },
+    {
+      q: "Divide (x^3 - 12x^2 + 39x - 37) by (x - 4). The remainder is?",
+      choices: ["-9", "0", "9", "37"],
+      answer: 0,
+      explain: "Synthetic division with c = 4 gives quotient x^2 - 8x + 7 and remainder -9.",
+    },
+    {
+      q: "(p^3 + 18p^2 + 72p - 86) ÷ (p + 9). The quotient is?",
+      choices: [
+        "p^2 - 9p + 153",
+        "p^2 + 9p - 9",
+        "p^2 + 9p + 9",
+        "p^2 + 27p + 315",
+      ],
+      answer: 1,
+      explain: "c = -9 (opposite sign of +9). Synthetic gives 1, 9, -9, remainder = ... Quotient: p^2 + 9p - 9.",
+    },
+    {
+      q: "When using synthetic division to divide by (x + 6), the multiplier is:",
+      choices: ["+6", "-6", "6i", "1/6"],
+      answer: 1,
+      explain: "Always the opposite sign. (x + 6) means c = -6.",
+    },
+    {
+      q: "Simplify: cbrt(x^2 y) · cbrt(x y).",
+      choices: [
+        "x · cbrt(y^2)",
+        "cbrt(x^3 y^2)",
+        "x^(2/3) · y^(2/3)",
+        "x · y",
+      ],
+      answer: 0,
+      explain: "x^(2/3) y^(1/3) · x^(1/3) y^(1/3) = x^1 y^(2/3) = x · cbrt(y^2).",
+    },
+    {
+      q: "Simplify: sqrt(5) · sqrt(5).",
+      choices: ["5", "sqrt(10)", "25", "10"],
+      answer: 0,
+      explain: "sqrt(a) · sqrt(a) = a. So sqrt(5) · sqrt(5) = 5.",
+    },
+    {
+      q: "Solve: 2 = sqrt(-10 - 2r).",
+      choices: ["r = -7", "r = 7", "r = -3", "no solution"],
+      answer: 0,
+      explain: "Square both sides: 4 = -10 - 2r. Then 14 = -2r, so r = -7. Check: sqrt(-10 - 2(-7)) = sqrt(4) = 2. ✓",
+    },
+    {
+      q: "Find f^(-1)(x) for f(x) = -x - 1.",
+      choices: [
+        "f^(-1)(x) = -x - 1",
+        "f^(-1)(x) = -x + 1",
+        "f^(-1)(x) = x + 1",
+        "f^(-1)(x) = -1/(x+1)",
+      ],
+      answer: 0,
+      explain: "y = -x - 1. Swap: x = -y - 1. Solve: -y = x + 1, so y = -x - 1. This function is its own inverse.",
+    },
+    {
+      q: "Find f^(-1)(x) for f(x) = x^3 + 5x^2 (assume the suitable restriction).",
+      choices: [
+        "cbrt(x) - 5",
+        "cbrt(x - 5)",
+        "cbrt(x) + 5",
+        "(x + 5)^(1/3)",
+      ],
+      answer: 2,
+      explain: "For the simplified form g(x) = (x - 5)^3: y = (x-5)^3 -> swap and cube-root to get y = cbrt(x) + 5.",
+    },
+    {
+      q: "Evaluate: log_5(25).",
+      choices: ["5", "2", "1/2", "25"],
+      answer: 1,
+      explain: "5^? = 25. 5^2 = 25, so log_5(25) = 2.",
+    },
+    {
+      q: "Solve for x: 7 · 16^x = 86.",
+      choices: [
+        "x = log(86/7) / log(16)",
+        "x = log(86) - log(16) - log(7)",
+        "x = 16 - 7",
+        "x = log_16(7/86)",
+      ],
+      answer: 0,
+      explain: "Divide: 16^x = 86/7. Take log: x · log(16) = log(86/7). Solve: x = log(86/7) / log(16).",
+    },
+    {
+      q: "Expand: log_9(5 · 11).",
+      choices: [
+        "log_9(5) - log_9(11)",
+        "log_9(5) · log_9(11)",
+        "5 · log_9(11)",
+        "log_9(5) + log_9(11)",
+      ],
+      answer: 3,
+      explain: "Product rule: log(xy) = log x + log y.",
+    },
+    {
+      q: "Solve: -9 + log_8(p - 7) = -10.",
+      choices: ["p = 8", "p = 15/2", "p = 57/8", "p = 7"],
+      answer: 2,
+      explain: "log_8(p-7) = -1 -> p-7 = 8^(-1) = 1/8 -> p = 7 + 1/8 = 57/8.",
+    },
+    {
+      q: "Convert 105° to radians.",
+      choices: ["5π/12", "7π/12", "7π/6", "11π/12"],
+      answer: 1,
+      explain: "105 · π/180 = 105π/180. Reduce by gcd(105,180) = 15: 7π/12.",
+    },
+    {
+      q: "Exact value of cos(60°).",
+      choices: ["sqrt(3)/2", "sqrt(2)/2", "1/2", "1"],
+      answer: 2,
+      explain: "From the unit circle, cos(60°) = 1/2.",
+    },
+    {
+      q: "Exact value of sin(-600°).",
+      choices: ["-sqrt(3)/2", "-1/2", "1/2", "sqrt(3)/2"],
+      answer: 3,
+      explain: "Coterminal: -600 + 720 = 120°. Q2 (sine positive), reference 60°. sin(60°) = sqrt(3)/2.",
+    },
+    {
+      q: "Solve: 5 - 3 sin(θ) = 3 - sin(θ).",
+      choices: ["θ = 0", "θ = 30°", "θ = 60°", "θ = 90°"],
+      answer: 3,
+      explain: "Collect: 5 - 3 = -sin + 3sin -> 2 = 2 sin(θ) -> sin(θ) = 1 -> θ = 90°.",
+    },
+    {
+      q: "Simplify: (p^2 + 4p - 60) / (p^2 - 10p + 24).",
+      choices: [
+        "3/(p - 5)",
+        "(5p - 9)/(5p + 9)",
+        "(p + 10)/(p - 4)",
+        "(p + 10)/(p - 7)",
+      ],
+      answer: 2,
+      explain: "(p+10)(p-6) over (p-4)(p-6). Cancel (p-6). Leaves (p+10)/(p-4).",
+    },
+    {
+      q: "Simplify: (x^2 - 25)/(10x + 10) ÷ (x^2 - 3x - 10)/(10x + 20).",
+      choices: [
+        "2(x+7)/(x-7)",
+        "(x+10)/5",
+        "(x+5)/(x+1)",
+        "(x-10)/28",
+      ],
+      answer: 2,
+      explain: "Flip and multiply: [(x-5)(x+5) / 10(x+1)] · [10(x+2)/((x-5)(x+2))] = (x+5)/(x+1).",
+    },
+    {
+      q: "Combine: 2/(2v + 8) + 6/(3v).",
+      choices: [
+        "(23v^2 - 3v + 18)/[6v(v-3)]",
+        "(3v + 8)/[v(v+4)]",
+        "(-v^2 + 5v + 24)/[3v(v+4)]",
+        "12v^2/[(v-3)(v+3)]",
+      ],
+      answer: 1,
+      explain: "LCD = 6v(v+4). Combine and simplify to (3v + 8)/[v(v+4)].",
+    },
+    {
+      q: "Solve and check: 1 = 1/(5m) - 1/5.",
+      choices: ["m = 6", "m = 3", "m = -6", "m = 1/6"],
+      answer: 3,
+      explain: "Multiply through by 5m: 5m = 1 - m -> 6m = 1 -> m = 1/6. Check: 1/(5/6) - 1/5 = 6/5 - 1/5 = 1. ✓",
+    },
+    {
+      q: "Solve: 2/p = 3/(2p) + 1/(2p^2). What is p?",
+      choices: ["p = 6", "p = 3/2", "p = 4", "p = 1"],
+      answer: 3,
+      explain: "Multiply through by 2p^2: 4p = 3p + 1 -> p = 1. Check: not zero in any denominator. Valid.",
     },
   ]}
 />
@@ -700,7 +922,7 @@ Multiplying both sides by the LCD can introduce values that break the original f
 <Callout type="tip" title="Day-before-the-final routine">
 1. Read the cheat sheet once.
 2. Run the flashcards until you get them all without thinking.
-3. Try the self-quiz cold; only check answers after all 12.
-4. Re-do any worked example where you were unsure.
+3. Try the **12-question self-quiz** cold to warm up.
+4. Then sit through the **30-question mock final** under timed conditions. Mark anything you weren't sure of and re-read the matching section.
 5. Sleep. The cramming gain after 8pm is nearly zero; the loss in sleep is real.
 </Callout>
