@@ -112,7 +112,7 @@ const suggestedSubjects = [
         <span class="text-[11px] text-ink-400 mt-1 block"><span data-counter="goal">0</span> / 800</span>
       </label>
 
-      <label class="block">
+      <div>
         <span class="text-xs uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400">
           Source material <span class="text-ink-400 font-normal normal-case tracking-normal">(optional)</span>
         </span>
@@ -123,7 +123,27 @@ const suggestedSubjects = [
           placeholder="Textbook chapter, lecture notes, links, anything we should reference."
           class="form-input mt-2 resize-y"
         ></textarea>
-      </label>
+
+        <div class="mt-3 rounded-lg border border-dashed border-ink-300 dark:border-ink-700 bg-ink-50/50 dark:bg-ink-900/40 p-3">
+          <label class="flex items-center justify-between gap-3 flex-wrap cursor-pointer">
+            <div class="flex items-center gap-2 text-sm text-ink-700 dark:text-ink-300">
+              <svg class="h-4 w-4 text-ink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Attach files <span class="text-ink-400">(PDF, images, docs · max 5 files · 10 MB each)</span></span>
+            </div>
+            <span class="inline-flex items-center px-3 py-1.5 rounded-md surface text-xs font-medium hover:border-accent-400 dark:hover:border-accent-600 transition-all">
+              Choose files
+            </span>
+            <input
+              type="file"
+              id="request-files"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.heic,.doc,.docx,.txt,.md,application/pdf,image/*"
+              class="sr-only"
+            />
+          </label>
+          <ul id="request-files-list" class="mt-2 space-y-1.5 text-xs"></ul>
+        </div>
+      </div>
 
       <div id="request-error" class="hidden text-sm text-accent-700 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/30 rounded-lg px-4 py-3"></div>
 
@@ -182,6 +202,20 @@ const suggestedSubjects = [
   import { supabase, isCloudMode } from '../lib/supabase';
   import { currentUser, onAuthChange } from '../lib/auth';
 
+  const MAX_FILES = 5;
+  const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+  const ALLOWED_EXT = ['pdf','png','jpg','jpeg','webp','gif','heic','doc','docx','txt','md'];
+
+  const fmtSize = (n: number) => {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1024 / 1024).toFixed(1) + ' MB';
+  };
+
+  // Strip path separators + collapse weird chars so the storage path is sane.
+  const safeFilename = (name: string) =>
+    name.replace(/[\\\/]/g, '_').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100) || 'file';
+
   const setup = () => {
     const form = document.getElementById('request-form') as HTMLFormElement | null;
     const success = document.getElementById('request-success');
@@ -189,8 +223,65 @@ const suggestedSubjects = [
     const again = document.getElementById('request-another');
     const errEl = document.getElementById('request-error');
     const submitBtn = document.getElementById('request-submit') as HTMLButtonElement | null;
+    const fileInput = document.getElementById('request-files') as HTMLInputElement | null;
+    const fileList = document.getElementById('request-files-list');
     const asName = document.querySelector('[data-request-as-name]');
     if (!form || !success || !gate || !errEl || !submitBtn) return;
+
+    // Files the user has selected; tracked outside the input so the user can
+    // remove individual entries without losing the rest.
+    let selectedFiles: File[] = [];
+
+    const renderFiles = () => {
+      if (!fileList) return;
+      if (selectedFiles.length === 0) { fileList.innerHTML = ''; return; }
+      fileList.innerHTML = selectedFiles.map((f, i) => `
+        <li class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-white dark:bg-ink-950/60 border border-ink-200 dark:border-ink-800">
+          <span class="flex items-center gap-2 min-w-0">
+            <svg class="h-3.5 w-3.5 text-ink-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            <span class="truncate text-ink-800 dark:text-ink-100" title="${f.name.replace(/"/g, '&quot;')}">${f.name.replace(/[<>&"']/g, '')}</span>
+            <span class="text-ink-400 whitespace-nowrap">${fmtSize(f.size)}</span>
+          </span>
+          <button type="button" data-remove-file="${i}" class="text-ink-400 hover:text-accent-700 dark:hover:text-accent-400 shrink-0" aria-label="Remove file">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </li>
+      `).join('');
+      fileList.querySelectorAll<HTMLButtonElement>('[data-remove-file]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.removeFile);
+          selectedFiles.splice(idx, 1);
+          renderFiles();
+        });
+      });
+    };
+
+    fileInput?.addEventListener('change', () => {
+      errEl.classList.add('hidden');
+      const incoming = Array.from(fileInput.files || []);
+      for (const f of incoming) {
+        if (selectedFiles.length >= MAX_FILES) {
+          errEl.textContent = `Up to ${MAX_FILES} files. Remove one to add more.`;
+          errEl.classList.remove('hidden');
+          break;
+        }
+        if (f.size > MAX_FILE_BYTES) {
+          errEl.textContent = `"${f.name}" is ${fmtSize(f.size)}. Max is ${fmtSize(MAX_FILE_BYTES)}.`;
+          errEl.classList.remove('hidden');
+          continue;
+        }
+        const ext = f.name.split('.').pop()?.toLowerCase() ?? '';
+        if (ext && !ALLOWED_EXT.includes(ext)) {
+          errEl.textContent = `"${f.name}" has an unsupported type. Allowed: ${ALLOWED_EXT.join(', ')}.`;
+          errEl.classList.remove('hidden');
+          continue;
+        }
+        selectedFiles.push(f);
+      }
+      // Reset the input so the same file can be picked again after removal.
+      fileInput.value = '';
+      renderFiles();
+    });
 
     // Visibility based on auth state.
     const showForUser = () => {
@@ -227,6 +318,8 @@ const suggestedSubjects = [
       else gate.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       document.querySelectorAll('[data-counter]').forEach((el) => { (el as HTMLElement).textContent = '0'; });
+      selectedFiles = [];
+      renderFiles();
     };
     again?.addEventListener('click', reset);
 
@@ -242,23 +335,57 @@ const suggestedSubjects = [
       }
 
       submitBtn.disabled = true;
+      const originalLabel = submitBtn.innerHTML;
       const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
 
       // Cloud mode: insert into Supabase. RLS blocks unauthenticated inserts server-side too.
       if (isCloudMode()) {
         const sb = supabase();
         if (sb) {
+          // Upload attached files to the request-attachments storage bucket
+          // BEFORE we insert the request row, so the row can carry the
+          // canonical paths. Path scheme: <user_id>/<timestamp>-<safe-name>.
+          // The bucket's RLS policy enforces folder-by-uid for uploads.
+          const attachments: { path: string; url: string; name: string; size: number; type: string }[] = [];
+          if (selectedFiles.length > 0) {
+            submitBtn.innerHTML = 'Uploading files...';
+            for (const file of selectedFiles) {
+              const path = `${me.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safeFilename(file.name)}`;
+              const { error: upErr } = await sb.storage
+                .from('request-attachments')
+                .upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+              if (upErr) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalLabel;
+                errEl.textContent = `Upload failed for "${file.name}": ${upErr.message}`;
+                errEl.classList.remove('hidden');
+                return;
+              }
+              const { data: pub } = sb.storage.from('request-attachments').getPublicUrl(path);
+              attachments.push({
+                path,
+                url: pub.publicUrl,
+                name: file.name,
+                size: file.size,
+                type: file.type || '',
+              });
+            }
+            submitBtn.innerHTML = 'Saving request...';
+          }
+
           const { error } = await sb.from('requests').insert({
             subject: data.subject,
             topic: data.topic,
             urgency: data.urgency || null,
             goal: data.goal,
             sources: data.sources || null,
+            attachments: attachments.length ? attachments : null,
             name: me.displayName,
             email: me.email ?? null,
             user_id: me.id,
           });
           submitBtn.disabled = false;
+          submitBtn.innerHTML = originalLabel;
           if (!error) {
             form.classList.add('hidden');
             success.classList.remove('hidden');
@@ -279,6 +406,7 @@ const suggestedSubjects = [
         localStorage.setItem(key, JSON.stringify(existing));
       } catch {}
       submitBtn.disabled = false;
+      submitBtn.innerHTML = originalLabel;
       form.classList.add('hidden');
       success.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });

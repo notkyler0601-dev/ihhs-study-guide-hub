@@ -67,6 +67,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
   import { supabase } from '../../lib/supabase';
 
+  type Attachment = { path: string; url: string; name: string; size: number; type: string };
   type Row = {
     id: string;
     created_at: string;
@@ -75,11 +76,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     urgency: string | null;
     goal: string;
     sources: string | null;
+    attachments: Attachment[] | null;
     name: string | null;
     email: string | null;
     status: 'open' | 'claimed' | 'done' | 'wontdo';
     notes: string | null;
     user_id: string | null;
+  };
+
+  const fmtBytes = (n: number) => {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1024 / 1024).toFixed(1) + ' MB';
   };
 
   const STATUS_COLORS: Record<string, string> = {
@@ -140,6 +148,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
           <p class="text-sm text-ink-700 dark:text-ink-300 whitespace-pre-wrap leading-relaxed mb-3">${esc(r.goal)}</p>
           ${r.sources ? `<details class="mb-3"><summary class="text-xs text-ink-500 cursor-pointer select-none">Source material</summary><pre class="mt-2 text-xs whitespace-pre-wrap text-ink-600 dark:text-ink-400">${esc(r.sources)}</pre></details>` : ''}
+          ${r.attachments && r.attachments.length ? `
+            <div class="mb-3">
+              <div class="text-[10px] uppercase tracking-[0.14em] font-semibold text-ink-500 dark:text-ink-400 mb-1.5">Attachments (${r.attachments.length})</div>
+              <ul class="space-y-1.5">
+                ${r.attachments.map((a) => `
+                  <li>
+                    <a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-xs text-accent-700 dark:text-accent-400 hover:underline">
+                      <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                      <span>${esc(a.name)}</span>
+                      <span class="text-ink-400">${fmtBytes(a.size)}</span>
+                    </a>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          ` : ''}
           <div class="text-xs text-ink-500 mb-3 flex flex-wrap gap-x-4 gap-y-1">
             ${r.name  ? `<span>From: ${esc(r.name)}</span>`  : ''}
             ${r.email ? `<span>Reply: <a class="text-accent-700 dark:text-accent-400 hover:underline" href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ''}
