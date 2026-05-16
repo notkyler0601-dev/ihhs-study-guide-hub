@@ -3810,73 +3810,133 @@ Map literacy is half the battle on the final. Click each country as it's named. 
 <TestTimer minutes={50} />
 
 <Quiz
-  title="Mock final · 25 questions"
+  title="Mock final · 30 questions (5 challenge)"
   questions={[
-    { q: "What were the four main causes of WWI?", choices: ["Monarchy, atheism, slavery, famine", "Militarism, alliances, imperialism, nationalism", "Fascism, communism, racism, isolationism", "Taxation, migration, plague, drought"], answer: 1, explain: "MAIN: Militarism, Alliances, Imperialism, Nationalism. The other lists mix in unrelated or later-era forces." },
-    { q: "Who triggered WWI?", choices: ["Kaiser Wilhelm II", "Vladimir Lenin", "Gavrilo Princip", "Archduke Franz Ferdinand"], answer: 2, explain: "Princip, a Bosnian Serb nationalist, assassinated Archduke Franz Ferdinand June 28, 1914 in Sarajevo." },
-    { q: "What was the Schlieffen Plan?", choices: ["Germany's plan to beat France fast, then turn on Russia", "Russia's plan to mobilize against Austria in six weeks", "Britain's plan to blockade German ports by sea", "France's plan to retake Alsace-Lorraine head-on"], answer: 0, explain: "It failed at the First Battle of the Marne, producing the trench-warfare stalemate." },
-    { q: "Why did the US enter WWI?", choices: ["A secret alliance bound it to defend Russia", "A German army landed on the American coast", "It wanted to annex territory from Mexico", "Unrestricted U-boat warfare and the Zimmermann Telegram"], answer: 3, explain: "The Lusitania (1915) shifted opinion, but the proximate 1917 triggers were the U-boat campaign and the Zimmermann Telegram." },
-    { q: "What was Article 231 of the Treaty of Versailles?", choices: ["The clause founding the League of Nations", "The clause assigning Germany guilt for the war", "The clause banning a German air force", "The clause returning Alsace-Lorraine to France"], answer: 1, explain: "The War Guilt Clause. It justified reparations and bred the resentment that fueled WWII. The others are real but separate Versailles terms." },
-    { q: "What overthrew Tsar Nicholas II?", choices: ["A Bolshevik armed uprising led by Lenin", "Strikes and bread riots in the March 1917 crisis", "A German-funded coup inside the army", "An Allied expedition sent to depose him"], answer: 1, explain: "The March Revolution. WWI losses, food shortages, and strikes broke the 300-year dynasty before Lenin returned." },
+    { q: "What were the four main causes of WWI?", choices: ["Militarism, alliances, imperialism, nationalism", "Nationalism, imperialism, fascism, isolationism", "Alliances, communism, secularism, urbanization", "Imperialism, militarism, appeasement, totalitarianism"], answer: 0, explain: "MAIN. Every distractor smuggles in an interwar or Cold War force (fascism, communism, appeasement, totalitarianism) that postdates 1914." },
+    { q: "Who triggered WWI?", choices: ["Kaiser Wilhelm II", "Tsar Nicholas II", "Gavrilo Princip", "Archduke Franz Ferdinand"], answer: 2, explain: "Princip, a Bosnian Serb nationalist, shot Archduke Franz Ferdinand in Sarajevo, June 28, 1914. Franz Ferdinand was the victim, not the trigger." },
+    { q: "What was the Schlieffen Plan?", choices: ["Russia's plan to mobilize fully within six weeks of war", "Germany's plan to defeat France fast, then face Russia", "Britain's plan to starve Germany with a naval blockade", "Austria's plan to crush Serbia before Russia could react"], answer: 1, explain: "It failed at the First Battle of the Marne, producing four years of trench stalemate. The other three were real strategies of other powers." },
+    { q: "Why did the US enter WWI?", choices: ["A German army landing on the US east coast in 1917", "A binding alliance to defend Russia after its collapse", "Retaliation for the sinking of the Maine in Havana", "Unrestricted submarine warfare plus the Zimmermann Telegram"], answer: 3, explain: "The 1917 U-boat campaign and the Zimmermann Telegram. The Maine (1898) belongs to the Spanish-American War, a classic trap." },
+    { q: "CHALLENGE: Why is the Treaty of Versailles often called a cause of WWII, not just the end of WWI?", choices: [
+      "It permanently disarmed France, inviting later German aggression",
+      "Its reparations and War Guilt Clause destabilized Weimar Germany",
+      "It handed the Sudetenland to Germany, guaranteeing future conflict",
+      "It created the League, which forced Germany to rearm in protest"
+    ], answer: 1, explain: "Reparations plus Article 231 wrecked Weimar's legitimacy and gave Hitler a unifying grievance. A reverses who was disarmed; C is Munich 1938 not Versailles; D inverts the League's purpose." },
+    { q: "What overthrew Tsar Nicholas II?", choices: [
+      "Lenin's Bolshevik seizure of the Winter Palace in November",
+      "A 1916 palace coup led by tsarist army generals",
+      "March 1917 strikes and bread riots in Petrograd",
+      "An Allied expeditionary force advancing on Moscow"
+    ], answer: 2, explain: "The March Revolution: strikes, mutiny, abdication, before Lenin even returned. A is the November Revolution, a different event entirely." },
     { q: "Why did the Provisional Government fail?", choices: [
-      "It kept Russia in the war and stalled land reform",
-      "It moved too fast on radical socialism",
-      "Its leaders were assassinated by Lenin",
-      "It was toppled by an Allied invasion"
-    ], answer: 0, explain: "Staying in WWI and delaying land redistribution fed Lenin's slogan: Peace, Land, Bread." },
-    { q: "What was Lenin's slogan?", choices: ["Workers of the world, unite", "Peace, Land, Bread", "Liberty, Equality, Fraternity", "All power to the Tsar"], answer: 1, explain: "Three words, each targeting a problem the Provisional Government refused to solve." },
-    { q: "Totalitarianism is best defined as a government that:", choices: ["Controls all public and private life", "Splits power among three branches", "Is a monarchy bound by a constitution", "Has no central authority at all"], answer: 0, explain: "Stalin's USSR and Hitler's Germany are the textbook cases. The others describe democracy, constitutional monarchy, and anarchy." },
-    { q: "What did collectivization cause?", choices: ["A surge in private peasant farming", "A famine that killed millions, worst in Ukraine", "A boom in Soviet consumer goods", "A peaceful handover of land to peasants"], answer: 1, explain: "Forced farm mergers plus peasant resistance produced the famine (Holodomor in Ukraine)." },
-    { q: "What was the Great Purge?", choices: ["A Soviet five-year industrial drive", "A government famine-relief campaign", "Stalin's mass arrests and executions, 1936-1938", "A Red Army offensive into Poland"], answer: 2, explain: "Stalin killed rivals, officers, and ordinary citizens; estimates run 8-13 million. It gutted the Red Army before WWII." },
-    { q: "When did the Wall Street Crash happen?", choices: ["October 1929", "September 1939", "December 1941", "June 1914"], answer: 0, explain: "Black Tuesday, October 29, 1929. It triggered the global Depression that discredited democracies." },
-    { q: "How did Hitler take power?", choices: ["He won a landslide with ninety percent", "He was legally appointed Chancellor in 1933", "He seized power in an armed coup", "He was installed by a foreign army"], answer: 1, explain: "Hindenburg appointed him January 1933; he then dismantled democracy via the Reichstag Fire and Enabling Act." },
-    { q: "Appeasement is best defined as:", choices: ["Conceding to an aggressor to avoid war", "Confronting an aggressor with force", "Forming alliances against a rival", "Rapidly building up arms"], answer: 0, explain: "Britain and France did this with Hitler, 1936-1938. Each concession invited the next demand; Munich 1938 is the classic case." },
+      "It nationalized all industry and alienated the officer corps",
+      "It kept Russia in WWI and delayed land redistribution",
+      "It surrendered Petrograd to advancing German armies",
+      "It dissolved the soviets and outlawed every rival party"
+    ], answer: 1, explain: "Staying in the war and stalling on land fed 'Peace, Land, Bread.' It did not nationalize industry, lose Petrograd, or ban the soviets." },
+    { q: "What was Lenin's slogan?", choices: ["Workers of the world, unite", "Peace, Land, Bread", "Liberty, Equality, Fraternity", "From each according to his ability"], answer: 1, explain: "Three words, each aimed at a Provisional Government failure. The decoys are Marx, the French Revolution, and Marx again." },
+    { q: "Totalitarianism is best defined as a government that:", choices: ["splits sovereignty among federal states", "permits opposition within a one-party system", "is a monarchy restrained by a constitution", "controls public and private life completely"], answer: 3, explain: "Stalin's USSR and Hitler's Germany are the models. The decoys describe federalism, a hybrid regime, and constitutional monarchy." },
+    { q: "What did collectivization cause?", choices: [
+      "A grain surplus that financed the first Five-Year Plan",
+      "A sharp rise in private peasant landholding",
+      "A doubling of Soviet livestock by the mid-1930s",
+      "A famine that killed millions, worst in Ukraine"
+    ], answer: 3, explain: "Forced farm mergers plus peasant resistance produced the Holodomor. Livestock collapsed (peasants slaughtered it), output fell; there was no surplus." },
+    { q: "CHALLENGE: A historian says 1917 'was less a Bolshevik triumph than a Provisional Government collapse.' Which fact best supports that?", choices: [
+      "The Bolsheviks won an outright majority in the Constituent Assembly vote",
+      "Trotsky's Red Army defeated a large loyalist force outside Petrograd",
+      "The Provisional Government's choice to stay in WWI gutted its support",
+      "Tsarist generals openly financed Lenin's return from exile"
+    ], answer: 2, explain: "The Bolsheviks actually lost the Constituent Assembly badly and then dissolved it. B and D are fabricated. The regime fell more than the Bolsheviks won." },
+    { q: "What was the Great Purge?", choices: [
+      "Stalin's mass arrests and executions, 1936-1938",
+      "Lenin's 1921 crushing of the Kronstadt sailors' revolt",
+      "Khrushchev's 1956 speech exposing Stalin's crimes",
+      "Trotsky's 1927 expulsion of the Left Opposition"
+    ], answer: 0, explain: "Show trials and executions, 8-13 million affected; it decapitated the Red Army before WWII. The others are real but distinct episodes." },
+    { q: "When did the Wall Street Crash happen?", choices: ["September 1939", "December 1941", "June 1914", "October 1929"], answer: 3, explain: "Black Tuesday, October 29, 1929. The decoys are the start of WWII in Europe, Pearl Harbor, and the start of WWI." },
+    { q: "How did Hitler take power?", choices: [
+      "He won a free national election with 61 percent in 1932",
+      "He was legally appointed Chancellor in January 1933",
+      "He seized power outright in the 1923 Beer Hall Putsch",
+      "He was installed by Allied occupation authorities in 1934"
+    ], answer: 1, explain: "Appointed by Hindenburg, then Reichstag Fire and Enabling Act. He never won a vote majority; the 1923 Putsch failed; there was no Allied occupation then." },
+    { q: "Appeasement is best defined as:", choices: ["confronting an aggressor with overwhelming force", "forming counter-alliances to deter a rival", "conceding to an aggressor's demands to avoid war", "rearming rapidly while denouncing the aggressor"], answer: 2, explain: "Britain and France with Hitler, 1936-1938. Munich is the textbook case; each concession invited the next demand." },
     { q: "What was the Nazi-Soviet Pact (1939)?", choices: [
-      "A joint plan to attack the United States",
-      "A nonaggression deal that secretly split Poland",
-      "A trade treaty swapping oil for machines",
-      "A peace settlement that ended the war"
-    ], answer: 1, explain: "It erased Hitler's two-front-war fear. WWII began two weeks later when Germany invaded Poland." },
-    { q: "What is blitzkrieg?", choices: ["A static defense behind fortifications", "A naval blockade of enemy ports", "A slow war of attrition in trenches", "A fast assault with tanks, planes, and radio"], answer: 3, explain: "Lightning war. It conquered Poland in three weeks and France in six." },
-    { q: "Why was Stalingrad a turning point?", choices: ["It opened the Allied Western Front", "The USSR destroyed Germany's Sixth Army there", "It was the battle that ended the war", "It was the invasion that started the war"], answer: 1, explain: "Roughly 2 million casualties over 5 months. Germany never regained the initiative in the east." },
+      "A nonaggression pact secretly partitioning Poland",
+      "A 1936 alliance against the Communist International",
+      "A mutual-defense treaty obliging joint war on Britain",
+      "A barter deal trading Soviet grain for German machine tools"
+    ], answer: 0, explain: "August 1939 nonaggression pact with a secret protocol splitting Poland and the Baltics. B describes the 1936 Anti-Comintern Pact." },
+    { q: "CHALLENGE: Appeasement (1938) and the Nazi-Soviet Pact (1939) are often linked. What is the strongest connection?", choices: [
+      "Both were signed at Munich by the same four great powers",
+      "Both publicly guaranteed the existing borders of Poland",
+      "Both were secret protocols hidden from their own publics",
+      "Both were attempts to deflect Hitler's aggression elsewhere"
+    ], answer: 3, explain: "Britain and France hoped Hitler would turn east; Stalin hoped to turn him west. Munich was public and the Pact's protocol was the secret one, so B and C fail." },
+    { q: "What is blitzkrieg?", choices: ["A war of attrition fought from fixed trench lines", "A fast assault combining tanks, aircraft, and radio", "A naval blockade meant to starve an island enemy", "A bombing campaign aimed only at enemy cities"], answer: 1, explain: "Lightning war: Poland in 3 weeks, France in 6. The decoys describe WWI trenches, blockade, and strategic bombing." },
+    { q: "Why was Stalingrad a turning point?", choices: [
+      "The USSR destroyed Germany's entire Sixth Army there",
+      "It opened the long-delayed Allied second front in France",
+      "It knocked Italy out of the war and into surrender",
+      "It was the battle that triggered US entry into the war"
+    ], answer: 0, explain: "About 2 million casualties over 5 months; Germany never regained the eastern initiative. The second front was D-Day 1944; Italy fell separately; the US entered after Pearl Harbor." },
     { q: "What was the goal of the Holocaust?", choices: [
-      "Temporary imprisonment of political foes",
-      "Systematic genocide of Jews and others",
-      "Wartime forced labor only",
-      "Deportation of minorities out of Europe only"
-    ], answer: 1, explain: "State-organized, industrial-scale extermination: roughly 6 million Jews plus about 5 million others." },
+      "Systematic genocide of Jews and other targeted groups",
+      "Forced relocation of Jews to a colony on Madagascar",
+      "Conscription of Jews into wartime slave-labor units",
+      "Expulsion of Jews into Soviet territory after 1941"
+    ], answer: 0, explain: "Industrial-scale extermination: about 6 million Jews plus about 5 million others. The Madagascar Plan (B) was a real earlier Nazi scheme later abandoned for genocide." },
     { q: "Why did the US drop atomic bombs?", choices: [
-      "To beat the USSR to a defeated Germany",
-      "To force Japan's surrender without an invasion",
-      "To deliberately start the Cold War",
-      "Only to field-test a new weapon"
-    ], answer: 1, explain: "A ground invasion of Japan was projected at 500,000 to 1 million US casualties. The bombs ended the war in nine days." },
+      "To retaliate for the 1942 Bataan Death March",
+      "To force Japan's surrender without a costly invasion",
+      "To pre-empt a German atomic weapons program",
+      "To honor a secret pledge of force given to Stalin at Yalta"
+    ], answer: 1, explain: "Projected US invasion casualties: 500,000 to 1,000,000. Germany had already surrendered so C fails; D is invented." },
     { q: "How did Yalta create Cold War tension?", choices: [
-      "Stalin refused to attend the conference",
-      "The US invaded the Soviet zone of Germany",
-      "Eastern Europe rejected Soviet occupation",
-      "Stalin pledged free elections he never held"
-    ], answer: 3, explain: "Yalta got the promise; Potsdam exposed the broken promise as the Red Army stayed put." },
-    { q: "Containment is best defined as:", choices: ["Invading communist states to topple them", "Stopping communism's spread without direct war", "The Soviet plan to expand into Asia", "A US economic recovery plan for Europe"], answer: 1, explain: "It drove the Truman Doctrine, Marshall Plan, NATO, Korea, and Vietnam." },
+      "Roosevelt secretly ceded all of Berlin to Soviet control",
+      "Churchill walked out over the Polish border question",
+      "The US unveiled the atomic bomb and broke the alliance",
+      "Stalin promised free Eastern European elections he never held"
+    ], answer: 3, explain: "Yalta got the promise; Potsdam exposed it broken as the Red Army stayed put. A, B, and C never happened." },
+    { q: "CHALLENGE: Which pairing correctly matches a Cold War doctrine with the event that best exemplifies it?", choices: [
+      "Brinkmanship and the Cuban Missile Crisis",
+      "Containment and the Soviet invasion of Afghanistan",
+      "Detente and the 1948 Berlin Blockade",
+      "Massive retaliation and the fall of the Berlin Wall"
+    ], answer: 0, explain: "Brinkmanship pushed to the edge of war (Cuba 1962). Containment was US not Soviet action; detente postdates 1948; the Wall fell long after massive retaliation." },
+    { q: "Containment is best defined as:", choices: ["invading communist states to overthrow them", "the Soviet strategy for expanding into Asia", "stopping the spread of communism without direct war", "an American economic recovery plan for Europe"], answer: 2, explain: "Kennan's idea; it drove the Truman Doctrine, NATO, Korea, Vietnam. D describes the Marshall Plan specifically." },
     { q: "What did the Berlin Airlift do?", choices: [
-      "Bombed East German military targets",
-      "Supplied blockaded West Berlin by air",
-      "Evacuated Allied troops from East Berlin",
-      "Built the first stretch of the Berlin Wall"
-    ], answer: 1, explain: "Eleven months of flights beat the Soviet ground blockade. The West won without firing a shot." },
+      "Evacuated two million West Berliners by air",
+      "Airlifted NATO troops in before the blockade began",
+      "Supplied blockaded West Berlin entirely by air",
+      "Bombed the Soviet rail lines enforcing the blockade"
+    ], answer: 2, explain: "1948-1949, 11 months; the West beat the blockade without firing a shot. The decoys invent an evacuation, a troop lift, and a bombing." },
     { q: "What was the Cuban Missile Crisis?", choices: [
-      "A 13-day standoff over Soviet missiles in Cuba",
-      "A direct US-Soviet naval battle near Florida",
-      "A failed US ground invasion of Havana",
-      "A US-Soviet race to reach the moon"
-    ], answer: 0, explain: "October 1962. Kennedy quarantined Cuba; the USSR withdrew its missiles; the US quietly pulled missiles from Turkey." },
+      "A failed CIA invasion by Cuban exiles at a beach",
+      "A US naval action that sank three Soviet submarines",
+      "A Soviet airlift of nuclear bombers into Havana",
+      "A 13-day standoff over Soviet missiles in Cuba"
+    ], answer: 3, explain: "October 1962: quarantine, a secret Turkey-missile trade, 13 days. A is the 1961 Bay of Pigs, a classic mix-up." },
     { q: "What were Gorbachev's three reforms?", choices: [
       "Containment, brinkmanship, detente",
-      "Glasnost, perestroika, democratization",
+      "Truman, Marshall, Eisenhower",
       "NATO, Warsaw Pact, Comecon",
-      "Truman, Marshall, Eisenhower"
-    ], answer: 1, explain: "Openness, restructuring, limited elections. They opened the door to collapse rather than saving the USSR." },
-    { q: "When did the Berlin Wall fall?", choices: ["November 1989", "October 1990", "December 1991", "August 1961"], answer: 0, explain: "Nov 9, 1989. Germany reunified Oct 3, 1990; the USSR dissolved Dec 25, 1991. The wall went up in Aug 1961." }
+      "Glasnost, perestroika, democratization"
+    ], answer: 3, explain: "Openness, restructuring, limited elections. The decoys are Cold War doctrines, US figures, and rival blocs." },
+    { q: "When did the Berlin Wall fall?", choices: ["November 1989", "October 1990", "December 1991", "August 1961"], answer: 0, explain: "Nov 9, 1989. Reunification Oct 1990; the USSR dissolved Dec 1991; the Wall went up Aug 1961." },
+    { q: "CHALLENGE: Stalin's USSR and Hitler's Germany were both totalitarian. Which contrast is historically accurate?", choices: [
+      "Stalin permitted multiparty elections; Hitler abolished all of them",
+      "Hitler collectivized farms while Stalin kept agriculture private",
+      "Stalin's terror targeted class enemies; Hitler's targeted races",
+      "Stalin avoided a personality cult while Hitler built an intense one"
+    ], answer: 2, explain: "Class versus race is the core distinction. Neither held free elections; Stalin (not Hitler) collectivized; both ran cults of personality." },
+    { q: "Which sequence is in correct chronological order?", choices: [
+      "Iron Curtain speech, Truman Doctrine, Marshall Plan, NATO",
+      "Marshall Plan, NATO, Iron Curtain speech, Truman Doctrine",
+      "Truman Doctrine, Iron Curtain speech, NATO, Marshall Plan",
+      "NATO, Marshall Plan, Truman Doctrine, Iron Curtain speech"
+    ], answer: 0, explain: "Iron Curtain (Mar 1946), Truman Doctrine (Mar 1947), Marshall Plan (Jun 1947), NATO (Apr 1949)." }
   ]}
   extraBanks={[
     [
