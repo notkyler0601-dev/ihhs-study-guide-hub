@@ -14,21 +14,41 @@ const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
   });
 
 const FINALS_LABEL = 'Finals';
+const GRADE_10 = '10th Grade';
+const GRADE_9 = '9th Grade';
+
+const hasCat = (g: (typeof allGuides)[number], c: string) => (g.data.categories ?? []).includes(c);
 
 // Finals guides are pulled out into their own headlined section at the top
-// of the library. They are ALSO removed from the main grid below so they
+// of the library. They are ALSO removed from the grade sections below so they
 // only appear once on the page.
-const finalsGuides = allGuides.filter((g) => (g.data.categories ?? []).includes(FINALS_LABEL));
-const restGuides = allGuides.filter((g) => !(g.data.categories ?? []).includes(FINALS_LABEL));
+const finalsGuides = allGuides.filter((g) => hasCat(g, FINALS_LABEL));
+const restGuides = allGuides.filter((g) => !hasCat(g, FINALS_LABEL));
+
+// The back catalog is grouped by grade level. Every study guide written so
+// far is from freshman year, so guides default to the 9th Grade section
+// unless they opt into 10th Grade via a "10th Grade" category (or carry an
+// explicit "9th Grade" one). Site tours and other non-study pages land in a
+// small "everything else" group at the end.
+const grade10Guides = restGuides.filter((g) => hasCat(g, GRADE_10));
+const otherGuides = restGuides.filter((g) => !hasCat(g, GRADE_10) && g.data.subject === 'Getting Started');
+const grade9Guides = restGuides.filter((g) => !grade10Guides.includes(g) && !otherGuides.includes(g));
+
+const gradeSections = [
+  { id: 'grade-10', label: GRADE_10, blurb: 'Sophomore year guides.', guides: grade10Guides },
+  { id: 'grade-9', label: GRADE_9, blurb: 'Freshman year guides.', guides: grade9Guides },
+  { id: 'other', label: 'Everything else', blurb: 'Tours and extras.', guides: otherGuides },
+];
 
 // Collect every subject label across primary + categories so the filter covers all of them.
-// We deliberately exclude "Finals" from the subject filter chips because it now has its
-// own dedicated section above the grid.
+// We deliberately exclude "Finals" and the grade labels from the subject filter chips
+// because each of those already has its own dedicated section on the page.
+const SECTION_LABELS = new Set([FINALS_LABEL, GRADE_10, GRADE_9]);
 const subjectSet = new Set<string>();
 for (const g of allGuides) {
-  if (g.data.subject !== FINALS_LABEL) subjectSet.add(g.data.subject);
+  if (!SECTION_LABELS.has(g.data.subject)) subjectSet.add(g.data.subject);
   for (const c of g.data.categories ?? []) {
-    if (c !== FINALS_LABEL) subjectSet.add(c);
+    if (!SECTION_LABELS.has(c)) subjectSet.add(c);
   }
 }
 const subjects = [...subjectSet].sort();
@@ -81,7 +101,7 @@ const subjects = [...subjectSet].sort();
     {finalsGuides.length > 0 && (
       <div class="flex items-center gap-3 mb-8">
         <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800"></div>
-        <div class="text-[11px] uppercase tracking-[0.18em] font-semibold text-ink-500">All other guides</div>
+        <div class="text-[11px] uppercase tracking-[0.18em] font-semibold text-ink-500">Browse by grade</div>
         <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800"></div>
       </div>
     )}
@@ -106,26 +126,47 @@ const subjects = [...subjectSet].sort();
       </div>
     </div>
 
-    <div id="lib-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {restGuides.map((g) => (
-        <div data-guide
-          data-subjects={[g.data.subject, ...(g.data.categories ?? [])].join('|')}
-          data-search={(g.data.title + ' ' + g.data.description + ' ' + g.data.tags.join(' ') + ' ' + [g.data.subject, ...(g.data.categories ?? [])].join(' ')).toLowerCase()}
-        >
-          <GuideCard
-            href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
-            title={g.data.title}
-            description={g.data.description}
-            subject={g.data.subject}
-            categories={g.data.categories}
-            estimatedTime={g.data.estimatedTime}
-            tags={g.data.tags}
-            date={g.data.date}
-            comingSoon={g.data.comingSoon}
-          />
-        </div>
-      ))}
-    </div>
+    {gradeSections.map((section) => (
+      (section.guides.length > 0 || section.id === 'grade-10') && (
+        <section data-grade-section id={`section-${section.id}`} class="mb-12">
+          <div class="flex items-baseline gap-3 mb-5">
+            <h2 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight">{section.label}</h2>
+            <span class="text-xs text-ink-500">{section.blurb}</span>
+            <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800 self-center"></div>
+            <span class="text-xs font-mono text-ink-500" data-grade-count>{section.guides.length} guide{section.guides.length === 1 ? '' : 's'}</span>
+          </div>
+          {section.guides.length === 0 ? (
+            <div class="surface rounded-2xl border border-dashed border-ink-300 dark:border-ink-700 p-10 text-center">
+              <div class="font-serif text-xl mb-1">Nothing here yet</div>
+              <p class="text-sm text-ink-500 max-w-md mx-auto">
+                10th grade guides land here as they're written. <a href="/request" class="text-accent-700 dark:text-accent-400 underline">Request one</a> to get it started.
+              </p>
+            </div>
+          ) : (
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {section.guides.map((g) => (
+                <div data-guide
+                  data-subjects={[g.data.subject, ...(g.data.categories ?? [])].join('|')}
+                  data-search={(g.data.title + ' ' + g.data.description + ' ' + g.data.tags.join(' ') + ' ' + [g.data.subject, ...(g.data.categories ?? [])].join(' ')).toLowerCase()}
+                >
+                  <GuideCard
+                    href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
+                    title={g.data.title}
+                    description={g.data.description}
+                    subject={g.data.subject}
+                    categories={g.data.categories}
+                    estimatedTime={g.data.estimatedTime}
+                    tags={g.data.tags}
+                    date={g.data.date}
+                    comingSoon={g.data.comingSoon}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )
+    ))}
 
     <div id="lib-empty" class="hidden surface rounded-2xl p-12 text-center mt-6">
       <div class="font-serif text-xl mb-1">No guides match these filters</div>
@@ -160,6 +201,14 @@ const subjects = [...subjectSet].sort();
         const show = subjectMatch && queryMatch;
         c.classList.toggle('hidden', !show);
         if (show) visible++;
+      });
+      // Collapse any grade section whose cards are all filtered out. The
+      // empty 10th-grade placeholder (no cards at all) hides whenever a
+      // filter or search is active, since nothing in it can ever match.
+      const filtering = activeSubject !== 'all' || query.length > 0;
+      document.querySelectorAll('[data-grade-section]').forEach((sec) => {
+        const visibleInSection = sec.querySelectorAll('[data-guide]:not(.hidden)').length;
+        sec.classList.toggle('hidden', filtering && visibleInSection === 0);
       });
       document.getElementById('lib-empty').classList.toggle('hidden', visible !== 0);
     };
