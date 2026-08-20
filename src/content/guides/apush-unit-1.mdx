@@ -1,0 +1,2026 @@
+---
+title: "APUSH Unit 1: Native People and Exploration"
+description: "A heavily visual deep-dive on Period 1 (1491-1607): native societies before contact, why Europe sailed, Columbus and the Columbian Exchange, Spanish conquest and labor systems, and the five rival nations that claimed America."
+subject: "Social Studies"
+categories: ["10th Grade", "AP Exams"]
+estimatedTime: 90
+date: 2026-08-20
+tags: ["apush", "unit-1", "period-1", "native-americans", "exploration", "columbian-exchange", "visual"]
+authors: ["IHHS"]
+---
+
+import Callout from '../../components/Callout.astro';
+import KeyTerm from '../../components/KeyTerm.astro';
+import Collapsible from '../../components/Collapsible.astro';
+import Quiz from '../../components/Quiz.astro';
+import Flashcards from '../../components/Flashcards.astro';
+import Cesium from '../../components/Cesium.astro';
+import Timeline from '../../components/Timeline.astro';
+import VisTimeline from '../../components/VisTimeline.astro';
+import TroopMovement from '../../components/TroopMovement.astro';
+import StepThrough from '../../components/StepThrough.astro';
+import TremorCard from '../../components/TremorCard.astro';
+import RechartsLine from '../../components/RechartsLine.astro';
+import HistoryAnimation from '../../components/HistoryAnimation.astro';
+import SpeechBubble from '../../components/SpeechBubble.astro';
+import Flag from '../../components/Flag.astro';
+import GuideLoader from '../../components/GuideLoader.astro';
+import Typewriter from '../../components/Typewriter.astro';
+import Particles from '../../components/Particles.astro';
+import AuroraBackground from '../../components/AuroraBackground.astro';
+import BadFact from '../../components/BadFact.astro';
+import MindMap from '../../components/MindMap.astro';
+import NetworkGraph from '../../components/NetworkGraph.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import Crossword from '../../components/Crossword.astro';
+import Memorize from '../../components/Memorize.astro';
+import DragSort from '../../components/DragSort.astro';
+import MatchPairs from '../../components/MatchPairs.astro';
+import Hotspots from '../../components/Hotspots.astro';
+import Poll from '../../components/Poll.astro';
+import TestTimer from '../../components/TestTimer.astro';
+import Pomodoro from '../../components/Pomodoro.astro';
+import Sankey from '../../components/Sankey.astro';
+import NivoSunburst from '../../components/NivoSunburst.astro';
+import ShortAnswer from '../../components/ShortAnswer.astro';
+import FillInBlanks from '../../components/FillInBlanks.astro';
+import DichotomousKey from '../../components/DichotomousKey.astro';
+import DocAnnotate from '../../components/DocAnnotate.astro';
+import Flipbook from '../../components/Flipbook.astro';
+import NumberLine from '../../components/NumberLine.astro';
+import BranchingScenario from '../../components/BranchingScenario.astro';
+
+<GuideLoader maxSeconds={10} stepPx={700} stepMs={130} />
+
+<ReadingProgress />
+
+<div class="not-prose relative my-8 rounded-3xl overflow-hidden shadow-soft" style="min-height: 360px;">
+  <Particles preset="links" backgroundColor="#0a0a0a" particleColor="#f87171" height={360} />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+    <p class="font-mono uppercase tracking-[0.3em] text-xs text-white/70 mb-4">APUSH Unit 1 · Period 1</p>
+    <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">Native People and Exploration</h1>
+    <div class="text-white/90 font-serif text-lg md:text-2xl italic max-w-2xl">
+      <Typewriter text="Two worlds. One ocean. Then 1492." speed={45} />
+    </div>
+    <p class="mt-6 text-white/60 text-sm">1491 to 1607</p>
+  </div>
+</div>
+
+<Callout type="insight" title="How to use this guide">
+  Built for visual learners. Every concept has a map, chart, animation, or interactive. Scroll slowly, click everything, and let the pictures carry the dates. The text stays short on purpose: the visuals do the heavy lifting. Your test is on Unit 1, so everything here maps to AMSCO Chapter 1 and Topics 1.1 to 1.7.
+</Callout>
+
+## Why the period starts in 1491
+
+One year **before** Columbus. Historians picked that date on purpose: it forces you to see the Americas as a full, functioning world of 50 to 100 million people first, and only then watch Europe arrive. That framing (vibrant native cultures, then catastrophic contact) is the modern historical view, and it is exactly how your test will frame it too.
+
+The period ends in **1607** with Jamestown, the first permanent English settlement, because that is where the story of the future United States formally begins.
+
+## Where it all happened
+
+Drag to spin. Scroll to zoom. Click any marker for context. The glowing arcs show four journeys that made this period: the ancient migration from Asia, Columbus's 1492 crossing, and the two conquests that toppled empires.
+
+<Cesium
+  target={[25, -75, 14000000]}
+  height={540}
+  terrain="world"
+  imagery="aerial-with-labels"
+  markers={[
+    { lat: 65.7, lng: -169.0, name: "Beringia (land bridge)", note: "10,000+ years before Columbus, migrants from Asia crossed land now under the Bering Sea." },
+    { lat: 38.66, lng: -90.06, name: "Cahokia", note: "Mississippi Valley mound-builder city near present-day East St. Louis. Up to 30,000 people." },
+    { lat: 36.06, lng: -107.97, name: "Chaco Canyon (Southwest)", note: "Anasazi and Pueblo country: irrigation farming, cliff dwellings, multistory stone buildings." },
+    { lat: 43.0, lng: -74.8, name: "Mohawk Valley, New York", note: "Home of the Iroquois Confederation: Seneca, Cayuga, Onondaga, Oneida, Mohawk." },
+    { lat: 17.22, lng: -89.62, name: "Tikal (Maya)", note: "Maya cities rose in the Yucatan rain forests between A.D. 300 and 800." },
+    { lat: 19.43, lng: -99.13, name: "Tenochtitlan (Aztec)", note: "Aztec capital of about 200,000 people, as big as Europe's largest cities. Falls to Cortes in 1521." },
+    { lat: -13.53, lng: -71.97, name: "Cuzco (Inca)", note: "Heart of the vast Inca empire in Peru. Falls to Pizarro in 1532." },
+    { lat: 37.18, lng: -3.6, name: "Granada", note: "Last Moorish stronghold in Spain. Falls to Isabella and Ferdinand in 1492, the same year they fund Columbus." },
+    { lat: 37.23, lng: -6.89, name: "Palos, Spain", note: "Columbus sails from here in August 1492 with three ships." },
+    { lat: 24.05, lng: -74.53, name: "San Salvador, Bahamas", note: "October 12, 1492. Columbus lands, believing he has reached the Indies." },
+    { lat: 29.9, lng: -81.31, name: "St. Augustine", note: "1565. Oldest European-founded city in what is now the United States. Spanish." },
+    { lat: 35.9, lng: -75.67, name: "Roanoke Island", note: "1587. Raleigh's English settlement attempt fails. The Lost Colony." },
+    { lat: 37.21, lng: -76.78, name: "Jamestown", note: "1607. First permanent English settlement. The period (and this unit) ends here." },
+    { lat: 46.81, lng: -71.21, name: "Quebec", note: "1608. Champlain founds the first permanent French settlement, one year after the period closes." }
+  ]}
+  arcs={[
+    { from: [65.7, -169.0], to: [19.43, -99.13], name: "First Americans migrate from Asia, 10,000+ years ago" },
+    { from: [37.23, -6.89], to: [24.05, -74.53], name: "Columbus crosses the Atlantic, 1492" },
+    { from: [23.05, -82.36], to: [19.43, -99.13], name: "Cortes: Cuba to Tenochtitlan, 1519-1521" },
+    { from: [8.98, -79.52], to: [-13.53, -71.97], name: "Pizarro: Panama to the Inca empire, 1532" }
+  ]}
+/>
+
+## Master timeline, 1491 to 1607
+
+Scrub through the whole unit once now, then come back after each section and watch the story assemble itself.
+
+<Timeline
+  title={{ headline: "Period 1", text: "1491 to 1607: contact, conquest, and the Columbian Exchange" }}
+  events={[
+    { date: "1491-01-01", headline: "The Americas in 1491", text: "50 to 100 million people, hundreds of tribes, 400+ languages, three great civilizations (Maya, Aztec, Inca). No contact with Europe." },
+    { date: "1492-01-02", headline: "Granada falls", text: "Isabella and Ferdinand complete the reconquest of Spain from the Moors. A confident, united, Catholic Spain looks outward." },
+    { date: "1492-08-03", headline: "Columbus sails", text: "Backed by Isabella and Ferdinand. Lands at San Salvador in the Bahamas on October 12, believing he reached the Indies." },
+    { date: "1493-05-04", headline: "Line of demarcation", text: "The pope draws a north-south line on the world map: Spain gets the west, Portugal the east." },
+    { date: "1494-06-07", headline: "Treaty of Tordesillas", text: "Spain and Portugal move the pope's line west. The line cuts through Brazil, giving Portugal its claim." },
+    { date: "1497-06-24", headline: "Cabot reaches Newfoundland", text: "Italian captain John Cabot sails for England's Henry VII. England's entire claim to North America rests on this voyage." },
+    { date: "1498-05-20", headline: "Da Gama reaches India", text: "Portugal wins the race for the eastern sea route around Africa's Cape of Good Hope." },
+    { date: "1517-10-31", headline: "Protestant Reformation begins", text: "Northern Europe revolts against the pope. Catholic Spain and Portugal vs Protestant England and Holland will now compete to spread their faiths overseas." },
+    { date: "1521-08-13", headline: "Tenochtitlan falls", text: "Hernan Cortes, with native allies and smallpox on his side, conquers the Aztec empire." },
+    { date: "1532-11-16", headline: "Pizarro conquers the Incas", text: "Francisco Pizarro seizes the Inca empire in Peru. Silver and gold flood back to Spain." },
+    { date: "1534-06-09", headline: "Cartier explores the St. Lawrence", text: "France's claim to Canada begins with Jacques Cartier's voyages (1534 to 1542)." },
+    { date: "1542-11-20", headline: "New Laws of 1542", text: "Las Casas persuades the king to end Indian slavery and phase out the encomienda. Colonists push back and parts are repealed." },
+    { date: "1550-08-15", headline: "Valladolid Debate", text: "Las Casas vs Sepulveda on whether natives are fully human. No clear winner, but the argument for native rights is now on the record." },
+    { date: "1565-09-08", headline: "St. Augustine founded", text: "Spain plants the oldest European city in the future United States, in Florida." },
+    { date: "1587-07-22", headline: "Roanoke fails", text: "Sir Walter Raleigh's colony on the North Carolina coast vanishes. England's first attempt flops." },
+    { date: "1607-05-14", headline: "Jamestown founded", text: "First permanent English settlement. Period 1 ends; the American story begins." }
+  ]}
+/>
+
+## Learning objectives
+
+By the end of this guide you will be able to:
+
+- Explain how environment shaped the distinct native culture regions of North America (Southwest, Northwest, Plains, Mississippi Valley, Northeast, Atlantic Seaboard).
+- Name the three great civilizations of Central and South America and what they had in common.
+- List the four European developments that made exploration possible: Renaissance technology, religious rivalry, blocked trade routes, and rising nation-states.
+- Walk through Columbus's story: funding, the 1492 voyage, the four disappointing follow-ups, and why he still matters.
+- Diagram the Columbian Exchange in both directions and explain why disease was its deadliest cargo.
+- Explain the line of demarcation and the Treaty of Tordesillas.
+- Track the conquistadores (Balboa, Magellan, Cortes, Pizarro, Coronado) and the labor systems they built (encomienda, asiento).
+- Retell the Las Casas story: the New Laws of 1542 and the Valladolid Debate.
+- Compare Spanish, English, and French policy toward Native Americans, and describe how natives responded.
+- Argue both sides of the "Was Columbus a great hero?" debate like a historian.
+
+## TL;DR
+
+In 1491 the Americas held **50 to 100 million people**: three advanced civilizations to the south (**Maya, Aztec, Inca**) and hundreds of diverse societies north of Mexico, each shaped by its environment. Europe, meanwhile, was transformed by the **Renaissance** (compass, better ships, printing press), **religious zeal** (the reconquest of Spain, then the Protestant Reformation), **blocked trade routes** (Constantinople fell to the Ottomans in 1453), and new **nation-states** hungry for revenue. In **1492** Spain funded **Columbus**, who hit the Bahamas believing it was Asia. Contact triggered the **Columbian Exchange**: corn, potatoes, tomatoes, and tobacco flowed east; horses, pigs, sugar cane, guns, and above all **germs** flowed west. European diseases killed over **90 percent** of the native population. Spain and Portugal split the globe with the **Treaty of Tordesillas** (1494). Spanish **conquistadores** toppled the Aztecs (1521) and Incas (1532), then extracted labor through the **encomienda** system and imported enslaved Africans through the **asiento**. The priest **Bartolome de Las Casas** fought back with the **New Laws of 1542** and the **Valladolid Debate** (1550-1551). England (Cabot, Roanoke), France (Verrazano, Cartier), and the Netherlands (Hudson) staked rival claims, each treating natives differently: Spain **subjugated**, England **expelled**, France **allied and traded**. The period closes with Spain's St. Augustine (1565) thriving and England finally planting **Jamestown (1607)**.
+
+## Glossary
+
+Every one of these can appear on your test. Hover each card, then hit the flashcards at the end until they are automatic.
+
+<KeyTerm term="Maize (corn)">The staple crop of the Americas. Its slow spread northward from Mexico explains why North American societies stayed smaller than the Maya, Aztec, and Inca civilizations.</KeyTerm>
+
+<KeyTerm term="Land bridge (Beringia)">Land now under the Bering Sea that once connected Siberia and Alaska. The first Americans crossed it from Asia at least 10,000 (possibly 40,000) years ago, then migrated south.</KeyTerm>
+
+<KeyTerm term="Adena-Hopewell">Mound-building culture centered in present-day Ohio. Famous for earthen mounds up to 300 feet long. Ancestors of later Woodland peoples.</KeyTerm>
+
+<KeyTerm term="Cahokia">Mississippi Valley city near present-day East St. Louis with as many as 30,000 inhabitants. Proof of large, complex, urban native societies north of Mexico.</KeyTerm>
+
+<KeyTerm term="Iroquois Confederation">Political union of five independent tribes in New York's Mohawk Valley: Seneca, Cayuga, Onondaga, Oneida, Mohawk. A powerful force from the 16th century through the American Revolution.</KeyTerm>
+
+<KeyTerm term="Longhouse">Communal dwelling of Northeast peoples, up to 200 feet long, housing multiple families related through the mother's line.</KeyTerm>
+
+<KeyTerm term="Renaissance">The rebirth of classical learning in 15th and 16th century Europe. Produced the technology of exploration: improved compass, better ships and maps, gunpowder weapons, and the printing press (1450s).</KeyTerm>
+
+<KeyTerm term="Reconquista">The centuries-long Christian reconquest of Spain from the Muslim Moors, completed at Granada in 1492 under Isabella and Ferdinand. It left Spain united, confident, and militantly Catholic.</KeyTerm>
+
+<KeyTerm term="Protestant Reformation">The early 1500s revolt of northern European Christians against the pope's authority. It added a religious motive to exploration: Catholic Spain and Portugal raced Protestant England and Holland to spread their versions of Christianity.</KeyTerm>
+
+<KeyTerm term="Nation-state">A country where the people share a common culture and loyalty to a central government. Monarchs of new nation-states (Spain, Portugal, France, England) funded exploration for revenue and religion.</KeyTerm>
+
+<KeyTerm term="Prince Henry the Navigator">Portuguese prince whose sponsored voyages opened the sea route south around Africa, leading to da Gama reaching India in 1498.</KeyTerm>
+
+<KeyTerm term="Columbian Exchange">The transfer of plants, animals, and germs between the Americas and the rest of the world after 1492. The single most transformative consequence of contact.</KeyTerm>
+
+<KeyTerm term="Line of demarcation">The north-south line the pope drew on the world map in 1493: lands west of it to Spain, east of it to Portugal.</KeyTerm>
+
+<KeyTerm term="Treaty of Tordesillas">1494 agreement moving the pope's line west. The new line passed through Brazil, establishing Portugal's claim there while Spain took the rest of the Americas.</KeyTerm>
+
+<KeyTerm term="Conquistadores">Spain's explorer-conquerors: Balboa (Panama, sighted the Pacific), Magellan's crew (circumnavigation), Cortes (Aztecs), Pizarro (Incas), Coronado (the Southwest).</KeyTerm>
+
+<KeyTerm term="Encomienda">Spanish labor system: the king granted land and the natives on it to individual Spaniards, who took their labor and crops in exchange for "caring" for them. Serfdom in all but name.</KeyTerm>
+
+<KeyTerm term="Asiento">Spanish system requiring colonists to pay the king a tax on each enslaved African imported to the Americas. As natives died, this African slave trade expanded.</KeyTerm>
+
+<KeyTerm term="New Laws of 1542">Reforms Las Casas persuaded the king to issue: they ended Indian slavery, halted forced native labor, and began phasing out the encomienda. Colonist pressure got parts repealed.</KeyTerm>
+
+<KeyTerm term="Valladolid Debate">1550-1551 formal debate in Spain. Las Casas argued natives were fully human and morally equal; Sepulveda argued they were less than human and benefited from serving Spaniards. No clear winner.</KeyTerm>
+
+<KeyTerm term="Northwest Passage">The hoped-for water route through North America to Asia. Verrazano (1524) and Hudson (1609) both hunted for it. It did not exist, but the search drew France and the Netherlands into America.</KeyTerm>
+
+---
+
+# Section 1 · America in 1491
+
+<div class="not-prose my-8 rounded-2xl overflow-hidden bg-gradient-to-br from-ink-950 via-accent-950 to-ink-900 px-6 py-10 text-center">
+  <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Topics 1.1 + 1.2</p>
+  <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">A Full World Before Contact</h2>
+  <p class="text-white/80 max-w-xl mx-auto">Migration from Asia, three great civilizations, and a continent of societies each shaped by its environment.</p>
+</div>
+
+## 1.1 The first Americans
+
+The original discovery and settlement of the Americas happened at least **10,000 years before Columbus was born** (some archeologists say 40,000). Migrants from Asia crossed the **land bridge** between Siberia and Alaska, then spread all the way to the southern tip of South America, splitting into hundreds of tribes, languages, and cultures along the way.
+
+<div class="not-prose my-6 grid sm:grid-cols-3 gap-4">
+  <TremorCard label="First arrivals" value="10,000+ years ago" helper="Possibly 40,000. Across Beringia, land now under the Bering Sea." />
+  <TremorCard label="Population of the Americas, 1490s" value="50 to 100 million" helper="Comparable to Europe. Concentrated in Mexico, Central America, and the Andes." />
+  <TremorCard label="North of Mexico" value="Under 1 to 10 million" helper="Smaller, mostly semipermanent settlements of about 300 people or fewer." />
+</div>
+
+<Callout type="note" title="Why smaller societies up north?">
+  One key reason your test loves: **corn (maize) spread northward from Mexico slowly.** A stable food surplus is what lets cities grow. The Mayas and Aztecs ran on corn, the Incas on potatoes. Where corn arrived late, big cities came late or never.
+</Callout>
+
+## 1.2 Three great civilizations of the south
+
+The native population was concentrated in three highly developed civilizations. Learn all three plus the four things they shared.
+
+<div class="not-prose my-8 grid md:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">A.D. 300 to 800</p>
+    <h3 class="font-serif text-2xl font-bold text-emerald-900 dark:text-emerald-100 mb-3">Mayas</h3>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Remarkable cities in the <strong>rain forests of the Yucatan</strong> (Guatemala, Belize, southern Mexico)</li>
+      <li>Declined centuries before the Aztecs rose</li>
+      <li>Staple crop: <strong>corn (maize)</strong></li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">1300s to 1521</p>
+    <h3 class="font-serif text-2xl font-bold text-accent-900 dark:text-accent-100 mb-3">Aztecs</h3>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Powerful empire in <strong>central Mexico</strong></li>
+      <li>Capital <strong>Tenochtitlan: about 200,000 people</strong>, as large as Europe's biggest cities</li>
+      <li>Staple crop: <strong>corn (maize)</strong></li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-amber-800 dark:text-amber-300 mb-2">1400s to 1532</p>
+    <h3 class="font-serif text-2xl font-bold text-amber-900 dark:text-amber-100 mb-3">Incas</h3>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Vast empire in <strong>South America, based in Peru</strong></li>
+      <li>Andean roads, terraces, and administration</li>
+      <li>Staple crop: <strong>potatoes</strong></li>
+    </ul>
+  </div>
+</div>
+
+<Callout type="insight" title="What all three shared (a favorite multiple-choice answer)">
+  1. Highly organized societies. 2. Extensive trade. 3. Calendars based on accurate scientific observation. 4. A staple crop that provided a stable food supply (corn for Mayas and Aztecs, potatoes for Incas).
+</Callout>
+
+## 1.3 North America: environment builds culture
+
+North of Mexico there was no single "Native American culture." There were hundreds of societies, and each one's food, housing, and politics grew out of its **environment**. That cause-and-effect link (geography shapes culture) is the core skill Topic 1.2 tests.
+
+<NivoSunburst
+  title="Native America in 1491: regions and peoples"
+  data={{
+    name: "The Americas",
+    children: [
+      {
+        name: "Southwest",
+        color: "#b91c1c",
+        children: [
+          { name: "Hohokam", value: 1 },
+          { name: "Anasazi", value: 1 },
+          { name: "Pueblos", value: 1 }
+        ]
+      },
+      {
+        name: "Northwest Coast",
+        color: "#e11d48",
+        children: [
+          { name: "Plank-house peoples", value: 1 },
+          { name: "Totem carvers", value: 1 }
+        ]
+      },
+      {
+        name: "Great Plains",
+        color: "#f59e0b",
+        children: [
+          { name: "Lakota Sioux", value: 1 },
+          { name: "Apache", value: 1 },
+          { name: "Farming river tribes", value: 1 }
+        ]
+      },
+      {
+        name: "Mississippi Valley",
+        color: "#57534e",
+        children: [
+          { name: "Adena-Hopewell", value: 1 },
+          { name: "Cahokia", value: 1 }
+        ]
+      },
+      {
+        name: "Northeast",
+        color: "#1d4ed8",
+        children: [
+          { name: "Iroquois Five Nations", value: 2 },
+          { name: "Algonquian peoples", value: 1 }
+        ]
+      },
+      {
+        name: "Atlantic Seaboard",
+        color: "#0f766e",
+        children: [
+          { name: "Coastal Plains peoples", value: 2 }
+        ]
+      },
+      {
+        name: "Mesoamerica + Andes",
+        color: "#7f1d1d",
+        children: [
+          { name: "Mayas", value: 1 },
+          { name: "Aztecs", value: 1 },
+          { name: "Incas", value: 1 }
+        ]
+      }
+    ]
+  }}
+  height={460}
+/>
+
+### The six regions your test will ask about
+
+Each card: the environment, the adaptation, and the detail graders love.
+
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100">🏜️ Southwest</h3>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-accent-700 dark:text-accent-300">dry + hot</span>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong>Who:</strong> Hohokam, Anasazi, Pueblos (present-day New Mexico and Arizona)</li>
+      <li><strong>Adaptation:</strong> farming with <strong>irrigation systems</strong> in a dry land</li>
+      <li><strong>Homes:</strong> caves, cliff dwellings, <strong>multistoried stone and masonry buildings</strong></li>
+      <li><strong>Test detail:</strong> extreme drought plus hostile neighbors weakened them before Europeans ever arrived, but their stone dwellings preserved their way of life</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-serif text-xl font-bold text-ink-900 dark:text-ink-100">🌲 Northwest Coast</h3>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-ink-600 dark:text-ink-300">wet + rich</span>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong>Where:</strong> Pacific coast, Alaska down to northern California</li>
+      <li><strong>Adaptation:</strong> rich diet from <strong>hunting, fishing, and gathering</strong> nuts, berries, roots</li>
+      <li><strong>Homes:</strong> permanent <strong>longhouses or plank houses</strong></li>
+      <li><strong>Test detail:</strong> carved <strong>totem poles</strong> to preserve stories, legends, and myths; high mountains isolated tribes from one another</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/30 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-serif text-xl font-bold text-amber-900 dark:text-amber-100">🦬 Great Plains</h3>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-300">grassland</span>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong>Two lifestyles:</strong> <strong>nomadic buffalo hunters</strong> in tepees (easily moved) vs <strong>sedentary farmers</strong> in earthen lodges along rivers, raising corn, beans, and squash</li>
+      <li><strong>The buffalo supplied:</strong> food, decorations, crafting tools, knives, clothing</li>
+      <li><strong>Test detail:</strong> <strong>no horses until the 17th century</strong>, acquired from the Spanish. Then tribes like the Lakota Sioux dropped farming to follow the buffalo. Migration was common (the Apaches drifted from Canada to Texas).</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-serif text-xl font-bold text-ink-900 dark:text-ink-100">⛰️ Mississippi + Ohio Valleys</h3>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-ink-600 dark:text-ink-300">river country</span>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong>Who:</strong> Woodland peoples, the <strong>Adena-Hopewell</strong> culture (centered in Ohio)</li>
+      <li><strong>Adaptation:</strong> rich food supply from hunting, fishing, and farming supported <strong>permanent settlements</strong></li>
+      <li><strong>Famous for:</strong> <strong>earthen mounds</strong> up to 300 feet long</li>
+      <li><strong>Test detail:</strong> <strong>Cahokia</strong> (near East St. Louis) held as many as <strong>30,000 people</strong></li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-serif text-xl font-bold text-blue-900 dark:text-blue-100">🌰 Northeast</h3>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-blue-700 dark:text-blue-300">woodlands</span>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong>Who:</strong> descendants of Adena-Hopewell who spread into New York; combined hunting and farming</li>
+      <li><strong>Test detail:</strong> their farming <strong>exhausted the soil quickly</strong>, forcing frequent moves to fresh land</li>
+      <li><strong>Homes:</strong> longhouses up to 200 feet, holding families related through the mother</li>
+      <li><strong>Star of the region:</strong> the <strong>Iroquois Confederation</strong> (more below)</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="font-serif text-xl font-bold text-emerald-900 dark:text-emerald-100">🌊 Atlantic Seaboard</h3>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300">coast + rivers</span>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li><strong>Where:</strong> New Jersey south to Florida, the Coastal Plains</li>
+      <li><strong>Who:</strong> many were descendants of the Woodland mound builders</li>
+      <li><strong>Homes:</strong> timber and bark lodgings along rivers</li>
+      <li><strong>Adaptation:</strong> rivers and the Atlantic provided a rich food supply</li>
+    </ul>
+  </div>
+</div>
+
+### Pin the regions on the map
+
+Quiz mode: the component names a region, you click where it belongs. Environment first, name second.
+
+<Hotspots
+  image="https://upload.wikimedia.org/wikipedia/commons/4/49/North_America_laea_relief_location_map.jpg"
+  alt="Relief map of North America for locating native culture regions"
+  title="Find each culture region"
+  mode="quiz"
+  spots={[
+    { x: 30, y: 48, label: "Northwest Coast", description: "Plank houses, salmon fishing, totem poles." },
+    { x: 39.5, y: 62.5, label: "Southwest", description: "Hohokam, Anasazi, Pueblos. Irrigation farming, cliff dwellings." },
+    { x: 47, y: 58, label: "Great Plains", description: "Nomadic buffalo hunters in tepees plus river-valley farmers." },
+    { x: 54.5, y: 60.5, label: "Mississippi Valley (Cahokia)", description: "Mound builders. Cahokia held up to 30,000 people." },
+    { x: 68, y: 53.5, label: "Northeast (Iroquois)", description: "Longhouses, soil-exhausting farming, the Five Nations." },
+    { x: 68.5, y: 64.5, label: "Atlantic Seaboard", description: "Coastal Plains peoples in timber-and-bark lodges along rivers." },
+    { x: 47, y: 82, label: "Mesoamerica (Aztecs + Mayas)", description: "Corn-fed civilizations with huge cities." },
+    { x: 72, y: 77, label: "Caribbean", description: "The islands Columbus reached first in 1492." }
+  ]}
+/>
+
+### Which region am I?
+
+Read the clue, answer yes or no, and let the key classify the culture. This is exactly how the exam frames region questions: traits first, names second.
+
+<DichotomousKey
+  title="Identify the culture region from its traits"
+  yesLabel="Yes"
+  noLabel="No"
+  tree={{
+    question: "Did this society farm with irrigation in a dry land and build multistory stone dwellings?",
+    yes: { result: "Southwest (Hohokam, Anasazi, Pueblos)", note: "Dry New Mexico and Arizona forced irrigation. Drought and hostile neighbors weakened them before 1492." },
+    no: {
+      question: "Did it depend on the buffalo for food, tools, and clothing?",
+      yes: { result: "Great Plains (nomadic tribes)", note: "Tepees moved with the herds. No horses until the Spanish arrived in the 1600s." },
+      no: {
+        question: "Did it carve totem poles and live off salmon, nuts, and berries in permanent plank houses?",
+        yes: { result: "Northwest Coast", note: "A rich environment with no farming needed. Mountains isolated tribes from each other." },
+        no: {
+          question: "Did it build giant earthen mounds in the Ohio or Mississippi Valley?",
+          yes: { result: "Mississippi Valley (Adena-Hopewell, Cahokia)", note: "Mounds up to 300 feet long. Cahokia reached 30,000 people." },
+          no: {
+            question: "Did five tribes in the Mohawk Valley form a political union?",
+            yes: { result: "Northeast (Iroquois Confederation)", note: "Seneca, Cayuga, Onondaga, Oneida, Mohawk. Longhouses, matrilineal families." },
+            no: { result: "Atlantic Seaboard (Coastal Plains peoples)", note: "Timber and bark lodges along rivers from New Jersey to Florida. Fed by rivers and the ocean." }
+          }
+        }
+      }
+    }
+  }}
+/>
+
+## 1.4 One continent, 400 languages
+
+Do not let the word "Indians" flatten this world into one culture. Language proves the diversity.
+
+<div class="not-prose my-6 grid sm:grid-cols-3 gap-4">
+  <TremorCard label="European languages" value="1 family" helper="English, Spanish, French, and almost all others belong to a single family: Indo-European." />
+  <TremorCard label="American Indian languages" value="20+ families" helper="More than 20 separate language families, completely unrelated to each other." />
+  <TremorCard label="Distinct languages" value="400+" helper="Among the largest families: Algonquian (Northeast), Siouan (Great Plains), Athabaskan (Southwest)." />
+</div>
+
+<Callout type="tip" title="Match the family to the region">
+  **Algonquian = Northeast. Siouan = Great Plains. Athabaskan = Southwest.** Three pairs, one flashcard, easy points.
+</Callout>
+
+## 1.5 Spotlight: the Iroquois Confederation
+
+The most politically sophisticated group north of Mexico, and the single most name-dropped native group on APUSH tests.
+
+<div class="not-prose my-8 rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-6">
+  <div class="grid md:grid-cols-2 gap-6">
+    <div>
+      <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-blue-800 dark:text-blue-300 mb-2">The Five Nations</p>
+      <ol class="space-y-1.5 text-sm text-ink-800 dark:text-ink-200 list-decimal list-inside">
+        <li><strong>S</strong>eneca</li>
+        <li><strong>C</strong>ayuga</li>
+        <li><strong>O</strong>nondaga</li>
+        <li><strong>O</strong>neida</li>
+        <li><strong>M</strong>ohawk</li>
+      </ol>
+      <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-300">Mnemonic: SCOOM</p>
+    </div>
+    <div>
+      <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-blue-800 dark:text-blue-300 mb-2">Why they matter</p>
+      <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+        <li>A true <strong>political union</strong> of five independent tribes, based in the Mohawk Valley of New York</li>
+        <li>Lived in <strong>longhouses</strong> up to 200 feet long, families linked <strong>through the mother</strong></li>
+        <li>A powerful force <strong>from the 16th century through the American Revolution</strong>, battling rival natives and Europeans alike</li>
+        <li>The rare exception to the rule that tribes did not unite</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+## Section 1 self-quiz
+
+<Quiz
+  title="America in 1491"
+  questions={[
+    {
+      q: "Why did native societies north of Mexico generally stay smaller than the Maya, Aztec, and Inca civilizations?",
+      choices: [
+        "The northern climate made all farming impossible",
+        "Corn (maize) cultivation spread northward from Mexico slowly",
+        "Northern peoples refused to build cities for religious reasons",
+        "Constant warfare kept populations low"
+      ],
+      answer: 1,
+      explain: "The AMSCO answer: the slow northward spread of maize. Stable crop surpluses are what let societies grow large and complex."
+    },
+    {
+      q: "Which pairing of civilization and staple crop is correct?",
+      choices: [
+        "Mayas: potatoes",
+        "Incas: corn",
+        "Aztecs: corn (maize)",
+        "Incas: tobacco"
+      ],
+      answer: 2,
+      explain: "Corn fed the Mayas and Aztecs. Potatoes fed the Incas in the Andes."
+    },
+    {
+      q: "The Hohokam, Anasazi, and Pueblo peoples are best known for",
+      choices: [
+        "nomadic buffalo hunting on the Great Plains",
+        "irrigation farming and multistory stone dwellings in the dry Southwest",
+        "totem poles and plank houses on the Pacific coast",
+        "building Cahokia in the Mississippi Valley"
+      ],
+      answer: 1,
+      explain: "Dry land forced irrigation. They lived in caves, cliff dwellings, and multistoried buildings in present-day New Mexico and Arizona."
+    },
+    {
+      q: "Before the 17th century, Great Plains hunters pursued buffalo without",
+      choices: ["dogs", "bows", "horses", "tepees"],
+      answer: 2,
+      explain: "Horses arrived only when natives traded with (or stole from) Spanish settlers in the 1600s. Then tribes like the Lakota Sioux abandoned farming to follow the herds."
+    },
+    {
+      q: "Cahokia, near present-day East St. Louis, is evidence that",
+      choices: [
+        "North America had no permanent settlements before Columbus",
+        "large urban centers of up to 30,000 people existed north of Mexico",
+        "the Aztec empire extended into the Mississippi Valley",
+        "European diseases arrived before European explorers"
+      ],
+      answer: 1,
+      explain: "Cahokia was one of the largest settlements in the Midwest, built by Mississippi Valley mound-building peoples."
+    },
+    {
+      q: "The Iroquois Confederation was a political union of five tribes living in",
+      choices: [
+        "the Ohio River valley",
+        "the Mohawk Valley of New York",
+        "the Great Plains",
+        "the Atlantic Coastal Plains"
+      ],
+      answer: 1,
+      explain: "Seneca, Cayuga, Onondaga, Oneida, Mohawk (SCOOM), in New York. A powerful force into the American Revolution era."
+    },
+    {
+      q: "American Indian languages in 1491 belonged to",
+      choices: [
+        "a single language family, like European languages",
+        "about five related families",
+        "more than 20 language families with over 400 distinct languages",
+        "no organized language families"
+      ],
+      answer: 2,
+      explain: "Versus essentially one family (Indo-European) covering nearly all of Europe. Diversity is the theme of 1491 America."
+    },
+    {
+      q: "Which region's peoples carved totem poles to preserve stories and legends?",
+      choices: ["Southwest", "Northeast", "Northwest Coast", "Great Plains"],
+      answer: 2,
+      explain: "Northwest Coast peoples, living in permanent plank houses off a rich diet of fish and gathered foods."
+    }
+  ]}
+/>
+
+---
+
+# Section 2 · Why Europe Sailed
+
+<div class="not-prose my-8 rounded-2xl overflow-hidden bg-gradient-to-br from-ink-950 via-accent-950 to-ink-900 px-6 py-10 text-center">
+  <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Topic 1.3 · Causes</p>
+  <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">God, Gold, and Glory</h2>
+  <p class="text-white/80 max-w-xl mx-auto">Four changes inside Europe made 1492 possible. Your test will ask you to name them and connect them.</p>
+</div>
+
+Until the late 1400s, the people of the Americas and the people of Europe, Africa, and Asia had **no knowledge of each other**. (Vikings touched Greenland and North America around the year 1000, but nothing lasting came of it.) Then four changes inside Europe converged, and the ocean stopped being a wall.
+
+## 2.1 The big picture: three motives
+
+<div class="not-prose my-8 grid md:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-6 text-center">
+    <div class="text-5xl mb-3">✝️</div>
+    <h3 class="font-serif text-2xl font-bold text-accent-900 dark:text-accent-100 mb-2">God</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Spread Christianity to Africa, Asia, and the Americas. After the Reformation, Catholics and Protestants raced each other to convert the world.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/30 p-6 text-center">
+    <div class="text-5xl mb-3">🪙</div>
+    <h3 class="font-serif text-2xl font-bold text-amber-900 dark:text-amber-100 mb-2">Gold</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Riches: direct sea trade with Asia, then American gold and silver. Monarchs needed revenue and merchants wanted markets.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-6 text-center">
+    <div class="text-5xl mb-3">👑</div>
+    <h3 class="font-serif text-2xl font-bold text-ink-900 dark:text-ink-100 mb-2">Glory</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">National and personal prestige for the new nation-states and the captains who sailed for them.</p>
+  </div>
+</div>
+
+<Poll
+  question="It is 1492 and you are boarding a ship into the unknown. What actually gets you on deck?"
+  options={["God: converting the world", "Gold: getting rich", "Glory: your name in history", "Escape: nothing left to lose at home"]}
+  storageKey="apush-u1-motive-poll"
+/>
+
+## 2.2 The four enabling changes
+
+Motives are wishes. These four changes turned wishes into fleets. Click through each one.
+
+<StepThrough
+  title="What changed inside Europe"
+  steps={[
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:48px;margin-bottom:12px;">🧭</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">1. Renaissance technology</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">The rebirth of classical learning sparked scientific activity. Europeans improved other people's inventions: <strong>gunpowder</strong> (from China) and the <strong>sailing compass</strong> (from Arab merchants, who got it from China). They also made major advances in <strong>shipbuilding and mapmaking</strong>, and the <strong>printing press (1450s)</strong> spread all of this knowledge fast.</p></div>`,
+      caption: "Better ships, better maps, better guns, faster knowledge."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:48px;margin-bottom:12px;">⚔️</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">2. Religious zeal and conflict</h3><p style="font-size:15px;line-height:1.55;color:#52525b;"><strong>1492:</strong> Isabella and Ferdinand take Granada, the last Moorish stronghold, completing the reconquest of Spain for Catholicism. <strong>Early 1500s:</strong> the Protestant Reformation splits Europe. Result: Catholic Spain and Portugal and Protestant England and Holland each want to spread <em>their</em> Christianity overseas.</p></div>`,
+      caption: "A religious motive stacked on top of the political and economic ones."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:48px;margin-bottom:12px;">🚧</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">3. Blocked trade routes</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">The old overland route to Asia ran through Constantinople. In <strong>1453 the Ottoman Turks seized the city</strong>, choking it off. Two alternatives: sail <strong>south and east around Africa</strong> (Portugal's bet, via Prince Henry the Navigator; da Gama reached India in 1498) or sail <strong>west across the Atlantic</strong> (Columbus's bet).</p></div>`,
+      caption: "1453 closes a road. 1492 and 1498 open two sea lanes."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:48px;margin-bottom:12px;">🏰</div><h3 style="font-family:serif;font-size:24px;margin-bottom:8px;color:#b91c1c;">4. Rising nation-states</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">Small kingdoms merged (Castile + Aragon = Spain) and sprawling multiethnic empires broke apart. The new <strong>nation-states</strong> (Spain, Portugal, France, England, the Netherlands) had monarchs who depended on <strong>trade revenue</strong> and the church's blessing, and who could afford to fund voyages.</p></div>`,
+      caption: "Only a centralized state can bankroll an ocean fleet."
+    }
+  ]}
+  height={330}
+/>
+
+### The causal chain in one picture
+
+<Sankey
+  title="Four causes converge on the Age of Exploration"
+  nodes={[
+    { id: "Renaissance technology" },
+    { id: "Religious zeal" },
+    { id: "Trade routes blocked (1453)" },
+    { id: "Rising nation-states" },
+    { id: "Age of Exploration" },
+    { id: "New sea routes to Asia" },
+    { id: "American colonies" },
+    { id: "Columbian Exchange" }
+  ]}
+  links={[
+    { source: "Renaissance technology", target: "Age of Exploration", value: 6 },
+    { source: "Religious zeal", target: "Age of Exploration", value: 5 },
+    { source: "Trade routes blocked (1453)", target: "Age of Exploration", value: 7 },
+    { source: "Rising nation-states", target: "Age of Exploration", value: 6 },
+    { source: "Age of Exploration", target: "New sea routes to Asia", value: 7 },
+    { source: "Age of Exploration", target: "American colonies", value: 9 },
+    { source: "Age of Exploration", target: "Columbian Exchange", value: 8 }
+  ]}
+  height={400}
+/>
+
+<Callout type="warning" title="SAQ alert">
+  AMSCO's own short-answer question asks you to explain how ONE of religion, trade, or technology "helped bring about exploration and colonization," with an example. Prep one sentence for each right now: Religion (Reconquista ends 1492 / Reformation rivalry), Trade (Constantinople 1453 forces new routes), Technology (compass, shipbuilding, printing press). You will find this exact drill in the Practice section below.
+</Callout>
+
+## 2.3 Portugal's head start and the birth of the slave trade
+
+Portugal solved the Asia problem first, and in doing so built the machine that would later be bolted onto the Americas.
+
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <Flag code="PT" size={36} />
+      <h3 class="font-serif text-xl font-bold text-emerald-900 dark:text-emerald-100">The eastern route</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li><strong>Prince Henry the Navigator</strong> sponsors voyages down the West African coast</li>
+      <li>The route opens around <strong>South Africa's Cape of Good Hope</strong></li>
+      <li><strong>1498: Vasco da Gama</strong> becomes the first European to reach <strong>India</strong> by sea</li>
+      <li>Portugal's bet (south and east is shortest) beats Columbus's bet (west is shortest)</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="text-3xl">⛓️</span>
+      <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100">The sugar-and-slavery template</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>In the 1400s the Portuguese begin <strong>trading for enslaved people from West Africa</strong></li>
+      <li>They put slave labor on <strong>sugar plantations on the Madeira and Azores islands</strong></li>
+      <li>Sugar plus slavery is so profitable that Europeans later <strong>copy the whole system in the Americas</strong></li>
+      <li><strong>African resistance from the start:</strong> running away, sabotaging work, revolting, and keeping African music, religion, and folkways alive for generations</li>
+    </ul>
+  </div>
+</div>
+
+<Callout type="insight" title="Why this paragraph matters beyond Unit 1">
+  The Madeira and Azores sugar islands are the prototype for the entire Atlantic plantation system you will meet in Units 2 and 4. When the exam asks where the American slave system came from, this is the answer: it was imported from Portugal's island sugar model, not invented in the colonies.
+</Callout>
+
+---
+
+# Section 3 · Contact
+
+<div class="not-prose my-8 rounded-2xl overflow-hidden bg-gradient-to-br from-ink-950 via-accent-950 to-ink-900 px-6 py-10 text-center">
+  <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Topic 1.4</p>
+  <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">1492 and the Columbian Exchange</h2>
+  <p class="text-white/80 max-w-xl mx-auto">One voyage connects two biospheres that had been separated for 10,000 years. Everything on both sides changes.</p>
+</div>
+
+## 3.1 Columbus, the short honest version
+
+<SpeechBubble variant="say" speaker="Columbus, pitching monarchs for 8 years">
+  Fund me and I will reach the Indies by sailing west. The route will be shorter than Portugal's path around Africa.
+</SpeechBubble>
+
+<SpeechBubble variant="think" speaker="Isabella and Ferdinand, 1492">
+  We just took Granada. Spain is united, Catholic, and confident. Give him the three ships. If he is right, we beat Portugal to Asia.
+</SpeechBubble>
+
+The deal: Columbus gets ships plus the titles of **governor, admiral, and viceroy** over whatever he claims for Spain. He sails from Palos in August 1492, restocks in the Canary Islands, and after thirty-three days at sea lands on an island in the **Bahamas on October 12, 1492**.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <TremorCard label="Voyages" value="4" delta="3 disappointing" deltaType="decrease" helper="Little gold, few spices, no path to China or India after the famous first landing." />
+  <TremorCard label="What he believed until death" value="It was Asia" helper="Columbus died in 1506 still convinced he had found a western route to the Indies. That is why he called the people 'Indians.'" />
+  <TremorCard label="Who America is named for" value="Amerigo Vespucci" helper="Another Italian sailor. Columbus did not even get the naming rights." />
+  <TremorCard label="What he actually did" value="Connected the world" helper="Permanent, ongoing contact between the hemispheres, for the first time in history. He changed the world forever." />
+</div>
+
+<BadFact source="elementary school posters" certainty="0%" title="MISCONCEPTION">
+  Columbus discovered America in 1492.
+</BadFact>
+
+People had been living in the Americas for at least 10,000 years, and Vikings had already touched North America around the year 1000. What Columbus actually started, and what historians credit him with, is **permanent interaction between the hemispheres**. That is why the period begins in 1491: to make you look at the full world that was already here.
+
+## 3.2 A century of crossings
+
+Press play. Each arc is a voyage that created a national claim. Spanish voyages in red, everyone else in black. Watch how long England, France, and the Netherlands let Spain run unopposed.
+
+<TroopMovement
+  title="The race across the Atlantic, 1492 to 1609"
+  caption="Columbus (Spain) opens the lane in 1492. Cabot gives England its claim in 1497. Then a 90-year gap before England and France get serious, and the Dutch arrive last, still hunting a Northwest Passage."
+  arcs={[
+    { from: [-6.89, 37.23], to: [-74.53, 24.05], label: "1492 · Columbus to the Bahamas (Spain)", t: 0, color: "red" },
+    { from: [-2.6, 51.45], to: [-53.1, 48.65], label: "1497 · John Cabot to Newfoundland (England)", t: 0.05, color: "black" },
+    { from: [-66.1, 18.4], to: [-81.5, 28.0], label: "1513 · Ponce de Leon probes Florida (Spain)", t: 0.18, color: "red" },
+    { from: [1.08, 49.93], to: [-74.0, 40.6], label: "1524 · Verrazano finds New York harbor (France)", t: 0.28, color: "black" },
+    { from: [-2.03, 48.65], to: [-71.2, 46.8], label: "1534 · Cartier up the St. Lawrence (France)", t: 0.36, color: "black" },
+    { from: [-6.3, 36.5], to: [-81.31, 29.9], label: "1565 · Menendez founds St. Augustine (Spain)", t: 0.62, color: "red" },
+    { from: [-4.14, 50.37], to: [-75.67, 35.9], label: "1587 · Raleigh's Roanoke attempt (England)", t: 0.81, color: "black" },
+    { from: [-0.1, 51.5], to: [-76.78, 37.21], label: "1607 · Jamestown (England)", t: 0.97, color: "black" },
+    { from: [4.9, 52.37], to: [-74.0, 40.7], label: "1609 · Hudson up the Hudson River (Netherlands)", t: 1, color: "black" }
+  ]}
+  basemap="atlantic"
+  height={500}
+  showTimeline
+  duration={9000}
+/>
+
+## 3.3 The Columbian Exchange
+
+The most important concept in Unit 1. Watch the mini-cartoon, then memorize the two-way table below it.
+
+<HistoryAnimation
+  title="The Columbian Exchange (mini)"
+  scenes={[
+    {
+      duration: 4,
+      caption: "For 10,000+ years, two biospheres evolve separately. Neither knows the other exists.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <ellipse cx="90" cy="120" rx="65" ry="85" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <text x="90" y="105" text-anchor="middle" font-family="serif" font-size="14" fill="#b91c1c">AMERICAS</text>
+        <text x="90" y="128" text-anchor="middle" font-size="16">🌽 🥔 🍅</text>
+        <text x="90" y="150" text-anchor="middle" font-size="16">🦃 🍫</text>
+        <ellipse cx="310" cy="120" rx="65" ry="85" fill="none" stroke="#27272a" stroke-width="3"/>
+        <text x="310" y="105" text-anchor="middle" font-family="serif" font-size="14" fill="#27272a">OLD WORLD</text>
+        <text x="310" y="128" text-anchor="middle" font-size="16">🐎 🐖 🐄</text>
+        <text x="310" y="150" text-anchor="middle" font-size="16">🌾 ⚙️ 🔫</text>
+        <text x="200" y="125" text-anchor="middle" font-family="serif" font-size="12" fill="#a3a3a3">the Atlantic</text>
+      </svg>`
+    },
+    {
+      duration: 4,
+      caption: "October 12, 1492. Three small ships close the gap forever.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <ellipse cx="90" cy="120" rx="65" ry="85" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <ellipse cx="310" cy="120" rx="65" ry="85" fill="none" stroke="#27272a" stroke-width="3"/>
+        <text x="230" y="110" text-anchor="middle" font-size="22">⛵</text>
+        <text x="255" y="130" text-anchor="middle" font-size="16">⛵⛵</text>
+        <line x1="290" y1="120" x2="175" y2="120" stroke="#b91c1c" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+        <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#b91c1c"/></marker></defs>
+        <text x="200" y="200" text-anchor="middle" font-family="serif" font-size="13" fill="#27272a">Nina, Pinta, Santa Maria: 33 days at sea</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Goods flow both ways. Corn, potatoes, tomatoes, and tobacco go east. Horses, pigs, sugar cane, and guns come west.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <ellipse cx="80" cy="120" rx="58" ry="80" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <ellipse cx="320" cy="120" rx="58" ry="80" fill="none" stroke="#27272a" stroke-width="3"/>
+        <line x1="140" y1="90" x2="260" y2="90" stroke="#b91c1c" stroke-width="3" marker-end="url(#arrE)"/>
+        <text x="200" y="78" text-anchor="middle" font-size="14">🌽 🥔 🍅 🚬</text>
+        <line x1="260" y1="155" x2="140" y2="155" stroke="#27272a" stroke-width="3" marker-end="url(#arrW)"/>
+        <text x="200" y="180" text-anchor="middle" font-size="14">🐎 🐖 🎋 🔫</text>
+        <defs>
+          <marker id="arrE" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#b91c1c"/></marker>
+          <marker id="arrW" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#27272a"/></marker>
+        </defs>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "The deadliest cargo is invisible: smallpox and measles. Natives have no immunity. Mortality passes 90 percent.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <ellipse cx="80" cy="120" rx="58" ry="80" fill="#fee2e2" stroke="#b91c1c" stroke-width="3"/>
+        <ellipse cx="320" cy="120" rx="58" ry="80" fill="none" stroke="#27272a" stroke-width="3"/>
+        <g fill="#7f1d1d">
+          <circle cx="60" cy="90" r="4"/><circle cx="85" cy="70" r="4"/><circle cx="100" cy="110" r="4"/>
+          <circle cx="65" cy="140" r="4"/><circle cx="90" cy="165" r="4"/><circle cx="55" cy="115" r="4"/>
+          <circle cx="105" cy="150" r="4"/><circle cx="78" cy="118" r="4"/>
+        </g>
+        <line x1="255" y1="120" x2="150" y2="120" stroke="#7f1d1d" stroke-width="3" stroke-dasharray="3 3" marker-end="url(#arrD)"/>
+        <text x="200" y="105" text-anchor="middle" font-size="16">🦠</text>
+        <defs><marker id="arrD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#7f1d1d"/></marker></defs>
+        <text x="200" y="215" text-anchor="middle" font-family="serif" font-size="14" fill="#7f1d1d">90%+ of the native population dies</text>
+      </svg>`
+    },
+    {
+      duration: 5,
+      caption: "Biological and cultural exchange permanently changes the entire world: diets, economies, empires, everything.",
+      svg: `<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="240" fill="#fff"/>
+        <circle cx="200" cy="115" r="78" fill="none" stroke="#b91c1c" stroke-width="3"/>
+        <circle cx="200" cy="115" r="52" fill="none" stroke="#27272a" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="200" y="105" text-anchor="middle" font-family="serif" font-size="15" font-weight="bold" fill="#b91c1c">ONE WORLD</text>
+        <text x="200" y="128" text-anchor="middle" font-family="serif" font-size="12" fill="#27272a">connected, for better and worse</text>
+        <text x="200" y="220" text-anchor="middle" font-family="serif" font-size="13" fill="#27272a">The Columbian Exchange never stopped.</text>
+      </svg>`
+    }
+  ]}
+  loop={true}
+/>
+
+### The two-way table (memorize both columns)
+
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-3">Americas → Old World</p>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li>🌽 <strong>Corn (maize)</strong></li>
+      <li>🥔 <strong>Sweet and white potatoes</strong></li>
+      <li>🍅 <strong>Tomatoes</strong></li>
+      <li>🫘 <strong>Beans</strong></li>
+      <li>🚬 <strong>Tobacco</strong></li>
+      <li>🦠 Syphilis (the one disease going east)</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-accent-300 dark:border-accent-800 text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300">Effect: European and Asian populations boom on new calories</p>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-ink-800 dark:text-ink-200 mb-3">Old World → Americas</p>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200">
+      <li>🐎 <strong>Horses</strong> (transform Plains life)</li>
+      <li>🐖 <strong>Pigs</strong> and livestock</li>
+      <li>🎋 <strong>Sugar cane</strong> and bluegrasses</li>
+      <li>⚙️ <strong>The wheel and iron implements</strong></li>
+      <li>🔫 <strong>Guns</strong></li>
+      <li>🦠 <strong>Smallpox and measles</strong>: deadlier than every gun combined</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-ink-300 dark:border-ink-700 text-xs font-semibold uppercase tracking-wider text-ink-800 dark:text-ink-200">Effect: native population collapses; entire tribes disappear</p>
+  </div>
+</div>
+
+### The demographic catastrophe, charted
+
+Historians' estimates vary, but the shape of this line is the single most important fact of the period. The native population of the Americas fell by **more than 90 percent** after contact, overwhelmingly from disease.
+
+<p class="not-prose text-sm font-semibold text-ink-700 dark:text-ink-300 mt-6 mb-0">Native population of the Americas after contact (historian estimates, millions)</p>
+
+<RechartsLine
+  data={[
+    { year: "1492", population: 60 },
+    { year: "1520", population: 40 },
+    { year: "1550", population: 18 },
+    { year: "1570", population: 10 },
+    { year: "1600", population: 6 }
+  ]}
+  xKey="year"
+  lines={[{ dataKey: "population", color: "#b91c1c", name: "Millions of people" }]}
+/>
+
+<Callout type="warning" title="How this gets tested">
+  A stimulus quote will describe suffering or depopulation, and the answer will hinge on the fact that **disease, not warfare, was the main killer**, and that natives **had no immunity** to smallpox and measles. If a choice says "European diseases were killing millions," it is almost always the credited answer.
+</Callout>
+
+## 3.4 Dividing the world with a ruler
+
+Spain and Portugal both claimed the new lands. Being Catholic monarchies, they asked the pope to referee.
+
+<div class="not-prose my-8 rounded-2xl border-2 border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 p-5">
+  <p class="font-serif text-lg font-semibold text-ink-900 dark:text-ink-100 mb-4 text-center">The line of demarcation (1493) and the Treaty of Tordesillas (1494)</p>
+  <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Simplified world map showing the Tordesillas line: Spain claims lands west of the line, Portugal lands east of it, with Brazil on Portugal's side" style="width:100%;height:auto;">
+    <rect width="640" height="300" fill="#eff6ff"/>
+    <path d="M60,40 C110,30 150,60 140,100 C135,125 160,140 150,170 L120,200 C100,190 80,150 70,120 C60,90 45,60 60,40 Z" fill="#fecaca" stroke="#b91c1c" stroke-width="2.5"/>
+    <text x="100" y="110" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#7f1d1d">NORTH</text>
+    <text x="100" y="126" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#7f1d1d">AMERICA</text>
+    <path d="M160,190 C200,180 235,200 240,235 C243,262 220,285 200,282 C175,278 150,240 152,215 Z" fill="#fecaca" stroke="#b91c1c" stroke-width="2.5"/>
+    <path d="M228,196 C250,190 268,205 266,228 C264,246 246,252 236,244 C226,236 220,205 228,196 Z" fill="#d6d3d1" stroke="#27272a" stroke-width="2.5"/>
+    <text x="204" y="240" text-anchor="middle" font-family="serif" font-size="12" font-weight="bold" fill="#7f1d1d">SOUTH</text>
+    <text x="204" y="255" text-anchor="middle" font-family="serif" font-size="12" font-weight="bold" fill="#7f1d1d">AMERICA</text>
+    <text x="288" y="215" text-anchor="start" font-family="serif" font-size="12" font-weight="bold" fill="#27272a">BRAZIL →</text>
+    <text x="288" y="231" text-anchor="start" font-family="sans-serif" font-size="10" fill="#52525b">east of the line: Portugal</text>
+    <path d="M430,60 C470,45 510,55 520,80 C528,100 505,115 480,112 C455,110 420,85 430,60 Z" fill="#e7e5e4" stroke="#57534e" stroke-width="2"/>
+    <text x="475" y="88" text-anchor="middle" font-family="serif" font-size="12" fill="#44403c">EUROPE</text>
+    <path d="M460,130 C500,120 540,140 545,180 C550,225 520,265 490,260 C460,255 440,200 445,170 Z" fill="#e7e5e4" stroke="#57534e" stroke-width="2"/>
+    <text x="495" y="200" text-anchor="middle" font-family="serif" font-size="12" fill="#44403c">AFRICA</text>
+    <line x1="262" y1="15" x2="262" y2="285" stroke="#b91c1c" stroke-width="4" stroke-dasharray="10 6"/>
+    <text x="262" y="298" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#b91c1c">TORDESILLAS LINE, 1494</text>
+    <text x="150" y="30" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#b91c1c">← WEST OF LINE: SPAIN</text>
+    <text x="420" y="30" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#27272a">EAST OF LINE: PORTUGAL →</text>
+  </svg>
+  <p class="mt-3 text-xs text-ink-500 text-center">Simplified diagram. The 1494 treaty shifted the pope's 1493 line west, which is exactly why Brazil speaks Portuguese today.</p>
+</div>
+
+<div class="not-prose my-6 grid sm:grid-cols-2 gap-4">
+  <TremorCard label="1493 · Line of demarcation" value="Drawn by the pope" helper="A vertical, north-south line on the world map. West to Spain, east to Portugal." />
+  <TremorCard label="1494 · Treaty of Tordesillas" value="Line moved west" helper="Spain and Portugal renegotiated the line themselves. The new line passed through Brazil, giving Portugal its claim. Other European countries ignored the whole arrangement." />
+</div>
+
+## Sections 2 + 3 self-quiz
+
+<Quiz
+  title="Exploration causes and contact"
+  questions={[
+    {
+      q: "Which event in 1453 pushed Europeans to seek new routes to Asia?",
+      choices: [
+        "The fall of Granada",
+        "The Ottoman Turks seized Constantinople, blocking the overland trade route",
+        "The invention of the printing press",
+        "The Protestant Reformation"
+      ],
+      answer: 1,
+      explain: "The old land route to China ran through Constantinople. Once the Ottomans took it, the choices were sail south around Africa (Portugal) or west across the Atlantic (Columbus)."
+    },
+    {
+      q: "Europeans improved two key technologies that were originally invented in China. They were",
+      choices: [
+        "the astrolabe and the caravel",
+        "gunpowder and the sailing compass",
+        "the printing press and the telescope",
+        "iron smelting and shipbuilding"
+      ],
+      answer: 1,
+      explain: "Gunpowder came from China directly; the compass came via Arab merchants who learned of it from the Chinese. The Renaissance habit of improving others' inventions is the tested idea."
+    },
+    {
+      q: "What did the completion of the Reconquista at Granada in 1492 signal for Spain?",
+      choices: [
+        "Spain's withdrawal from European affairs",
+        "New leadership, hope, and power for Catholic Europeans, and a monarchy ready to fund exploration",
+        "The beginning of the Protestant Reformation in Spain",
+        "The end of Spanish interest in the Americas"
+      ],
+      answer: 1,
+      explain: "The same year Granada fell, Isabella and Ferdinand funded Columbus. A united, confident, militantly Catholic Spain turned outward."
+    },
+    {
+      q: "The Portuguese sugar plantations on the Madeira and Azores islands mattered because they",
+      choices: [
+        "produced most of Europe's food supply",
+        "created the profitable slave-labor plantation model later transplanted to the Americas",
+        "were the first European settlements in the Americas",
+        "ended the Portuguese slave trade"
+      ],
+      answer: 1,
+      explain: "Sugar plus enslaved African labor was so profitable that Europeans copied the system wholesale when they colonized the Americas."
+    },
+    {
+      q: "Columbus died in 1506 believing that he had",
+      choices: [
+        "discovered a new continent",
+        "found a western route to Asia",
+        "failed completely",
+        "claimed Brazil for Spain"
+      ],
+      answer: 1,
+      explain: "He never accepted that he had found a New World. Many Spaniards considered him a failure for finding no trade route and little gold."
+    },
+    {
+      q: "Which item moved from the Americas to the Old World in the Columbian Exchange?",
+      choices: ["Horses", "Sugar cane", "Tomatoes", "Smallpox"],
+      answer: 2,
+      explain: "Americas to Old World: corn, potatoes, tomatoes, beans, tobacco (and syphilis). Old World to Americas: horses, pigs, sugar cane, the wheel, iron, guns, smallpox, measles."
+    },
+    {
+      q: "The main cause of the 90 percent decline in the native population after contact was",
+      choices: [
+        "warfare with conquistadores",
+        "enslavement in the encomienda system",
+        "European diseases like smallpox and measles, to which natives had no immunity",
+        "famine caused by crop failures"
+      ],
+      answer: 2,
+      explain: "Germs, not guns. AMSCO's phrasing: deadlier than all the guns was the importation of germs and diseases. Millions died, including entire tribal communities."
+    },
+    {
+      q: "The Treaty of Tordesillas (1494)",
+      choices: [
+        "gave England its claim to North America",
+        "moved the pope's line of demarcation west, securing Portugal's claim to Brazil",
+        "ended the slave trade",
+        "divided North America between France and Spain"
+      ],
+      answer: 1,
+      explain: "Spain and Portugal renegotiated the pope's 1493 line. The new line passed through Brazil: Portugal's slice. Spain claimed the rest of the Americas, and other nations soon ignored both."
+    }
+  ]}
+/>
+
+---
+
+# Section 4 · Conquest and Labor
+
+<div class="not-prose my-8 rounded-2xl overflow-hidden bg-gradient-to-br from-ink-950 via-accent-950 to-ink-900 px-6 py-10 text-center">
+  <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Topic 1.5</p>
+  <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">Conquistadores, Encomienda, Asiento</h2>
+  <p class="text-white/80 max-w-xl mx-auto">How a few thousand Spaniards toppled two empires, got rich, and built labor systems the world is still reckoning with.</p>
+</div>
+
+## 4.1 The conquistador roster
+
+Spain's dominance rested on more than the pope's line. These are the names to know cold.
+
+<div class="not-prose my-8 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-800 dark:text-accent-300 mb-1">1513</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Vasco Nunez de Balboa</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Crossed the <strong>Isthmus of Panama</strong> and became the first European to see the <strong>Pacific Ocean</strong> from the Americas.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-800 dark:text-accent-300 mb-1">1519 to 1522</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Ferdinand Magellan</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">His expedition completed the first <strong>circumnavigation of the world</strong>. Test trap: <strong>Magellan himself died</strong> before the trip finished. One of his ships made it.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-800 dark:text-accent-300 mb-1">1519 to 1521</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Hernan Cortes</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Conquered the <strong>Aztecs in Mexico</strong>. Tenochtitlan fell in 1521.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-800 dark:text-accent-300 mb-1">1532</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Francisco Pizarro</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Conquered the <strong>Incas in Peru</strong>. Andean silver would bankroll Spain for a century.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-800 dark:text-accent-300 mb-1">1540 to 1542</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">Francisco Coronado</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Marched through the <strong>Southwest</strong> hunting golden cities. His own report: "there is not any gold nor any other metal in all that country." Exploration, not settlement.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-ink-700 dark:text-ink-300 mb-1">Mnemonic</p>
+    <h3 class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-2">Keep them straight</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200"><strong>C</strong>ortes crushed the <strong>A</strong>ztecs (C comes before A... no it does not, but "Cortes conquered the Corn empire" does work). <strong>P</strong>izarro pounded <strong>P</strong>eru. <strong>B</strong>alboa beheld the <strong>B</strong>ig blue Pacific.</p>
+  </div>
+</div>
+
+<Callout type="insight" title="How did a few hundred men topple empires of millions?">
+  The exam wants three factors: **(1) disease** raced ahead of the armies and shattered native societies, **(2) steel weapons, guns, and horses** gave shock advantages, and **(3) native allies**: tribes the Aztecs had dominated were willing to join Cortes against them. Conquest was a coalition plus an epidemic, not a solo miracle.
+</Callout>
+
+## 4.2 What the gold did
+
+
+<div class="not-prose my-6 grid sm:grid-cols-3 gap-4">
+  <TremorCard label="European gold supply" value="+500%" delta="Spain becomes richest in Europe" deltaType="increase" helper="Conquistadores shipped Aztec and Inca gold and silver home from Mexico and Peru." />
+  <TremorCard label="Result abroad" value="Imitators" helper="Spain's success pulled England, France, and the Netherlands into the race for American wealth and power." />
+  <TremorCard label="Result at home" value="A labor problem" helper="Mines and plantations needed workers. Spain's answers: the encomienda, then the asiento." />
+</div>
+
+## 4.3 The labor systems, step by step
+
+This sequence is the heart of Topic 1.5. Click through the cycle.
+
+<StepThrough
+  title="From encomienda to asiento"
+  steps={[
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:44px;margin-bottom:10px;">👑</div><h3 style="font-family:serif;font-size:22px;margin-bottom:8px;color:#b91c1c;">1. The king grants an encomienda</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">The king of Spain gives an individual Spaniard a grant of <strong>land plus the natives living on it</strong>. On paper, the encomendero must "care for" and Christianize them.</p></div>`,
+      caption: "Encomienda = land + people, granted together."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:44px;margin-bottom:10px;">⛏️</div><h3 style="font-family:serif;font-size:22px;margin-bottom:8px;color:#b91c1c;">2. Natives farm and mine</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">The natives must work the fields and the silver mines. <strong>The fruits of their labor go to their Spanish masters.</strong> It is serfdom in everything but name.</p></div>`,
+      caption: "Forced labor, dressed up as guardianship."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:44px;margin-bottom:10px;">📉</div><h3 style="font-family:serif;font-size:22px;margin-bottom:8px;color:#b91c1c;">3. The workforce collapses</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">European diseases and brutal treatment kill most of the native population. Many who survive the epidemics <strong>die from the forced labor itself</strong>.</p></div>`,
+      caption: "Disease plus brutality destroys the labor supply."
+    },
+    {
+      html: `<div style="text-align:center;padding:24px;max-width:560px;"><div style="font-size:44px;margin-bottom:10px;">⛓️</div><h3 style="font-family:serif;font-size:22px;margin-bottom:8px;color:#b91c1c;">4. The asiento replaces it</h3><p style="font-size:15px;line-height:1.55;color:#52525b;">Spain turns to <strong>enslaved West Africans</strong>. Under the <strong>asiento system</strong>, colonists pay the king <strong>a tax on each enslaved person imported</strong> to the Americas. The Atlantic slave trade scales up.</p></div>`,
+      caption: "Asiento = a per-person import tax paid to the crown."
+    }
+  ]}
+  height={310}
+/>
+
+<Callout type="definition" title="Do not confuse the two">
+  **Encomienda** = grant of native land and labor to a Spaniard. **Asiento** = tax paid to the Spanish king per enslaved African imported. One extracts native labor, the other licenses the African slave trade.
+</Callout>
+
+## 4.4 The caste system of New Spain
+
+Because few Spanish families emigrated, Spanish men intermarried with natives and Africans, producing a **rigid class hierarchy dominated by pure-blooded Spaniards**. Your class (Topic 1.5 in the current AMSCO edition) names the layers.
+
+<div class="not-prose my-8 flex flex-col items-center gap-1.5">
+  <div class="w-full max-w-[240px] rounded-xl border-2 border-accent-700 bg-accent-100 dark:bg-accent-950/50 px-4 py-3 text-center">
+    <p class="font-serif font-bold text-accent-900 dark:text-accent-100">Peninsulares</p>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Born in Spain. Held the top government and church offices.</p>
+  </div>
+  <div class="w-full max-w-[360px] rounded-xl border-2 border-accent-600 bg-accent-50 dark:bg-accent-950/40 px-4 py-3 text-center">
+    <p class="font-serif font-bold text-accent-900 dark:text-accent-100">Criollos (Creoles)</p>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Spanish blood, born in the colonies. Wealthy, but locked out of top posts.</p>
+  </div>
+  <div class="w-full max-w-[480px] rounded-xl border-2 border-amber-600 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-center">
+    <p class="font-serif font-bold text-amber-900 dark:text-amber-100">Mestizos and Mulattos</p>
+    <p class="text-xs text-ink-700 dark:text-ink-300">Mixed Spanish-native and Spanish-African ancestry. The growing middle layers.</p>
+  </div>
+  <div class="w-full max-w-[600px] rounded-xl border-2 border-ink-700 bg-ink-100 dark:bg-ink-900 px-4 py-3 text-center">
+    <p class="font-serif font-bold text-ink-900 dark:text-ink-100">Native Americans and enslaved Africans</p>
+    <p class="text-xs text-ink-700 dark:text-ink-300">The base of the pyramid: the coerced labor force of the whole system.</p>
+  </div>
+  <p class="text-xs text-ink-500 mt-2">Status flowed from birthplace and ancestry. Remember the shape, not just the names.</p>
+</div>
+
+## 4.5 The dissenter: Bartolome de Las Casas
+
+One European stood against the mainstream view. He is the most quoted primary source in Unit 1, so meet him properly.
+
+His resume is the twist: he **owned land and slaves in the West Indies and fought in wars against the Indians**. Then he changed, became a priest and advocate, and spent his life fighting for native rights.
+
+<div class="not-prose my-6 grid sm:grid-cols-2 gap-4">
+  <TremorCard label="New Laws of 1542" value="His biggest win" helper="Persuaded the king to end Indian slavery, halt forced native labor, and begin phasing out the encomienda. Conservative colonists pushed back and got parts repealed." />
+  <TremorCard label="Valladolid Debate, 1550-1551" value="No clear winner" helper="Formal debate in Spain over the role of natives in the colonies. Las Casas established the arguments for justice that reformers would reuse for centuries." />
+</div>
+
+<SpeechBubble variant="say" speaker="Las Casas, at Valladolid">
+  The Indians are completely human and morally equal to Europeans. Enslaving them is not justified, by any law of God or man.
+</SpeechBubble>
+
+<SpeechBubble variant="say" speaker="Juan Gines de Sepulveda, opposing">
+  They are less than human. They benefit from serving the Spaniards in the encomienda.
+</SpeechBubble>
+
+<Callout type="note" title="How the debate is scored on tests">
+  Neither side clearly won at Valladolid. Las Casas could not get equal treatment for natives, but he put the case for native humanity on the permanent record. If a question asks for the "significance" of the debate, that is the answer.
+</Callout>
+
+### You make the call at Valladolid
+
+You are an advisor to the Spanish king in 1550. Play it out, then read what actually happened.
+
+<BranchingScenario
+  title="Advisor to the Crown, Valladolid, 1550"
+  context="The king has summoned a formal debate. The priest Las Casas argues the Indians are fully human and the encomienda must die. The scholar Sepulveda argues the conquest civilizes lesser beings. Colonial fortunes, church doctrine, and millions of lives ride on the outcome. The king turns to you."
+  historicalAnswer="Neither side was declared the winner. The New Laws of 1542 had already ended Indian slavery on paper, but colonist revolts forced the crown to repeal parts of them, and the encomienda faded slowly rather than dying. Las Casas lost the policy fight but won the argument: his case for native humanity became the foundation for every later push for indigenous rights."
+  tree={{
+    start: "opening",
+    nodes: {
+      opening: {
+        scenario: "The debate hall falls silent. Las Casas cites scripture and his own eyewitness horrors in the West Indies. Sepulveda cites Aristotle on natural slavery. The king asks: whose argument should guide policy?",
+        choices: [
+          { text: "Back Las Casas fully: abolish the encomienda now", next: "lascasas" },
+          { text: "Back Sepulveda: the conquest pays for the empire", next: "sepulveda" },
+          { text: "Split the difference: affirm native humanity, enforce nothing", next: "compromise" }
+        ]
+      },
+      lascasas: {
+        scenario: "You urge full enforcement of the New Laws and the immediate end of forced native labor. Word crosses the Atlantic. Encomenderos in Peru openly revolt; colonial revenue collapses on paper before the ink dries. The viceroy warns the crown could lose the colonies themselves.",
+        choices: [
+          { text: "Hold firm anyway", next: "holdfirm" },
+          { text: "Retreat and repeal the harshest provisions", next: "retreat" }
+        ]
+      },
+      holdfirm: {
+        ending: "You hold firm. The crown crushes one revolt, then quietly stops enforcing the laws anywhere it cannot garrison. Justice on parchment, encomienda in practice.",
+        historicalNote: "This is close to what happened: the New Laws stayed on the books, enforcement buckled, and conservative Spaniards successfully pushed the king to repeal parts of them."
+      },
+      retreat: {
+        ending: "You repeal the inheritance ban and other provisions. The colonists stand down. The encomienda survives another generation, and Las Casas calls you complicit.",
+        historicalNote: "Also historical: colonist pressure genuinely forced repeal of parts of the New Laws. Real reform waited decades."
+      },
+      sepulveda: {
+        ending: "You endorse natural slavery as royal doctrine. Extraction accelerates, the native population keeps collapsing, and Spain's rivals gleefully spread the Black Legend of Spanish cruelty. The crown never actually took this road officially.",
+        historicalNote: "The crown declined to crown Sepulveda the winner. Even an empire built on conquest would not put 'less than human' into official doctrine."
+      },
+      compromise: {
+        ending: "You persuade the king to declare the natives true humans deserving protection, while leaving enforcement to distant viceroys. Doctrine improves; daily life in the mines does not.",
+        historicalNote: "This is roughly the historical outcome: no declared winner, humane principles affirmed, weak enforcement, and a debate that armed reformers for centuries."
+      }
+    }
+  }}
+/>
+
+## 4.6 Read a source like a grader
+
+The AMSCO test questions quote Las Casas directly. Here is the excerpt with the annotations a top scorer would mentally draw. Hover each highlight.
+
+<DocAnnotate
+  title="Las Casas, In Defense of the Indian, c. 1550 (excerpt)"
+  text="When they fell ill, which was very frequently because they are a delicate people unaccustomed to such work, the Spaniards did not believe them and pitilessly called them lazy dogs, and kicked and beat them; and when illness was apparent they sent them home as useless, giving them some cassava for the twenty- to eighty-league journey. They would go then, falling into the first stream and dying there in desperation; others would hold on longer, but very few ever made it home."
+  annotations={[
+    { start: 10, end: 45, label: "Implied: epidemic disease", note: "The fact implied but never stated: European diseases were killing millions. A real AMSCO question hinges on spotting this." },
+    { start: 63, end: 106, label: "Author's lens", note: "Even the natives' greatest defender writes with a European lens, calling them delicate. Every source has a point of view." },
+    { start: 147, end: 205, label: "Purpose: expose abuse", note: "Las Casas writes to persuade the Spanish monarchs to reform the encomienda. Audience: the crown, not the public." },
+    { start: 451, end: 477, label: "Consequence", note: "Forced labor, on top of disease, drove the demographic collapse. Underlying cause of the abuse: desire for wealth." }
+  ]}
+/>
+
+<Callout type="tip" title="The three questions to ask any stimulus">
+  1) **Who wrote it and why** (Las Casas, a priest-reformer, to move the king). 2) **What does it show about the period** (encomienda brutality, population collapse). 3) **What is implied but unstated** (disease everywhere). Answer those and the multiple choice answers pick themselves.
+</Callout>
+
+---
+
+# Section 5 · Five Flags over America
+
+<div class="not-prose my-8 rounded-2xl overflow-hidden bg-gradient-to-br from-ink-950 via-accent-950 to-ink-900 px-6 py-10 text-center">
+  <p class="font-mono text-white/60 text-xs uppercase tracking-[0.25em] mb-3">Topic 1.6 + settlements</p>
+  <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-2">Rival Claims, Rival Policies</h2>
+  <p class="text-white/80 max-w-xl mx-auto">Five nations, five strategies, and three very different ways of treating the people already living there.</p>
+</div>
+
+## 5.1 The claims, nation by nation
+
+<VisTimeline
+  height="360px"
+  start="1490-01-01"
+  end="1615-12-31"
+  items={[
+    { id: 1, group: "Spain", content: "Columbus reaches the Caribbean", start: "1492-10-12" },
+    { id: 2, group: "Spain", content: "Balboa sights the Pacific", start: "1513-09-25" },
+    { id: 3, group: "Spain", content: "Cortes takes Tenochtitlan", start: "1521-08-13" },
+    { id: 4, group: "Spain", content: "Pizarro conquers the Incas", start: "1532-11-16" },
+    { id: 5, group: "Spain", content: "St. Augustine founded (oldest U.S. city)", start: "1565-09-08" },
+    { id: 6, group: "Spain", content: "Santa Fe becomes capital of New Mexico", start: "1610-01-01" },
+    { id: 7, group: "Portugal", content: "Treaty of Tordesillas secures Brazil", start: "1494-06-07" },
+    { id: 8, group: "Portugal", content: "Da Gama reaches India by sea", start: "1498-05-20" },
+    { id: 9, group: "England", content: "Cabot explores Newfoundland", start: "1497-06-24" },
+    { id: 10, group: "England", content: "Drake raids Spanish shipping (1570s-80s)", start: "1577-12-13" },
+    { id: 11, group: "England", content: "Raleigh's Roanoke colony fails", start: "1587-07-22" },
+    { id: 12, group: "England", content: "Jamestown: first permanent English settlement", start: "1607-05-14" },
+    { id: 13, group: "France", content: "Verrazano explores the coast + NY harbor", start: "1524-04-17" },
+    { id: 14, group: "France", content: "Cartier explores the St. Lawrence (1534-1542)", start: "1534-06-09" },
+    { id: 15, group: "France", content: "Champlain founds Quebec, 'Father of New France'", start: "1608-07-03" },
+    { id: 16, group: "Netherlands", content: "Hudson sails up the Hudson River", start: "1609-09-11" }
+  ]}
+  groups={[
+    { id: "Spain", content: "Spain" },
+    { id: "Portugal", content: "Portugal" },
+    { id: "England", content: "England" },
+    { id: "France", content: "France" },
+    { id: "Netherlands", content: "Netherlands" }
+  ]}
+/>
+
+### Why England and France started so late
+
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <Flag code="GB" size={36} />
+      <h3 class="font-serif text-xl font-bold text-ink-900 dark:text-ink-100">England's distractions</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Cabot claimed Newfoundland in <strong>1497</strong>, then England did nothing with it for decades</li>
+      <li>The 1500s were consumed by <strong>Henry VIII's break with the Catholic Church</strong></li>
+      <li>Under <strong>Elizabeth I</strong>, England attacked instead of settled: <strong>Sir Francis Drake</strong> seized Spanish gold ships and raided Spanish settlements in Peru</li>
+      <li><strong>Sir Walter Raleigh's Roanoke</strong> venture (1587) failed: the Lost Colony</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <Flag code="FR" size={36} />
+      <h3 class="font-serif text-xl font-bold text-blue-900 dark:text-blue-100">France's distractions</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li><strong>Verrazano (1524)</strong> hunted a Northwest Passage and found New York harbor; <strong>Cartier (1534-1542)</strong> explored the St. Lawrence</li>
+      <li>Then the monarchy sank into <strong>European wars and Catholic vs Huguenot religious conflict</strong></li>
+      <li>Only in the next century: <strong>Champlain founds Quebec (1608)</strong> and earns the title Father of New France</li>
+      <li>Later still: <strong>Jolliet and Marquette (1673)</strong> on the upper Mississippi, <strong>La Salle (1682)</strong> claims Louisiana</li>
+    </ul>
+  </div>
+</div>
+
+<Callout type="note" title="The Dutch enter last">
+  In 1609 the Dutch hired an English sailor, <strong>Henry Hudson</strong>, to find a northwest passage. He sailed up the river later named for him, giving the Netherlands its claim to the region that became <strong>New Amsterdam (later New York)</strong>, run for profit by the <strong>Dutch West India Company</strong>.
+</Callout>
+
+## 5.2 Spain's actual settlements north of Mexico
+
+Spain settled North America slowly: little mineral wealth, strong native resistance. Four footholds to know.
+
+<div class="not-prose my-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <TremorCard label="Florida" value="St. Augustine, 1565" helper="After repeated failures and against strong native resistance. Oldest European-founded city in the U.S." />
+  <TremorCard label="New Mexico" value="Santa Fe, 1610" helper="Harsh Christianization triggered the Pueblo Revolt of 1680, which expelled Spain until 1692." />
+  <TremorCard label="Texas" value="Early 1700s" helper="Settlements grew to block French moves on the lower Mississippi." />
+  <TremorCard label="California" value="San Diego 1769, San Francisco 1776" helper="Built to answer Russian exploration from Alaska. Father Junipero Serra founded nine Franciscan missions." />
+</div>
+
+<BadFact source="rushed crammers" certainty="0%" title="MISCONCEPTION">
+  Jamestown (1607) was the first European settlement in what is now the United States.
+</BadFact>
+
+St. Augustine beat it by **42 years** (1565), and Santa Fe was founded just three years after Jamestown. Jamestown is the first permanent **English** settlement. The qualifier is the whole question.
+
+## 5.3 The comparison the exam loves most: native policy
+
+Europeans generally looked down on Native Americans, seeing people to exploit for gain, convert to Christianity, or use as military allies. But the three powers ran three very different systems. If you master one table in this unit, make it this one.
+
+<div class="not-prose my-8 grid md:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <Flag code="ES" size={36} />
+      <h3 class="font-serif text-xl font-bold text-accent-900 dark:text-accent-100">Spain: subjugate</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Met <strong>large organized empires</strong> (Aztec, Inca) it could absorb as a labor force</li>
+      <li><strong>Encomienda</strong>: forced farm and mine labor</li>
+      <li>Mostly <strong>single men</strong> came, so <strong>intermarriage</strong> was common: mestizo society plus a rigid caste system</li>
+      <li>Conversion campaigns and missions</li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-accent-300 dark:border-accent-800 text-xs font-semibold uppercase tracking-wider text-accent-800 dark:text-accent-300">Natives inside the empire, at the bottom</p>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <Flag code="GB" size={36} />
+      <h3 class="font-serif text-xl font-bold text-ink-900 dark:text-ink-100">England: expel</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Settled where there were <strong>no large empires</strong> to exploit as labor</li>
+      <li>Came <strong>in families</strong>, so little intermarriage</li>
+      <li>Early coexistence and trade (natives taught corn growing and forest hunting; furs for iron tools)</li>
+      <li>Then land hunger won: settlers <strong>occupied land and pushed small tribes inland</strong></li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-ink-300 dark:border-ink-700 text-xs font-semibold uppercase tracking-wider text-ink-800 dark:text-ink-200">Expelled the natives rather than subjugating them</p>
+  </div>
+  <div class="rounded-2xl border-2 border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <Flag code="FR" size={36} />
+      <h3 class="font-serif text-xl font-bold text-blue-900 dark:text-blue-100">France: ally + trade</h3>
+    </div>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Wanted <strong>furs and converts</strong>, not plantations</li>
+      <li>Built <strong>trading posts</strong> through the St. Lawrence Valley, Great Lakes, and Mississippi</li>
+      <li><strong>Few colonists, farms, or towns</strong>, so less threat to native land</li>
+      <li>French soldiers even <strong>helped the Hurons fight the Iroquois</strong></li>
+    </ul>
+    <p class="mt-4 pt-3 border-t border-blue-300 dark:border-blue-800 text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-300">Best relations of the three, by self-interest</p>
+  </div>
+</div>
+
+### The web of nations and explorers
+
+Every explorer connects to exactly one paymaster nation. Drag the nodes around until the pattern sticks.
+
+<NetworkGraph
+  title="Who sailed for whom"
+  nodes={[
+    { id: "Spain", label: "Spain", group: "west" },
+    { id: "Portugal", label: "Portugal", group: "west" },
+    { id: "England", label: "England", group: "west" },
+    { id: "France", label: "France", group: "west" },
+    { id: "Netherlands", label: "Netherlands", group: "west" },
+    { id: "Columbus", label: "Columbus (1492)", group: "east" },
+    { id: "Balboa", label: "Balboa (1513)", group: "east" },
+    { id: "Magellan", label: "Magellan (1519)", group: "east" },
+    { id: "Cortes", label: "Cortes (1521)", group: "east" },
+    { id: "Pizarro", label: "Pizarro (1532)", group: "east" },
+    { id: "Coronado", label: "Coronado (1540)", group: "east" },
+    { id: "Henry", label: "Prince Henry", group: "east" },
+    { id: "DaGama", label: "Da Gama (1498)", group: "east" },
+    { id: "Cabot", label: "Cabot (1497)", group: "east" },
+    { id: "Drake", label: "Drake (1570s)", group: "east" },
+    { id: "Raleigh", label: "Raleigh (1587)", group: "east" },
+    { id: "Verrazano", label: "Verrazano (1524)", group: "east" },
+    { id: "Cartier", label: "Cartier (1534)", group: "east" },
+    { id: "Champlain", label: "Champlain (1608)", group: "east" },
+    { id: "Hudson", label: "Hudson (1609)", group: "east" }
+  ]}
+  edges={[
+    { source: "Spain", target: "Columbus" },
+    { source: "Spain", target: "Balboa" },
+    { source: "Spain", target: "Magellan" },
+    { source: "Spain", target: "Cortes" },
+    { source: "Spain", target: "Pizarro" },
+    { source: "Spain", target: "Coronado" },
+    { source: "Portugal", target: "Henry" },
+    { source: "Portugal", target: "DaGama" },
+    { source: "England", target: "Cabot" },
+    { source: "England", target: "Drake" },
+    { source: "England", target: "Raleigh" },
+    { source: "France", target: "Verrazano" },
+    { source: "France", target: "Cartier" },
+    { source: "France", target: "Champlain" },
+    { source: "Netherlands", target: "Hudson" }
+  ]}
+  layout="cose"
+  height={520}
+/>
+
+<Callout type="tip" title="The Italian trap">
+  Columbus, Cabot, Verrazano, and Vespucci were all **Italian**, but none sailed for Italy (there was no unified Italy to sail for). The exam asks "who did X sail FOR," never where he was born. Cabot: Italian captain, English contract, English claim.
+</Callout>
+
+## 5.4 How Native Americans responded
+
+North American tribes saw themselves as **distinct groups, not one people**, so Europeans rarely faced a unified response. But natives were never passive. Four strategies to know:
+
+<div class="not-prose my-8 grid sm:grid-cols-2 gap-4">
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <div class="text-3xl mb-2">🤝</div>
+    <h3 class="font-serif text-lg font-bold mb-1 text-ink-900 dark:text-ink-100">Strategic alliance</h3>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Seeing Europeans fight each other, some tribes allied with one power against another to survive (Hurons with France; later, Iroquois with England).</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <div class="text-3xl mb-2">🏹</div>
+    <h3 class="font-serif text-lg font-bold mb-1 text-ink-900 dark:text-ink-100">Armed resistance</h3>
+    <p class="text-sm text-ink-700 dark:text-ink-300">From the strong resistance that delayed Spanish Florida to the later Pueblo Revolt (1680), force was always on the table.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <div class="text-3xl mb-2">🚶</div>
+    <h3 class="font-serif text-lg font-bold mb-1 text-ink-900 dark:text-ink-100">Migration</h3>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Many tribes simply moved to new land to get away from encroaching settlers.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <div class="text-3xl mb-2">🔥</div>
+    <h3 class="font-serif text-lg font-bold mb-1 text-ink-900 dark:text-ink-100">Cultural persistence</h3>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Natives and enslaved Africans alike resisted oppression by maintaining their cultures: language, religion, music, folkways. This is a Key Concept phrase; use it in essays.</p>
+  </div>
+</div>
+
+<Callout type="warning" title="The one-liner the exam rewards">
+  "Regardless of strategy, Native Americans would never be able to return to the life they had known before 1492." That sentence, or your version of it, is a ready-made SAQ conclusion.
+</Callout>
+
+## 5.5 Historians' fight: was Columbus a great hero?
+
+The AMSCO chapter ends with a historiography essay, and stimulus questions quote it. Know all three camps.
+
+<div class="not-prose my-8 grid md:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">Traditional view</p>
+    <h3 class="font-serif text-lg font-bold text-emerald-900 dark:text-emerald-100 mb-2">Hero and discoverer</h3>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Washington Irving's admiring 1828 biography</li>
+      <li>Peak: FDR makes October 12 a national holiday in 1934</li>
+      <li>Skilled navigator, daring pioneer of the unknown</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Revisionist view (1990s on)</p>
+    <h3 class="font-serif text-lg font-bold text-accent-900 dark:text-accent-100 mb-2">First conqueror</h3>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Right place, right time: if not him, Vespucci or Cabot within years</li>
+      <li>A self-promoter exploiting an opportunity</li>
+      <li>Harshest version (Stannard): a religious fanatic bent on conversion, conquest, or liquidation</li>
+    </ul>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-ink-700 dark:text-ink-300 mb-2">The rebuttal</p>
+    <h3 class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-2">Man of his time</h3>
+    <ul class="space-y-2 text-sm text-ink-800 dark:text-ink-200 list-disc list-inside">
+      <li>Schlesinger: what drove him was the challenge of the unknown, not greed or conquest</li>
+      <li>Critics of revisionism say it judges the 1490s by modern values</li>
+      <li>Common ground: his voyages created permanent global contact and changed history's direction</li>
+    </ul>
+  </div>
+</div>
+
+<Poll
+  question="Your verdict on Columbus, knowing everything this unit taught you?"
+  options={["Great hero", "First conqueror", "Man of his time", "A skilled navigator history happened to"]}
+  storageKey="apush-u1-columbus-poll"
+/>
+
+## 5.6 The primary source reader
+
+Flip through the six documents your test is most likely to quote. Each page ends with the reason it gets tested.
+
+<Flipbook
+  title="Period 1 in six documents"
+  attribution="Excerpts as quoted in AMSCO, United States History"
+  cover={{ title: "Period 1 Sources", subtitle: "Six documents your test loves", color: "#fee2e2" }}
+  pages={[
+    { content: "<h3>1 · Columbus's letter, 1493</h3><p><em>'Thirty-three days after my departure... I reached the Indian Sea, where I discovered many islands, thickly peopled, of which I took possession without resistance in the name of our most illustrious monarch, by public proclamation and with unfurled banners.'</em></p><p><strong>Why it gets tested:</strong> the mindset of claiming inhabited land 'without resistance,' and Columbus's certainty that he had reached Asia ('the Indian Sea').</p>" },
+    { content: "<h3>2 · Columbus's log, October 12, 1492</h3><p><em>'I want the natives to develop a friendly attitude toward us because I know that they are a people who can be made free and converted to our Holy Faith more by love than by force. I therefore gave red caps to some and glass beads to others.'</em></p><p><strong>Why it gets tested:</strong> point of view (conversion is the goal, kindness is the method) and the powerful group beyond the monarchy he was appealing to: the Church.</p>" },
+    { content: "<h3>3 · Las Casas, c. 1550</h3><p><em>'When they fell ill... the Spaniards did not believe them and pitilessly called them lazy dogs, and kicked and beat them... very few ever made it home.'</em></p><p><strong>Why it gets tested:</strong> underlying cause of Spanish actions (desire for wealth), intended audience (the monarchs of Spain), and the implied but unstated fact (disease killing millions).</p>" },
+    { content: "<h3>4 · Coronado, c. 1542</h3><p><em>'I have treated the natives of this province... as well as was possible, agreeably to what Your Majesty had commanded... And what I am sure of is that there is not any gold nor any other metal in all that country.'</em></p><p><strong>Why it gets tested:</strong> Spanish activity in the 1540s was still <em>exploration</em> (not settlement), and explorers depended on <em>the monarchs</em> for support. Note who he reports to.</p>" },
+    { content: "<h3>5 · Richard Hakluyt, 1582</h3><p><em>'I marvel not a little... that since the first discovery of America... we of England could never have the grace to set fast footing in such fertile and temperate places... our prisons are pestered and filled with able men... we would hasten the deducting of some colonies of our superfluous people into these temperate and fertile parts of America.'</em></p><p><strong>Why it gets tested:</strong> English promotional writing: colonies as an outlet for 'surplus' population, and envy of Spain's head start. Pairs with Roanoke (1587) and Jamestown (1607).</p>" },
+    { content: "<h3>6 · David Stannard, 1992 (secondary source)</h3><p><em>'Columbus was, in most respects, merely an especially active and dramatic embodiment of the European... mind and soul of his time: a religious fanatic obsessed with the conversion, conquest, or liquidation of all non-Christians.'</em></p><p><strong>Why it gets tested:</strong> recognizing a <em>revisionist secondary source</em>, and the standard criticism of it: judging a 15th-century man outside the context of his period, in highly charged language.</p>" }
+  ]}
+/>
+
+<Callout type="insight" title="Primary vs secondary in one glance">
+  Documents 1 to 5: written during the period by participants (primary). Document 6: written by a historian in 1992 interpreting the period (secondary). The exam asks you to treat them differently: primaries reveal point of view, secondaries make arguments you can support or challenge.
+</Callout>
+
+---
+
+# Test-taking machine
+
+## Worked example: beating a stimulus question
+
+Every multiple-choice set on your test opens with a quote. Here is the exact routine, run on a real AMSCO question.
+
+<StepThrough
+  title="Anatomy of a stimulus MCQ"
+  steps={[
+    {
+      html: `<div style="padding:22px;max-width:560px;"><h3 style="font-family:serif;font-size:20px;margin-bottom:10px;color:#b91c1c;">Step 1: Read the sourcing line FIRST</h3><p style="font-size:14px;line-height:1.55;color:#52525b;"><em>'-Bartolome de Las Casas, priest and social reformer, In Defense of the Indian, c. 1550'</em></p><p style="font-size:14px;line-height:1.55;color:#52525b;margin-top:10px;">Before reading a word of the excerpt you already know: a <strong>priest</strong>, a <strong>reformer</strong>, writing to <strong>defend natives</strong>, in the era of the <strong>encomienda debate</strong>. Half the answer choices just died.</p></div>`,
+      caption: "Author + role + date + title = half the answer."
+    },
+    {
+      html: `<div style="padding:22px;max-width:560px;"><h3 style="font-family:serif;font-size:20px;margin-bottom:10px;color:#b91c1c;">Step 2: Ask what the quote is DOING</h3><p style="font-size:14px;line-height:1.55;color:#52525b;">The excerpt describes sick native workers beaten, dismissed as lazy, and dying on the road home. It is <strong>evidence of abuse</strong>, written to <strong>persuade someone with power to stop it</strong>.</p><p style="font-size:14px;line-height:1.55;color:#52525b;margin-top:10px;">Question: 'The primary audience Las Casas hoped to influence was...' Answer: <strong>the monarchs of Spain</strong>. Only the crown could rewrite colonial law (and in 1542, it did).</p></div>`,
+      caption: "Purpose + audience: who can act on this message?"
+    },
+    {
+      html: `<div style="padding:22px;max-width:560px;"><h3 style="font-family:serif;font-size:20px;margin-bottom:10px;color:#b91c1c;">Step 3: Connect to the period's big processes</h3><p style="font-size:14px;line-height:1.55;color:#52525b;">Question: 'Which factor is directly implied but not stated?' The workers are sick 'very frequently.' Connect to the unit's biggest fact: <strong>European diseases were killing millions</strong>. That is the credited answer.</p></div>`,
+      caption: "Every stimulus plugs into a big theme. Find the socket."
+    },
+    {
+      html: `<div style="padding:22px;max-width:560px;"><h3 style="font-family:serif;font-size:20px;margin-bottom:10px;color:#b91c1c;">Step 4: Kill choices by scope and era</h3><p style="font-size:14px;line-height:1.55;color:#52525b;">Wrong answers are usually <strong>right fact, wrong era</strong> (the Pueblo Revolt is 1680, not Period 1), <strong>too extreme</strong> ('all natives...'), or <strong>off-topic for the author</strong> (Las Casas is not writing about English colonies). When stuck, eliminate by date first.</p></div>`,
+      caption: "Right fact, wrong century: the classic trap."
+    }
+  ]}
+  height={320}
+/>
+
+### Think as a historian: spotting causation prompts
+
+AMSCO's chapter closer asks which prompts demand a causation essay. Try it, then check.
+
+<Collapsible question="Which THREE of these five prompts are best answered with an essay emphasizing CAUSATION? 1) Explain why American Indians were so diverse in 1491. 2) How did Spanish colonies differ from English colonies? 3) How did religious beliefs influence American colonization? 4) Did Columbus reflect the values of late 15th century Europe? 5) Analyze the impact of colonization on Spain.">
+  Prompts **1, 3, and 5**. "Explain why," "how did X influence," and "analyze the impact" all demand cause-and-effect reasoning. Prompt 2 is comparison, and prompt 4 is contextualization/evaluation. Sorting prompts by the skill they demand is itself a tested skill.
+</Collapsible>
+
+## Practice: the real SAQ drills
+
+These mirror the AMSCO short-answer questions. Write your answer in complete sentences (outlines score zero on the real thing), then open the model.
+
+<Collapsible question="SAQ 1a: Briefly explain how ONE of the following factors in early 16th century Europe helped bring about exploration and colonization: religion, trade, technology.">
+  Strongest version, trade: after the Ottomans seized Constantinople in 1453, the overland route to Asian goods was blocked, so Atlantic kingdoms funded voyages to find all-water routes (Portugal south around Africa, Spain west across the Atlantic), which led directly to contact and colonization. (Religion version: the completed Reconquista and later the Reformation made Catholic and Protestant powers compete to spread their faith overseas. Technology version: the improved compass, better ships and maps, and the printing press made long ocean voyages possible and repeatable.)
+</Collapsible>
+
+<Collapsible question="SAQ 1b: Provide ONE specific event or development that supports your explanation.">
+  Trade: da Gama reaching India by sea in 1498, or Columbus's 1492 voyage itself. Religion: Isabella and Ferdinand funding Columbus in the same year they took Granada (1492). Technology: Europeans adapting the Chinese compass via Arab traders, or the printing press (1450s) spreading navigational knowledge.
+</Collapsible>
+
+<Collapsible question="SAQ 4a and 4b: One COMMON trait and one DIFFERENCE in the policies of England, France, and Spain toward Native Americans.">
+  Common: all three viewed natives as inferior people who could be exploited economically, converted to Christianity, or used as allies. Difference (pick two): Spain subjugated natives and absorbed them as forced labor within its empire (encomienda, intermarriage, caste system), while England expelled small coastal tribes inland as family-based settlers took land, and France, with few colonists, built fur-trade partnerships and military alliances (helping the Hurons against the Iroquois).
+</Collapsible>
+
+<Collapsible question="SAQ 4c: Briefly explain ONE reaction of Native Americans to European policies.">
+  Any one, with a specific: allying with one European power against another to survive (Hurons with the French); migrating away from encroaching settlers; armed resistance (the resistance that slowed Spanish Florida, or the 1680 Pueblo Revolt just after the period); and maintaining cultural practices (language, religion, folkways) as a form of resistance in itself.
+</Collapsible>
+
+<Collapsible question="Bonus, the Columbus log SAQ: What point of view does Columbus express in the 'red caps and glass beads' log entry, and what contact between Europeans and natives is NOT consistent with it?">
+  Point of view: natives are potential converts who can be won 'more by love than by force,' so generosity is the right opening strategy (and it flatters his royal and Church audiences). Not consistent: virtually everything that followed: enslavement under the encomienda, forced labor described by Las Casas, violent conquest by Cortes and Pizarro, and the mass death from imported disease.
+</Collapsible>
+
+## The whole unit in one map
+
+<MindMap
+  title="Unit 1 in one picture"
+  data={{
+    name: "Period 1: 1491-1607",
+    children: [
+      {
+        name: "Native America",
+        children: [
+          { name: "Maya, Aztec, Inca" },
+          { name: "Corn spreads slowly north" },
+          { name: "Culture regions shaped by environment" },
+          { name: "Iroquois Confederation (SCOOM)" },
+          { name: "20+ language families, 400+ languages" }
+        ]
+      },
+      {
+        name: "Why Europe sailed",
+        children: [
+          { name: "Renaissance tech: compass, ships, printing" },
+          { name: "Religion: Reconquista + Reformation" },
+          { name: "Trade: Constantinople blocked 1453" },
+          { name: "Nation-states fund fleets" }
+        ]
+      },
+      {
+        name: "Contact",
+        children: [
+          { name: "Columbus 1492" },
+          { name: "Columbian Exchange" },
+          { name: "Disease kills 90%+" },
+          { name: "Tordesillas 1494" }
+        ]
+      },
+      {
+        name: "Spanish empire",
+        children: [
+          { name: "Cortes 1521, Pizarro 1532" },
+          { name: "Encomienda then asiento" },
+          { name: "Caste system" },
+          { name: "Las Casas, New Laws 1542, Valladolid 1550" }
+        ]
+      },
+      {
+        name: "Rivals arrive",
+        children: [
+          { name: "England: Cabot, Roanoke, Jamestown 1607" },
+          { name: "France: Cartier, Champlain, furs + allies" },
+          { name: "Netherlands: Hudson 1609" },
+          { name: "Spain: subjugate · England: expel · France: ally" }
+        ]
+      }
+    ]
+  }}
+  height={540}
+/>
+
+## Match the explorer to the paymaster
+
+<MatchPairs
+  title="Explorer to nation and claim"
+  pairs={[
+    { term: "Columbus", def: "Spain: Caribbean landfall, 1492" },
+    { term: "John Cabot", def: "England: Newfoundland, 1497" },
+    { term: "Vasco da Gama", def: "Portugal: sea route to India, 1498" },
+    { term: "Balboa", def: "Spain: crossed Panama, saw the Pacific, 1513" },
+    { term: "Magellan's crew", def: "Spain: first circumnavigation, 1519-1522" },
+    { term: "Cortes", def: "Spain: conquered the Aztecs, 1521" },
+    { term: "Pizarro", def: "Spain: conquered the Incas, 1532" },
+    { term: "Verrazano", def: "France: explored coast + New York harbor, 1524" },
+    { term: "Cartier", def: "France: St. Lawrence River, 1534-1542" },
+    { term: "Coronado", def: "Spain: the Southwest, found no gold, 1540-1542" },
+    { term: "Champlain", def: "France: founded Quebec, 1608" },
+    { term: "Henry Hudson", def: "Netherlands: Hudson River, 1609" }
+  ]}
+/>
+
+## Put the unit in order
+
+<DragSort
+  title="Order the events from earliest to latest"
+  items={[
+    "The Americas in 1491: 50 to 100 million people, no European contact",
+    "Granada falls and Columbus sails (1492)",
+    "Treaty of Tordesillas (1494)",
+    "Cabot reaches Newfoundland for England (1497)",
+    "Da Gama reaches India for Portugal (1498)",
+    "Cortes takes Tenochtitlan (1521)",
+    "Pizarro conquers the Incas (1532)",
+    "New Laws of 1542",
+    "Valladolid Debate (1550-1551)",
+    "St. Augustine founded (1565)",
+    "Roanoke vanishes (1587)",
+    "Jamestown founded (1607)"
+  ]}
+/>
+
+---
+
+# Mock unit test
+
+Twenty-five questions, AP-paced. Set the timer, no notes, and treat every stimulus with the four-step routine.
+
+<TestTimer minutes={25} />
+
+<Quiz
+  title="Unit 1 mock test, 25 questions"
+  questions={[
+    { q: "Why do historians often begin this period in 1491 rather than 1492?", choices: ["Columbus actually sailed in 1491", "To emphasize the vibrant, diverse native cultures that existed before European contact", "Because Granada fell in 1491", "To include the Viking voyages"], answer: 1, explain: "Starting one year before Columbus centers the full native world (and its 90 percent decline) rather than the European arrival." },
+    { q: "The first people to settle the Americas arrived by", choices: ["Portuguese caravels", "crossing a land bridge from Siberia to Alaska at least 10,000 years ago", "island-hopping across the Pacific in the 1400s", "crossing the Atlantic from West Africa"], answer: 1, explain: "Beringia, now under the Bering Sea. Migration then spread south to the tip of South America." },
+    { q: "Which was true of ALL THREE great civilizations (Maya, Aztec, Inca)?", choices: ["They were located in present-day Mexico", "They developed highly organized societies, traded extensively, and made accurate scientific calendars", "They relied on potatoes as the staple crop", "They were conquered by Cortes"], answer: 1, explain: "Organization, trade, calendars, plus a staple crop. Corn for Maya and Aztec, potatoes for Inca; only the Incas were in South America; Pizarro (not Cortes) took the Incas." },
+    { q: "A test question describes a people living in tepees, following buffalo herds, and later transformed by the horse. The region is", choices: ["Northwest Coast", "Southwest", "Great Plains", "Northeast"], answer: 2, explain: "Nomadic Plains hunters. The horse (from Spanish settlers, 17th century) turned tribes like the Lakota Sioux fully nomadic." },
+    { q: "The Adena-Hopewell culture of the Ohio Valley is best known for", choices: ["totem poles", "cliff dwellings", "large earthen mounds", "floating gardens"], answer: 2, explain: "Mounds up to 300 feet long. Their descendants spread into New York; Cahokia carried the mound-building tradition to urban scale." },
+    { q: "Which factor best explains why Native American efforts to unite against Europeans were rare?", choices: ["Europeans forbade native alliances", "Tribes saw themselves as distinct peoples, not one 'Native American' group", "Distances were too great for any contact", "Native religions forbade warfare"], answer: 1, explain: "The AMSCO stimulus answer (via Chief Johnson's Iroquois plea for unity): tribal identity and traditions of independence made unity the exception." },
+    { q: "The fall of Constantinople to the Ottoman Turks in 1453 contributed to exploration by", choices: ["ending the Renaissance", "blocking the overland trade route to Asia", "starting the Protestant Reformation", "uniting Spain and Portugal"], answer: 1, explain: "Blocked land route, so find a sea route: south around Africa (Portugal) or west across the ocean (Spain)." },
+    { q: "Isabella and Ferdinand's victory at Granada in 1492 mattered for exploration because it", choices: ["gave Spain control of the spice trade", "completed the Reconquista and freed a confident Catholic Spain to fund Columbus", "ended Spain's rivalry with Portugal", "triggered the Protestant Reformation"], answer: 1, explain: "Same year, same monarchs: reconquest completed, Columbus funded. New leadership, hope, and power for Catholic Europe." },
+    { q: "Prince Henry the Navigator is associated with", choices: ["Spanish conquest of Mexico", "Portuguese voyages down the African coast toward an eastern sea route", "the French fur trade", "English privateering"], answer: 1, explain: "His sponsored voyages opened the route around the Cape of Good Hope; da Gama reached India in 1498." },
+    { q: "The Portuguese sugar plantations on Madeira and the Azores are historically significant because they", choices: ["fed the population of Lisbon", "pioneered the slave-labor plantation model later used across the Americas", "were the first colonies in the New World", "proved sugar could not be profitable"], answer: 1, explain: "Sugar + enslaved African labor = enormous profit. The template crossed the Atlantic with colonization." },
+    { q: "In the Columbian Exchange, which list moved FROM the Americas TO Europe?", choices: ["Horses, pigs, sugar cane", "Smallpox, measles, wheat", "Corn, potatoes, tomatoes, tobacco", "Guns, iron tools, the wheel"], answer: 2, explain: "New World exports were mostly crops. Old World exports: animals, sugar cane, technology, and catastrophic germs." },
+    { q: "The primary reason the native population fell by more than 90 percent after contact was", choices: ["losses in battle against conquistadores", "European diseases such as smallpox and measles", "famine from failed harvests", "forced migration to Europe"], answer: 1, explain: "No immunity. Deadlier than all the guns, as AMSCO puts it. Entire tribal communities disappeared." },
+    { q: "The Treaty of Tordesillas (1494) did which of the following?", choices: ["Divided North America between England and France", "Moved the pope's line west, giving Portugal its claim to Brazil and Spain the rest of the Americas", "Banned the Atlantic slave trade", "Created the encomienda system"], answer: 1, explain: "Spain and Portugal renegotiated the pope's 1493 line of demarcation. Other European powers soon ignored both." },
+    { q: "Match the conquest: Cortes and Pizarro respectively defeated the", choices: ["Incas and Mayas", "Aztecs and Incas", "Mayas and Aztecs", "Pueblos and Aztecs"], answer: 1, explain: "Cortes took the Aztecs in Mexico (1521); Pizarro took the Incas in Peru (1532). The Mayas had declined centuries earlier." },
+    { q: "Under the encomienda system,", choices: ["colonists paid a tax on each imported slave", "the king granted Spaniards land plus the labor of the natives living on it", "natives were paid wages for mine work", "land was returned to native tribes"], answer: 1, explain: "Natives farmed and mined for Spanish masters who theoretically 'cared for' them. The asiento was the slave-import tax." },
+    { q: "As the native workforce died, the Spanish increasingly relied on", choices: ["English indentured servants", "enslaved West Africans imported under the asiento system", "free European labor", "Chinese contract workers"], answer: 1, explain: "The asiento required a per-person tax to the crown on imported enslaved Africans." },
+    { q: "Bartolome de Las Casas is best described as", choices: ["a conquistador who conquered Peru", "a priest who became the leading advocate for better treatment of Native Americans", "the author of the Treaty of Tordesillas", "the founder of St. Augustine"], answer: 1, explain: "A former landowner and Indian-war veteran who reversed course, won the New Laws of 1542, and argued at Valladolid." },
+    { q: "At the Valladolid Debate (1550-1551), Sepulveda argued that", choices: ["natives were fully human and slavery was unjustified", "Spain should abandon the Americas", "natives were less than human and benefited from serving Spaniards", "the encomienda should be abolished immediately"], answer: 2, explain: "Las Casas argued full humanity and moral equality; Sepulveda the opposite. Neither side clearly won." },
+    { q: "England's claim to North America originally rested on the voyage of", choices: ["Francis Drake", "Walter Raleigh", "John Cabot", "Henry Hudson"], answer: 2, explain: "Cabot, an Italian captain under contract to Henry VII, explored Newfoundland in 1497. England then ignored it for most of a century." },
+    { q: "England was slow to follow up its claim mainly because", choices: ["the monarchy was preoccupied, including Henry VIII's break with Rome", "Parliament banned colonization", "Spain blockaded English ports", "no English ships could cross the Atlantic"], answer: 0, explain: "Religious upheaval consumed the 1500s. Under Elizabeth I, England raided (Drake) and attempted Roanoke (1587) before Jamestown (1607)." },
+    { q: "The oldest European-founded city in what is now the United States is", choices: ["Jamestown", "Santa Fe", "St. Augustine", "Plymouth"], answer: 2, explain: "St. Augustine, Florida: Spanish, 1565. Jamestown (1607) is the first permanent ENGLISH settlement." },
+    { q: "French colonization differed from Spanish colonization primarily in that the French", choices: ["sent large farming families", "relied on fur-trade partnerships and alliances with natives rather than conquest and forced labor", "refused to send missionaries", "settled only in Florida"], answer: 1, explain: "Few colonists, trading posts, Catholic missionaries, and military help for allies like the Hurons against the Iroquois." },
+    { q: "Which best describes English policy toward the natives they encountered?", choices: ["Intermarriage and incorporation into a caste system", "Expelling small coastal tribes inland as settlers took land", "Alliances built on the fur trade", "Immediate mass enslavement in mines"], answer: 1, explain: "No large empires to exploit as labor, family-based settlement, little intermarriage: the English expelled rather than subjugated." },
+    { q: "Henry Hudson's 1609 voyage gave which nation its American claim?", choices: ["England, because Hudson was English", "The Netherlands, which had hired him to find a northwest passage", "France", "Sweden"], answer: 1, explain: "The Italian trap in Dutch form: an English sailor, but a Dutch contract. The claim became New Amsterdam under the Dutch West India Company." },
+    { q: "A historian who calls Columbus 'a religious fanatic obsessed with the conversion, conquest, or liquidation of all non-Christians' is best described as", choices: ["a traditionalist", "a revisionist", "an apologist", "a contemporary of Columbus"], answer: 1, explain: "That is Stannard (1992), the harsh revisionist position. The standard critique: it ignores the context of Columbus's period and uses charged language." }
+  ]}
+/>
+
+## Flashcards: the full deck
+
+Signed in, these schedule themselves with spaced repetition and feed your daily review queue.
+
+<Flashcards
+  cards={[
+    { front: "Why does Period 1 start in 1491?", back: "To center the full native world (50 to 100 million people) before European contact. It ends in 1607 with Jamestown." },
+    { front: "Land bridge (Beringia)", back: "Route from Siberia to Alaska taken by the first Americans at least 10,000 (maybe 40,000) years ago. Now under the Bering Sea." },
+    { front: "Maya", back: "Rain-forest cities in the Yucatan, A.D. 300 to 800. Corn-based. Declined centuries before the Aztecs." },
+    { front: "Aztecs", back: "Central Mexico empire. Capital Tenochtitlan held about 200,000, rivaling Europe's largest cities. Fell to Cortes, 1521." },
+    { front: "Incas", back: "Vast South American empire based in Peru. Potato-based agriculture. Fell to Pizarro, 1532." },
+    { front: "Why were societies north of Mexico smaller?", back: "Corn (maize) cultivation spread northward from Mexico slowly. No corn surplus, no big cities." },
+    { front: "Southwest peoples (Hohokam, Anasazi, Pueblos)", back: "Irrigation farming in dry New Mexico and Arizona. Caves, cliff dwellings, multistory stone buildings. Weakened by drought before Europeans came." },
+    { front: "Northwest Coast peoples", back: "Permanent plank houses from Alaska to northern California. Rich diet of fish and gathered foods. Carved totem poles to record stories." },
+    { front: "Great Plains peoples", back: "Nomadic buffalo hunters in tepees plus sedentary river-valley farmers in earthen lodges. No horses until the Spanish (17th century)." },
+    { front: "Cahokia", back: "Mississippi Valley mound-builder city near East St. Louis: up to 30,000 people." },
+    { front: "Iroquois Confederation", back: "Political union of five tribes in New York's Mohawk Valley: Seneca, Cayuga, Onondaga, Oneida, Mohawk (SCOOM). Powerful into the Revolution era." },
+    { front: "Native language diversity", back: "20+ language families, 400+ distinct languages (vs one family, Indo-European, for almost all of Europe). Algonquian NE, Siouan Plains, Athabaskan SW." },
+    { front: "Four European changes enabling exploration", back: "Renaissance technology (compass, ships, printing press), religious zeal and conflict, trade routes blocked (Constantinople 1453), rising nation-states." },
+    { front: "Reconquista", back: "Christian reconquest of Spain from the Moors, completed at Granada in 1492 by Isabella and Ferdinand, who then funded Columbus." },
+    { front: "Protestant Reformation (for this unit)", back: "Early 1500s revolt against the pope. Made Catholic Spain/Portugal and Protestant England/Holland compete to spread their faiths overseas." },
+    { front: "Prince Henry the Navigator + da Gama", back: "Portugal's push down Africa's coast; da Gama first to reach India by sea, 1498." },
+    { front: "Madeira and Azores sugar islands", back: "Portuguese slave-labor sugar plantations: the profitable template later copied across the Americas." },
+    { front: "Columbus's deal with Spain, 1492", back: "Three ships plus titles of governor, admiral, viceroy over lands claimed. Sailed from Palos, landed San Salvador (Bahamas) October 12, 1492." },
+    { front: "Columbus's legacy, honestly stated", back: "Four voyages, little gold, believed it was Asia until death (1506), named 'Indians,' America named for Vespucci. But: first permanent contact between hemispheres. Changed the world." },
+    { front: "Columbian Exchange", back: "Post-1492 transfer of plants, animals, and germs across the Atlantic. To Europe: corn, potatoes, tomatoes, beans, tobacco. To Americas: horses, pigs, sugar cane, wheel, iron, guns, smallpox, measles." },
+    { front: "Deadliest part of the Columbian Exchange", back: "Disease. Natives had no immunity to smallpox and measles: mortality above 90 percent, entire tribes gone." },
+    { front: "Line of demarcation vs Treaty of Tordesillas", back: "1493: pope draws the north-south line (west Spain, east Portugal). 1494: the treaty moves it west, giving Portugal Brazil." },
+    { front: "Conquistador roster", back: "Balboa: Panama and the Pacific (1513). Magellan's crew: circumnavigation (1519-22). Cortes: Aztecs (1521). Pizarro: Incas (1532). Coronado: Southwest, no gold (1540-42)." },
+    { front: "How Spain got so rich", back: "Aztec and Inca gold and silver increased Europe's gold supply by over 500 percent, making Spain the richest and most powerful nation in Europe." },
+    { front: "Encomienda system", back: "King grants Spaniards land plus the natives on it; natives farm and mine for their masters, who must 'care for' them. Serfdom in practice." },
+    { front: "Asiento system", back: "Spanish colonists pay the crown a tax on each enslaved African imported to the Americas. Replaced dying native labor." },
+    { front: "Spanish colonial caste system", back: "Peninsulares (born in Spain) over criollos (Spanish blood, colonial-born) over mestizos and mulattos over natives and enslaved Africans." },
+    { front: "Bartolome de Las Casas", back: "Former slave-owning colonist turned priest and advocate. Won the New Laws of 1542 (ending Indian slavery and phasing out encomienda; partly repealed)." },
+    { front: "Valladolid Debate, 1550-1551", back: "Las Casas (natives fully human, slavery unjustified) vs Sepulveda (less than human, benefit from serving). No clear winner; the rights argument was established." },
+    { front: "Spain vs England vs France on native policy", back: "Spain subjugated (labor + intermarriage + caste). England expelled (family settlers took land). France allied and traded (furs, few colonists, helped Hurons vs Iroquois)." },
+    { front: "Spanish North America: four footholds", back: "St. Augustine 1565 (oldest U.S. city), Santa Fe 1610 (Pueblo Revolt 1680), Texas early 1700s (vs France), California 1769+ (vs Russia; Serra's missions)." },
+    { front: "England's slow start", back: "Cabot 1497, then distraction (Henry VIII's break with Rome). Elizabeth I: Drake raids Spain, Raleigh's Roanoke fails 1587. Jamestown finally sticks in 1607." },
+    { front: "France and the Netherlands' late claims", back: "France: Verrazano 1524, Cartier 1534-42, Champlain founds Quebec 1608. Netherlands: Hudson 1609, leading to New Amsterdam and the Dutch West India Company." },
+    { front: "Native responses to Europeans", back: "Strategic alliances with rival powers, armed resistance, migration away, and cultural persistence. No unified response: tribes saw themselves as distinct peoples." },
+    { front: "Columbus historiography in three camps", back: "Traditional hero (Irving 1828, FDR holiday 1934). Revisionist conqueror (right place right time; Stannard's fanatic). Rebuttal (Schlesinger: driven by the challenge of the unknown; judge him in context)." }
+  ]}
+/>
+
+## Mnemonics
+
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">Motives</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">The three G's</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300"><strong>G</strong>od, <strong>G</strong>old, <strong>G</strong>lory. Religion, riches, prestige. If an essay asks for motives, open with these and attach one example each.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">Iroquois Five Nations</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">SCOOM</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300"><strong>S</strong>eneca, <strong>C</strong>ayuga, <strong>O</strong>nondaga, <strong>O</strong>neida, <strong>M</strong>ohawk. Say it like a sound effect and it never leaves.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">Conquests</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">Pizarro Pounded Peru</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">P-P-P. Which leaves Cortes with the Aztecs in Mexico. Add "Balboa Beheld the Big blue" for the Pacific and Coronado came up empty for the Southwest.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">Labor systems</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">encoMIENDA has a MINE in it (almost)</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Encomienda: natives forced into fields and MINES. aSIENto: SIgN a tax form to import enslaved Africans. Grant of labor vs tax on trade.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">The 1494 treaty</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">Tordesillas TORE the map in two</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">1494, one line, two empires. Brazil lands east of the tear, so Brazil speaks Portuguese.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">National policies</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">Spain Subjugates, England Expels, France Friends</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">S-S, E-E, F-F. Three alliterations, the whole Topic 1.6 comparison.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">Exchange, eastbound</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">Colonists Prized These Bold Treasures</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300"><strong>C</strong>orn, <strong>P</strong>otatoes, <strong>T</strong>omatoes, <strong>B</strong>eans, <strong>T</strong>obacco: the Americas' gifts to the Old World.</p>
+  </div>
+  <div class="rounded-2xl border border-ink-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[10px] font-bold text-accent-700 dark:text-accent-400 mb-2">Exchange, westbound</p>
+    <p class="font-serif text-lg font-bold text-ink-900 dark:text-ink-100 mb-1">Heavy Price: Sickness Guts Societies</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300"><strong>H</strong>orses, <strong>P</strong>igs, <strong>S</strong>ugar cane, <strong>G</strong>uns, <strong>S</strong>mallpox: the Old World's cargo, and what it cost.</p>
+  </div>
+</div>
+
+## Common pitfalls
+
+<BadFact source="every study hall, every year" certainty="0%" title="MISCONCEPTION 1">
+  Native Americans were one unified culture.
+</BadFact>
+
+Twenty-plus language families, 400+ languages, and societies as different as Pueblo irrigation farmers and nomadic Lakota buffalo hunters. Diversity IS the answer to several questions. Related trap: tribes rarely united against Europeans because they saw themselves as distinct peoples.
+
+<BadFact source="the word 'conquistador' doing too much work" certainty="0%" title="MISCONCEPTION 2">
+  Spanish soldiers wiped out the native population in battle.
+</BadFact>
+
+Disease did the overwhelming majority of the killing: more than 90 percent mortality from smallpox and measles among people with no immunity. Guns mattered; germs decided.
+
+<BadFact source="mixing up the three empires" certainty="0%" title="MISCONCEPTION 3">
+  The Aztecs, Mayas, and Incas lived in what is now the United States.
+</BadFact>
+
+All three were south of the present-day U.S.: Mayas in the Yucatan, Aztecs in central Mexico, Incas in Peru. North of Mexico, societies were smaller and mostly semipermanent, largely because corn spread north so slowly.
+
+<BadFact source="policy scramble" certainty="0%" title="MISCONCEPTION 4">
+  The English enslaved natives in an encomienda-style system.
+</BadFact>
+
+That is Spain. England settled where there were no large empires to exploit as labor, arrived in families, and pushed small tribes inland: expulsion, not subjugation. France, the third model, allied and traded.
+
+<BadFact source="date drift" certainty="0%" title="MISCONCEPTION 5">
+  Columbus proved the Earth was round, and Magellan lived to finish his voyage.
+</BadFact>
+
+Educated Europeans already accepted a round Earth; the dispute was distance, and Columbus's math was badly wrong (a real continent saved him). Magellan died mid-voyage; ONE of his ships completed the circumnavigation.
+
+<BadFact source="reading too fast" certainty="0%" title="MISCONCEPTION 6">
+  The pope's line of demarcation and the Treaty of Tordesillas are the same thing.
+</BadFact>
+
+Two steps, one year apart: pope draws the line (1493), then Spain and Portugal move it west themselves (1494), which is what put Brazil on Portugal's side. If a question says "the pope's line," it means 1493.
+
+## Cheat sheet
+
+The whole unit on one rail, two tables, and one recall drill. Print-brain material.
+
+<NumberLine
+  title="Period 1 on a number line"
+  min={1490}
+  max={1610}
+  step={10}
+  marks={[
+    { at: 1492, label: "Columbus + Granada", color: "#b91c1c" },
+    { at: 1494, label: "Tordesillas", color: "#b91c1c" },
+    { at: 1497, label: "Cabot", color: "#27272a" },
+    { at: 1498, label: "Da Gama", color: "#27272a" },
+    { at: 1521, label: "Aztecs fall", color: "#b91c1c" },
+    { at: 1532, label: "Incas fall", color: "#b91c1c" },
+    { at: 1542, label: "New Laws", color: "#27272a" },
+    { at: 1550, label: "Valladolid", color: "#27272a" },
+    { at: 1565, label: "St. Augustine", color: "#b91c1c" },
+    { at: 1587, label: "Roanoke", color: "#27272a" },
+    { at: 1607, label: "Jamestown", color: "#b91c1c" }
+  ]}
+  intervals={[{ from: 1491, to: 1607, label: "Period 1", color: "#b91c1c" }]}
+/>
+
+### Dates that decide questions
+
+| Year | Event | One-line significance |
+|---|---|---|
+| 1453 | Ottomans take Constantinople | Land route to Asia blocked; sea routes begin |
+| 1492 | Granada falls; Columbus lands (Oct 12) | Reconquista complete; permanent contact begins |
+| 1493 | Line of demarcation | Pope splits the world: west Spain, east Portugal |
+| 1494 | Treaty of Tordesillas | Line moved west; Brazil to Portugal |
+| 1497 | Cabot at Newfoundland | England's entire original claim |
+| 1498 | Da Gama reaches India | Portugal wins the eastern route |
+| 1521 | Tenochtitlan falls | Cortes conquers the Aztecs |
+| 1532 | Inca conquest | Pizarro; silver floods to Spain |
+| 1542 | New Laws | Las Casas's reforms; partly repealed |
+| 1550-51 | Valladolid Debate | Las Casas vs Sepulveda; no clear winner |
+| 1565 | St. Augustine | Oldest European city in the U.S. (Spanish) |
+| 1587 | Roanoke | England's Lost Colony fails |
+| 1607 | Jamestown | First permanent English settlement; period ends |
+
+### The three-empire comparison
+
+| | Spain | England | France |
+|---|---|---|---|
+| Found | Large native empires | Small coastal tribes | Fur-rich woodlands |
+| Came as | Single men | Families | Traders + priests |
+| Native policy | Subjugate + convert (encomienda, caste system) | Expel inland | Ally + trade (helped Hurons vs Iroquois) |
+| Intermarriage | Common (mestizos) | Rare | Some, via trade ties |
+| Footprint by 1610 | St. Augustine, Santa Fe, empire to the south | Jamestown (1607) | Quebec (1608) |
+
+### Cold-recall drill
+
+Work the modes left to right: read, cloze, first letters, then say it cold.
+
+<Memorize
+  title="Unit 1 cold-recall sheet"
+  attribution="Key terms by theme, AMSCO Chapter 1"
+  text={`Exchange: corn, horses, disease, Columbian Exchange.
+Labor: encomienda, asiento, slavery.
+Migration: land bridge, Adena-Hopewell, Hokokam, Anasazi, Pueblos, Woodland mound builders, Lakota Sioux.
+Politics: Mayas, Incas, Aztecs, conquistadores, Cortes, Pizarro, New Laws of 1542, Roanoke Island.
+Trade: compass, printing press, Ferdinand and Isabella, Protestant Reformation, Henry the Navigator, Columbus, Treaty of Tordesillas, slave trade, nation-state.
+Explorers: Cabot for England, Cartier and Champlain for France, Hudson for the Dutch.
+Values: Las Casas, Valladolid Debate, Sepulveda.
+American Indians: Algonquian, Siouan, Iroquois Confederation, longhouses.`}
+/>
+
+### Vocab crossword
+
+<Crossword
+  title="Unit 1 vocabulary"
+  words={[
+    { answer: "MAIZE", clue: "The crop whose slow northward spread kept northern societies small" },
+    { answer: "TENOCHTITLAN", clue: "Aztec capital of about 200,000 people" },
+    { answer: "CAHOKIA", clue: "Mound-builder city of up to 30,000 near East St. Louis" },
+    { answer: "IROQUOIS", clue: "Five-nation confederation in the Mohawk Valley" },
+    { answer: "GRANADA", clue: "Last Moorish stronghold, fell in 1492" },
+    { answer: "TORDESILLAS", clue: "1494 treaty that gave Portugal its claim to Brazil" },
+    { answer: "CORTES", clue: "Conquistador who toppled the Aztecs" },
+    { answer: "PIZARRO", clue: "Conquistador who toppled the Incas" },
+    { answer: "ENCOMIENDA", clue: "Royal grant of land plus forced native labor" },
+    { answer: "ASIENTO", clue: "Per-person tax on imported enslaved Africans" },
+    { answer: "VALLADOLID", clue: "City that hosted the 1550 debate on native humanity" },
+    { answer: "SMALLPOX", clue: "The deadliest cargo of the Columbian Exchange" },
+    { answer: "CABOT", clue: "Italian captain whose 1497 voyage created England's claim" },
+    { answer: "JAMESTOWN", clue: "1607 settlement that closes the period" }
+  ]}
+/>
+
+## Short answer (AI graded)
+
+Write real paragraphs in your own words. The tutor scores each out of 5 and tells you what a grader would dock.
+
+<ShortAnswer
+  title="Unit 1 short answer"
+  questions={[
+    {
+      q: "Explain how the environment shaped TWO different Native American culture regions before European contact.",
+      rubric: "Any two regions with a clear environment-to-culture link. Southwest: arid land forced irrigation farming and stone or cliff dwellings (Hohokam, Anasazi, Pueblos). Northwest Coast: rich coastal ecosystem allowed permanent plank-house villages without farming, plus totem-pole culture. Great Plains: grassland and buffalo herds produced nomadic tepee-dwelling hunters alongside river-valley farmers in earthen lodges. Northeast: soil-exhausting farming forced periodic moves; longhouse villages (Iroquois). Mississippi Valley: rich river land supported permanent mound-building settlements like Cahokia (up to 30,000 people).",
+      points: 5,
+    },
+    {
+      q: "Explain TWO developments in Europe that made the Age of Exploration possible, and give a specific example of each.",
+      rubric: "Any two of four, each with an example. Technology: Renaissance improvements to the compass (via Arabs from China), gunpowder, shipbuilding, mapmaking, printing press (1450s). Religion: completed Reconquista (Granada 1492) energized Catholic Spain; later, Reformation rivalry made Catholic and Protestant powers race to spread their faiths. Trade: Ottoman capture of Constantinople (1453) blocked the land route, pushing Portugal around Africa (da Gama to India, 1498) and Spain west (Columbus, 1492). Politics: rising nation-states (Spain unified under Isabella and Ferdinand) could fund voyages and wanted trade revenue.",
+      points: 5,
+    },
+    {
+      q: "Describe the Columbian Exchange in both directions and explain its single most important demographic consequence.",
+      rubric: "From Americas to Old World: corn, white and sweet potatoes, tomatoes, beans, tobacco (plus syphilis). From Old World to Americas: horses, pigs, sugar cane, bluegrasses, the wheel, iron implements, guns, and diseases (smallpox, measles). Most important consequence: catastrophic native depopulation, a mortality rate above 90 percent, because natives had no immunity to Eurasian diseases; entire tribal communities disappeared, which in turn drove the shift to enslaved African labor (asiento).",
+      points: 5,
+    },
+    {
+      q: "Compare the policies of Spain, England, and France toward Native Americans, and explain ONE reason for the difference.",
+      rubric: "Spain subjugated: conquered organized empires, extracted labor through the encomienda, intermarried (mestizo caste society), converted through missions. England expelled: settled where there were no large empires, arrived in families, took land as populations grew, pushed small tribes inland with little intermarriage. France allied: sought furs and converts, built trading posts with few settlers, and gave military support to allies like the Hurons against the Iroquois. Reasons for difference: what each found (empires vs small tribes vs fur country), who migrated (single men vs families vs traders), and each empire's economic goal (mining and plantations vs farmland vs fur trade).",
+      points: 5,
+    }
+  ]}
+/>
+
+## Fill in the blanks
+
+Last recall pass on the numbers and names.
+
+<FillInBlanks
+  title="Dates, names, systems"
+  prompts={[
+    { text: "The period runs from ___ to ___.", answers: ["1491", "1607"] },
+    { text: "Columbus landed in the Bahamas on October 12, ___, the same year the Spanish took ___ from the Moors.", answers: ["1492", ["Granada"]] },
+    { text: "The Treaty of ___ (1494) moved the pope's line west, giving Portugal its claim to ___.", answers: [["Tordesillas"], ["Brazil"]] },
+    { text: "The Aztec capital ___ fell to ___ in 1521.", answers: [["Tenochtitlan"], ["Cortes", "Hernan Cortes"]] },
+    { text: "___ conquered the Incas in ___ (the country).", answers: [["Pizarro", "Francisco Pizarro"], ["Peru"]] },
+    { text: "The ___ system granted Spaniards native land and labor; the ___ system taxed each imported enslaved African.", answers: [["encomienda"], ["asiento"]] },
+    { text: "The priest ___ won the New Laws of ___ and debated Sepulveda at Valladolid.", answers: [["Las Casas", "Bartolome de Las Casas"], ["1542"]] },
+    { text: "England's claim rested on ___ (1497); France's began with Verrazano (1524) and ___ (1534).", answers: [["Cabot", "John Cabot"], ["Cartier", "Jacques Cartier"]] },
+    { text: "The oldest European city in the U.S. is ___, founded by Spain in ___.", answers: [["St. Augustine", "Saint Augustine"], ["1565"]] },
+    { text: "Raleigh's lost colony at ___ failed in 1587; ___ succeeded in 1607.", answers: [["Roanoke", "Roanoke Island"], ["Jamestown"]] },
+    { text: "Champlain founded ___ in 1608; Henry Hudson sailed for the ___ in 1609.", answers: [["Quebec"], ["Netherlands", "Dutch"]] },
+    { text: "Native population decline after contact: more than ___ percent, mostly from ___.", answers: [["90"], ["disease", "diseases", "smallpox"]] }
+  ]}
+/>
+
+## Study session
+
+<Pomodoro defaultMinutes={25} />
+
+<Poll
+  question="Which Unit 1 topic feels shakiest right now?"
+  options={["Culture regions and environment", "Causes of exploration", "Columbian Exchange details", "Encomienda vs asiento vs caste", "Explorers and their nations", "Spain vs England vs France policies"]}
+  storageKey="apush-u1-difficulty-poll"
+/>
+
+<div class="not-prose relative my-12 rounded-2xl overflow-hidden" style="min-height:200px;">
+  <AuroraBackground />
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+    <p class="font-serif text-2xl text-white italic mb-3">"Thirty-three days after my departure... I reached the Indian Sea."</p>
+    <p class="text-white/70 text-sm">Christopher Columbus, 1493. He was wrong about the sea, and it changed everything anyway.</p>
+  </div>
+</div>
+
+<Callout type="tip" title="Final study tip">
+  Visual learners: run the guide backwards the night before the test. Start at the number line, redraw the three-empire table from memory, replay the Columbian Exchange animation, then spin the globe and narrate each marker out loud. If you can talk through the pictures, the multiple choice is already done.
+</Callout>
