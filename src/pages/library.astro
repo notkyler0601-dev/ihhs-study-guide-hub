@@ -13,26 +13,19 @@ const allGuides = (await getCollection('guides', ({ data }) => !data.draft))
     return b.data.date.valueOf() - a.data.date.valueOf();
   });
 
-const FINALS_LABEL = 'Finals';
 const GRADE_10 = '10th Grade';
 const GRADE_9 = '9th Grade';
 
 const hasCat = (g: (typeof allGuides)[number], c: string) => (g.data.categories ?? []).includes(c);
 
-// Finals guides are pulled out into their own headlined section at the top
-// of the library. They are ALSO removed from the grade sections below so they
-// only appear once on the page.
-const finalsGuides = allGuides.filter((g) => hasCat(g, FINALS_LABEL));
-const restGuides = allGuides.filter((g) => !hasCat(g, FINALS_LABEL));
-
-// The back catalog is grouped by grade level. Every study guide written so
-// far is from freshman year, so guides default to the 9th Grade section
-// unless they opt into 10th Grade via a "10th Grade" category (or carry an
-// explicit "9th Grade" one). Site tours and other non-study pages land in a
-// small "everything else" group at the end.
-const grade10Guides = restGuides.filter((g) => hasCat(g, GRADE_10));
-const otherGuides = restGuides.filter((g) => !hasCat(g, GRADE_10) && g.data.subject === 'Getting Started');
-const grade9Guides = restGuides.filter((g) => !grade10Guides.includes(g) && !otherGuides.includes(g));
+// The library is grouped by grade level. Every study guide written so far
+// (finals included) is from freshman year, so guides default to the 9th
+// Grade section unless they opt into 10th Grade via a "10th Grade" category.
+// Site tours and other non-study pages land in a small "everything else"
+// group at the end.
+const grade10Guides = allGuides.filter((g) => hasCat(g, GRADE_10));
+const otherGuides = allGuides.filter((g) => !hasCat(g, GRADE_10) && g.data.subject === 'Getting Started');
+const grade9Guides = allGuides.filter((g) => !grade10Guides.includes(g) && !otherGuides.includes(g));
 
 const gradeSections = [
   { id: 'grade-10', label: GRADE_10, blurb: 'Sophomore year guides.', guides: grade10Guides },
@@ -40,10 +33,10 @@ const gradeSections = [
   { id: 'other', label: 'Everything else', blurb: 'Tours and extras.', guides: otherGuides },
 ];
 
-// Collect every subject label across primary + categories so the filter covers all of them.
-// We deliberately exclude "Finals" and the grade labels from the subject filter chips
-// because each of those already has its own dedicated section on the page.
-const SECTION_LABELS = new Set([FINALS_LABEL, GRADE_10, GRADE_9]);
+// Collect every subject label across primary + categories so the filter covers
+// all of them (including "Finals", which is now just a filter chip). Only the
+// grade labels are excluded, since each grade already has its own section.
+const SECTION_LABELS = new Set([GRADE_10, GRADE_9]);
 const subjectSet = new Set<string>();
 for (const g of allGuides) {
   if (!SECTION_LABELS.has(g.data.subject)) subjectSet.add(g.data.subject);
@@ -65,46 +58,6 @@ const subjects = [...subjectSet].sort();
         {allGuides.length} guide{allGuides.length === 1 ? '' : 's'} across {subjects.length} subject{subjects.length === 1 ? '' : 's'}. Filter, search, dive in.
       </p>
     </div>
-
-    {finalsGuides.length > 0 && (
-      <section id="finals-section" class="mb-12">
-        <div class="relative overflow-hidden rounded-3xl border-2 border-accent-700 dark:border-accent-600 bg-gradient-to-br from-accent-50 via-white to-white dark:from-accent-950/40 dark:via-ink-950 dark:to-ink-950 p-6 sm:p-8 mb-6">
-          <div class="absolute -top-3 -right-3 rotate-12 bg-accent-700 dark:bg-accent-600 text-white text-[10px] font-mono font-bold tracking-[0.18em] px-4 py-1.5 rounded-bl-md shadow-lift">
-            FINAL EXAMS
-          </div>
-          <div class="text-xs uppercase tracking-[0.18em] text-accent-700 dark:text-accent-400 font-semibold mb-2">Finals</div>
-          <h2 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance mb-2">
-            Cram for the <span class="gradient-text">big one</span>
-          </h2>
-          <p class="text-base text-ink-600 dark:text-ink-300 leading-relaxed max-w-2xl">
-            {finalsGuides.length} guide{finalsGuides.length === 1 ? '' : 's'} built specifically for end-of-semester finals: comprehensive coverage, mock tests, and study aids you can drill the night before.
-          </p>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {finalsGuides.map((g) => (
-            <GuideCard
-              href={`/guides/${g.id.replace(/\.(md|mdx)$/, '')}`}
-              title={g.data.title}
-              description={g.data.description}
-              subject={g.data.subject}
-              categories={g.data.categories}
-              estimatedTime={g.data.estimatedTime}
-              tags={g.data.tags}
-              date={g.data.date}
-              comingSoon={g.data.comingSoon}
-            />
-          ))}
-        </div>
-      </section>
-    )}
-
-    {finalsGuides.length > 0 && (
-      <div class="flex items-center gap-3 mb-8">
-        <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800"></div>
-        <div class="text-[11px] uppercase tracking-[0.18em] font-semibold text-ink-500">Browse by grade</div>
-        <div class="flex-1 h-px bg-ink-200 dark:bg-ink-800"></div>
-      </div>
-    )}
 
     <div class="surface rounded-2xl p-5 mb-8">
       <div class="flex flex-col gap-4">
