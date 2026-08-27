@@ -68,18 +68,20 @@ const groupList = Object.values(groups);
     </div>
   )}
 
-  <div class="p-3 sm:p-5">
-    <div data-md-map class="relative select-none rounded-lg overflow-hidden ring-1 ring-ink-200 dark:ring-ink-700" style="touch-action: pan-y;">
-      <img src={image} alt={alt} class="block w-full h-auto" draggable="false" />
+  <div class="p-3 sm:p-5 md:grid md:grid-cols-[minmax(0,1fr)_236px] md:gap-4 md:items-start">
+    <div data-md-map class="relative select-none w-fit max-w-full mx-auto rounded-lg overflow-hidden ring-1 ring-ink-200 dark:ring-ink-700" style="touch-action: pan-y;">
+      <img src={image} alt={alt} class="block w-auto h-auto max-w-full max-h-[66vh]" draggable="false" />
     </div>
 
-    <div data-md-tray class="mt-4 flex flex-wrap gap-2 min-h-[44px] rounded-xl border border-dashed border-ink-300 dark:border-ink-700 p-2.5" aria-label="Label tray"></div>
+    <div class="mt-4 md:mt-0 md:sticky md:top-24">
+      <div data-md-tray class="flex flex-wrap content-start gap-1.5 min-h-[44px] rounded-xl border border-dashed border-ink-300 dark:border-ink-700 p-2.5 md:max-h-[52vh] md:overflow-y-auto" aria-label="Label tray"></div>
 
-    <div class="mt-3 flex flex-wrap items-center gap-2">
-      <span data-md-status class="text-xs text-ink-600 dark:text-ink-300 flex-1 min-w-[160px]" aria-live="polite"></span>
-      <button type="button" data-md-check class="hidden px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-white text-xs font-semibold">Check answers</button>
-      <button type="button" data-md-reveal class="px-3 py-1.5 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold">Reveal rest</button>
-      <button type="button" data-md-reset class="px-3 py-1.5 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold">Reset</button>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span data-md-status class="text-xs text-ink-600 dark:text-ink-300 w-full md:order-last" aria-live="polite"></span>
+        <button type="button" data-md-check class="hidden px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-white text-xs font-semibold">Check answers</button>
+        <button type="button" data-md-reveal class="px-3 py-1.5 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold">Reveal rest</button>
+        <button type="button" data-md-reset class="px-3 py-1.5 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold">Reset</button>
+      </div>
     </div>
   </div>
 </figure>
@@ -127,8 +129,13 @@ const groupList = Object.values(groups);
   [data-mapdrop] .md-chip.locked { cursor: default; border-color: #16a34a; box-shadow: 0 0 0 1.5px rgba(22, 163, 74, 0.6); }
   [data-mapdrop] .md-chip.wrong { border-color: #dc2626; box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.65); }
   [data-mapdrop] .md-chip.revealed { border-style: dashed; opacity: 0.85; }
-  [data-mapdrop] .md-ghost {
-    position: fixed; z-index: 60; pointer-events: none; transform: translate(-50%, -120%);
+  .md-ghost {
+    position: fixed; z-index: 9999; pointer-events: none;
+    transform: translate(-50%, -120%) scale(1.08);
+    display: inline-flex; align-items: center; border-radius: 8px; font-weight: 600;
+    background: #fff; color: #27272a; border: 1.5px solid #a8a29e;
+    padding: 3px 9px; font-size: 12px; line-height: 1.2;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
   }
 </style>
 
@@ -279,7 +286,12 @@ const groupList = Object.values(groups);
             document.body.appendChild(ghost);
             chip.classList.add('dragging');
           }
-          if (dragging && ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; }
+          if (dragging && ghost) {
+            ghost.style.left = e.clientX + 'px';
+            ghost.style.top = e.clientY + 'px';
+            const near = nearestZone(e.clientX, e.clientY);
+            Object.entries(zoneEls).forEach(([l, z]) => z.classList.toggle('armed', l === near));
+          }
         });
 
         chip.addEventListener('pointerup', (e) => {
@@ -288,6 +300,7 @@ const groupList = Object.values(groups);
           if (dragging) {
             ghost?.remove(); ghost = null;
             chip.classList.remove('dragging');
+            Object.values(zoneEls).forEach((z) => z.classList.remove('armed'));
             const target = nearestZone(e.clientX, e.clientY);
             if (target) {
               if (chip.dataset.placedOn) unplace(chip);
@@ -311,6 +324,7 @@ const groupList = Object.values(groups);
         chip.addEventListener('pointercancel', () => {
           ghost?.remove(); ghost = null; dragging = false;
           chip.classList.remove('dragging');
+          Object.values(zoneEls).forEach((z) => z.classList.remove('armed'));
         });
       });
 
