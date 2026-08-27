@@ -37,8 +37,9 @@ interface Props {
   mode?: 'learn' | 'test';
   note?: string;
   storageKey?: string;
+  size?: 'normal' | 'big';
 }
-const { title, image, alt = '', zones, groups = {}, mode = 'learn', note, storageKey } = Astro.props;
+const { title, image, alt = '', zones, groups = {}, mode = 'learn', note, storageKey, size = 'normal' } = Astro.props;
 const id = 'mapdrop-' + Math.random().toString(36).slice(2, 9);
 const conf = JSON.stringify({ zones, groups, mode, storageKey: storageKey ?? null });
 const groupList = Object.values(groups);
@@ -74,7 +75,7 @@ const groupList = Object.values(groups);
 
   <div class="p-3 sm:p-5 md:grid md:grid-cols-[minmax(0,1fr)_236px] md:gap-4 md:items-start">
     <div data-md-map class="relative select-none w-fit max-w-full mx-auto rounded-lg overflow-hidden ring-1 ring-ink-200 dark:ring-ink-700" style="touch-action: pan-y;">
-      <img src={image} alt={alt} class="block w-auto h-auto max-w-full max-h-[66vh]" draggable="false" />
+      <img src={image} alt={alt} class:list={["block w-auto h-auto max-w-full", size === 'big' ? 'max-h-[92vh]' : 'max-h-[66vh]']} draggable="false" />
     </div>
 
     <div class="mt-4 md:mt-0 md:sticky md:top-24">
@@ -307,6 +308,10 @@ const groupList = Object.values(groups);
           if (dragging && ghost) {
             ghost.style.left = e.clientX + 'px';
             ghost.style.top = e.clientY + 'px';
+            if (!document.fullscreenElement && !root.classList.contains('md-fake-fs')) {
+              if (e.clientY < 90) window.scrollBy(0, -16);
+              else if (e.clientY > window.innerHeight - 90) window.scrollBy(0, 16);
+            }
             const near = nearestZone(e.clientX, e.clientY);
             Object.entries(zoneEls).forEach(([l, z]) => z.classList.toggle('armed', l === near));
           }
