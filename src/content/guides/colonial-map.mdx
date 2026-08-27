@@ -1,0 +1,429 @@
+---
+title: "13 Colonies Map Lab"
+description: "A drag-and-drop practice lab for the 13 British Colonies map test: place every colony, starred settlement, and geographic feature, then drill the regions, the Fall Line, and Anglicization."
+subject: "Social Studies"
+categories: ["10th Grade", "AP Exams"]
+estimatedTime: 35
+date: 2026-08-27
+tags: ["apush", "unit-2", "colonies", "map", "drag-and-drop", "visual"]
+authors: ["IHHS"]
+---
+
+import Callout from '../../components/Callout.astro';
+import Collapsible from '../../components/Collapsible.astro';
+import Quiz from '../../components/Quiz.astro';
+import Flashcards from '../../components/Flashcards.astro';
+import MapDrop from '../../components/MapDrop.astro';
+import DragSort from '../../components/DragSort.astro';
+import FillInBlanks from '../../components/FillInBlanks.astro';
+import Typewriter from '../../components/Typewriter.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+
+<ReadingProgress />
+
+<div class="not-prose my-8 rounded-3xl overflow-hidden bg-gradient-to-br from-ink-950 via-accent-950 to-ink-900 px-6 py-14 text-center shadow-soft">
+  <p class="font-mono uppercase tracking-[0.3em] text-xs text-white/70 mb-4">APUSH · Map Test Prep</p>
+  <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">13 Colonies Map Lab</h1>
+  <div class="text-white/90 font-serif text-lg md:text-2xl italic">
+    <Typewriter text="Thirteen colonies. Three regions. One map to own." speed={45} />
+  </div>
+</div>
+
+<Callout type="insight" title="How this lab works">
+  This is your class map worksheet, made drag-and-drop. **Drag** each chip onto its dashed circle, or **tap a chip, then tap a circle** (easier on a trackpad). Tap a placed chip to send it back. **Learn mode** corrects you instantly; **Test mode** waits until you press Check, exactly like the real quiz. Your best Test score saves on this device. Run the three warm-up maps, then take on the full worksheet at the bottom.
+</Callout>
+
+## The three regions first
+
+The worksheet's "Color-" task is really a sorting task: every colony belongs to one of three regions. The chips in the first activity are already tinted with these colors, so placing them teaches the coloring for free.
+
+<div class="not-prose my-8 grid md:grid-cols-3 gap-4">
+  <div class="rounded-2xl border-2 p-5" style="border-color:#7c3aed; background:rgba(124,58,237,0.06);">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold mb-2" style="color:#7c3aed;">New England</p>
+    <p class="font-serif text-2xl font-bold text-ink-900 dark:text-ink-100 mb-2">NH · MA · RI · CT</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Rocky soil, Puritan towns, cod and shipbuilding. Memory hook: <strong>"My Cat Ran North"</strong> (MA, CT, RI, NH).</p>
+  </div>
+  <div class="rounded-2xl border-2 p-5" style="border-color:#ea580c; background:rgba(234,88,12,0.06);">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold mb-2" style="color:#ea580c;">Middle</p>
+    <p class="font-serif text-2xl font-bold text-ink-900 dark:text-ink-100 mb-2">NY · NJ · PA · DE</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Breadbasket colonies, diverse and tolerant. Memory hook: <strong>"Nice Jerseys Play Defense"</strong> (NY, NJ, PA, DE).</p>
+  </div>
+  <div class="rounded-2xl border-2 p-5" style="border-color:#0e7490; background:rgba(14,116,144,0.06);">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold mb-2" style="color:#0e7490;">Southern</p>
+    <p class="font-serif text-2xl font-bold text-ink-900 dark:text-ink-100 mb-2">MD · VA · NC · SC · GA</p>
+    <p class="text-sm text-ink-700 dark:text-ink-300">Cash crops and plantations. Memory hook: <strong>"Maybe Virginia Never Sends Gifts"</strong> (MD, VA, NC, SC, GA).</p>
+  </div>
+</div>
+
+<Callout type="note" title="Two details your key expects">
+  On this worksheet **Maryland colors as Southern**, and the **Chesapeake Region** means MD plus VA wrapped around Chesapeake Bay (tobacco country). Some textbooks split "Chesapeake" out as its own category; for this test, follow the key.
+</Callout>
+
+## Warm-up 1: the 13 colonies
+
+<MapDrop
+  title="Place the 13 colonies"
+  note="Chips are tinted by region: purple New England, orange Middle, teal Southern."
+  image="/colonial-map-blank.png"
+  alt="Blank 13 British Colonies map with drop zones over each colony"
+  zones={[
+    { x: 81.9, y: 19.1, label: "NH", group: "ne" },
+    { x: 83.5, y: 29.3, label: "MA", group: "ne" },
+    { x: 89.1, y: 31.2, label: "RI", group: "ne" },
+    { x: 83.5, y: 32.8, label: "CT", group: "ne" },
+    { x: 69.9, y: 31.7, label: "NY", group: "mid" },
+    { x: 76.2, y: 40.4, label: "NJ", group: "mid" },
+    { x: 66.4, y: 38.2, label: "PA", group: "mid" },
+    { x: 73.6, y: 45.4, label: "DE", group: "mid" },
+    { x: 67.0, y: 46.0, label: "MD", group: "south" },
+    { x: 64.6, y: 53.0, label: "VA", group: "south" },
+    { x: 60.9, y: 61.8, label: "NC", group: "south" },
+    { x: 54.2, y: 70.5, label: "SC", group: "south" },
+    { x: 47.2, y: 77.8, label: "GA", group: "south" }
+  ]}
+  groups={{
+    ne: { color: "#7c3aed", name: "New England" },
+    mid: { color: "#ea580c", name: "Middle" },
+    south: { color: "#0e7490", name: "Southern" }
+  }}
+  mode="learn"
+  storageKey="colonial-colonies"
+/>
+
+<Callout type="tip" title="The four that trip everyone">
+  **RI vs CT:** Rhode Island is the tiny one ON the coast; Connecticut sits just west of it. **NJ vs DE:** New Jersey hugs the coast below New York; Delaware is the little wedge on the bay south of it. When in doubt, find the Hudson River first: New York is west of it, New England east of it.
+</Callout>
+
+## Warm-up 2: the starred settlements
+
+<MapDrop
+  title="Place the 15 starred settlements"
+  note="Black stars are English. Blue are French. Red is Spanish. Three of these were never British at all."
+  image="/colonial-map-blank.png"
+  alt="Blank 13 British Colonies map with drop zones over each starred settlement"
+  zones={[
+    { x: 75.3, y: 19.1, label: "Quebec", group: "french" },
+    { x: 76.0, y: 27.6, label: "Albany", group: "english" },
+    { x: 86.9, y: 27.7, label: "Boston, MBC", group: "english" },
+    { x: 90.1, y: 29.7, label: "Plymouth", group: "english" },
+    { x: 86.7, y: 31.5, label: "Providence", group: "english" },
+    { x: 80.5, y: 33.6, label: "New Haven", group: "english" },
+    { x: 78.8, y: 37.5, label: "New York/New Amsterdam", group: "english" },
+    { x: 74.1, y: 40.5, label: "Philadelphia", group: "english" },
+    { x: 70.6, y: 44.7, label: "Baltimore", group: "english" },
+    { x: 71.5, y: 52.6, label: "Williamsburg/Jamestown", group: "english" },
+    { x: 77.5, y: 59.6, label: "New Bern", group: "english" },
+    { x: 63.1, y: 73.9, label: "Charleston", group: "english" },
+    { x: 58.2, y: 79.5, label: "Savannah", group: "english" },
+    { x: 57.7, y: 88.5, label: "St. Augustine", group: "spanish" },
+    { x: 18.4, y: 91.0, label: "New Orleans", group: "french" }
+  ]}
+  groups={{
+    english: { color: "#27272a", name: "English" },
+    french: { color: "#1d4ed8", name: "French" },
+    spanish: { color: "#b91c1c", name: "Spanish" }
+  }}
+  mode="learn"
+  storageKey="colonial-settlements"
+/>
+
+### Settlement cheat table
+
+| Settlement | Where | Whose | Why it matters |
+|---|---|---|---|
+| Jamestown / Williamsburg | VA | English | 1607, first permanent English settlement; Williamsburg the later capital |
+| Plymouth | MA coast | English | 1620, Pilgrims and the Mayflower Compact |
+| Boston, MBC | MA | English | 1630, Massachusetts Bay Colony's Puritan hub |
+| Providence | RI | English | 1636, Roger Williams's haven for religious dissenters |
+| New Haven | CT | English | 1638, strict Puritan port town |
+| New York / New Amsterdam | NY harbor | Dutch, then English | Dutch 1626; England seized and renamed it in 1664 |
+| Albany | Upper Hudson | Dutch, then English | began as a Dutch fur-trading post |
+| Philadelphia | PA | English | 1682, Penn's Quaker city |
+| Baltimore | MD | English | Chesapeake tobacco port |
+| New Bern | NC | English | Swiss and German settlers on the Carolina coast |
+| Charleston | SC | English | 1670, the great southern port city |
+| Savannah | GA | English | 1733, Oglethorpe's planned city in the buffer colony |
+| Quebec | St. Lawrence | French | 1608, Champlain's capital of New France |
+| New Orleans | Mississippi mouth | French | 1718, controls Mississippi River trade |
+| St. Augustine | FL | Spanish | 1565, oldest European city in the future U.S. |
+
+## Warm-up 3: geography and borders
+
+<MapDrop
+  title="Place the geography, borders, and rival empires"
+  note="Everything on the worksheet that is not a colony or a town: rivers, mountains, oceans, lines, and neighbors."
+  image="/colonial-map-blank.png"
+  alt="Blank 13 British Colonies map with drop zones over geographic features"
+  zones={[
+    { x: 33.0, y: 21.9, label: "Great Lakes" },
+    { x: 12.7, y: 73.4, label: "Mississippi River" },
+    { x: 52.0, y: 58.0, label: "Appalachian Mountains" },
+    { x: 88.6, y: 77.1, label: "Atlantic Ocean" },
+    { x: 33.0, y: 95.5, label: "Gulf of Mexico" },
+    { x: 76.9, y: 23.9, label: "Hudson River" },
+    { x: 59.1, y: 43.9, label: "Mason-Dixon Line" },
+    { x: 58.5, y: 64.5, label: "Fall Line" },
+    { x: 59.1, y: 11.3, label: "New France/Canada" },
+    { x: 61.6, y: 93.7, label: "New Spain" },
+    { x: 70.6, y: 49.6, label: "Chesapeake Region" }
+  ]}
+  mode="learn"
+  storageKey="colonial-geography"
+/>
+
+<div class="not-prose my-8 grid md:grid-cols-2 gap-4">
+  <div class="rounded-2xl border-2 border-accent-700 bg-accent-50 dark:bg-accent-950/30 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-accent-800 dark:text-accent-300 mb-2">Worksheet blank #1</p>
+    <h3 class="font-serif text-xl font-bold text-ink-900 dark:text-ink-100 mb-2">Fall Line</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">Where rivers tumble off the hard rock of the Piedmont onto the soft coastal plain, making <strong>waterfalls and rapids</strong>. Ships could sail upriver no farther, so <strong>port towns grew there</strong>, and it marked the practical <strong>western edge of early settlement</strong>. On your map it is the red line.</p>
+  </div>
+  <div class="rounded-2xl border-2 border-ink-700 bg-ink-50 dark:bg-ink-950/40 p-5">
+    <p class="font-mono uppercase tracking-[0.18em] text-[11px] font-bold text-ink-700 dark:text-ink-300 mb-2">Worksheet blank #2</p>
+    <h3 class="font-serif text-xl font-bold text-ink-900 dark:text-ink-100 mb-2">Anglicization</h3>
+    <p class="text-sm text-ink-800 dark:text-ink-200">The process by which the colonies became <strong>more English over time</strong>: English language, law, courts, consumer goods, and institutions spreading through colonial life. Different colonies, one increasingly shared British culture.</p>
+  </div>
+</div>
+
+<Callout type="definition" title="The Mason-Dixon Line, since it always gets asked">
+  Surveyed in the 1760s to settle a border dispute between <strong>Pennsylvania and Maryland</strong> (the green line on your map). Decades later it became shorthand for the divide between free North and slave South, but for this unit it is simply the PA-MD boundary.
+</Callout>
+
+## The full worksheet, one shot
+
+Everything at once: 39 chips, Test mode. Place them all, press Check, and chase a perfect score. This is the closest thing to sitting the actual map quiz.
+
+<MapDrop
+  title="The whole map: colonies + settlements + geography"
+  note="Test mode. Nothing is graded until you press Check, just like the real thing."
+  image="/colonial-map-blank.png"
+  alt="Blank 13 British Colonies map with every drop zone from the worksheet"
+  zones={[
+    { x: 81.9, y: 19.1, label: "NH", group: "ne" },
+    { x: 83.5, y: 29.3, label: "MA", group: "ne" },
+    { x: 89.1, y: 31.2, label: "RI", group: "ne" },
+    { x: 83.5, y: 32.8, label: "CT", group: "ne" },
+    { x: 69.9, y: 31.7, label: "NY", group: "mid" },
+    { x: 76.2, y: 40.4, label: "NJ", group: "mid" },
+    { x: 66.4, y: 38.2, label: "PA", group: "mid" },
+    { x: 73.6, y: 45.4, label: "DE", group: "mid" },
+    { x: 67.0, y: 46.0, label: "MD", group: "south" },
+    { x: 64.6, y: 53.0, label: "VA", group: "south" },
+    { x: 60.9, y: 61.8, label: "NC", group: "south" },
+    { x: 54.2, y: 70.5, label: "SC", group: "south" },
+    { x: 47.2, y: 77.8, label: "GA", group: "south" },
+    { x: 75.3, y: 19.1, label: "Quebec", group: "french" },
+    { x: 76.0, y: 27.6, label: "Albany", group: "english" },
+    { x: 86.9, y: 27.7, label: "Boston, MBC", group: "english" },
+    { x: 90.1, y: 29.7, label: "Plymouth", group: "english" },
+    { x: 86.7, y: 31.5, label: "Providence", group: "english" },
+    { x: 80.5, y: 33.6, label: "New Haven", group: "english" },
+    { x: 78.8, y: 37.5, label: "New York/New Amsterdam", group: "english" },
+    { x: 74.1, y: 40.5, label: "Philadelphia", group: "english" },
+    { x: 70.6, y: 44.7, label: "Baltimore", group: "english" },
+    { x: 71.5, y: 52.6, label: "Williamsburg/Jamestown", group: "english" },
+    { x: 77.5, y: 59.6, label: "New Bern", group: "english" },
+    { x: 63.1, y: 73.9, label: "Charleston", group: "english" },
+    { x: 58.2, y: 79.5, label: "Savannah", group: "english" },
+    { x: 57.7, y: 88.5, label: "St. Augustine", group: "spanish" },
+    { x: 18.4, y: 91.0, label: "New Orleans", group: "french" },
+    { x: 33.0, y: 21.9, label: "Great Lakes", group: "geo" },
+    { x: 12.7, y: 73.4, label: "Mississippi River", group: "geo" },
+    { x: 52.0, y: 58.0, label: "Appalachian Mountains", group: "geo" },
+    { x: 88.6, y: 77.1, label: "Atlantic Ocean", group: "geo" },
+    { x: 33.0, y: 95.5, label: "Gulf of Mexico", group: "geo" },
+    { x: 76.9, y: 23.9, label: "Hudson River", group: "geo" },
+    { x: 59.1, y: 43.9, label: "Mason-Dixon Line", group: "geo" },
+    { x: 58.5, y: 64.5, label: "Fall Line", group: "geo" },
+    { x: 59.1, y: 11.3, label: "New France/Canada", group: "geo" },
+    { x: 61.6, y: 93.7, label: "New Spain", group: "geo" },
+    { x: 70.6, y: 49.6, label: "Chesapeake Region", group: "geo" }
+  ]}
+  groups={{
+    ne: { color: "#7c3aed", name: "New England" },
+    mid: { color: "#ea580c", name: "Middle" },
+    south: { color: "#0e7490", name: "Southern" },
+    english: { color: "#27272a", name: "English settlement" },
+    french: { color: "#1d4ed8", name: "French" },
+    spanish: { color: "#b91c1c", name: "Spanish" },
+    geo: { color: "#57534e", name: "Geography" }
+  }}
+  mode="test"
+  storageKey="colonial-full"
+/>
+
+## North to south, no map
+
+Can you keep the coastline in order with the map closed? Drag into order.
+
+<DragSort
+  title="Order these colonies from NORTH to SOUTH"
+  items={[
+    "New Hampshire",
+    "Massachusetts",
+    "Pennsylvania",
+    "Maryland",
+    "Virginia",
+    "North Carolina",
+    "South Carolina",
+    "Georgia"
+  ]}
+/>
+
+## Self-quiz
+
+<Quiz
+  title="Map facts that show up on the written portion"
+  questions={[
+    {
+      q: "Which four colonies made up New England?",
+      choices: [
+        "NY, NJ, PA, and DE",
+        "MA, NY, CT, and NJ",
+        "NH, MA, RI, and CT",
+        "NH, VT, MA, and ME"
+      ],
+      answer: 2,
+      explain: "My Cat Ran North: MA, CT, RI, NH. Vermont and Maine were not separate colonies (Maine was part of Massachusetts)."
+    },
+    {
+      q: "The Mason-Dixon Line was surveyed to settle the boundary between",
+      choices: [
+        "Pennsylvania and Maryland",
+        "New York and New Jersey",
+        "Virginia and North Carolina",
+        "the colonies and New France"
+      ],
+      answer: 0,
+      explain: "The green line on your map: the PA-MD border. Only later did it become the symbolic North-South divide."
+    },
+    {
+      q: "The Fall Line on the map marks",
+      choices: [
+        "the border between the British colonies and New France",
+        "the line dividing Puritan colonies from Anglican colonies",
+        "the westernmost ridge of the Appalachian Mountain chain",
+        "where rivers drop from the Piedmont to the coastal plain in falls"
+      ],
+      answer: 3,
+      explain: "Waterfalls and rapids stopped upriver shipping, so ports grew there and early settlement largely stayed east of it. It is the red line on your worksheet."
+    },
+    {
+      q: "The Chesapeake Region label on the map points to",
+      choices: [
+        "Pennsylvania and New Jersey",
+        "Maryland and Virginia around Chesapeake Bay",
+        "the Carolinas and Georgia",
+        "Delaware and southern New York"
+      ],
+      answer: 1,
+      explain: "MD plus VA wrapped around the bay: tobacco country. On this worksheet both still color as Southern colonies."
+    },
+    {
+      q: "St. Augustine, the starred city south of Georgia, belonged to",
+      choices: ["France", "England", "Spain", "the Netherlands"],
+      answer: 2,
+      explain: "Founded 1565 in Spanish Florida (New Spain on your map): the oldest European city in the future United States."
+    },
+    {
+      q: "Quebec and New Orleans were both",
+      choices: [
+        "French settlements anchoring New France",
+        "Spanish mission towns guarding the Gulf",
+        "English trading posts beyond the mountains",
+        "Dutch fur ports on major river mouths"
+      ],
+      answer: 0,
+      explain: "Blue stars on the key: Champlain's Quebec (1608) on the St. Lawrence and New Orleans (1718) at the mouth of the Mississippi bracketed the British colonies."
+    },
+    {
+      q: "Before the English renamed it, New York City was",
+      choices: [
+        "the Swedish port of Christina",
+        "the French outpost of Fort Caroline",
+        "the Spanish harbor of San Marcos",
+        "the Dutch town of New Amsterdam"
+      ],
+      answer: 3,
+      explain: "Dutch since 1626 at the mouth of the Hudson; England took it in 1664 and renamed it for the Duke of York. Albany upriver was also Dutch first."
+    },
+    {
+      q: "Anglicization, the term at the bottom of the worksheet, means",
+      choices: [
+        "the forced conversion of natives to the Church of England",
+        "the colonies becoming more English in culture over time",
+        "the replacement of colonial charters with royal governors",
+        "the migration of English families to the backcountry"
+      ],
+      answer: 1,
+      explain: "English language, law, goods, and institutions spreading through colonial life, pulling diverse colonies toward one shared British culture."
+    },
+    {
+      q: "Which of these is a MIDDLE colony?",
+      choices: ["Delaware", "Connecticut", "Maryland", "Georgia"],
+      answer: 0,
+      explain: "Nice Jerseys Play Defense: NY, NJ, PA, DE. Connecticut is New England; Maryland and Georgia are Southern."
+    },
+    {
+      q: "In the colonial era the Appalachian Mountains mattered because they",
+      choices: [
+        "held the richest farmland in British America",
+        "separated the Chesapeake from New England",
+        "stood as the western barrier of British settlement",
+        "supplied the gold that funded the colonies"
+      ],
+      answer: 2,
+      explain: "Settlement pooled between the Atlantic and the mountains. The ridge (and the Fall Line east of it) frames where colonial life actually happened."
+    }
+  ]}
+/>
+
+## Flashcards
+
+<Flashcards
+  cards={[
+    { front: "New England colonies", back: "NH, MA, RI, CT. (My Cat Ran North.) Purple on your key." },
+    { front: "Middle colonies", back: "NY, NJ, PA, DE. (Nice Jerseys Play Defense.) Orange on your key." },
+    { front: "Southern colonies", back: "MD, VA, NC, SC, GA. (Maybe Virginia Never Sends Gifts.) Teal on your key, Maryland included." },
+    { front: "Chesapeake Region", back: "Maryland plus Virginia around Chesapeake Bay. Tobacco country." },
+    { front: "Mason-Dixon Line", back: "Surveyed boundary between Pennsylvania and Maryland (the green line). Later shorthand for the North-South divide." },
+    { front: "Fall Line", back: "Where rivers drop from the Piedmont to the coastal plain in waterfalls. Upriver limit for ships, so ports grew there; early settlement stayed mostly east of it. The red line." },
+    { front: "Anglicization", back: "The colonies becoming more English over time: language, law, courts, consumer goods, institutions." },
+    { front: "Quebec", back: "French. Champlain, 1608, on the St. Lawrence. Capital of New France." },
+    { front: "New Orleans", back: "French, 1718, at the mouth of the Mississippi. Controls river trade." },
+    { front: "St. Augustine", back: "Spanish, 1565, in Florida (New Spain). Oldest European city in the future U.S." },
+    { front: "New York / New Amsterdam", back: "Dutch town at the Hudson's mouth (1626); seized and renamed by England in 1664. Albany was Dutch first too." },
+    { front: "Jamestown / Williamsburg", back: "Virginia. Jamestown 1607, first permanent English settlement; Williamsburg the later colonial capital." },
+    { front: "Plymouth vs Boston", back: "Plymouth: Pilgrims, 1620. Boston: Massachusetts Bay Colony Puritans, 1630. Both in MA." },
+    { front: "Providence", back: "Rhode Island, 1636. Roger Williams's haven for religious dissenters." },
+    { front: "Savannah", back: "Georgia, 1733. Oglethorpe's planned city in the buffer colony against Spanish Florida." },
+    { front: "Appalachian Mountains", back: "The western wall of colonial settlement, running behind all 13 colonies." }
+  ]}
+/>
+
+## Last blanks before the test
+
+<FillInBlanks
+  title="Speed round"
+  prompts={[
+    { text: "New England: NH, MA, RI, and ___.", answers: [["CT", "Connecticut"]] },
+    { text: "Middle colonies: NY, NJ, DE, and ___.", answers: [["PA", "Pennsylvania"]] },
+    { text: "The Mason-Dixon Line divides Pennsylvania from ___.", answers: [["Maryland", "MD"]] },
+    { text: "The red diagonal line on the map is the ___ Line.", answers: [["Fall"]] },
+    { text: "The Chesapeake Region wraps around the bay shared by Maryland and ___.", answers: [["Virginia", "VA"]] },
+    { text: "St. Augustine was founded by ___ in 1565.", answers: [["Spain", "the Spanish"]] },
+    { text: "Quebec and New Orleans belonged to ___.", answers: [["France", "the French"]] },
+    { text: "New York City began as the Dutch town of ___.", answers: [["New Amsterdam"]] },
+    { text: "The river running past Albany to New York harbor is the ___ River.", answers: [["Hudson"]] },
+    { text: "West of all 13 colonies stand the ___ Mountains.", answers: [["Appalachian"]] }
+  ]}
+/>
+
+## Check against the real key
+
+<Collapsible question="Show my teacher's full answer key">
+  <img src="/colonial-map-key.png" alt="Completed answer key for the 13 British Colonies map" loading="lazy" class="rounded-xl" />
+</Collapsible>
+
+<Callout type="tip" title="Night-before strategy">
+  Run the full Test-mode map until you hit 39 / 39 twice in a row. Then do it once more with the region colors in your head: say "purple" as you drop NH, MA, RI, CT; "orange" for NY, NJ, PA, DE; "teal" for MD down to GA. If you can narrate the colors while placing, the coloring section is already done.
+</Callout>

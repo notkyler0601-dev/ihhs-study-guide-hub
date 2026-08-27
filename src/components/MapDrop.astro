@@ -1,0 +1,388 @@
+---
+// MapDrop: drag-and-drop map labeling. Students drag label chips from a tray
+// onto dashed target zones over a map image (worksheet-style practice for
+// "label this map" tests). Built for the 13-colonies map lab; reusable for
+// any label-the-image activity.
+//
+// Interactions:
+//   - Drag a chip onto a zone (pointer events, works with mouse and touch).
+//   - Or tap a chip to select it, then tap a zone to place it (Chromebook
+//     trackpad and keyboard friendly). Tap a placed chip to send it back.
+//   - Learn mode: instant feedback. Wrong drops shake and bounce back.
+//   - Test mode: place everything, then hit Check. Wrong answers flash red
+//     and return to the tray. Perfect score fires confetti.
+//   - Reveal fills the remaining zones (marked grey, does not count).
+//
+// Usage:
+//   <MapDrop
+//     title="Place the 13 colonies"
+//     image="/colonial-map-blank.png"
+//     alt="Blank 13 colonies map"
+//     zones={[{ x: 81.9, y: 19.1, label: "NH", group: "ne" }, ...]}
+//     groups={{ ne: { color: "#7c3aed", name: "New England" } }}
+//     mode="learn"
+//     storageKey="colonies-13"
+//   />
+//
+// x/y are percentages of the image (left/top). Chips match zones by label.
+// Best score persists to localStorage when storageKey is set.
+interface Zone { x: number; y: number; label: string; group?: string; }
+interface Group { color: string; name: string; }
+interface Props {
+  title: string;
+  image: string;
+  alt?: string;
+  zones: Zone[];
+  groups?: Record<string, Group>;
+  mode?: 'learn' | 'test';
+  note?: string;
+  storageKey?: string;
+}
+const { title, image, alt = '', zones, groups = {}, mode = 'learn', note, storageKey } = Astro.props;
+const id = 'mapdrop-' + Math.random().toString(36).slice(2, 9);
+const conf = JSON.stringify({ zones, groups, mode, storageKey: storageKey ?? null });
+const groupList = Object.values(groups);
+---
+
+<figure class="not-prose my-8 2xl:-mx-14 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-mapdrop data-conf={conf}>
+  <header class="px-5 py-4 border-b border-ink-200 dark:border-ink-800 flex flex-wrap items-center gap-3">
+    <span class="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-accent-700 to-accent-500 text-white text-base">📍</span>
+    <div class="flex-1 min-w-[200px]">
+      <h3 class="font-serif text-lg font-semibold leading-tight">{title}</h3>
+      {note && <p class="text-xs text-ink-500 mt-0.5">{note}</p>}
+    </div>
+    <div class="flex items-center gap-1 rounded-lg border border-ink-200 dark:border-ink-700 p-0.5" role="group" aria-label="Mode">
+      <button type="button" data-md-mode="learn" class="px-2.5 py-1 rounded-md text-xs font-semibold">Learn</button>
+      <button type="button" data-md-mode="test" class="px-2.5 py-1 rounded-md text-xs font-semibold">Test</button>
+    </div>
+  </header>
+
+  {groupList.length > 0 && (
+    <div class="px-5 pt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-600 dark:text-ink-300">
+      {groupList.map((g) => (
+        <span class="inline-flex items-center gap-1.5">
+          <span class="inline-block h-2.5 w-2.5 rounded-full" style={`background:${g.color}`}></span>
+          {g.name}
+        </span>
+      ))}
+    </div>
+  )}
+
+  <div class="p-3 sm:p-5">
+    <div data-md-map class="relative select-none rounded-lg overflow-hidden ring-1 ring-ink-200 dark:ring-ink-700" style="touch-action: pan-y;">
+      <img src={image} alt={alt} class="block w-full h-auto" draggable="false" />
+    </div>
+
+    <div data-md-tray class="mt-4 flex flex-wrap gap-2 min-h-[44px] rounded-xl border border-dashed border-ink-300 dark:border-ink-700 p-2.5" aria-label="Label tray"></div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <span data-md-status class="text-xs text-ink-600 dark:text-ink-300 flex-1 min-w-[160px]" aria-live="polite"></span>
+      <button type="button" data-md-check class="hidden px-3 py-1.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-white text-xs font-semibold">Check answers</button>
+      <button type="button" data-md-reveal class="px-3 py-1.5 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold">Reveal rest</button>
+      <button type="button" data-md-reset class="px-3 py-1.5 rounded-lg border border-ink-300 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold">Reset</button>
+    </div>
+  </div>
+</figure>
+
+<style is:global>
+  @keyframes mapdrop-shake {
+    0%, 100% { transform: translate(-50%, -100%) rotate(0deg); }
+    25% { transform: translate(-54%, -100%) rotate(-3deg); }
+    75% { transform: translate(-46%, -100%) rotate(3deg); }
+  }
+  @keyframes mapdrop-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.35); }
+    60% { box-shadow: 0 0 0 6px rgba(185, 28, 28, 0); }
+  }
+  [data-mapdrop] .md-zone {
+    position: absolute; width: 22px; height: 22px; border-radius: 9999px;
+    transform: translate(-50%, -50%); cursor: pointer; z-index: 5;
+    border: 2px dashed rgba(185, 28, 28, 0.8); background: rgba(255, 255, 255, 0.55);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-mapdrop] .md-zone:not(.filled) { animation: mapdrop-pulse 2.4s ease-in-out infinite; }
+  }
+  [data-mapdrop] .md-zone.filled { border-color: transparent; background: transparent; animation: none; }
+  [data-mapdrop] .md-zone.armed { border-style: solid; border-color: #16a34a; background: rgba(22, 163, 74, 0.18); }
+  [data-mapdrop] .md-pin {
+    position: absolute; transform: translate(-50%, -100%); z-index: 10; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+  }
+  [data-mapdrop] .md-pin::after {
+    content: ''; width: 6px; height: 6px; border-radius: 9999px; background: #27272a;
+    outline: 2px solid #fff;
+  }
+  [data-mapdrop] .md-pin.shake { animation: mapdrop-shake 0.35s ease-in-out 2; }
+  [data-mapdrop] .md-chip {
+    pointer-events: auto; cursor: grab; user-select: none; -webkit-user-select: none;
+    display: inline-flex; align-items: center; border-radius: 8px; font-weight: 600;
+    background: #fff; color: #27272a; border: 1.5px solid #a8a29e;
+    padding: 3px 9px; font-size: 12px; line-height: 1.2; touch-action: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+  :root.dark [data-mapdrop] [data-md-tray] .md-chip { background: #18181b; color: #e4e4e7; }
+  [data-mapdrop] .md-pin .md-chip { font-size: 10px; padding: 1px 6px; border-radius: 6px; background: #fff; color: #27272a; }
+  [data-mapdrop] .md-chip.selected { outline: 2px solid #b91c1c; outline-offset: 1px; }
+  [data-mapdrop] .md-chip.dragging { opacity: 0.35; }
+  [data-mapdrop] .md-chip.locked { cursor: default; border-color: #16a34a; box-shadow: 0 0 0 1.5px rgba(22, 163, 74, 0.6); }
+  [data-mapdrop] .md-chip.wrong { border-color: #dc2626; box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.65); }
+  [data-mapdrop] .md-chip.revealed { border-style: dashed; opacity: 0.85; }
+  [data-mapdrop] .md-ghost {
+    position: fixed; z-index: 60; pointer-events: none; transform: translate(-50%, -120%);
+  }
+</style>
+
+<script>
+  import { fireConfetti } from '../lib/confetti';
+
+  interface MDZone { x: number; y: number; label: string; group?: string; }
+  interface MDGroup { color: string; name: string; }
+
+  const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const init = () => {
+    document.querySelectorAll<HTMLElement>('[data-mapdrop]:not([data-md-ready])').forEach((root) => {
+      root.dataset.mdReady = '1';
+      const conf = JSON.parse(root.dataset.conf || '{}');
+      const zones: MDZone[] = conf.zones || [];
+      const groups: Record<string, MDGroup> = conf.groups || {};
+      const storageKey: string | null = conf.storageKey;
+      let mode: 'learn' | 'test' = conf.mode === 'test' ? 'test' : 'learn';
+
+      const map = root.querySelector<HTMLElement>('[data-md-map]');
+      const tray = root.querySelector<HTMLElement>('[data-md-tray]');
+      const status = root.querySelector<HTMLElement>('[data-md-status]');
+      const btnCheck = root.querySelector<HTMLButtonElement>('[data-md-check]');
+      const btnReveal = root.querySelector<HTMLButtonElement>('[data-md-reveal]');
+      const btnReset = root.querySelector<HTMLButtonElement>('[data-md-reset]');
+      const modeBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-md-mode]'));
+      if (!map || !tray || !status || !btnCheck || !btnReveal || !btnReset) return;
+
+      let selected: HTMLElement | null = null;
+      let misses = 0;
+
+      const bestKey = storageKey ? `mapdrop:${storageKey}:best` : null;
+      const readBest = () => (bestKey ? Number(localStorage.getItem(bestKey) || 0) : 0);
+      const writeBest = (v: number) => { if (bestKey && v > readBest()) localStorage.setItem(bestKey, String(v)); };
+
+      // Build zones + pin containers.
+      const zoneEls: Record<string, HTMLElement> = {};
+      const pinEls: Record<string, HTMLElement> = {};
+      zones.forEach((z) => {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'md-zone';
+        el.style.left = z.x + '%';
+        el.style.top = z.y + '%';
+        el.setAttribute('aria-label', 'Drop zone');
+        el.dataset.label = z.label;
+        map.appendChild(el);
+        zoneEls[z.label] = el;
+        const pin = document.createElement('div');
+        pin.className = 'md-pin';
+        pin.style.left = z.x + '%';
+        pin.style.top = z.y + '%';
+        pin.dataset.for = z.label;
+        map.appendChild(pin);
+        pinEls[z.label] = pin;
+      });
+
+      // Build chips.
+      const chips: HTMLElement[] = zones.map((z) => {
+        const c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'md-chip';
+        c.textContent = z.label;
+        c.dataset.label = z.label;
+        const g = z.group ? groups[z.group] : null;
+        if (g) { c.style.borderColor = g.color; c.style.color = g.color; }
+        return c;
+      });
+
+      const shuffleTray = () => {
+        const inTray = chips.filter((c) => !c.dataset.placedOn);
+        inTray.sort(() => Math.random() - 0.5).forEach((c) => tray.appendChild(c));
+      };
+
+      const placedCount = () => chips.filter((c) => c.dataset.placedOn).length;
+      const lockedCorrect = () => chips.filter((c) => c.classList.contains('locked')).length;
+
+      const updateStatus = (extra?: string) => {
+        const base = `Placed ${placedCount()} / ${zones.length}` + (mode === 'learn' ? ` · Misses ${misses}` : '');
+        const best = bestKey && readBest() > 0 ? ` · Best ${readBest()} / ${zones.length}` : '';
+        status.textContent = extra ? `${base} · ${extra}${best}` : base + best;
+      };
+
+      const celebrate = () => { if (!reduced()) fireConfetti('cannons'); };
+
+      const unplace = (chip: HTMLElement) => {
+        const zl = chip.dataset.placedOn;
+        if (zl) zoneEls[zl]?.classList.remove('filled');
+        delete chip.dataset.placedOn;
+        tray.appendChild(chip);
+      };
+
+      const place = (chip: HTMLElement, zoneLabel: string) => {
+        const pin = pinEls[zoneLabel];
+        const zone = zoneEls[zoneLabel];
+        if (!pin || !zone || zone.classList.contains('filled')) return false;
+        chip.classList.remove('selected');
+        selected = null;
+        chip.dataset.placedOn = zoneLabel;
+        zone.classList.add('filled');
+        pin.appendChild(chip);
+        if (mode === 'learn') {
+          if (zoneLabel === chip.dataset.label) {
+            chip.classList.add('locked');
+            if (lockedCorrect() === zones.length) { updateStatus('Perfect!'); writeBest(zones.length); celebrate(); return true; }
+          } else {
+            misses++;
+            if (!reduced()) pin.classList.add('shake');
+            chip.classList.add('wrong');
+            setTimeout(() => { pin.classList.remove('shake'); chip.classList.remove('wrong'); unplace(chip); updateStatus(); }, 550);
+          }
+        }
+        updateStatus();
+        return true;
+      };
+
+      const nearestZone = (px: number, py: number): string | null => {
+        const r = map.getBoundingClientRect();
+        const radius = Math.max(20, r.width * 0.033);
+        let best: string | null = null;
+        let bestD = Infinity;
+        zones.forEach((z) => {
+          const zx = r.left + (z.x / 100) * r.width;
+          const zy = r.top + (z.y / 100) * r.height;
+          const d = Math.hypot(px - zx, py - zy);
+          if (d < radius && d < bestD && !zoneEls[z.label].classList.contains('filled')) { bestD = d; best = z.label; }
+        });
+        return best;
+      };
+
+      // Chip interactions: drag (pointer) + tap-select.
+      chips.forEach((chip) => {
+        let startX = 0, startY = 0, dragging = false, ghost: HTMLElement | null = null;
+
+        chip.addEventListener('pointerdown', (e) => {
+          if (chip.classList.contains('locked') || chip.classList.contains('revealed')) return;
+          startX = e.clientX; startY = e.clientY; dragging = false;
+          chip.setPointerCapture(e.pointerId);
+        });
+
+        chip.addEventListener('pointermove', (e) => {
+          if (!chip.hasPointerCapture(e.pointerId)) return;
+          if (!dragging && Math.hypot(e.clientX - startX, e.clientY - startY) > 6) {
+            dragging = true;
+            ghost = chip.cloneNode(true) as HTMLElement;
+            ghost.classList.add('md-ghost');
+            document.body.appendChild(ghost);
+            chip.classList.add('dragging');
+          }
+          if (dragging && ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; }
+        });
+
+        chip.addEventListener('pointerup', (e) => {
+          if (!chip.hasPointerCapture(e.pointerId)) return;
+          chip.releasePointerCapture(e.pointerId);
+          if (dragging) {
+            ghost?.remove(); ghost = null;
+            chip.classList.remove('dragging');
+            const target = nearestZone(e.clientX, e.clientY);
+            if (target) {
+              if (chip.dataset.placedOn) unplace(chip);
+              place(chip, target);
+            } else if (chip.dataset.placedOn) {
+              unplace(chip); updateStatus();
+            }
+            dragging = false;
+            return;
+          }
+          // Tap: toggle select, or return a placed chip to the tray.
+          if (chip.dataset.placedOn) { unplace(chip); updateStatus(); return; }
+          if (selected === chip) { chip.classList.remove('selected'); selected = null; return; }
+          selected?.classList.remove('selected');
+          selected = chip;
+          chip.classList.add('selected');
+          Object.values(zoneEls).forEach((z) => { if (!z.classList.contains('filled')) z.classList.add('armed'); });
+          setTimeout(() => Object.values(zoneEls).forEach((z) => z.classList.remove('armed')), 1200);
+        });
+
+        chip.addEventListener('pointercancel', () => {
+          ghost?.remove(); ghost = null; dragging = false;
+          chip.classList.remove('dragging');
+        });
+      });
+
+      Object.entries(zoneEls).forEach(([label, zone]) => {
+        zone.addEventListener('click', () => {
+          if (selected && !zone.classList.contains('filled')) place(selected, label);
+        });
+      });
+
+      btnCheck.addEventListener('click', () => {
+        let correct = 0;
+        chips.forEach((chip) => {
+          const zl = chip.dataset.placedOn;
+          if (!zl || chip.classList.contains('revealed')) return;
+          if (zl === chip.dataset.label) { chip.classList.add('locked'); correct++; }
+          else {
+            chip.classList.add('wrong');
+            setTimeout(() => { chip.classList.remove('wrong'); unplace(chip); updateStatus(`Score ${correct} / ${zones.length}`); }, 900);
+          }
+        });
+        writeBest(correct);
+        updateStatus(`Score ${correct} / ${zones.length}`);
+        if (correct === zones.length) celebrate();
+      });
+
+      btnReveal.addEventListener('click', () => {
+        chips.forEach((chip) => {
+          if (chip.dataset.placedOn && chip.dataset.placedOn === chip.dataset.label) return;
+          if (chip.dataset.placedOn) unplace(chip);
+          const label = chip.dataset.label!;
+          if (!zoneEls[label].classList.contains('filled')) {
+            chip.classList.add('revealed');
+            chip.dataset.placedOn = label;
+            zoneEls[label].classList.add('filled');
+            pinEls[label].appendChild(chip);
+          }
+        });
+        updateStatus('Answers revealed');
+      });
+
+      const applyMode = () => {
+        modeBtns.forEach((b) => {
+          const active = b.dataset.mdMode === mode;
+          b.classList.toggle('bg-accent-700', active);
+          b.classList.toggle('text-white', active);
+          b.classList.toggle('text-ink-500', !active);
+        });
+        btnCheck.classList.toggle('hidden', mode !== 'test');
+      };
+
+      const reset = () => {
+        misses = 0;
+        selected = null;
+        chips.forEach((chip) => {
+          chip.classList.remove('locked', 'wrong', 'revealed', 'selected');
+          if (chip.dataset.placedOn) unplace(chip);
+        });
+        shuffleTray();
+        updateStatus();
+      };
+
+      btnReset.addEventListener('click', reset);
+      modeBtns.forEach((b) => b.addEventListener('click', () => {
+        const next = b.dataset.mdMode === 'test' ? 'test' : 'learn';
+        if (next !== mode) { mode = next; applyMode(); reset(); }
+      }));
+
+      applyMode();
+      shuffleTray();
+      updateStatus();
+    });
+  };
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

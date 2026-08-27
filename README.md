@@ -180,6 +180,29 @@ These load on demand only on guides that use them, so they don't slow down the r
 />
 ```
 
+### `<MapDrop zones={[...]}/>`: Drag-and-drop map labeling
+
+Worksheet-style practice: drag label chips from a tray onto dashed zones over a map image. Zones are percent positions on the image; chips match zones by label. Learn mode gives instant feedback, Test mode grades on Check (with confetti on perfect and a localStorage best score when `storageKey` is set). Tap a chip then tap a zone for trackpad-friendly placement.
+
+```mdx
+import MapDrop from '../../components/MapDrop.astro';
+
+<MapDrop
+  title="Place the 13 colonies"
+  image="/colonial-map-blank.png"
+  zones={[
+    { x: 81.9, y: 19.1, label: "NH", group: "ne" },
+    { x: 69.9, y: 38.3, label: "NY", group: "mid" }
+  ]}
+  groups={{
+    ne: { color: "#7c3aed", name: "New England" },
+    mid: { color: "#ea580c", name: "Middle" }
+  }}
+  mode="learn"
+  storageKey="colonies-13"
+/>
+```
+
 ### `<Timeline events={[...]}/>`: Scrollable interactive timeline (TimelineJS)
 
 ```mdx
