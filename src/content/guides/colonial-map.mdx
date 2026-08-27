@@ -11,10 +11,8 @@ authors: ["IHHS"]
 
 import Callout from '../../components/Callout.astro';
 import Collapsible from '../../components/Collapsible.astro';
-import Quiz from '../../components/Quiz.astro';
 import Flashcards from '../../components/Flashcards.astro';
 import MapDrop from '../../components/MapDrop.astro';
-import DragSort from '../../components/DragSort.astro';
 import FillInBlanks from '../../components/FillInBlanks.astro';
 import Typewriter from '../../components/Typewriter.astro';
 import ReadingProgress from '../../components/ReadingProgress.astro';
@@ -249,132 +247,6 @@ Everything at once: 39 chips, Test mode. Place them all, press Check, and chase 
   }}
   mode="test"
   storageKey="colonial-full"
-/>
-
-## North to south, no map
-
-Can you keep the coastline in order with the map closed? Drag into order.
-
-<DragSort
-  title="Order these colonies from NORTH to SOUTH"
-  items={[
-    "New Hampshire",
-    "Massachusetts",
-    "Pennsylvania",
-    "Maryland",
-    "Virginia",
-    "North Carolina",
-    "South Carolina",
-    "Georgia"
-  ]}
-/>
-
-## Self-quiz
-
-<Quiz
-  title="Map facts that show up on the written portion"
-  questions={[
-    {
-      q: "Which four colonies made up New England?",
-      choices: [
-        "NY, NJ, PA, and DE",
-        "MA, NY, CT, and NJ",
-        "NH, MA, RI, and CT",
-        "NH, VT, MA, and ME"
-      ],
-      answer: 2,
-      explain: "My Cat Ran North: MA, CT, RI, NH. Vermont and Maine were not separate colonies (Maine was part of Massachusetts)."
-    },
-    {
-      q: "The Mason-Dixon Line was surveyed to settle the boundary between",
-      choices: [
-        "Pennsylvania and Maryland",
-        "New York and New Jersey",
-        "Virginia and North Carolina",
-        "the colonies and New France"
-      ],
-      answer: 0,
-      explain: "The green line on your map: the PA-MD border. Only later did it become the symbolic North-South divide."
-    },
-    {
-      q: "The Fall Line on the map marks",
-      choices: [
-        "the border between the British colonies and New France",
-        "the line dividing Puritan colonies from Anglican colonies",
-        "the westernmost ridge of the Appalachian Mountain chain",
-        "where rivers drop from the Piedmont to the coastal plain in falls"
-      ],
-      answer: 3,
-      explain: "Waterfalls and rapids stopped upriver shipping, so ports grew there and early settlement largely stayed east of it. It is the red line on your worksheet."
-    },
-    {
-      q: "The Chesapeake Region label on the map points to",
-      choices: [
-        "Pennsylvania and New Jersey",
-        "Maryland and Virginia around Chesapeake Bay",
-        "the Carolinas and Georgia",
-        "Delaware and southern New York"
-      ],
-      answer: 1,
-      explain: "MD plus VA wrapped around the bay: tobacco country. On this worksheet both still color as Southern colonies."
-    },
-    {
-      q: "St. Augustine, the starred city south of Georgia, belonged to",
-      choices: ["France", "England", "Spain", "the Netherlands"],
-      answer: 2,
-      explain: "Founded 1565 in Spanish Florida (New Spain on your map): the oldest European city in the future United States."
-    },
-    {
-      q: "Quebec and New Orleans were both",
-      choices: [
-        "French settlements anchoring New France",
-        "Spanish mission towns guarding the Gulf",
-        "English trading posts beyond the mountains",
-        "Dutch fur ports on major river mouths"
-      ],
-      answer: 0,
-      explain: "Blue stars on the key: Champlain's Quebec (1608) on the St. Lawrence and New Orleans (1718) at the mouth of the Mississippi bracketed the British colonies."
-    },
-    {
-      q: "Before the English renamed it, New York City was",
-      choices: [
-        "the Swedish port of Christina",
-        "the French outpost of Fort Caroline",
-        "the Spanish harbor of San Marcos",
-        "the Dutch town of New Amsterdam"
-      ],
-      answer: 3,
-      explain: "Dutch since 1626 at the mouth of the Hudson; England took it in 1664 and renamed it for the Duke of York. Albany upriver was also Dutch first."
-    },
-    {
-      q: "Anglicization, the term at the bottom of the worksheet, means",
-      choices: [
-        "the forced conversion of natives to the Church of England",
-        "the colonies becoming more English in culture over time",
-        "the replacement of colonial charters with royal governors",
-        "the migration of English families to the backcountry"
-      ],
-      answer: 1,
-      explain: "English language, law, goods, and institutions spreading through colonial life, pulling diverse colonies toward one shared British culture."
-    },
-    {
-      q: "Which of these is a MIDDLE colony?",
-      choices: ["Delaware", "Connecticut", "Maryland", "Georgia"],
-      answer: 0,
-      explain: "Nice Jerseys Play Defense: NY, NJ, PA, DE. Connecticut is New England; Maryland and Georgia are Southern."
-    },
-    {
-      q: "In the colonial era the Appalachian Mountains mattered because they",
-      choices: [
-        "held the richest farmland in British America",
-        "separated the Chesapeake from New England",
-        "stood as the western barrier of British settlement",
-        "supplied the gold that funded the colonies"
-      ],
-      answer: 2,
-      explain: "Settlement pooled between the Atlantic and the mountains. The ridge (and the Fall Line east of it) frames where colonial life actually happened."
-    }
-  ]}
 />
 
 ## Flashcards
