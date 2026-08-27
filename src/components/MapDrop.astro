@@ -26,7 +26,7 @@
 //
 // x/y are percentages of the image (left/top). Chips match zones by label.
 // Best score persists to localStorage when storageKey is set.
-interface Zone { x: number; y: number; label: string; group?: string; }
+interface Zone { x: number; y: number; label: string; short?: string; group?: string; }
 interface Group { color: string; name: string; }
 interface Props {
   title: string;
@@ -142,7 +142,7 @@ const groupList = Object.values(groups);
 <script>
   import { fireConfetti } from '../lib/confetti';
 
-  interface MDZone { x: number; y: number; label: string; group?: string; }
+  interface MDZone { x: number; y: number; label: string; short?: string; group?: string; }
   interface MDGroup { color: string; name: string; }
 
   const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -201,6 +201,7 @@ const groupList = Object.values(groups);
         c.className = 'md-chip';
         c.textContent = z.label;
         c.dataset.label = z.label;
+        if (z.short) { c.dataset.short = z.short; c.title = z.label; }
         const g = z.group ? groups[z.group] : null;
         if (g) { c.style.borderColor = g.color; c.style.color = g.color; }
         return c;
@@ -226,6 +227,7 @@ const groupList = Object.values(groups);
         const zl = chip.dataset.placedOn;
         if (zl) zoneEls[zl]?.classList.remove('filled');
         delete chip.dataset.placedOn;
+        chip.textContent = chip.dataset.label || chip.textContent;
         tray.appendChild(chip);
       };
 
@@ -238,6 +240,7 @@ const groupList = Object.values(groups);
         chip.dataset.placedOn = zoneLabel;
         zone.classList.add('filled');
         pin.appendChild(chip);
+        if (chip.dataset.short) chip.textContent = chip.dataset.short;
         if (mode === 'learn') {
           if (zoneLabel === chip.dataset.label) {
             chip.classList.add('locked');
@@ -283,6 +286,7 @@ const groupList = Object.values(groups);
             dragging = true;
             ghost = chip.cloneNode(true) as HTMLElement;
             ghost.classList.add('md-ghost');
+            ghost.textContent = chip.dataset.label || chip.textContent;
             document.body.appendChild(ghost);
             chip.classList.add('dragging');
           }
@@ -360,6 +364,7 @@ const groupList = Object.values(groups);
             chip.dataset.placedOn = label;
             zoneEls[label].classList.add('filled');
             pinEls[label].appendChild(chip);
+            if (chip.dataset.short) chip.textContent = chip.dataset.short;
           }
         });
         updateStatus('Answers revealed');

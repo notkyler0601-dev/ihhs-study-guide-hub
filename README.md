@@ -191,7 +191,7 @@ import MapDrop from '../../components/MapDrop.astro';
   title="Place the 13 colonies"
   image="/colonial-map-blank.png"
   zones={[
-    { x: 81.9, y: 19.1, label: "NH", group: "ne" },
+    { x: 81.9, y: 19.1, label: "New Hampshire", short: "NH", group: "ne" },
     { x: 69.9, y: 38.3, label: "NY", group: "mid" }
   ]}
   groups={{

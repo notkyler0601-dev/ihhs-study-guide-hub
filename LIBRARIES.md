@@ -184,7 +184,7 @@ Pre-existing subject-specific components. CDN script loads only when the compone
 | `<MatchPairs pairs={[...]} />` | none (custom) | n/a | Click-to-match terms and definitions. |
 | `<Crossword words={[...]} />` | crossword-layout-generator 1.0.7 | `unpkg.com/crossword-layout-generator` | Vocab crossword from word/clue pairs. |
 | `<Hotspots image="..." spots={[...]} />` | none (custom) | n/a | Click parts of an image. Reveal or quiz mode. |
-| `<MapDrop image="..." zones={[...]} />` | none (custom, Pointer Events) | n/a | Drag-and-drop map labeling: chips from a shuffled tray onto percent-positioned zones over an image. Learn (instant feedback) and Test (check at end) modes, tap-to-place fallback for trackpads, reveal, reset, per-activity localStorage best score, confetti on perfect. Built for the 13-colonies map lab. |
+| `<MapDrop image="..." zones={[...]} />` | none (custom, Pointer Events) | n/a | Drag-and-drop map labeling: chips from a shuffled tray onto percent-positioned zones over an image. Learn (instant feedback) and Test (check at end) modes, tap-to-place fallback for trackpads, reveal, reset, per-activity localStorage best score, confetti on perfect. Zones accept an optional `short` pin label (full name in the tray and while dragging, abbreviation once placed). Built for the 13-colonies map lab. |
 | `<Tldraw />` | tldraw | iframe `tldraw.com` | Collaborative whiteboard. |
 | `<Pomodoro />` | none (custom) | n/a | Built-in study timer with break tracking. |
 
