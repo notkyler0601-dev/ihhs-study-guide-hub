@@ -55,6 +55,10 @@ const groupList = Object.values(groups);
       <button type="button" data-md-mode="learn" class="px-2.5 py-1 rounded-md text-xs font-semibold">Learn</button>
       <button type="button" data-md-mode="test" class="px-2.5 py-1 rounded-md text-xs font-semibold">Test</button>
     </div>
+    <button type="button" data-md-fs class="px-2.5 py-1.5 rounded-lg border border-ink-200 dark:border-ink-700 hover:border-accent-500 text-xs font-semibold inline-flex items-center gap-1.5" aria-label="Toggle fullscreen">
+      <span aria-hidden="true">⛶</span>
+      <span data-md-fs-label class="hidden sm:inline">Full screen</span>
+    </button>
   </header>
 
   {groupList.length > 0 && (
@@ -129,6 +133,16 @@ const groupList = Object.values(groups);
   [data-mapdrop] .md-chip.locked { cursor: default; border-color: #16a34a; box-shadow: 0 0 0 1.5px rgba(22, 163, 74, 0.6); }
   [data-mapdrop] .md-chip.wrong { border-color: #dc2626; box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.65); }
   [data-mapdrop] .md-chip.revealed { border-style: dashed; opacity: 0.85; }
+  [data-mapdrop]:fullscreen, [data-mapdrop].md-fake-fs {
+    overflow: auto; border-radius: 0; margin: 0;
+  }
+  [data-mapdrop].md-fake-fs {
+    position: fixed; inset: 0; z-index: 70;
+  }
+  [data-mapdrop]:fullscreen [data-md-map] img,
+  [data-mapdrop].md-fake-fs [data-md-map] img {
+    max-height: calc(100vh - 170px);
+  }
   .md-ghost {
     position: fixed; z-index: 9999; pointer-events: none;
     transform: translate(-50%, -120%) scale(1.08);
@@ -287,7 +301,7 @@ const groupList = Object.values(groups);
             ghost = chip.cloneNode(true) as HTMLElement;
             ghost.classList.add('md-ghost');
             ghost.textContent = chip.dataset.label || chip.textContent;
-            document.body.appendChild(ghost);
+            root.appendChild(ghost);
             chip.classList.add('dragging');
           }
           if (dragging && ghost) {
@@ -396,6 +410,23 @@ const groupList = Object.values(groups);
         const next = b.dataset.mdMode === 'test' ? 'test' : 'learn';
         if (next !== mode) { mode = next; applyMode(); reset(); }
       }));
+
+      // Fullscreen: native API on the whole widget, CSS overlay fallback.
+      const btnFs = root.querySelector<HTMLButtonElement>('[data-md-fs]');
+      const fsLabel = root.querySelector<HTMLElement>('[data-md-fs-label]');
+      const fsActive = () => document.fullscreenElement === root || root.classList.contains('md-fake-fs');
+      const setFsUi = () => { if (fsLabel) fsLabel.textContent = fsActive() ? 'Exit' : 'Full screen'; };
+      const exitFakeFs = () => { root.classList.remove('md-fake-fs'); document.documentElement.style.overflow = ''; setFsUi(); };
+      btnFs?.addEventListener('click', async () => {
+        if (document.fullscreenElement === root) { await document.exitFullscreen().catch(() => {}); }
+        else if (root.classList.contains('md-fake-fs')) { exitFakeFs(); }
+        else if (root.requestFullscreen) {
+          try { await root.requestFullscreen(); } catch { root.classList.add('md-fake-fs'); document.documentElement.style.overflow = 'hidden'; }
+        } else { root.classList.add('md-fake-fs'); document.documentElement.style.overflow = 'hidden'; }
+        setFsUi();
+      });
+      document.addEventListener('fullscreenchange', setFsUi);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('md-fake-fs')) exitFakeFs(); });
 
       applyMode();
       shuffleTray();
