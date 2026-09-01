@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CommandPalette from '../components/CommandPalette.astro';
@@ -130,6 +131,7 @@ const fullTitle = title === 'IHHS Study Guide Hub' ? title : `${title} · IHHS S
       ]
     })} />
     <ClientRouter />
+    <Analytics />
   </head>
   <body class="min-h-screen flex flex-col">
     {showAurora && <AuroraBackground />}

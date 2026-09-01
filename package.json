@@ -71,6 +71,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@use-gesture/react": "^10.3.1",
+    "@vercel/analytics": "^2.0.1",
     "@vidstack/react": "^0.6.15",
     "@visx/visx": "^3.12.0",
     "@xyflow/react": "^12.10.2",
