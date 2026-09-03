@@ -33,11 +33,16 @@ function normalize(node: InputNode, depth: number, index: number): CleanNode {
   return clean;
 }
 
-function luminance(hex: string): number {
-  const h = hex.replace('#', '');
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+// Dark ink is the default label color: the chart sits on a white card, so any
+// label whose backing arc is light (or whose color we cannot parse) must be
+// dark. White text is reserved for clearly dark arcs.
+function labelColorFor(color: unknown): string {
+  const hex = typeof color === 'string' ? color.replace('#', '') : '';
+  const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return '#1c1917';
   const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance < 0.4 ? '#ffffff' : '#1c1917';
 }
 
 export default function NivoSunburst({ data, height = 460 }: Props) {
@@ -57,7 +62,7 @@ export default function NivoSunburst({ data, height = 460 }: Props) {
         enableArcLabels
         arcLabel={(d) => String(d.id)}
         arcLabelsSkipAngle={14}
-        arcLabelsTextColor={(d) => (luminance(String(d.color)) > 0.55 ? '#1c1917' : '#ffffff')}
+        arcLabelsTextColor={(d) => labelColorFor(d.color)}
         tooltip={({ id }) => (
           <div
             style={{
