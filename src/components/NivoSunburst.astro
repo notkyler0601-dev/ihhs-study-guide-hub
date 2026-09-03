@@ -2,20 +2,29 @@
 // Nivo Sunburst: radial hierarchical viz. Animated polished React take on the
 // existing d3-based <SunburstChart>.
 //
+// Nodes may use `name` or `id`. Give each top-level branch a `color` to fix its
+// identity (children inherit a lighter tint); branches without one get a
+// validated categorical palette in fixed order. Arc labels show the node names
+// (small slivers rely on the hover tooltip instead).
+//
 // Usage:
-//   <NivoSunburst data={{
-//     id: 'Kingdom',
-//     children: [
-//       { id: 'Animal', children: [{ id: 'Mammal', value: 10 }, { id: 'Bird', value: 6 }] },
-//       { id: 'Plant',  children: [{ id: 'Tree', value: 8 }, { id: 'Flower', value: 5 }] }
-//     ]
-//   }} />
+//   <NivoSunburst
+//     title="Three Worlds, 1960"
+//     data={{
+//       name: 'World',
+//       children: [
+//         { name: 'First World', color: '#1d4ed8', children: [{ name: 'USA', value: 1 }] },
+//         { name: 'Second World', color: '#b91c1c', children: [{ name: 'USSR', value: 1 }] }
+//       ]
+//     }}
+//   />
 import NivoSunburstReact from './react/NivoSunburst.tsx';
-interface Node { id: string; value?: number; children?: Node[]; }
-interface Props { data: Node; height?: number; }
-const { data, height = 460 } = Astro.props;
+interface Node { id?: string; name?: string; value?: number; color?: string; children?: Node[]; }
+interface Props { data: Node; title?: string; height?: number; }
+const { data, title, height = 460 } = Astro.props;
 ---
 
-<div class="not-prose my-6 surface rounded-xl p-4">
+<figure class="not-prose my-6 surface rounded-xl p-4">
+  {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
   <NivoSunburstReact client:only="react" data={data} height={height} />
-</div>
+</figure>
