@@ -1,0 +1,251 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Hours ledger" description="Admin: adjust recorded volunteer hours.">
+  <section class="container-wide py-10 lg:py-14">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-center justify-between gap-4 mb-2">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-2">Admin</div>
+          <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">Hours ledger</h1>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button data-filter="approved" class="hrs-filter active">Approved</button>
+          <button data-filter="pending"  class="hrs-filter">Pending</button>
+          <button data-filter="all"      class="hrs-filter">All</button>
+        </div>
+      </div>
+
+      <p class="text-sm text-ink-500 dark:text-ink-400 mb-8 max-w-xl">
+        Adjust the recorded hours on any submission. Changes save straight to the record
+        the inbox and summaries read from.
+      </p>
+
+      <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Admins only</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          You need an admin account to view this page.
+          <a href="/login" class="text-accent-700 dark:text-accent-400 hover:underline">Log in</a> or ask the site maintainer to promote your account.
+        </p>
+      </div>
+
+      <div id="admin-offline" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Supabase not configured</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          This page needs a Supabase backend. See <code class="text-accent-700 dark:text-accent-400">SUPABASE_SETUP.md</code> in the repo root.
+        </p>
+      </div>
+
+      <div id="hrs-loading" class="text-sm text-ink-500">Loading...</div>
+
+      <div id="hrs-summary" class="hidden grid sm:grid-cols-2 gap-3 mb-6">
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Approved hours</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="approved">0</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Submissions shown</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="shown">0</div>
+        </div>
+      </div>
+
+      <div id="hrs-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
+        No submissions in this view.
+      </div>
+
+      <ul id="hrs-list" class="hidden space-y-3"></ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hrs-filter {
+    @apply px-3 py-1 rounded-full text-xs font-medium bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
+    @apply hover:bg-ink-200 dark:hover:bg-ink-700 transition-colors;
+  }
+  .hrs-filter.active {
+    @apply bg-accent-700 text-white dark:bg-accent-600;
+  }
+  .hrs-chip {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.14em] font-semibold;
+  }
+</style>
+
+<script>
+  import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
+  import { supabase } from '../../lib/supabase';
+
+  type Row = {
+    id: string;
+    created_at: string;
+    name: string | null;
+    email: string | null;
+    guide_slug: string | null;
+    grade: string | null;
+    hours: number | null;
+    status: 'pending' | 'approved' | 'rejected';
+  };
+
+  const STATUS_COLORS: Record<string, string> = {
+    pending:  'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+    approved: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+    rejected: 'bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-200',
+  };
+
+  const fmt = (d: string) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c as any] as string));
+
+  const setup = () => {
+    const gate = document.getElementById('admin-gate')!;
+    const offline = document.getElementById('admin-offline')!;
+    const loading = document.getElementById('hrs-loading')!;
+    const summary = document.getElementById('hrs-summary')!;
+    const empty = document.getElementById('hrs-empty')!;
+    const list = document.getElementById('hrs-list')!;
+    if (!list) return;
+
+    if (!isCloudMode()) {
+      loading.classList.add('hidden');
+      offline.classList.remove('hidden');
+      return;
+    }
+
+    const me = currentUser();
+    if (!me?.isAdmin) {
+      loading.classList.add('hidden');
+      gate.classList.remove('hidden');
+      return;
+    }
+    gate.classList.add('hidden');
+
+    let current: Row[] = [];
+    let filter: string = 'approved';
+
+    const visible = () => (filter === 'all' ? current : current.filter((r) => r.status === filter));
+
+    const updateSummary = () => {
+      summary.classList.remove('hidden');
+      const approved = current
+        .filter((r) => r.status === 'approved')
+        .reduce((acc, r) => acc + (r.hours ?? 0), 0);
+      const approvedEl = summary.querySelector('[data-summary="approved"]') as HTMLElement | null;
+      const shownEl = summary.querySelector('[data-summary="shown"]') as HTMLElement | null;
+      if (approvedEl) approvedEl.textContent = approved.toFixed(1);
+      if (shownEl)    shownEl.textContent    = String(visible().length);
+    };
+
+    const render = () => {
+      const items = visible();
+      if (items.length === 0) {
+        list.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.classList.remove('hidden');
+      list.innerHTML = items.map((r) => {
+        const guideLink = r.guide_slug
+          ? `<a href="/guides/${esc(r.guide_slug)}/" class="hover:underline text-accent-700 dark:text-accent-400 font-mono">${esc(r.guide_slug)}</a>`
+          : '<span class="text-ink-400">(no guide)</span>';
+        return `
+        <li class="surface rounded-xl p-5" data-hrs-id="${r.id}">
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                <span class="hrs-chip ${STATUS_COLORS[r.status] ?? ''}">${r.status}</span>
+                ${r.grade ? `<span class="hrs-chip bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300">Grade ${esc(r.grade)}</span>` : ''}
+                <span class="text-[11px] text-ink-500">${fmt(r.created_at)}</span>
+              </div>
+              <h3 class="font-serif text-lg font-semibold">
+                ${r.name ? esc(r.name) : '<span class="text-ink-400">(no name)</span>'}
+                <span class="text-ink-400 dark:text-ink-500 font-sans text-sm font-normal"> on ${guideLink}</span>
+              </h3>
+              ${r.email ? `<div class="text-xs text-ink-500 mt-0.5">${esc(r.email)}</div>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold" for="hrs-${r.id}">Hours</label>
+              <input
+                id="hrs-${r.id}"
+                type="number"
+                inputmode="decimal"
+                min="0.5"
+                max="40"
+                step="0.5"
+                value="${(r.hours ?? 0).toFixed(1)}"
+                class="w-24 rounded-lg border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 px-3 py-1.5 font-mono text-sm text-ink-900 dark:text-ink-50 focus:outline-none focus:ring-2 focus:ring-accent-600"
+              />
+              <button
+                data-save
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-700 text-white dark:bg-accent-600 hover:bg-accent-800 dark:hover:bg-accent-500 disabled:opacity-50 transition-colors"
+              >Save</button>
+              <span data-saved class="hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400">Saved</span>
+            </div>
+          </div>
+        </li>
+      `;}).join('');
+
+      list.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest('[data-hrs-id]') as HTMLElement | null;
+          if (!li) return;
+          const id = li.dataset.hrsId!;
+          const input = li.querySelector('input') as HTMLInputElement | null;
+          const savedTag = li.querySelector('[data-saved]') as HTMLElement | null;
+          if (!input) return;
+          const hours = Number(input.value);
+          if (!Number.isFinite(hours) || hours <= 0 || hours > 40) {
+            alert('Hours must be between 0.5 and 40.');
+            return;
+          }
+          btn.disabled = true;
+          const sb = supabase();
+          const { error } = await sb!.from('volunteer_signups').update({ hours }).eq('id', id);
+          btn.disabled = false;
+          if (error) { alert(error.message); return; }
+          current = current.map((r) => r.id === id ? { ...r, hours } : r);
+          updateSummary();
+          if (savedTag) {
+            savedTag.classList.remove('hidden');
+            setTimeout(() => savedTag.classList.add('hidden'), 2000);
+          }
+        });
+      });
+    };
+
+    const load = async () => {
+      loading.classList.remove('hidden');
+      const sb = supabase();
+      const { data, error } = await sb!
+        .from('volunteer_signups')
+        .select('id, created_at, name, email, guide_slug, grade, hours, status')
+        .order('created_at', { ascending: false });
+      loading.classList.add('hidden');
+      if (error) {
+        empty.textContent = 'Error loading submissions: ' + error.message;
+        empty.classList.remove('hidden');
+        return;
+      }
+      current = (data ?? []) as Row[];
+      updateSummary();
+      render();
+    };
+    load();
+
+    document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.hrs-filter').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        filter = btn.dataset.filter!;
+        updateSummary();
+        render();
+      });
+    });
+
+    onAuthChange((u) => {
+      if (!u?.isAdmin) window.location.href = '/';
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

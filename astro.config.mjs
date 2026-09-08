@@ -14,7 +14,7 @@ export default defineConfig({
     rehypePlugins: [rehypeKatex],
   }), sitemap({
     // Hidden gated pages must not appear in the public sitemap.
-    filter: (page) => !page.includes('/secret') && !/\/johnguide\/?$/i.test(page),
+    filter: (page) => !page.includes('/secret') && !page.includes('/admin/hours') && !/\/johnguide\/?$/i.test(page),
   }), tailwind({ applyBaseStyles: false }), react()],
   markdown: {
     remarkPlugins: [remarkMath],
