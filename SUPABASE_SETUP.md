@@ -37,7 +37,11 @@ This creates:
 - `profiles` (username + display name)
 - `user_data` (key-value store for progress/SRS/quiz scores)
 - `requests` (guide request inbox)
-- Row-Level Security policies on all three
+- `volunteer_signups` (read-a-guide-for-service-hours submissions)
+- `guide_sessions` (active reading time per signed-in reader per guide visit) and `guide_time_adjustments` (admin corrections made on the hours ledger), plus the `guide_time_by_guide` / `guide_time_by_reader` functions the admin pages call
+- Row-Level Security policies on all of them
+
+**Already set up and just pulling a newer version of the repo?** Run the file again. It is idempotent, so re-running only adds what is missing (for example the `guide_sessions` table added in September 2026). Until you do, `/admin/reading-time` shows an error and the "Tracked" chips in the volunteer inbox stay hidden; everything else keeps working.
 
 ## Step 4: Local dev setup (1 min)
 
@@ -103,6 +107,7 @@ This is expected. The old localStorage data stays on the old device. After signi
 | Progress / streaks | Per-device | Synced |
 | Flashcard SRS schedules | Per-device | Synced |
 | Quiz history | Per-device | Synced |
+| Reading time per guide | Per-device, only you see it | Synced, and admins see everyone's on `/admin/reading-time` and next to claimed volunteer hours |
 | `/request` submissions | `mailto:` to your inbox | Land in `/admin/requests` with claim/done workflow |
 | Admin inbox at `/admin/requests` | Not available | Visible only to accounts flagged `is_admin = true` |
 

@@ -1,0 +1,376 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Slug -> title / estimated minutes, so the tables show real names and can
+// put tracked time next to the author's estimate.
+const guides = await getCollection('guides');
+const guideMeta = Object.fromEntries(
+  guides.map((g) => [g.id.replace(/\.(md|mdx)$/, ''), { title: g.data.title, estimatedTime: g.data.estimatedTime }]),
+);
+---
+
+<BaseLayout title="Reading time" description="Admin: how long readers actually spend on each guide.">
+  <section class="container-wide py-10 lg:py-14">
+    <div class="max-w-5xl mx-auto" id="rt-root">
+      <div class="flex items-center justify-between gap-4 mb-2 flex-wrap">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-2">Admin</div>
+          <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">Reading time</h1>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button data-range="7"   class="rt-filter">7 days</button>
+          <button data-range="30"  class="rt-filter">30 days</button>
+          <button data-range="all" class="rt-filter active">All time</button>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-3 text-xs text-ink-500 dark:text-ink-400 mb-4">
+        <a href="/admin/requests" class="hover:text-accent-700 dark:hover:text-accent-400">Request inbox</a>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <a href="/admin/volunteers" class="hover:text-accent-700 dark:hover:text-accent-400">Volunteer inbox</a>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <span class="text-ink-700 dark:text-ink-200 font-semibold">Reading time</span>
+      </nav>
+
+      <p class="text-sm text-ink-500 dark:text-ink-400 mb-8 max-w-2xl">
+        Active time only. The clock runs while a signed-in reader has the guide tab open and is
+        scrolling, clicking or typing, and it pauses after 90 seconds without input. Readers who are
+        not signed in are not counted. Adjustments made on the hours ledger apply to the all-time
+        view; the 7-day and 30-day views show measured time only.
+      </p>
+
+      <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Admins only</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          You need an admin account to view reading time.
+          <a href="/login" class="text-accent-700 dark:text-accent-400 hover:underline">Log in</a> or ask the site maintainer to promote your account.
+        </p>
+      </div>
+
+      <div id="admin-offline" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Supabase not configured</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          This page needs a Supabase backend. See <code class="text-accent-700 dark:text-accent-400">SUPABASE_SETUP.md</code> in the repo root.
+        </p>
+      </div>
+
+      <div id="rt-loading" class="text-sm text-ink-500">Loading...</div>
+      <div id="rt-error" class="hidden surface rounded-2xl p-6 text-sm text-accent-800 dark:text-accent-200"></div>
+
+      <div id="rt-summary" class="hidden grid sm:grid-cols-3 gap-3 mb-8">
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Active time</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="time">0 min</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Readers</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="readers">0</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Visits</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="sessions">0</div>
+        </div>
+      </div>
+
+      <section id="rt-guides-section" class="hidden mb-10">
+        <h2 class="font-serif text-xl font-semibold mb-3">By guide</h2>
+        <div id="rt-guides-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
+          No reading time in this range.
+        </div>
+        <div id="rt-guides-wrap" class="hidden surface rounded-2xl overflow-x-auto">
+          <table class="w-full text-sm min-w-[640px]">
+            <thead class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">
+              <tr class="border-b border-ink-200 dark:border-ink-800">
+                <th class="text-left px-4 py-3 font-semibold">Guide</th>
+                <th class="text-right px-4 py-3 font-semibold">Readers</th>
+                <th class="text-right px-4 py-3 font-semibold">Visits</th>
+                <th class="text-right px-4 py-3 font-semibold">Total</th>
+                <th class="text-right px-4 py-3 font-semibold">Per reader</th>
+                <th class="text-right px-4 py-3 font-semibold">Estimate</th>
+              </tr>
+            </thead>
+            <tbody id="rt-guides" class="divide-y divide-ink-200 dark:divide-ink-800"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="rt-readers-section" class="hidden">
+        <div class="flex items-center justify-between gap-4 mb-3 flex-wrap">
+          <h2 class="font-serif text-xl font-semibold">By reader</h2>
+          <button
+            id="rt-export"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-ink-200 dark:border-ink-800 px-3 py-1.5 text-xs text-ink-600 dark:text-ink-300 hover:border-accent-400 dark:hover:border-accent-600 transition-colors"
+          >
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Export CSV
+          </button>
+        </div>
+        <div id="rt-readers-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
+          No signed-in readers in this range.
+        </div>
+        <ul id="rt-readers" class="hidden space-y-3"></ul>
+      </section>
+    </div>
+  </section>
+  <script type="application/json" id="rt-guide-meta" is:inline set:html={JSON.stringify(guideMeta)} />
+</BaseLayout>
+
+<style>
+  .rt-filter {
+    @apply px-3 py-1 rounded-full text-xs font-medium bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
+    @apply hover:bg-ink-200 dark:hover:bg-ink-700 transition-colors;
+  }
+  .rt-filter.active {
+    @apply bg-accent-700 text-white dark:bg-accent-600;
+  }
+  .rt-chip {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.14em] font-semibold;
+    @apply bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
+  }
+  #rt-readers details > summary::-webkit-details-marker { display: none; }
+  #rt-readers details[open] [data-chevron] { transform: rotate(180deg); }
+</style>
+
+<script>
+  import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
+  import {
+    fetchTimeByGuide,
+    fetchTimeByReader,
+    formatDuration,
+    formatHours,
+    type GuideTimeRow,
+    type ReaderTimeRow,
+  } from '../../lib/guideTime';
+
+  type Meta = Record<string, { title: string; estimatedTime: number }>;
+  type Range = '7' | '30' | 'all';
+
+  const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c] ?? c);
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const csvCell = (v: string | number) => {
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const setup = () => {
+    const root = document.getElementById('rt-root');
+    if (!root || root.dataset.ready === '1') return;
+    root.dataset.ready = '1';
+
+    const gate = document.getElementById('admin-gate')!;
+    const offline = document.getElementById('admin-offline')!;
+    const loading = document.getElementById('rt-loading')!;
+    const errorEl = document.getElementById('rt-error')!;
+    const summary = document.getElementById('rt-summary')!;
+    const guidesSection = document.getElementById('rt-guides-section')!;
+    const guidesEmpty = document.getElementById('rt-guides-empty')!;
+    const guidesWrap = document.getElementById('rt-guides-wrap')!;
+    const guidesBody = document.getElementById('rt-guides')!;
+    const readersSection = document.getElementById('rt-readers-section')!;
+    const readersEmpty = document.getElementById('rt-readers-empty')!;
+    const readersList = document.getElementById('rt-readers')!;
+    const exportBtn = document.getElementById('rt-export') as HTMLButtonElement | null;
+
+    if (!isCloudMode()) {
+      loading.classList.add('hidden');
+      offline.classList.remove('hidden');
+      return;
+    }
+
+    const me = currentUser();
+    if (!me?.isAdmin) {
+      loading.classList.add('hidden');
+      gate.classList.remove('hidden');
+      return;
+    }
+    gate.classList.add('hidden');
+
+    const meta: Meta = JSON.parse(document.getElementById('rt-guide-meta')?.textContent || '{}');
+    const titleOf = (slug: string) => meta[slug]?.title ?? slug;
+
+    let range: Range = 'all';
+    let byGuide: GuideTimeRow[] = [];
+    let byReader: ReaderTimeRow[] = [];
+
+    const renderSummary = () => {
+      const total = byGuide.reduce((s, r) => s + Number(r.active_seconds), 0);
+      const sessions = byGuide.reduce((s, r) => s + Number(r.sessions), 0);
+      const readers = new Set(byReader.map((r) => r.user_id)).size;
+      const set = (k: string, v: string) => {
+        const el = summary.querySelector<HTMLElement>(`[data-summary="${k}"]`);
+        if (el) el.textContent = v;
+      };
+      set('time', formatDuration(total));
+      set('readers', String(readers));
+      set('sessions', String(sessions));
+      summary.classList.remove('hidden');
+    };
+
+    const renderGuides = () => {
+      guidesSection.classList.remove('hidden');
+      const rows = [...byGuide].sort((a, b) => Number(b.active_seconds) - Number(a.active_seconds));
+      if (rows.length === 0) {
+        guidesWrap.classList.add('hidden');
+        guidesEmpty.classList.remove('hidden');
+        return;
+      }
+      guidesEmpty.classList.add('hidden');
+      guidesWrap.classList.remove('hidden');
+      guidesBody.innerHTML = rows.map((r) => {
+        const total = Number(r.active_seconds);
+        const readers = Number(r.readers);
+        const est = meta[r.guide_slug]?.estimatedTime;
+        return `
+          <tr>
+            <td class="px-4 py-3">
+              <a href="/guides/${esc(r.guide_slug)}/" class="font-medium text-ink-900 dark:text-ink-100 hover:text-accent-700 dark:hover:text-accent-400">${esc(titleOf(r.guide_slug))}</a>
+              <div class="text-[11px] font-mono text-ink-400 mt-0.5">${esc(r.guide_slug)}</div>
+            </td>
+            <td class="px-4 py-3 text-right font-mono tabular-nums">${readers}</td>
+            <td class="px-4 py-3 text-right font-mono tabular-nums">${Number(r.sessions)}</td>
+            <td class="px-4 py-3 text-right font-mono tabular-nums text-ink-900 dark:text-ink-50">${formatDuration(total)}</td>
+            <td class="px-4 py-3 text-right font-mono tabular-nums">${readers > 0 ? formatDuration(total / readers) : '0 min'}</td>
+            <td class="px-4 py-3 text-right font-mono tabular-nums text-ink-500">${est ? `${est} min` : '<span class="text-ink-400">n/a</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    const renderReaders = () => {
+      readersSection.classList.remove('hidden');
+      type Group = { userId: string; username: string; displayName: string; total: number; lastSeen: string; rows: ReaderTimeRow[] };
+      const groups = new Map<string, Group>();
+      const seenAt = (r: ReaderTimeRow) => r.last_seen_at ?? r.adjusted_at ?? '';
+      for (const r of byReader) {
+        const g = groups.get(r.user_id) ?? {
+          userId: r.user_id, username: r.username, displayName: r.display_name, total: 0, lastSeen: seenAt(r), rows: [],
+        };
+        g.total += Number(r.active_seconds);
+        if (seenAt(r) > g.lastSeen) g.lastSeen = seenAt(r);
+        g.rows.push(r);
+        groups.set(r.user_id, g);
+      }
+      const list = [...groups.values()].sort((a, b) => b.total - a.total);
+      if (list.length === 0) {
+        readersList.classList.add('hidden');
+        readersEmpty.classList.remove('hidden');
+        return;
+      }
+      readersEmpty.classList.add('hidden');
+      readersList.classList.remove('hidden');
+      readersList.innerHTML = list.map((g) => {
+        const rows = [...g.rows].sort((a, b) => Number(b.active_seconds) - Number(a.active_seconds));
+        return `
+          <li class="surface rounded-xl">
+            <details>
+              <summary class="flex items-center justify-between gap-4 cursor-pointer list-none p-4">
+                <div class="min-w-0">
+                  <div class="font-serif text-lg font-semibold truncate">
+                    ${esc(g.displayName)}
+                    <span class="font-sans text-sm font-normal text-ink-400 dark:text-ink-500">@${esc(g.username)}</span>
+                  </div>
+                  <div class="text-xs text-ink-500 mt-0.5">
+                    ${g.rows.length} guide${g.rows.length === 1 ? '' : 's'}${g.lastSeen ? ` · last active ${fmtDate(g.lastSeen)}` : ''}
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  <span class="font-mono text-lg tabular-nums text-ink-900 dark:text-ink-50">${formatDuration(g.total)}</span>
+                  <svg data-chevron class="h-4 w-4 text-ink-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+              </summary>
+              <ul class="border-t border-ink-200 dark:border-ink-800 divide-y divide-ink-200 dark:divide-ink-800">
+                ${rows.map((r) => {
+                  const delta = Number(r.adjustment_seconds) || 0;
+                  const visits = Number(r.sessions);
+                  const span = r.first_seen_at && r.last_seen_at ? ` · ${fmtDate(r.first_seen_at)} to ${fmtDate(r.last_seen_at)}` : '';
+                  const adjusted = delta !== 0
+                    ? `<span class="rt-chip ml-2 normal-case tracking-normal" title="Set on the hours ledger${r.adjusted_by ? ` by @${esc(r.adjusted_by)}` : ''}${r.adjusted_at ? ` on ${fmtDate(r.adjusted_at)}` : ''}. Measured ${formatDuration(Number(r.session_seconds))}.">adjusted ${delta > 0 ? '+' : '-'}${formatDuration(Math.abs(delta))}</span>`
+                    : '';
+                  return `
+                  <li class="flex items-center justify-between gap-4 px-4 py-2.5 text-sm">
+                    <div class="min-w-0">
+                      <a href="/guides/${esc(r.guide_slug)}/" class="font-medium text-ink-900 dark:text-ink-100 hover:text-accent-700 dark:hover:text-accent-400">${esc(titleOf(r.guide_slug))}</a>${adjusted}
+                      <div class="text-[11px] text-ink-500 mt-0.5">
+                        ${visits} visit${visits === 1 ? '' : 's'}${span}
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <div class="font-mono tabular-nums text-ink-900 dark:text-ink-50">${formatDuration(Number(r.active_seconds))}</div>
+                      <div class="text-[11px] font-mono text-ink-500">${formatHours(Number(r.active_seconds))}</div>
+                    </div>
+                  </li>
+                `; }).join('')}
+              </ul>
+            </details>
+          </li>
+        `;
+      }).join('');
+    };
+
+    const showError = (msg: string) => {
+      errorEl.textContent = msg;
+      errorEl.classList.remove('hidden');
+    };
+
+    const load = async () => {
+      loading.classList.remove('hidden');
+      errorEl.classList.add('hidden');
+      const since = range === 'all' ? null : new Date(Date.now() - Number(range) * 86_400_000);
+      try {
+        [byGuide, byReader] = await Promise.all([fetchTimeByGuide(since), fetchTimeByReader(since)]);
+      } catch (e) {
+        loading.classList.add('hidden');
+        showError(
+          'Could not load reading time: ' + (e instanceof Error ? e.message : String(e)) +
+          '. If the guide_sessions table or its functions are missing, re-run supabase/schema.sql in the Supabase SQL editor.',
+        );
+        return;
+      }
+      loading.classList.add('hidden');
+      renderSummary();
+      renderGuides();
+      renderReaders();
+    };
+    void load();
+
+    document.querySelectorAll<HTMLButtonElement>('[data-range]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rt-filter').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        range = (btn.dataset.range ?? '30') as Range;
+        void load();
+      });
+    });
+
+    exportBtn?.addEventListener('click', () => {
+      const header = ['username', 'display_name', 'guide_slug', 'guide_title', 'visits', 'active_seconds', 'hours', 'measured_seconds', 'adjustment_seconds', 'adjusted_by', 'first_seen_at', 'last_seen_at'];
+      const lines = [header.join(',')].concat(
+        byReader.map((r) => [
+          r.username, r.display_name, r.guide_slug, titleOf(r.guide_slug),
+          Number(r.sessions), Number(r.active_seconds), (Number(r.active_seconds) / 3600).toFixed(2),
+          Number(r.session_seconds), Number(r.adjustment_seconds), r.adjusted_by ?? '',
+          r.first_seen_at ?? '', r.last_seen_at ?? '',
+        ].map(csvCell).join(',')),
+      );
+      const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `reading-time-${range === 'all' ? 'all-time' : `${range}d`}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+
+    onAuthChange((u) => {
+      if (!u?.isAdmin) window.location.href = '/';
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

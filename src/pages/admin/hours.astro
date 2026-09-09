@@ -19,7 +19,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <p class="text-sm text-ink-500 dark:text-ink-400 mb-8 max-w-xl">
         Adjust the recorded hours on any submission. Changes save straight to the record
-        the inbox and summaries read from.
+        the inbox and summaries read from. The tracked value is the active reading time this
+        account's tracker measured on the guide; setting it to something else stores an
+        adjustment, and anything they read afterwards keeps adding on top.
       </p>
 
       <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
@@ -75,10 +77,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <script>
   import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
   import { supabase } from '../../lib/supabase';
+  import { fetchTimeByReader, formatHours, setTrackedTime, type ReaderTimeRow } from '../../lib/guideTime';
 
   type Row = {
     id: string;
     created_at: string;
+    user_id: string | null;
     name: string | null;
     email: string | null;
     guide_slug: string | null;
@@ -121,6 +125,53 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     let current: Row[] = [];
     let filter: string = 'approved';
+    // Tracked reading time per (user, guide) from guide_sessions plus any
+    // admin adjustment. Null until loaded, and stays null (controls hidden)
+    // if the tables are not set up yet.
+    let tracked: Map<string, ReaderTimeRow> | null = null;
+
+    const trackedKey = (r: Row) => `${r.user_id}|${r.guide_slug}`;
+    const trackedFor = (r: Row): ReaderTimeRow | null => {
+      if (!tracked || !r.user_id || !r.guide_slug) return null;
+      return tracked.get(trackedKey(r)) ?? {
+        user_id: r.user_id, username: '', display_name: '', guide_slug: r.guide_slug,
+        sessions: 0, session_seconds: 0, adjustment_seconds: 0, active_seconds: 0,
+        first_seen_at: null, last_seen_at: null, adjusted_by: null, adjusted_at: null, adjustment_note: null,
+      };
+    };
+
+    const trackedControls = (r: Row) => {
+      const tr = trackedFor(r);
+      if (!tr) return '';
+      const delta = Number(tr.adjustment_seconds) || 0;
+      const measured = Number(tr.session_seconds) || 0;
+      const adjustedLine = delta !== 0
+        ? `<div class="text-[11px] text-ink-500 dark:text-ink-400 text-right">
+             Adjusted ${delta > 0 ? '+' : '-'}${formatHours(Math.abs(delta))}${tr.adjusted_by ? ` by @${esc(tr.adjusted_by)}` : ''}${tr.adjusted_at ? ` on ${fmt(tr.adjusted_at)}` : ''}. Measured ${formatHours(measured)}.
+           </div>`
+        : `<div class="text-[11px] text-ink-500 dark:text-ink-400 text-right">${measured > 0 ? `Measured ${formatHours(measured)} over ${Number(tr.sessions)} visit${Number(tr.sessions) === 1 ? '' : 's'}.` : 'No reading tracked on this guide yet.'}</div>`;
+      return `
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+          <label class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold" for="trk-${r.id}" title="Active reading time the tracker recorded for this account on this guide. Type a new value to override it.">Tracked</label>
+          <input
+            id="trk-${r.id}"
+            data-tracked-input
+            type="number"
+            inputmode="decimal"
+            min="0"
+            max="200"
+            step="0.1"
+            value="${((Number(tr.active_seconds) || 0) / 3600).toFixed(1)}"
+            class="w-24 rounded-lg border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 px-3 py-1.5 font-mono text-sm text-ink-900 dark:text-ink-50 focus:outline-none focus:ring-2 focus:ring-accent-600"
+          />
+          <button
+            data-save-tracked
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-accent-700 text-accent-800 dark:border-accent-500 dark:text-accent-200 hover:bg-accent-50 dark:hover:bg-accent-900/30 disabled:opacity-50 transition-colors"
+          >Save</button>
+          <span data-saved-tracked class="hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400">Saved</span>
+        </div>
+        ${adjustedLine}`;
+    };
 
     const visible = () => (filter === 'all' ? current : current.filter((r) => r.status === filter));
 
@@ -163,10 +214,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               </h3>
               ${r.email ? `<div class="text-xs text-ink-500 mt-0.5">${esc(r.email)}</div>` : ''}
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-col items-end gap-2">
+            <div class="flex items-center gap-2 flex-wrap justify-end">
               <label class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold" for="hrs-${r.id}">Hours</label>
               <input
                 id="hrs-${r.id}"
+                data-hours-input
                 type="number"
                 inputmode="decimal"
                 min="0.5"
@@ -181,16 +234,52 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               >Save</button>
               <span data-saved class="hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400">Saved</span>
             </div>
+            ${trackedControls(r)}
+            </div>
           </div>
         </li>
       `;}).join('');
+
+      list.querySelectorAll<HTMLButtonElement>('[data-save-tracked]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest('[data-hrs-id]') as HTMLElement | null;
+          if (!li || !tracked) return;
+          const id = li.dataset.hrsId!;
+          const row = current.find((r) => r.id === id);
+          const tr = row ? trackedFor(row) : null;
+          const input = li.querySelector<HTMLInputElement>('[data-tracked-input]');
+          if (!row || !tr || !input) return;
+          const hours = Number(input.value);
+          if (!Number.isFinite(hours) || hours < 0 || hours > 200) {
+            alert('Tracked hours must be between 0 and 200.');
+            return;
+          }
+          btn.disabled = true;
+          const res = await setTrackedTime(tr, Math.round(hours * 3600));
+          btn.disabled = false;
+          if (!res.ok) { alert('Could not save tracked time: ' + res.error); return; }
+          tracked.set(trackedKey(row), {
+            ...tr,
+            adjustment_seconds: res.delta,
+            active_seconds: Math.max(0, (Number(tr.session_seconds) || 0) + res.delta),
+            adjusted_by: res.delta === 0 ? null : (me.username ?? null),
+            adjusted_at: res.delta === 0 ? null : new Date().toISOString(),
+          });
+          render();
+          const savedTag = list.querySelector<HTMLElement>(`[data-hrs-id="${id}"] [data-saved-tracked]`);
+          if (savedTag) {
+            savedTag.classList.remove('hidden');
+            setTimeout(() => savedTag.classList.add('hidden'), 2000);
+          }
+        });
+      });
 
       list.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           const li = btn.closest('[data-hrs-id]') as HTMLElement | null;
           if (!li) return;
           const id = li.dataset.hrsId!;
-          const input = li.querySelector('input') as HTMLInputElement | null;
+          const input = li.querySelector<HTMLInputElement>('[data-hours-input]');
           const savedTag = li.querySelector('[data-saved]') as HTMLElement | null;
           if (!input) return;
           const hours = Number(input.value);
@@ -218,7 +307,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const sb = supabase();
       const { data, error } = await sb!
         .from('volunteer_signups')
-        .select('id, created_at, name, email, guide_slug, grade, hours, status')
+        .select('id, created_at, user_id, name, email, guide_slug, grade, hours, status')
         .order('created_at', { ascending: false });
       loading.classList.add('hidden');
       if (error) {
@@ -229,6 +318,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       current = (data ?? []) as Row[];
       updateSummary();
       render();
+
+      // Optional second query; a missing guide_sessions table never blocks the ledger.
+      try {
+        const rows = await fetchTimeByReader();
+        const map = new Map<string, ReaderTimeRow>();
+        for (const t of rows) map.set(`${t.user_id}|${t.guide_slug}`, t);
+        tracked = map;
+        render();
+      } catch {
+        tracked = null;
+      }
     };
     load();
 

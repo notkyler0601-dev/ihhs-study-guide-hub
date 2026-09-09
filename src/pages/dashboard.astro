@@ -29,7 +29,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </header>
 
     <!-- Stat tiles -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
       <div class="surface rounded-2xl p-5">
         <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold">Guides opened</div>
         <div class="mt-2 flex items-baseline gap-2">
@@ -42,11 +42,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <span data-stat="quizzes" class="font-serif text-4xl font-semibold gradient-text">0</span>
         </div>
       </div>
-      <div class="surface rounded-2xl p-5 col-span-2 lg:col-span-1">
+      <div class="surface rounded-2xl p-5">
         <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold">Quiz avg</div>
         <div class="mt-2 flex items-baseline gap-2">
           <span data-stat="avg" class="font-serif text-4xl font-semibold gradient-text">0</span>
           <span class="text-sm text-ink-500">%</span>
+        </div>
+      </div>
+      <div class="surface rounded-2xl p-5" title="Active reading time across all guides. Counts only while a guide tab is open and you are reading.">
+        <div class="text-xs uppercase tracking-[0.14em] text-ink-500 font-semibold">Time studying</div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <span data-stat="time" class="font-serif text-4xl font-semibold gradient-text">0 min</span>
         </div>
       </div>
     </div>
@@ -64,6 +70,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <script>
   import { currentUser } from '../lib/auth';
   import { computeStats } from '../lib/progress';
+  import { formatDuration, refreshTimeFromCloud } from '../lib/guideTime';
 
   const setup = () => {
     const gate = document.getElementById('auth-gate')!;
@@ -86,23 +93,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const setStat = (k: string, v: string | number) => {
       document.querySelectorAll(`[data-stat="${k}"]`).forEach((el) => { el.textContent = String(v); });
     };
-    const stats = computeStats();
-    setStat('started', stats.guidesStarted);
-    setStat('quizzes', stats.quizzesTaken);
-    setStat('avg', stats.averageScore);
+    const render = () => {
+      const stats = computeStats();
+      setStat('started', stats.guidesStarted);
+      setStat('quizzes', stats.quizzesTaken);
+      setStat('avg', stats.averageScore);
+      setStat('time', formatDuration(stats.totalActiveSeconds));
 
-    // Recent guides
-    const recentEl = document.getElementById('recent-guides')!;
-    if (stats.recentGuides.length > 0) {
-      recentEl.innerHTML = stats.recentGuides.map((g) => `
-        <li>
-          <a href="/guides/${g.slug}" class="block surface rounded-xl p-3 hover:border-accent-400 dark:hover:border-accent-600 transition-colors group">
-            <div class="font-medium text-ink-900 dark:text-ink-100 group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">${g.title}</div>
-            <div class="text-xs text-ink-500 mt-0.5">${g.subject} · ${g.visits} visit${g.visits === 1 ? '' : 's'}</div>
-          </a>
-        </li>
-      `).join('');
-    }
+      // Recent guides
+      const recentEl = document.getElementById('recent-guides')!;
+      if (stats.recentGuides.length > 0) {
+        recentEl.innerHTML = stats.recentGuides.map((g) => `
+          <li>
+            <a href="/guides/${g.slug}" class="block surface rounded-xl p-3 hover:border-accent-400 dark:hover:border-accent-600 transition-colors group">
+              <div class="font-medium text-ink-900 dark:text-ink-100 group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">${g.title}</div>
+              <div class="text-xs text-ink-500 mt-0.5">${g.subject} · ${g.visits} visit${g.visits === 1 ? '' : 's'}${g.activeSeconds > 0 ? ` · ${formatDuration(g.activeSeconds)}` : ''}</div>
+            </a>
+          </li>
+        `).join('');
+      }
+    };
+    render();
+    // In cloud mode the guide_sessions table knows about every device; fold
+    // those totals in and repaint if anything moved.
+    void refreshTimeFromCloud().then((changed) => { if (changed) render(); });
   };
   setup();
   document.addEventListener('astro:after-swap', setup);

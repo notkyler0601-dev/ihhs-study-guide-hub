@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-const updated = '2026-04-23';
+const updated = '2026-09-08';
 ---
 
 <BaseLayout title="Privacy" description="What this site collects, where it lives, and who it gets shared with (nobody).">
@@ -29,6 +29,7 @@ const updated = '2026-04-23';
       <ul>
         <li><strong>Theme preference</strong> (light or dark), in your browser's localStorage.</li>
         <li><strong>Reading progress</strong>: which guides you've opened and when, in localStorage.</li>
+        <li><strong>Reading time</strong>: how long you actively spend on each guide, counted only while the guide tab is open and you are scrolling, clicking or typing. Only tracked while you're signed in, in localStorage.</li>
         <li><strong>Flashcard scheduling</strong>: which cards you've reviewed and when they're due next, in localStorage.</li>
         <li><strong>Quiz scores</strong>: how many you got right and on which guide, in localStorage.</li>
         <li><strong>Streak count</strong>: how many days in a row you've studied, in localStorage.</li>
@@ -36,6 +37,16 @@ const updated = '2026-04-23';
       <p>
         All of that lives on <em>your device only</em>. If you clear your browser data, it's gone.
         If you use a different device, it doesn't follow you.
+      </p>
+
+      <h2>Anonymous page counts</h2>
+      <p>
+        The site uses Vercel Web Analytics to count visits: which pages get opened, roughly how
+        many people come by, what kind of device and browser they use, and which country they're
+        in. It sets no cookies, it doesn't follow you to other sites, and it can't tell me who any
+        individual visitor is. Repeat visits are matched with a temporary code that changes every
+        day, so it can't even recognize you tomorrow. It has no connection to your account, so it
+        can't link a page view to your quiz scores or reading time.
       </p>
 
       <h2>If you create an account</h2>
@@ -46,6 +57,13 @@ const updated = '2026-04-23';
         in. No name, no school ID, no anything else is collected.
       </p>
       <p>
+        One exception, and only because you'd want it: if you submit volunteer hours for a
+        guide, the guide team reviewing that submission can see the reading time your account
+        recorded on that guide, so honest hours get credited without a back-and-forth. They can
+        also correct that number, for example to credit reading you did on paper. That view
+        stays inside the site's admin pages and is still never handed to the school.
+      </p>
+      <p>
         Your email is never shared, never sold, never used for marketing, never used to message
         you, and never given to the school under any circumstance. If the school asks me for a
         list of users, the answer is no. If the school subpoenas it, I'll talk to a lawyer; the
@@ -54,8 +72,8 @@ const updated = '2026-04-23';
 
       <h2>What is NOT collected</h2>
       <ul>
-        <li>No analytics, no tracking pixels, no Google Analytics, no Meta Pixel, no anything.</li>
-        <li>No IP address logging beyond what the host (Vercel/Netlify/etc.) does for basic abuse prevention.</li>
+        <li>No advertising trackers, no tracking pixels, no Google Analytics, no Meta Pixel. The anonymous page counter above is the only measurement on the site.</li>
+        <li>No IP address logging beyond what the host (Vercel) does for basic abuse prevention. The page counter uses your address only to work out the country and doesn't store it.</li>
         <li>No third-party advertising. There are no ads, ever.</li>
         <li>No browser fingerprinting.</li>
         <li>No reading of your other tabs, other sites, or anything outside this site.</li>
@@ -74,7 +92,7 @@ const updated = '2026-04-23';
       <ul>
         <li>You can delete all your local data anytime by clearing site data in your browser.</li>
         <li>If you have an account, you can email me and I'll delete it and everything attached, no questions asked.</li>
-        <li>You can use the site without an account and nothing leaves your browser.</li>
+        <li>You can use the site without an account. Then nothing about you leaves your browser except the anonymous page count above.</li>
       </ul>
 
       <h2>Changes to this policy</h2>

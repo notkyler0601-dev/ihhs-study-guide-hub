@@ -22,6 +22,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <a href="/admin/requests" class="hover:text-accent-700 dark:hover:text-accent-400">Request inbox</a>
         <span class="text-ink-300 dark:text-ink-700">·</span>
         <span class="text-ink-700 dark:text-ink-200 font-semibold">Volunteer inbox</span>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <a href="/admin/reading-time" class="hover:text-accent-700 dark:hover:text-accent-400">Reading time</a>
       </nav>
 
       <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
@@ -81,6 +83,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <script>
   import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
   import { supabase } from '../../lib/supabase';
+  import { fetchTimeByReader, formatHours } from '../../lib/guideTime';
 
   type Row = {
     id: string;
@@ -131,6 +134,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     let current: Row[] = [];
     let filter: string = 'pending';
+    // Active reading time per (user, guide) from guide_sessions, to hold up
+    // against the hours each submission claims. Null until loaded; stays
+    // null if the table is not set up yet, in which case no chip is shown.
+    let tracked: Map<string, number> | null = null;
+
+    const trackedChip = (r: Row) => {
+      if (!tracked || !r.user_id || !r.guide_slug) return '';
+      const secs = tracked.get(`${r.user_id}|${r.guide_slug}`) ?? 0;
+      if (secs <= 0) {
+        return `<span class="vol-chip bg-ink-100 text-ink-500 dark:bg-ink-800 dark:text-ink-400" title="No active reading time recorded on this guide for this account">Tracked: none</span>`;
+      }
+      const claimed = r.hours ?? 0;
+      const covers = claimed <= 0 || secs / 3600 >= claimed * 0.8;
+      const tone = covers
+        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
+      return `<span class="vol-chip ${tone}" title="Active reading time recorded on this guide for this account (tab open and reading, all visits)">Tracked ${formatHours(secs)}</span>`;
+    };
 
     const updateSummary = () => {
       summary.classList.remove('hidden');
@@ -174,6 +195,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="vol-chip ${STATUS_COLORS[r.status] ?? ''}">${r.status}</span>
                 <span class="vol-chip bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300">${(r.hours ?? 0).toFixed(1)} hr</span>
+                ${trackedChip(r)}
                 ${r.grade ? `<span class="vol-chip bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300">Grade ${esc(r.grade)}</span>` : ''}
               </div>
               <h3 class="font-serif text-lg font-semibold mt-2">
@@ -235,6 +257,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       current = (data ?? []) as Row[];
       updateSummary();
       render();
+
+      // Reading time is a second, optional query so a missing table never
+      // blocks the inbox itself.
+      try {
+        const rows = await fetchTimeByReader();
+        const map = new Map<string, number>();
+        for (const t of rows) {
+          const key = `${t.user_id}|${t.guide_slug}`;
+          map.set(key, (map.get(key) ?? 0) + Number(t.active_seconds));
+        }
+        tracked = map;
+        render();
+      } catch {
+        tracked = null;
+      }
     };
     load();
 

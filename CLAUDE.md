@@ -52,8 +52,9 @@ Accounts, per-user progress, SM-2 spaced repetition, and a daily review queue ar
 - `storage.ts`: writes to localStorage first (instant), then fire-and-forget upserts to the Supabase `user_data` table in cloud mode. On login, `auth.ts#hydrateUserDataFromCloud` pulls every cloud row back into localStorage so reads stay sync.
 - `progress.ts`: per-user dashboard data, quiz scores, guide opens, streaks. Uses `storage.ts`.
 - `srs.ts`: SM-2 scheduling for flashcards. Uses `storage.ts`.
+- `guideTime.ts`: active-time tracking on guide pages (signed-in readers only). Counts seconds while the tab is visible and the reader has interacted within 90 s, adds them to `GuideProgress.activeSeconds` via `progress.ts`, and in cloud mode upserts one `guide_sessions` row per visit (replayed from a local queue if a push fails). `GuideLayout.astro` starts it and paints the "Your time" badge; the dashboard shows totals; `/admin/reading-time` (linked from the admin nav) and the tracked-time chips on `/admin/volunteers` and `/admin/hours` read it back through the `guide_time_by_guide` / `guide_time_by_reader` SQL functions (both built on `guide_time_pairs`). Admins can override a reader's tracked time per guide on `/admin/hours`; that stores a delta in `guide_time_adjustments`, which only the all-time view applies. Requires re-running `supabase/schema.sql` once.
 
-Components that touch these (`Quiz.astro`, `Flashcards.astro`, `GuideLayout.astro`, `Header.astro`, `UserMenu.astro`, `signup.astro`, `login.astro`, `request.astro`, `admin/requests.astro`) are already wired up. Don't break those imports.
+Components that touch these (`Quiz.astro`, `Flashcards.astro`, `GuideLayout.astro`, `Header.astro`, `UserMenu.astro`, `signup.astro`, `login.astro`, `request.astro`, `dashboard.astro`, `admin/requests.astro`, `admin/volunteers.astro`, `admin/hours.astro`, `admin/reading-time.astro`) are already wired up. Don't break those imports.
 
 ### Cloud mode setup
 

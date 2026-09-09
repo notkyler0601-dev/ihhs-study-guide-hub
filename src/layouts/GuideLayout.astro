@@ -53,6 +53,16 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
           </svg>
           {estimatedTime} min
         </span>
+        <span
+          class="badge hidden"
+          data-guide-time-badge
+          title="Time you have actively spent on this guide. Counts only while this tab is open and you are reading; pauses after 90 seconds without input."
+        >
+          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>
+          </svg>
+          Your time: <span data-guide-time-text>0 min</span>
+        </span>
         {tags.map((t) => <span class="badge">#{t}</span>)}
       </div>
 
@@ -109,6 +119,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
   import mermaid from 'mermaid';
   import { currentUser } from '../lib/auth';
   import { trackGuideOpen } from '../lib/progress';
+  import { startGuideTracking, currentGuideTime, formatDuration, type GuideTimeDetail } from '../lib/guideTime';
 
   const trackOpen = () => {
     if (!currentUser()) return;
@@ -122,6 +133,29 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
   };
   trackOpen();
   document.addEventListener('astro:after-swap', trackOpen);
+
+  // Active-time tracking (signed-in readers only) plus the "Your time" badge
+  // in the header. The tracker owns its own lifecycle across View Transitions;
+  // this just (re)starts it and paints whatever it reports.
+  const renderTimeBadge = (detail: GuideTimeDetail | null) => {
+    const badge = document.querySelector<HTMLElement>('[data-guide-time-badge]');
+    const text = badge?.querySelector<HTMLElement>('[data-guide-time-text]');
+    if (!badge || !text) return;
+    const meta = document.querySelector<HTMLElement>('[data-guide-meta]');
+    if (!detail || detail.slug !== meta?.dataset.guideSlug) {
+      badge.classList.add('hidden');
+      return;
+    }
+    text.textContent = formatDuration(detail.totalSeconds);
+    badge.classList.remove('hidden');
+  };
+  window.addEventListener('ihhs:guide-time', (e) => renderTimeBadge((e as CustomEvent<GuideTimeDetail>).detail));
+  const startTracking = () => {
+    startGuideTracking();
+    renderTimeBadge(currentGuideTime());
+  };
+  startTracking();
+  document.addEventListener('astro:after-swap', startTracking);
   // Render every mermaid block on the page using the current dark/light theme.
   // The original mermaid source is stashed on each wrapper as data-mermaid-source
   // so a theme toggle can re-render in place without losing the code.
