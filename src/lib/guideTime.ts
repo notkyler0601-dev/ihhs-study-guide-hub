@@ -130,9 +130,20 @@ const writePending = (userId: string, rows: Record<string, SessionRow>) => {
   } catch {}
 };
 
+const PENDING_MAX = 200;
+
 const queuePut = (row: SessionRow) => {
   const rows = readPending(row.user_id);
   rows[row.id] = row;
+  // If pushes keep failing (backend not set up yet), drop the oldest rows
+  // rather than filling localStorage forever.
+  const ids = Object.keys(rows);
+  if (ids.length > PENDING_MAX) {
+    ids
+      .sort((a, b) => (rows[a].last_seen_at < rows[b].last_seen_at ? -1 : 1))
+      .slice(0, ids.length - PENDING_MAX)
+      .forEach((id) => { delete rows[id]; });
+  }
   writePending(row.user_id, rows);
 };
 
@@ -256,14 +267,33 @@ export interface GuideTimeRow {
 
 const PAGE = 1000;
 
+// Supabase/PostgREST failures keep their error code so pages can tell "the
+// database is not set up yet" apart from everything else.
+export class RpcError extends Error {
+  code: string | null;
+  constructor(message: string, code: string | null = null) {
+    super(message);
+    this.name = 'RpcError';
+    this.code = code;
+  }
+}
+
+// True when the reading-time tables or functions are missing from the
+// project, which is what happens until supabase/schema.sql has been run
+// (PGRST202: unknown function, PGRST205: unknown table).
+export const isSchemaMissing = (e: unknown): boolean =>
+  e instanceof RpcError && (e.code === 'PGRST202' || e.code === 'PGRST205' || /schema cache/i.test(e.message));
+
 const rpcAll = async <T>(fn: string, since?: Date | null): Promise<T[]> => {
   const sb = supabase();
   if (!sb) return [];
-  const args = since ? { since: since.toISOString() } : {};
+  // Always name the parameter, null meaning all-time, so the API resolves the
+  // function by its signature instead of hunting for a zero-argument overload.
+  const args = { since: since ? since.toISOString() : null };
   const out: T[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await sb.rpc(fn, args).range(from, from + PAGE - 1);
-    if (error) throw new Error(error.message);
+    if (error) throw new RpcError(error.message, error.code ?? null);
     const rows = (data ?? []) as T[];
     out.push(...rows);
     if (rows.length < PAGE) break;
@@ -295,7 +325,7 @@ export const fetchAllProfiles = async (): Promise<ProfileRow[]> => {
       .select('id, username, display_name, created_at')
       .order('username')
       .range(from, from + PAGE - 1);
-    if (error) throw new Error(error.message);
+    if (error) throw new RpcError(error.message, error.code ?? null);
     const rows = (data ?? []) as ProfileRow[];
     out.push(...rows);
     if (rows.length < PAGE) break;

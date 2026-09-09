@@ -59,6 +59,21 @@ const guideMeta = Object.fromEntries(
 
       <div id="rt-loading" class="text-sm text-ink-500">Loading...</div>
       <div id="rt-error" class="hidden surface rounded-2xl p-6 text-sm text-accent-800 dark:text-accent-200"></div>
+      <div id="rt-setup" class="hidden surface rounded-2xl p-6 mb-6">
+        <h2 class="font-serif text-xl mb-2">Reading time is not set up in Supabase yet</h2>
+        <p class="text-sm text-ink-600 dark:text-ink-300 mb-3">
+          The site is connected to Supabase, but the project is missing the reading-time tables and
+          functions. One-time fix:
+        </p>
+        <ol class="list-decimal pl-5 text-sm text-ink-700 dark:text-ink-200 space-y-1.5 mb-4">
+          <li>In the Supabase dashboard open <strong>SQL Editor</strong> and click <strong>New query</strong>.</li>
+          <li>Paste the entire contents of <code class="text-accent-700 dark:text-accent-400">supabase/schema.sql</code> from the repo and click <strong>Run</strong>. It is safe to run again; it only adds what is missing.</li>
+          <li>Wait about ten seconds for the API to pick up the new functions, then
+            <button type="button" data-retry class="underline decoration-accent-400 underline-offset-2 hover:text-accent-700 dark:hover:text-accent-400">try again</button>.
+          </li>
+        </ol>
+        <p class="text-xs text-ink-500 font-mono break-words" data-setup-detail></p>
+      </div>
 
       <div id="rt-summary" class="hidden grid sm:grid-cols-3 gap-3 mb-8">
         <div class="surface rounded-xl p-4">
@@ -146,6 +161,7 @@ const guideMeta = Object.fromEntries(
     fetchTimeByReader,
     formatDuration,
     formatHours,
+    isSchemaMissing,
     type GuideTimeRow,
     type ReaderTimeRow,
   } from '../../lib/guideTime';
@@ -170,6 +186,7 @@ const guideMeta = Object.fromEntries(
     const offline = document.getElementById('admin-offline')!;
     const loading = document.getElementById('rt-loading')!;
     const errorEl = document.getElementById('rt-error')!;
+    const setupEl = document.getElementById('rt-setup')!;
     const summary = document.getElementById('rt-summary')!;
     const guidesSection = document.getElementById('rt-guides-section')!;
     const guidesEmpty = document.getElementById('rt-guides-empty')!;
@@ -316,23 +333,27 @@ const guideMeta = Object.fromEntries(
       }).join('');
     };
 
-    const showError = (msg: string) => {
-      errorEl.textContent = msg;
+    const showError = (e: unknown) => {
+      if (isSchemaMissing(e)) {
+        const detail = setupEl.querySelector<HTMLElement>('[data-setup-detail]');
+        if (detail) detail.textContent = e instanceof Error ? e.message : String(e);
+        setupEl.classList.remove('hidden');
+        return;
+      }
+      errorEl.textContent = 'Could not load reading time: ' + (e instanceof Error ? e.message : String(e));
       errorEl.classList.remove('hidden');
     };
 
     const load = async () => {
       loading.classList.remove('hidden');
       errorEl.classList.add('hidden');
+      setupEl.classList.add('hidden');
       const since = range === 'all' ? null : new Date(Date.now() - Number(range) * 86_400_000);
       try {
         [byGuide, byReader] = await Promise.all([fetchTimeByGuide(since), fetchTimeByReader(since)]);
       } catch (e) {
         loading.classList.add('hidden');
-        showError(
-          'Could not load reading time: ' + (e instanceof Error ? e.message : String(e)) +
-          '. If the guide_sessions table or its functions are missing, re-run supabase/schema.sql in the Supabase SQL editor.',
-        );
+        showError(e);
         return;
       }
       loading.classList.add('hidden');
@@ -341,6 +362,7 @@ const guideMeta = Object.fromEntries(
       renderReaders();
     };
     void load();
+    setupEl.querySelector('[data-retry]')?.addEventListener('click', () => { void load(); });
 
     document.querySelectorAll<HTMLButtonElement>('[data-range]').forEach((btn) => {
       btn.addEventListener('click', () => {
