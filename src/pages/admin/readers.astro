@@ -1,0 +1,482 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// One column per published guide, alphabetical by title. Slugs that only
+// exist in the data (renamed or removed guides) are appended at runtime so
+// no recorded time is hidden.
+const guides = await getCollection('guides', ({ data }) => !data.draft);
+const columns = guides
+  .map((g) => ({ slug: g.id.replace(/\.(md|mdx)$/, ''), title: g.data.title }))
+  .sort((a, b) => a.title.localeCompare(b.title));
+---
+
+<BaseLayout title="Readers" description="Admin: every account's reading time on every guide.">
+  <section class="container-wide py-10 lg:py-14">
+    <div id="rd-root">
+      <div class="flex items-center justify-between gap-4 mb-2 flex-wrap">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-2">Admin</div>
+          <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">Readers</h1>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <button data-range="7"   class="rd-filter">7 days</button>
+          <button data-range="30"  class="rd-filter">30 days</button>
+          <button data-range="all" class="rd-filter active">All time</button>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-3 text-xs text-ink-500 dark:text-ink-400 mb-4">
+        <a href="/admin/requests" class="hover:text-accent-700 dark:hover:text-accent-400">Request inbox</a>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <a href="/admin/volunteers" class="hover:text-accent-700 dark:hover:text-accent-400">Volunteer inbox</a>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <a href="/admin/reading-time" class="hover:text-accent-700 dark:hover:text-accent-400">Reading time</a>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <span class="text-ink-700 dark:text-ink-200 font-semibold">Readers</span>
+      </nav>
+
+      <p class="text-sm text-ink-500 dark:text-ink-400 mb-8 max-w-2xl">
+        Every account, with its active reading time on every guide. Click a column heading to sort
+        by it. The bar under a number is that cell's share of the longest time in view. Adjustments
+        made on the hours ledger apply to the all-time view; the 7-day and 30-day views show
+        measured time only.
+      </p>
+
+      <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Admins only</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          You need an admin account to view readers.
+          <a href="/login" class="text-accent-700 dark:text-accent-400 hover:underline">Log in</a> or ask the site maintainer to promote your account.
+        </p>
+      </div>
+
+      <div id="admin-offline" class="hidden surface rounded-2xl p-10 text-center">
+        <h2 class="font-serif text-xl mb-2">Supabase not configured</h2>
+        <p class="text-ink-500 text-sm max-w-md mx-auto">
+          This page needs a Supabase backend. See <code class="text-accent-700 dark:text-accent-400">SUPABASE_SETUP.md</code> in the repo root.
+        </p>
+      </div>
+
+      <div id="rd-loading" class="text-sm text-ink-500">Loading...</div>
+      <div id="rd-error" class="hidden surface rounded-2xl p-6 text-sm text-accent-800 dark:text-accent-200"></div>
+
+      <div id="rd-summary" class="hidden grid sm:grid-cols-3 gap-3 mb-6">
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Accounts</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="accounts">0</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">With reading time</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="readers">0</div>
+        </div>
+        <div class="surface rounded-xl p-4">
+          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Active time</div>
+          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="time">0 min</div>
+        </div>
+      </div>
+
+      <div id="rd-controls" class="hidden flex items-center gap-3 flex-wrap mb-3">
+        <input
+          id="rd-search"
+          type="search"
+          placeholder="Search name or username"
+          autocomplete="off"
+          class="w-64 max-w-full rounded-lg border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 px-3 py-1.5 text-sm text-ink-900 dark:text-ink-50 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-accent-600"
+        />
+        <label class="inline-flex items-center gap-2 text-xs text-ink-600 dark:text-ink-300 cursor-pointer select-none">
+          <input id="rd-hide-empty" type="checkbox" class="h-3.5 w-3.5 rounded border-ink-300 dark:border-ink-700 text-accent-700 focus:ring-accent-500" />
+          Hide accounts with no time
+        </label>
+        <span id="rd-count" class="text-xs text-ink-500"></span>
+        <button
+          id="rd-export"
+          type="button"
+          class="ml-auto inline-flex items-center gap-2 rounded-lg border border-ink-200 dark:border-ink-800 px-3 py-1.5 text-xs text-ink-600 dark:text-ink-300 hover:border-accent-400 dark:hover:border-accent-600 transition-colors"
+        >
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+
+      <div id="rd-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
+        No accounts match.
+      </div>
+
+      <div id="rd-wrap" class="hidden surface rounded-2xl overflow-x-auto">
+        <table id="rd-table" class="text-sm border-collapse">
+          <thead id="rd-head"></thead>
+          <tbody id="rd-body" class="divide-y divide-ink-200 dark:divide-ink-800"></tbody>
+          <tfoot id="rd-foot"></tfoot>
+        </table>
+      </div>
+      <p id="rd-legend" class="hidden mt-3 text-[11px] text-ink-500 dark:text-ink-400">
+        <span class="inline-block align-middle h-1 w-6 rounded-full bg-accent-500 dark:bg-accent-400 mr-1.5"></span>
+        share of the longest time in view · <span class="text-accent-700 dark:text-accent-400 font-semibold">*</span> includes an adjustment from the hours ledger · hover a cell for details
+      </p>
+    </div>
+  </section>
+  <script type="application/json" id="rd-columns" is:inline set:html={JSON.stringify(columns)} />
+</BaseLayout>
+
+<style>
+  .rd-filter {
+    @apply px-3 py-1 rounded-full text-xs font-medium bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
+    @apply hover:bg-ink-200 dark:hover:bg-ink-700 transition-colors;
+  }
+  .rd-filter.active {
+    @apply bg-accent-700 text-white dark:bg-accent-600;
+  }
+</style>
+
+<!-- The table is built at runtime, so its rules must be global: Astro's
+     scoped styles only reach elements rendered from this template. Every
+     selector is anchored on #rd-table, so nothing leaks. -->
+<style is:global>
+  #rd-table th, #rd-table td {
+    @apply align-top;
+  }
+  #rd-table thead th {
+    @apply px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold leading-tight;
+    @apply border-b border-ink-200 dark:border-ink-800 cursor-pointer select-none;
+  }
+  #rd-table thead th.rd-fixed {
+    @apply whitespace-nowrap;
+  }
+  #rd-table thead th:hover {
+    @apply text-ink-900 dark:text-ink-50;
+  }
+  #rd-table thead th.is-sorted {
+    @apply text-accent-700 dark:text-accent-400;
+  }
+  #rd-table thead th .rd-slug {
+    @apply font-mono normal-case tracking-normal;
+  }
+  #rd-table .rd-sticky {
+    @apply sticky left-0 z-10 bg-white dark:bg-ink-900 border-r border-ink-200 dark:border-ink-800;
+  }
+  #rd-table tbody th {
+    @apply px-3 py-2 text-left font-normal min-w-[180px] max-w-[240px];
+  }
+  #rd-table .rd-cell {
+    @apply px-3 py-2 min-w-[76px] text-xs font-mono tabular-nums text-ink-900 dark:text-ink-50;
+  }
+  #rd-table .rd-cell.rd-empty {
+    @apply text-ink-300 dark:text-ink-700;
+  }
+  #rd-table .rd-bar {
+    @apply mt-1 h-1 rounded-full bg-accent-500 dark:bg-accent-400;
+  }
+  #rd-table .rd-adj {
+    @apply text-accent-700 dark:text-accent-400 font-semibold ml-0.5;
+  }
+  #rd-table tfoot th, #rd-table tfoot td {
+    @apply px-3 py-2 text-xs font-mono tabular-nums text-ink-600 dark:text-ink-300 border-t border-ink-200 dark:border-ink-800;
+  }
+  #rd-table tfoot .rd-sub {
+    @apply block text-[10px] font-sans text-ink-400 dark:text-ink-500 mt-0.5;
+  }
+</style>
+
+<script>
+  import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
+  import {
+    fetchAllProfiles,
+    fetchTimeByReader,
+    formatDuration,
+    type ProfileRow,
+    type ReaderTimeRow,
+  } from '../../lib/guideTime';
+
+  type Col = { slug: string; title: string };
+  type Cell = { active: number; measured: number; adjustment: number; visits: number; adjustedBy: string | null; adjustedAt: string | null };
+  type RowData = { id: string; username: string; displayName: string; total: number; guides: number; cells: Map<string, Cell> };
+  type Range = '7' | '30' | 'all';
+
+  const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c] ?? c);
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const csvCell = (v: string | number) => {
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  // Dense form for a wide grid; the full duration sits in the cell tooltip.
+  const compact = (seconds: number) => {
+    const s = Math.max(0, Math.floor(seconds));
+    if (s === 0) return '';
+    if (s < 60) return '<1m';
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h === 0 ? `${m}m` : `${h}h${String(m).padStart(2, '0')}`;
+  };
+
+  const setup = () => {
+    const root = document.getElementById('rd-root');
+    if (!root || root.dataset.ready === '1') return;
+    root.dataset.ready = '1';
+
+    const gate = document.getElementById('admin-gate')!;
+    const offline = document.getElementById('admin-offline')!;
+    const loading = document.getElementById('rd-loading')!;
+    const errorEl = document.getElementById('rd-error')!;
+    const summary = document.getElementById('rd-summary')!;
+    const controls = document.getElementById('rd-controls')!;
+    const search = document.getElementById('rd-search') as HTMLInputElement;
+    const hideEmpty = document.getElementById('rd-hide-empty') as HTMLInputElement;
+    const countEl = document.getElementById('rd-count')!;
+    const empty = document.getElementById('rd-empty')!;
+    const wrap = document.getElementById('rd-wrap')!;
+    const head = document.getElementById('rd-head')!;
+    const body = document.getElementById('rd-body')!;
+    const foot = document.getElementById('rd-foot')!;
+    const legend = document.getElementById('rd-legend')!;
+    const exportBtn = document.getElementById('rd-export') as HTMLButtonElement | null;
+
+    if (!isCloudMode()) {
+      loading.classList.add('hidden');
+      offline.classList.remove('hidden');
+      return;
+    }
+    const me = currentUser();
+    if (!me?.isAdmin) {
+      loading.classList.add('hidden');
+      gate.classList.remove('hidden');
+      return;
+    }
+    gate.classList.add('hidden');
+
+    const builtColumns: Col[] = JSON.parse(document.getElementById('rd-columns')?.textContent || '[]');
+    let columns: Col[] = builtColumns;
+    let allRows: RowData[] = [];
+    let range: Range = 'all';
+    let sortKey = 'total';          // 'name' | 'total' | 'guides' | `guide:${slug}`
+    let sortDir: 'asc' | 'desc' = 'desc';
+
+    const cellValue = (r: RowData, key: string) => {
+      if (key === 'total') return r.total;
+      if (key === 'guides') return r.guides;
+      return r.cells.get(key.slice('guide:'.length))?.active ?? 0;
+    };
+
+    const visibleRows = () => {
+      const q = search.value.trim().toLowerCase();
+      let rows = allRows.filter((r) => !q || r.displayName.toLowerCase().includes(q) || r.username.toLowerCase().includes(q));
+      if (hideEmpty.checked) rows = rows.filter((r) => r.total > 0);
+      const dir = sortDir === 'asc' ? 1 : -1;
+      rows.sort((a, b) => {
+        if (sortKey === 'name') return dir * a.displayName.localeCompare(b.displayName) || a.username.localeCompare(b.username);
+        const d = cellValue(a, sortKey) - cellValue(b, sortKey);
+        // Ties (mostly zeros) fall back to total, then name, so the order stays stable.
+        return dir * d || (b.total - a.total) || a.displayName.localeCompare(b.displayName);
+      });
+      return rows;
+    };
+
+    const arrow = (key: string) => (sortKey === key ? `<span class="ml-1">${sortDir === 'desc' ? '↓' : '↑'}</span>` : '');
+    const th = (key: string, label: string, extra = '', title = '') =>
+      `<th scope="col" data-sort="${esc(key)}" class="${extra}${sortKey === key ? ' is-sorted' : ''}"${title ? ` title="${esc(title)}"` : ''}>${label}${arrow(key)}</th>`;
+
+    const cellHtml = (r: RowData, col: Col, max: number) => {
+      const c = r.cells.get(col.slug);
+      if (!c || c.active <= 0) {
+        return `<td class="rd-cell rd-empty" title="${esc(`${r.displayName} · ${col.title}: no time`)}">·</td>`;
+      }
+      const pct = max > 0 ? Math.max(4, Math.round((c.active / max) * 100)) : 0;
+      let tip = `${r.displayName} · ${col.title}: ${formatDuration(c.active)} over ${c.visits} visit${c.visits === 1 ? '' : 's'}`;
+      if (c.adjustment !== 0) {
+        tip += `; measured ${formatDuration(c.measured)}, ${c.adjustment > 0 ? '+' : '-'}${formatDuration(Math.abs(c.adjustment))} from the hours ledger${c.adjustedBy ? ` by @${c.adjustedBy}` : ''}${c.adjustedAt ? ` on ${fmtDate(c.adjustedAt)}` : ''}`;
+      }
+      const adj = c.adjustment !== 0 ? `<span class="rd-adj" aria-label="adjusted">*</span>` : '';
+      return `<td class="rd-cell" title="${esc(tip)}"><div>${compact(c.active)}${adj}</div><div class="rd-bar" style="width:${pct}%"></div></td>`;
+    };
+
+    const render = () => {
+      const rows = visibleRows();
+      countEl.textContent = `${rows.length} of ${allRows.length} account${allRows.length === 1 ? '' : 's'}`;
+      if (rows.length === 0) {
+        wrap.classList.add('hidden');
+        legend.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      wrap.classList.remove('hidden');
+      legend.classList.remove('hidden');
+
+      let max = 0;
+      let maxTotal = 0;
+      for (const r of rows) {
+        maxTotal = Math.max(maxTotal, r.total);
+        r.cells.forEach((c) => { max = Math.max(max, c.active); });
+      }
+
+      head.innerHTML = `<tr>
+        ${th('name', 'Reader', 'rd-sticky rd-fixed')}
+        ${th('total', 'Total', 'rd-fixed')}
+        ${th('guides', 'Guides', 'rd-fixed')}
+        ${columns.map((c) => th(`guide:${c.slug}`, `<span class="rd-slug">${esc(c.slug)}</span>`, '', c.title)).join('')}
+      </tr>`;
+
+      body.innerHTML = rows.map((r) => {
+        const totalPct = maxTotal > 0 ? Math.max(4, Math.round((r.total / maxTotal) * 100)) : 0;
+        return `<tr>
+          <th scope="row" class="rd-sticky">
+            <div class="font-medium text-ink-900 dark:text-ink-100 truncate">${esc(r.displayName)}</div>
+            <div class="text-[11px] text-ink-500 truncate">@${esc(r.username)}</div>
+          </th>
+          <td class="rd-cell${r.total > 0 ? '' : ' rd-empty'}" title="${esc(`${r.displayName}: ${formatDuration(r.total)} across ${r.guides} guide${r.guides === 1 ? '' : 's'}`)}">
+            ${r.total > 0 ? `<div>${compact(r.total)}</div><div class="rd-bar" style="width:${totalPct}%"></div>` : '·'}
+          </td>
+          <td class="rd-cell${r.guides > 0 ? '' : ' rd-empty'}">${r.guides > 0 ? r.guides : '·'}</td>
+          ${columns.map((c) => cellHtml(r, c, max)).join('')}
+        </tr>`;
+      }).join('');
+
+      const grand = rows.reduce((s, r) => s + r.total, 0);
+      const readersWithTime = rows.filter((r) => r.total > 0).length;
+      foot.innerHTML = `<tr>
+        <th scope="row" class="rd-sticky text-left font-sans">Shown accounts<span class="rd-sub">${rows.length} account${rows.length === 1 ? '' : 's'}</span></th>
+        <td>${compact(grand) || '·'}<span class="rd-sub">${readersWithTime} with time</span></td>
+        <td></td>
+        ${columns.map((c) => {
+          let sum = 0;
+          let n = 0;
+          for (const r of rows) {
+            const v = r.cells.get(c.slug)?.active ?? 0;
+            if (v > 0) { sum += v; n++; }
+          }
+          return `<td>${compact(sum) || '·'}<span class="rd-sub">${n} reader${n === 1 ? '' : 's'}</span></td>`;
+        }).join('')}
+      </tr>`;
+    };
+
+    const renderSummary = () => {
+      const readers = allRows.filter((r) => r.total > 0).length;
+      const total = allRows.reduce((s, r) => s + r.total, 0);
+      const set = (k: string, v: string) => {
+        const el = summary.querySelector<HTMLElement>(`[data-summary="${k}"]`);
+        if (el) el.textContent = v;
+      };
+      set('accounts', String(allRows.length));
+      set('readers', String(readers));
+      set('time', formatDuration(total));
+      summary.classList.remove('hidden');
+      controls.classList.remove('hidden');
+      controls.classList.add('flex');
+    };
+
+    const showError = (msg: string) => {
+      errorEl.textContent = msg;
+      errorEl.classList.remove('hidden');
+    };
+
+    const load = async () => {
+      loading.classList.remove('hidden');
+      errorEl.classList.add('hidden');
+      const since = range === 'all' ? null : new Date(Date.now() - Number(range) * 86_400_000);
+      let profiles: ProfileRow[];
+      let time: ReaderTimeRow[];
+      try {
+        [profiles, time] = await Promise.all([fetchAllProfiles(), fetchTimeByReader(since)]);
+      } catch (e) {
+        loading.classList.add('hidden');
+        showError(
+          'Could not load readers: ' + (e instanceof Error ? e.message : String(e)) +
+          '. If the guide_sessions table or its functions are missing, re-run supabase/schema.sql in the Supabase SQL editor.',
+        );
+        return;
+      }
+      loading.classList.add('hidden');
+
+      const byId = new Map<string, RowData>();
+      for (const p of profiles) {
+        byId.set(p.id, { id: p.id, username: p.username, displayName: p.display_name || p.username, total: 0, guides: 0, cells: new Map() });
+      }
+      const known = new Set(builtColumns.map((c) => c.slug));
+      const extra: Col[] = [];
+      for (const t of time) {
+        let row = byId.get(t.user_id);
+        if (!row) {
+          row = { id: t.user_id, username: t.username, displayName: t.display_name || t.username, total: 0, guides: 0, cells: new Map() };
+          byId.set(t.user_id, row);
+        }
+        const active = Number(t.active_seconds) || 0;
+        const prev = row.cells.get(t.guide_slug);
+        row.cells.set(t.guide_slug, {
+          active: (prev?.active ?? 0) + active,
+          measured: (prev?.measured ?? 0) + (Number(t.session_seconds) || 0),
+          adjustment: (prev?.adjustment ?? 0) + (Number(t.adjustment_seconds) || 0),
+          visits: (prev?.visits ?? 0) + (Number(t.sessions) || 0),
+          adjustedBy: t.adjusted_by ?? prev?.adjustedBy ?? null,
+          adjustedAt: t.adjusted_at ?? prev?.adjustedAt ?? null,
+        });
+        if (!known.has(t.guide_slug) && !extra.some((c) => c.slug === t.guide_slug)) {
+          extra.push({ slug: t.guide_slug, title: t.guide_slug });
+        }
+      }
+      columns = builtColumns.concat(extra);
+      allRows = [...byId.values()];
+      for (const r of allRows) {
+        r.total = 0;
+        r.guides = 0;
+        r.cells.forEach((c) => {
+          r.total += c.active;
+          if (c.active > 0) r.guides++;
+        });
+      }
+      renderSummary();
+      render();
+    };
+    void load();
+
+    head.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>('th[data-sort]');
+      if (!target) return;
+      const key = target.dataset.sort!;
+      if (sortKey === key) {
+        sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+      } else {
+        sortKey = key;
+        sortDir = key === 'name' ? 'asc' : 'desc';
+      }
+      render();
+    });
+    search.addEventListener('input', render);
+    hideEmpty.addEventListener('change', render);
+
+    document.querySelectorAll<HTMLButtonElement>('[data-range]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rd-filter').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        range = (btn.dataset.range ?? 'all') as Range;
+        void load();
+      });
+    });
+
+    exportBtn?.addEventListener('click', () => {
+      const rows = visibleRows();
+      const header = ['username', 'display_name', 'total_seconds', 'total_hours', 'guides_with_time'].concat(columns.map((c) => `${c.slug}_seconds`));
+      const lines = [header.map(csvCell).join(',')].concat(
+        rows.map((r) => [
+          r.username, r.displayName, r.total, (r.total / 3600).toFixed(2), r.guides,
+        ].concat(columns.map((c) => r.cells.get(c.slug)?.active ?? 0)).map(csvCell).join(',')),
+      );
+      const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `readers-${range === 'all' ? 'all-time' : `${range}d`}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+
+    onAuthChange((u) => {
+      if (!u?.isAdmin) window.location.href = '/';
+    });
+  };
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

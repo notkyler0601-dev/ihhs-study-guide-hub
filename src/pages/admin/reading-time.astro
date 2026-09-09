@@ -31,6 +31,8 @@ const guideMeta = Object.fromEntries(
         <a href="/admin/volunteers" class="hover:text-accent-700 dark:hover:text-accent-400">Volunteer inbox</a>
         <span class="text-ink-300 dark:text-ink-700">·</span>
         <span class="text-ink-700 dark:text-ink-200 font-semibold">Reading time</span>
+        <span class="text-ink-300 dark:text-ink-700">·</span>
+        <a href="/admin/readers" class="hover:text-accent-700 dark:hover:text-accent-400">Readers</a>
       </nav>
 
       <p class="text-sm text-ink-500 dark:text-ink-400 mb-8 max-w-2xl">
@@ -119,7 +121,9 @@ const guideMeta = Object.fromEntries(
   <script type="application/json" id="rt-guide-meta" is:inline set:html={JSON.stringify(guideMeta)} />
 </BaseLayout>
 
-<style>
+<!-- Global on purpose: the reader cards and chips are built at runtime, out of
+     reach of Astro's scoped styles. Selectors are page-specific. -->
+<style is:global>
   .rt-filter {
     @apply px-3 py-1 rounded-full text-xs font-medium bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
     @apply hover:bg-ink-200 dark:hover:bg-ink-700 transition-colors;

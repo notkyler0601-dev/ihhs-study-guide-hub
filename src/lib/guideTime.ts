@@ -275,6 +275,34 @@ const rpcAll = async <T>(fn: string, since?: Date | null): Promise<T[]> => {
 export const fetchTimeByReader = (since?: Date | null) => rpcAll<ReaderTimeRow>('guide_time_by_reader', since);
 export const fetchTimeByGuide = (since?: Date | null) => rpcAll<GuideTimeRow>('guide_time_by_guide', since);
 
+export interface ProfileRow {
+  id: string;
+  username: string;
+  display_name: string;
+  created_at: string;
+}
+
+// Every account. Usernames are readable by everyone under the site's RLS, so
+// this needs no admin privilege; the admin pages use it to list accounts that
+// have no reading time yet.
+export const fetchAllProfiles = async (): Promise<ProfileRow[]> => {
+  const sb = supabase();
+  if (!sb) return [];
+  const out: ProfileRow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('id, username, display_name, created_at')
+      .order('username')
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as ProfileRow[];
+    out.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return out;
+};
+
 // Pull this reader's cloud totals into the local progress record. Other
 // devices write their own visits, so the cloud sum is the cross-device truth;
 // local only wins while it holds time that has not synced yet. Resolves to
