@@ -17,7 +17,7 @@ Built with [Astro](https://astro.build) + Tailwind + MDX. No backend, no databas
 - **Light + dark theme** with system preference detection
 - **Smooth page transitions** via the View Transitions API
 - **Reading progress bar** and sticky table of contents on every guide
-- **Reading time** per guide for signed-in readers: active time only (tab visible, reader interacting), shown as a "Your time" badge in the guide header and a "Time studying" total on the dashboard. With Supabase, admins get `/admin/reading-time` (per guide, per reader, CSV export), `/admin/readers` (every account against every guide in one table), a tracked-time chip next to every claimed volunteer hour, and an editable tracked value on the hours ledger for corrections
+- **Reading time** per guide for signed-in readers: active time only (tab visible, reader interacting), shown as a "Your time" badge in the guide header and a "Time studying" total on the dashboard. With Supabase, admins get `/admin/reading-time` (per guide, per reader, CSV export), `/admin/readers` (every account against every guide in one table), a tracked-time chip next to every claimed volunteer hour, and an editable tracked value on the hours ledger for corrections, plus a Guides tab there to set what each guide is worth and apply it to its submissions
 
 ## Run it locally
 

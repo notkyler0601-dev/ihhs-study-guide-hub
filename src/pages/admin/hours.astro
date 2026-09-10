@@ -1,28 +1,34 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Every published guide, for the Guides tab. Slugs that only exist on old
+// submissions (renamed or removed guides) are added at runtime.
+const guides = await getCollection('guides', ({ data }) => !data.draft);
+const guideMeta = guides
+  .map((g) => ({ slug: g.id.replace(/\.(md|mdx)$/, ''), title: g.data.title, estimatedTime: g.data.estimatedTime }))
+  .sort((a, b) => a.title.localeCompare(b.title));
 ---
 
 <BaseLayout title="Hours ledger" description="Admin: adjust recorded volunteer hours.">
   <section class="container-wide py-10 lg:py-14">
-    <div class="max-w-5xl mx-auto">
-      <div class="flex items-center justify-between gap-4 mb-2">
+    <div class="max-w-5xl mx-auto" id="hrs-root">
+      <div class="flex items-center justify-between gap-4 mb-2 flex-wrap">
         <div>
           <div class="text-xs uppercase tracking-[0.18em] text-ink-500 font-semibold mb-2">Admin</div>
           <h1 class="font-serif text-3xl sm:text-4xl font-semibold tracking-tight">Hours ledger</h1>
         </div>
-        <div class="flex items-center gap-2 text-xs">
+        <div id="hrs-filters" class="flex items-center gap-2 text-xs">
           <button data-filter="approved" class="hrs-filter active">Approved</button>
           <button data-filter="pending"  class="hrs-filter">Pending</button>
           <button data-filter="all"      class="hrs-filter">All</button>
         </div>
       </div>
 
-      <p class="text-sm text-ink-500 dark:text-ink-400 mb-8 max-w-xl">
-        Adjust the recorded hours on any submission. Changes save straight to the record
-        the inbox and summaries read from. The tracked value is the active reading time this
-        account's tracker measured on the guide; setting it to something else stores an
-        adjustment, and anything they read afterwards keeps adding on top.
-      </p>
+      <div class="flex items-center gap-1 mb-6 border-b border-ink-200 dark:border-ink-800" role="tablist" aria-label="Ledger views">
+        <button data-tab="submissions" role="tab" class="hrs-tab active">Submissions</button>
+        <button data-tab="guides" role="tab" class="hrs-tab">Guides</button>
+      </div>
 
       <div id="admin-gate" class="hidden surface rounded-2xl p-10 text-center">
         <h2 class="font-serif text-xl mb-2">Admins only</h2>
@@ -41,27 +47,71 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <div id="hrs-loading" class="text-sm text-ink-500">Loading...</div>
 
-      <div id="hrs-summary" class="hidden grid sm:grid-cols-2 gap-3 mb-6">
-        <div class="surface rounded-xl p-4">
-          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Approved hours</div>
-          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="approved">0</div>
+      <!-- Submissions tab -->
+      <div id="tab-submissions">
+        <p class="text-sm text-ink-500 dark:text-ink-400 mb-6 max-w-xl">
+          Adjust the recorded hours on any submission. Changes save straight to the record
+          the inbox and summaries read from. The tracked value is the active reading time this
+          account's tracker measured on the guide; setting it to something else stores an
+          adjustment, and anything they read afterwards keeps adding on top.
+        </p>
+
+        <div id="hrs-summary" class="hidden grid sm:grid-cols-2 gap-3 mb-6">
+          <div class="surface rounded-xl p-4">
+            <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Approved hours</div>
+            <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="approved">0</div>
+          </div>
+          <div class="surface rounded-xl p-4">
+            <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Submissions shown</div>
+            <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="shown">0</div>
+          </div>
         </div>
-        <div class="surface rounded-xl p-4">
-          <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Submissions shown</div>
-          <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="shown">0</div>
+
+        <div id="hrs-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
+          No submissions in this view.
         </div>
+
+        <ul id="hrs-list" class="hidden space-y-3"></ul>
       </div>
 
-      <div id="hrs-empty" class="hidden surface rounded-2xl p-10 text-center text-sm text-ink-500">
-        No submissions in this view.
-      </div>
+      <!-- Guides tab -->
+      <div id="tab-guides" class="hidden">
+        <p class="text-sm text-ink-500 dark:text-ink-400 mb-6 max-w-xl">
+          Set what each guide is worth. The value shows up as a chip on every submission for
+          that guide, and "Apply" writes it onto all of them at once. Open a guide to change
+          hours on its submissions one by one.
+        </p>
 
-      <ul id="hrs-list" class="hidden space-y-3"></ul>
+        <div id="gh-unavailable" class="hidden surface rounded-2xl p-6 mb-6 text-sm text-ink-600 dark:text-ink-300">
+          Guide values are not set up in Supabase yet: re-run <code class="text-accent-700 dark:text-accent-400">supabase/schema.sql</code>
+          in the SQL editor, wait a few seconds and reload. Submissions below can still be edited.
+        </div>
+
+        <div id="gh-summary" class="hidden grid sm:grid-cols-3 gap-3 mb-6">
+          <div class="surface rounded-xl p-4">
+            <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Guides</div>
+            <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="guides">0</div>
+          </div>
+          <div class="surface rounded-xl p-4">
+            <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">With a value</div>
+            <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="valued">0</div>
+          </div>
+          <div class="surface rounded-xl p-4">
+            <div class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold">Submissions</div>
+            <div class="font-mono text-2xl text-ink-900 dark:text-ink-50 mt-1" data-summary="subs">0</div>
+          </div>
+        </div>
+
+        <ul id="gh-list" class="hidden space-y-3"></ul>
+      </div>
     </div>
   </section>
+  <script type="application/json" id="hrs-guide-meta" is:inline set:html={JSON.stringify(guideMeta)} />
 </BaseLayout>
 
-<style>
+<!-- Global on purpose: the lists are built at runtime, out of reach of Astro's
+     scoped styles. Selectors are page-specific. -->
+<style is:global>
   .hrs-filter {
     @apply px-3 py-1 rounded-full text-xs font-medium bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300;
     @apply hover:bg-ink-200 dark:hover:bg-ink-700 transition-colors;
@@ -69,15 +119,46 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .hrs-filter.active {
     @apply bg-accent-700 text-white dark:bg-accent-600;
   }
+  .hrs-tab {
+    @apply px-3 py-2 text-sm font-medium text-ink-500 dark:text-ink-400 border-b-2 border-transparent -mb-px;
+    @apply hover:text-ink-900 dark:hover:text-ink-50 transition-colors;
+  }
+  .hrs-tab.active {
+    @apply text-accent-700 dark:text-accent-400 border-accent-700 dark:border-accent-400;
+  }
   .hrs-chip {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.14em] font-semibold;
   }
+  .hrs-input {
+    @apply w-24 rounded-lg border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 px-3 py-1.5 font-mono text-sm text-ink-900 dark:text-ink-50;
+    @apply focus:outline-none focus:ring-2 focus:ring-accent-600 disabled:opacity-50;
+  }
+  .hrs-label {
+    @apply text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold;
+  }
+  .hrs-save {
+    @apply px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-700 text-white dark:bg-accent-600;
+    @apply hover:bg-accent-800 dark:hover:bg-accent-500 disabled:opacity-50 transition-colors;
+  }
+  .hrs-save-alt {
+    @apply px-3 py-1.5 rounded-lg text-xs font-semibold border border-accent-700 text-accent-800 dark:border-accent-500 dark:text-accent-200;
+    @apply hover:bg-accent-50 dark:hover:bg-accent-900/30 disabled:opacity-50 transition-colors;
+  }
+  .hrs-saved {
+    @apply hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400;
+  }
+  .hrs-link {
+    @apply text-xs text-ink-500 hover:text-accent-700 dark:hover:text-accent-400 underline decoration-ink-300 dark:decoration-ink-700 underline-offset-2 disabled:opacity-50;
+  }
+  #gh-list details > summary::-webkit-details-marker { display: none; }
+  #gh-list details[open] [data-chevron] { transform: rotate(180deg); }
 </style>
 
 <script>
   import { currentUser, isCloudMode, onAuthChange } from '../../lib/auth';
   import { supabase } from '../../lib/supabase';
   import { fetchTimeByReader, formatHours, setTrackedTime, type ReaderTimeRow } from '../../lib/guideTime';
+  import { fetchGuideHours, setGuideHours, type GuideHoursRow } from '../../lib/guideHours';
 
   type Row = {
     id: string;
@@ -90,24 +171,39 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     hours: number | null;
     status: 'pending' | 'approved' | 'rejected';
   };
+  type GuideMeta = { slug: string; title: string; estimatedTime: number | null };
+  type Tab = 'submissions' | 'guides';
 
   const STATUS_COLORS: Record<string, string> = {
     pending:  'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
     approved: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
     rejected: 'bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-200',
   };
+  const NEUTRAL_CHIP = 'bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300';
 
   const fmt = (d: string) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c as any] as string));
+  const ESC: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c] ?? c);
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  const validHours = (h: number) => Number.isFinite(h) && h >= 0.5 && h <= 40;
 
   const setup = () => {
+    const root = document.getElementById('hrs-root');
+    if (!root || root.dataset.ready === '1') return;
+    root.dataset.ready = '1';
+
     const gate = document.getElementById('admin-gate')!;
     const offline = document.getElementById('admin-offline')!;
     const loading = document.getElementById('hrs-loading')!;
+    const filters = document.getElementById('hrs-filters')!;
+    const tabSubmissions = document.getElementById('tab-submissions')!;
+    const tabGuides = document.getElementById('tab-guides')!;
     const summary = document.getElementById('hrs-summary')!;
     const empty = document.getElementById('hrs-empty')!;
     const list = document.getElementById('hrs-list')!;
-    if (!list) return;
+    const ghUnavailable = document.getElementById('gh-unavailable')!;
+    const ghSummary = document.getElementById('gh-summary')!;
+    const ghList = document.getElementById('gh-list')!;
 
     if (!isCloudMode()) {
       loading.classList.add('hidden');
@@ -123,12 +219,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
     gate.classList.add('hidden');
 
+    const builtGuides: GuideMeta[] = JSON.parse(document.getElementById('hrs-guide-meta')?.textContent || '[]');
     let current: Row[] = [];
     let filter: string = 'approved';
+    let tab: Tab = location.hash === '#guides' ? 'guides' : 'submissions';
     // Tracked reading time per (user, guide) from guide_sessions plus any
     // admin adjustment. Null until loaded, and stays null (controls hidden)
     // if the tables are not set up yet.
     let tracked: Map<string, ReaderTimeRow> | null = null;
+    // What each guide is worth. Null when the guide_hours table is missing.
+    let guideHours: Map<string, GuideHoursRow> | null = null;
+
+    /* ---------------- shared helpers ---------------- */
 
     const trackedKey = (r: Row) => `${r.user_id}|${r.guide_slug}`;
     const trackedFor = (r: Row): ReaderTimeRow | null => {
@@ -140,107 +242,83 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       };
     };
 
+    const guideTitle = (slug: string) => builtGuides.find((g) => g.slug === slug)?.title ?? slug;
+
+    const hoursControls = (r: Row) => {
+      const value = r.guide_slug ? guideHours?.get(r.guide_slug) : undefined;
+      const chip = value
+        ? `<button type="button" data-use-guide-value="${value.hours.toFixed(1)}" class="hrs-chip ${NEUTRAL_CHIP} hover:bg-ink-200 dark:hover:bg-ink-700" title="What this guide is worth. Click to put it in the Hours box.">Guide ${value.hours.toFixed(1)} h</button>`
+        : '';
+      return `
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+          ${chip}
+          <label class="hrs-label" for="hrs-${r.id}">Hours</label>
+          <input id="hrs-${r.id}" data-hours-input type="number" inputmode="decimal" min="0.5" max="40" step="0.5" value="${(r.hours ?? 0).toFixed(1)}" class="hrs-input" />
+          <button data-save class="hrs-save">Save</button>
+          <span data-saved class="hrs-saved">Saved</span>
+        </div>`;
+    };
+
     const trackedControls = (r: Row) => {
       const tr = trackedFor(r);
       if (!tr) return '';
       const delta = Number(tr.adjustment_seconds) || 0;
       const measured = Number(tr.session_seconds) || 0;
-      const adjustedLine = delta !== 0
-        ? `<div class="text-[11px] text-ink-500 dark:text-ink-400 text-right">
-             Adjusted ${delta > 0 ? '+' : '-'}${formatHours(Math.abs(delta))}${tr.adjusted_by ? ` by @${esc(tr.adjusted_by)}` : ''}${tr.adjusted_at ? ` on ${fmt(tr.adjusted_at)}` : ''}. Measured ${formatHours(measured)}.
-           </div>`
-        : `<div class="text-[11px] text-ink-500 dark:text-ink-400 text-right">${measured > 0 ? `Measured ${formatHours(measured)} over ${Number(tr.sessions)} visit${Number(tr.sessions) === 1 ? '' : 's'}.` : 'No reading tracked on this guide yet.'}</div>`;
+      const line = delta !== 0
+        ? `Adjusted ${delta > 0 ? '+' : '-'}${formatHours(Math.abs(delta))}${tr.adjusted_by ? ` by @${esc(tr.adjusted_by)}` : ''}${tr.adjusted_at ? ` on ${fmt(tr.adjusted_at)}` : ''}. Measured ${formatHours(measured)}.`
+        : (measured > 0 ? `Measured ${formatHours(measured)} over ${plural(Number(tr.sessions), 'visit')}.` : 'No reading tracked on this guide yet.');
       return `
         <div class="flex items-center gap-2 flex-wrap justify-end">
-          <label class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold" for="trk-${r.id}" title="Active reading time the tracker recorded for this account on this guide. Type a new value to override it.">Tracked</label>
-          <input
-            id="trk-${r.id}"
-            data-tracked-input
-            type="number"
-            inputmode="decimal"
-            min="0"
-            max="200"
-            step="0.1"
-            value="${((Number(tr.active_seconds) || 0) / 3600).toFixed(1)}"
-            class="w-24 rounded-lg border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 px-3 py-1.5 font-mono text-sm text-ink-900 dark:text-ink-50 focus:outline-none focus:ring-2 focus:ring-accent-600"
-          />
-          <button
-            data-save-tracked
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-accent-700 text-accent-800 dark:border-accent-500 dark:text-accent-200 hover:bg-accent-50 dark:hover:bg-accent-900/30 disabled:opacity-50 transition-colors"
-          >Save</button>
-          <span data-saved-tracked class="hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400">Saved</span>
+          <label class="hrs-label" for="trk-${r.id}" title="Active reading time the tracker recorded for this account on this guide. Type a new value to override it.">Tracked</label>
+          <input id="trk-${r.id}" data-tracked-input type="number" inputmode="decimal" min="0" max="200" step="0.1" value="${((Number(tr.active_seconds) || 0) / 3600).toFixed(1)}" class="hrs-input" />
+          <button data-save-tracked class="hrs-save-alt">Save</button>
+          <span data-saved-tracked class="hrs-saved">Saved</span>
         </div>
-        ${adjustedLine}`;
+        <div class="text-[11px] text-ink-500 dark:text-ink-400 text-right">${line}</div>`;
     };
 
-    const visible = () => (filter === 'all' ? current : current.filter((r) => r.status === filter));
-
-    const updateSummary = () => {
-      summary.classList.remove('hidden');
-      const approved = current
-        .filter((r) => r.status === 'approved')
-        .reduce((acc, r) => acc + (r.hours ?? 0), 0);
-      const approvedEl = summary.querySelector('[data-summary="approved"]') as HTMLElement | null;
-      const shownEl = summary.querySelector('[data-summary="shown"]') as HTMLElement | null;
-      if (approvedEl) approvedEl.textContent = approved.toFixed(1);
-      if (shownEl)    shownEl.textContent    = String(visible().length);
+    const flashSaved = (el: HTMLElement | null) => {
+      if (!el) return;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 2000);
     };
 
-    const render = () => {
-      const items = visible();
-      if (items.length === 0) {
-        list.classList.add('hidden');
-        empty.classList.remove('hidden');
-        return;
-      }
-      empty.classList.add('hidden');
-      list.classList.remove('hidden');
-      list.innerHTML = items.map((r) => {
-        const guideLink = r.guide_slug
-          ? `<a href="/guides/${esc(r.guide_slug)}/" class="hover:underline text-accent-700 dark:text-accent-400 font-mono">${esc(r.guide_slug)}</a>`
-          : '<span class="text-ink-400">(no guide)</span>';
-        return `
-        <li class="surface rounded-xl p-5" data-hrs-id="${r.id}">
-          <div class="flex items-center justify-between gap-4 flex-wrap">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2 flex-wrap mb-1.5">
-                <span class="hrs-chip ${STATUS_COLORS[r.status] ?? ''}">${r.status}</span>
-                ${r.grade ? `<span class="hrs-chip bg-ink-100 text-ink-600 dark:bg-ink-800 dark:text-ink-300">Grade ${esc(r.grade)}</span>` : ''}
-                <span class="text-[11px] text-ink-500">${fmt(r.created_at)}</span>
-              </div>
-              <h3 class="font-serif text-lg font-semibold">
-                ${r.name ? esc(r.name) : '<span class="text-ink-400">(no name)</span>'}
-                <span class="text-ink-400 dark:text-ink-500 font-sans text-sm font-normal"> on ${guideLink}</span>
-              </h3>
-              ${r.email ? `<div class="text-xs text-ink-500 mt-0.5">${esc(r.email)}</div>` : ''}
-            </div>
-            <div class="flex flex-col items-end gap-2">
-            <div class="flex items-center gap-2 flex-wrap justify-end">
-              <label class="text-[11px] uppercase tracking-[0.14em] text-ink-500 font-semibold" for="hrs-${r.id}">Hours</label>
-              <input
-                id="hrs-${r.id}"
-                data-hours-input
-                type="number"
-                inputmode="decimal"
-                min="0.5"
-                max="40"
-                step="0.5"
-                value="${(r.hours ?? 0).toFixed(1)}"
-                class="w-24 rounded-lg border border-ink-300 dark:border-ink-700 bg-white dark:bg-ink-900 px-3 py-1.5 font-mono text-sm text-ink-900 dark:text-ink-50 focus:outline-none focus:ring-2 focus:ring-accent-600"
-              />
-              <button
-                data-save
-                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-700 text-white dark:bg-accent-600 hover:bg-accent-800 dark:hover:bg-accent-500 disabled:opacity-50 transition-colors"
-              >Save</button>
-              <span data-saved class="hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400">Saved</span>
-            </div>
-            ${trackedControls(r)}
-            </div>
-          </div>
-        </li>
-      `;}).join('');
+    // Hours / tracked saves and the guide-value chip, bound wherever a
+    // submission row is rendered (either tab).
+    const bindSubmissionRows = (container: HTMLElement) => {
+      container.querySelectorAll<HTMLButtonElement>('[data-use-guide-value]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const input = btn.closest('[data-hrs-id]')?.querySelector<HTMLInputElement>('[data-hours-input]');
+          if (input) { input.value = btn.dataset.useGuideValue ?? input.value; input.focus(); }
+        });
+      });
 
-      list.querySelectorAll<HTMLButtonElement>('[data-save-tracked]').forEach((btn) => {
+      container.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest('[data-hrs-id]') as HTMLElement | null;
+          if (!li) return;
+          const id = li.dataset.hrsId!;
+          const input = li.querySelector<HTMLInputElement>('[data-hours-input]');
+          if (!input) return;
+          const hours = Number(input.value);
+          if (!validHours(hours)) {
+            alert('Hours must be between 0.5 and 40.');
+            return;
+          }
+          btn.disabled = true;
+          const sb = supabase();
+          const { error } = await sb!.from('volunteer_signups').update({ hours }).eq('id', id);
+          btn.disabled = false;
+          if (error) { alert(error.message); return; }
+          current = current.map((r) => r.id === id ? { ...r, hours } : r);
+          updateSummary();
+          // Mirror the value into the same submission on the other tab.
+          document.querySelectorAll<HTMLInputElement>(`[data-hrs-id="${id}"] [data-hours-input]`).forEach((el) => { el.value = hours.toFixed(1); });
+          flashSaved(li.querySelector<HTMLElement>('[data-saved]'));
+        });
+      });
+
+      container.querySelectorAll<HTMLButtonElement>('[data-save-tracked]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           const li = btn.closest('[data-hrs-id]') as HTMLElement | null;
           if (!li || !tracked) return;
@@ -265,42 +343,267 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             adjusted_by: res.delta === 0 ? null : (me.username ?? null),
             adjusted_at: res.delta === 0 ? null : new Date().toISOString(),
           });
-          render();
-          const savedTag = list.querySelector<HTMLElement>(`[data-hrs-id="${id}"] [data-saved-tracked]`);
-          if (savedTag) {
-            savedTag.classList.remove('hidden');
-            setTimeout(() => savedTag.classList.add('hidden'), 2000);
-          }
-        });
-      });
-
-      list.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          const li = btn.closest('[data-hrs-id]') as HTMLElement | null;
-          if (!li) return;
-          const id = li.dataset.hrsId!;
-          const input = li.querySelector<HTMLInputElement>('[data-hours-input]');
-          const savedTag = li.querySelector('[data-saved]') as HTMLElement | null;
-          if (!input) return;
-          const hours = Number(input.value);
-          if (!Number.isFinite(hours) || hours <= 0 || hours > 40) {
-            alert('Hours must be between 0.5 and 40.');
-            return;
-          }
-          btn.disabled = true;
-          const sb = supabase();
-          const { error } = await sb!.from('volunteer_signups').update({ hours }).eq('id', id);
-          btn.disabled = false;
-          if (error) { alert(error.message); return; }
-          current = current.map((r) => r.id === id ? { ...r, hours } : r);
-          updateSummary();
-          if (savedTag) {
-            savedTag.classList.remove('hidden');
-            setTimeout(() => savedTag.classList.add('hidden'), 2000);
-          }
+          renderSubmissions();
+          renderGuides();
+          flashSaved(list.querySelector<HTMLElement>(`[data-hrs-id="${id}"] [data-saved-tracked]`));
         });
       });
     };
+
+    /* ---------------- Submissions tab ---------------- */
+
+    const visible = () => (filter === 'all' ? current : current.filter((r) => r.status === filter));
+
+    const updateSummary = () => {
+      summary.classList.remove('hidden');
+      const approved = current
+        .filter((r) => r.status === 'approved')
+        .reduce((acc, r) => acc + (r.hours ?? 0), 0);
+      const approvedEl = summary.querySelector('[data-summary="approved"]') as HTMLElement | null;
+      const shownEl = summary.querySelector('[data-summary="shown"]') as HTMLElement | null;
+      if (approvedEl) approvedEl.textContent = approved.toFixed(1);
+      if (shownEl)    shownEl.textContent    = String(visible().length);
+    };
+
+    const renderSubmissions = () => {
+      const items = visible();
+      if (items.length === 0) {
+        list.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.classList.remove('hidden');
+      list.innerHTML = items.map((r) => {
+        const guideLink = r.guide_slug
+          ? `<a href="/guides/${esc(r.guide_slug)}/" class="hover:underline text-accent-700 dark:text-accent-400 font-mono">${esc(r.guide_slug)}</a>`
+          : '<span class="text-ink-400">(no guide)</span>';
+        return `
+        <li class="surface rounded-xl p-5" data-hrs-id="${r.id}">
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                <span class="hrs-chip ${STATUS_COLORS[r.status] ?? ''}">${r.status}</span>
+                ${r.grade ? `<span class="hrs-chip ${NEUTRAL_CHIP}">Grade ${esc(r.grade)}</span>` : ''}
+                <span class="text-[11px] text-ink-500">${fmt(r.created_at)}</span>
+              </div>
+              <h3 class="font-serif text-lg font-semibold">
+                ${r.name ? esc(r.name) : '<span class="text-ink-400">(no name)</span>'}
+                <span class="text-ink-400 dark:text-ink-500 font-sans text-sm font-normal"> on ${guideLink}</span>
+              </h3>
+              ${r.email ? `<div class="text-xs text-ink-500 mt-0.5">${esc(r.email)}</div>` : ''}
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              ${hoursControls(r)}
+              ${trackedControls(r)}
+            </div>
+          </div>
+        </li>
+      `;}).join('');
+      bindSubmissionRows(list);
+    };
+
+    /* ---------------- Guides tab ---------------- */
+
+    const allGuides = (): GuideMeta[] => {
+      const known = new Set(builtGuides.map((g) => g.slug));
+      const extra: GuideMeta[] = [];
+      for (const r of current) {
+        if (r.guide_slug && !known.has(r.guide_slug) && !extra.some((g) => g.slug === r.guide_slug)) {
+          extra.push({ slug: r.guide_slug, title: r.guide_slug, estimatedTime: null });
+        }
+      }
+      return builtGuides.concat(extra);
+    };
+
+    const updateGuideSummary = () => {
+      const guides = allGuides();
+      const set = (k: string, v: string) => {
+        const el = ghSummary.querySelector<HTMLElement>(`[data-summary="${k}"]`);
+        if (el) el.textContent = v;
+      };
+      set('guides', String(guides.length));
+      set('valued', guideHours ? String([...guideHours.keys()].filter((s) => guides.some((g) => g.slug === s)).length) : '0');
+      set('subs', String(current.filter((r) => r.guide_slug).length));
+      ghSummary.classList.remove('hidden');
+      ghUnavailable.classList.toggle('hidden', guideHours !== null);
+    };
+
+    const renderGuides = () => {
+      const openSlugs = new Set(Array.from(ghList.querySelectorAll<HTMLDetailsElement>('details[open]')).map((d) => d.dataset.slug ?? ''));
+      const guides = allGuides();
+      ghList.classList.remove('hidden');
+      ghList.innerHTML = guides.map((g) => {
+        const subs = current.filter((r) => r.guide_slug === g.slug);
+        const byStatus = (s: Row['status']) => subs.filter((r) => r.status === s).length;
+        const value = guideHours?.get(g.slug);
+        const disabled = guideHours === null;
+        let trackedChip = '';
+        if (tracked) {
+          let secs = 0;
+          let readers = 0;
+          tracked.forEach((t) => {
+            if (t.guide_slug !== g.slug) return;
+            const a = Number(t.active_seconds) || 0;
+            secs += a;
+            if (a > 0) readers++;
+          });
+          trackedChip = secs > 0
+            ? `<span class="hrs-chip ${NEUTRAL_CHIP}" title="Active reading time tracked on this guide, all accounts">Tracked ${formatHours(secs)} · ${plural(readers, 'reader')}</span>`
+            : `<span class="hrs-chip bg-ink-100 text-ink-500 dark:bg-ink-800 dark:text-ink-400">Tracked: none</span>`;
+        }
+        const note = value
+          ? `Set to ${value.hours.toFixed(1)} h${value.updated_by === me.id ? ' by you' : ''}${value.updated_at ? ` on ${fmt(value.updated_at)}` : ''}.`
+          : 'No value set. Submissions keep whatever hours were claimed.';
+        const applyLabel = value && subs.length > 0
+          ? `Apply ${value.hours.toFixed(1)} h to ${plural(subs.length, 'submission')}`
+          : (subs.length === 0 ? 'No submissions yet' : 'Set a value to apply it');
+        const subRows = subs.map((r) => `
+          <li class="flex items-center justify-between gap-4 flex-wrap px-5 py-3" data-hrs-id="${r.id}">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <span class="hrs-chip ${STATUS_COLORS[r.status] ?? ''}">${r.status}</span>
+                <span class="text-[11px] text-ink-500">${fmt(r.created_at)}</span>
+              </div>
+              <div class="font-medium text-ink-900 dark:text-ink-100">${r.name ? esc(r.name) : '<span class="text-ink-400">(no name)</span>'}</div>
+              ${r.email ? `<div class="text-xs text-ink-500">${esc(r.email)}</div>` : ''}
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              ${hoursControls(r)}
+              ${trackedControls(r)}
+            </div>
+          </li>`).join('');
+        return `
+        <li class="surface rounded-xl" data-guide="${esc(g.slug)}">
+          <div class="flex items-start justify-between gap-4 flex-wrap p-5">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                ${byStatus('pending') ? `<span class="hrs-chip ${STATUS_COLORS.pending}">${byStatus('pending')} pending</span>` : ''}
+                ${byStatus('approved') ? `<span class="hrs-chip ${STATUS_COLORS.approved}">${byStatus('approved')} approved</span>` : ''}
+                ${byStatus('rejected') ? `<span class="hrs-chip ${STATUS_COLORS.rejected}">${byStatus('rejected')} rejected</span>` : ''}
+                ${subs.length === 0 ? `<span class="hrs-chip bg-ink-100 text-ink-500 dark:bg-ink-800 dark:text-ink-400">No submissions</span>` : ''}
+                ${g.estimatedTime ? `<span class="hrs-chip ${NEUTRAL_CHIP}" title="Author's estimated read time">Est. ${g.estimatedTime} min</span>` : ''}
+                ${trackedChip}
+              </div>
+              <h3 class="font-serif text-lg font-semibold">
+                <a href="/guides/${esc(g.slug)}/" class="hover:text-accent-700 dark:hover:text-accent-400">${esc(g.title)}</a>
+                <span class="text-ink-400 dark:text-ink-500 font-mono text-sm font-normal"> ${esc(g.slug)}</span>
+              </h3>
+              <div class="text-[11px] text-ink-500 dark:text-ink-400 mt-0.5" data-guide-note>${note}</div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              <div class="flex items-center gap-2 flex-wrap justify-end">
+                <label class="hrs-label" for="gh-${esc(g.slug)}">Hours</label>
+                <input id="gh-${esc(g.slug)}" data-guide-hours type="number" inputmode="decimal" min="0.5" max="40" step="0.5" value="${value ? value.hours.toFixed(1) : ''}" placeholder="none" class="hrs-input" ${disabled ? 'disabled' : ''} />
+                <button data-save-guide class="hrs-save" ${disabled ? 'disabled' : ''}>Save</button>
+                <span data-saved-guide class="hrs-saved">Saved</span>
+              </div>
+              <div class="flex items-center gap-3">
+                ${value ? `<button type="button" data-clear-guide class="hrs-link" ${disabled ? 'disabled' : ''}>Clear</button>` : ''}
+                <button type="button" data-apply-guide class="hrs-save-alt" ${value && subs.length > 0 && !disabled ? '' : 'disabled'}>${applyLabel}</button>
+              </div>
+            </div>
+          </div>
+          <details data-slug="${esc(g.slug)}" ${openSlugs.has(g.slug) ? 'open' : ''}>
+            <summary class="flex items-center justify-between gap-3 px-5 py-2.5 border-t border-ink-200 dark:border-ink-800 text-xs text-ink-600 dark:text-ink-300 cursor-pointer list-none select-none">
+              <span>${plural(subs.length, 'submission')} on this guide</span>
+              <svg data-chevron class="h-3.5 w-3.5 text-ink-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            ${subs.length > 0
+              ? `<ul class="border-t border-ink-200 dark:border-ink-800 divide-y divide-ink-200 dark:divide-ink-800">${subRows}</ul>`
+              : `<div class="border-t border-ink-200 dark:border-ink-800 px-5 py-3 text-xs text-ink-500">Nobody has logged hours on this guide yet.</div>`}
+          </details>
+        </li>`;
+      }).join('');
+
+      bindSubmissionRows(ghList);
+
+      ghList.querySelectorAll<HTMLButtonElement>('[data-save-guide]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest<HTMLElement>('[data-guide]');
+          const input = li?.querySelector<HTMLInputElement>('[data-guide-hours]');
+          if (!li || !input || !guideHours) return;
+          const slug = li.dataset.guide!;
+          const raw = input.value.trim();
+          const hours = raw === '' ? null : Number(raw);
+          if (hours !== null && !validHours(hours)) {
+            alert('Guide hours must be between 0.5 and 40, or empty to clear.');
+            return;
+          }
+          btn.disabled = true;
+          const res = await setGuideHours(slug, hours);
+          btn.disabled = false;
+          if (!res.ok) { alert('Could not save guide hours: ' + res.error); return; }
+          if (hours === null) guideHours.delete(slug);
+          else guideHours.set(slug, { guide_slug: slug, hours, note: null, updated_by: me.id, updated_at: new Date().toISOString() });
+          updateGuideSummary();
+          renderGuides();
+          renderSubmissions();
+          flashSaved(ghList.querySelector<HTMLElement>(`[data-guide="${slug}"] [data-saved-guide]`));
+        });
+      });
+
+      ghList.querySelectorAll<HTMLButtonElement>('[data-clear-guide]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest<HTMLElement>('[data-guide]');
+          if (!li || !guideHours) return;
+          const slug = li.dataset.guide!;
+          btn.disabled = true;
+          const res = await setGuideHours(slug, null);
+          btn.disabled = false;
+          if (!res.ok) { alert('Could not clear guide hours: ' + res.error); return; }
+          guideHours.delete(slug);
+          updateGuideSummary();
+          renderGuides();
+          renderSubmissions();
+        });
+      });
+
+      ghList.querySelectorAll<HTMLButtonElement>('[data-apply-guide]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const li = btn.closest<HTMLElement>('[data-guide]');
+          if (!li || !guideHours) return;
+          const slug = li.dataset.guide!;
+          const value = guideHours.get(slug);
+          const subs = current.filter((r) => r.guide_slug === slug);
+          if (!value || subs.length === 0) return;
+          const counts = (['pending', 'approved', 'rejected'] as const)
+            .map((s) => [s, subs.filter((r) => r.status === s).length] as const)
+            .filter(([, n]) => n > 0)
+            .map(([s, n]) => `${n} ${s}`)
+            .join(', ');
+          if (!confirm(`Set hours to ${value.hours.toFixed(1)} on all ${plural(subs.length, 'submission')} for "${guideTitle(slug)}" (${counts})?`)) return;
+          btn.disabled = true;
+          const sb = supabase();
+          const { error } = await sb!.from('volunteer_signups').update({ hours: value.hours }).eq('guide_slug', slug);
+          btn.disabled = false;
+          if (error) { alert('Could not apply hours: ' + error.message); return; }
+          current = current.map((r) => r.guide_slug === slug ? { ...r, hours: value.hours } : r);
+          updateSummary();
+          renderSubmissions();
+          renderGuides();
+        });
+      });
+    };
+
+    /* ---------------- tabs + loading ---------------- */
+
+    const switchTab = (next: Tab) => {
+      tab = next;
+      document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => {
+        const active = b.dataset.tab === next;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+      tabSubmissions.classList.toggle('hidden', next !== 'submissions');
+      tabGuides.classList.toggle('hidden', next !== 'guides');
+      filters.classList.toggle('hidden', next !== 'submissions');
+      history.replaceState(null, '', next === 'guides' ? '#guides' : location.pathname);
+    };
+    document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab as Tab));
+    });
+    switchTab(tab);
 
     const load = async () => {
       loading.classList.remove('hidden');
@@ -317,20 +620,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
       current = (data ?? []) as Row[];
       updateSummary();
-      render();
+      renderSubmissions();
+      updateGuideSummary();
+      renderGuides();
 
-      // Optional second query; a missing guide_sessions table never blocks the ledger.
-      try {
-        const rows = await fetchTimeByReader();
+      // Optional queries; a missing table never blocks the ledger itself.
+      const [timeRes, hoursRes] = await Promise.allSettled([fetchTimeByReader(), fetchGuideHours()]);
+      if (timeRes.status === 'fulfilled') {
         const map = new Map<string, ReaderTimeRow>();
-        for (const t of rows) map.set(`${t.user_id}|${t.guide_slug}`, t);
+        for (const t of timeRes.value) map.set(`${t.user_id}|${t.guide_slug}`, t);
         tracked = map;
-        render();
-      } catch {
+      } else {
         tracked = null;
       }
+      guideHours = hoursRes.status === 'fulfilled' ? hoursRes.value : null;
+      updateGuideSummary();
+      renderSubmissions();
+      renderGuides();
     };
-    load();
+    void load();
 
     document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -338,7 +646,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         btn.classList.add('active');
         filter = btn.dataset.filter!;
         updateSummary();
-        render();
+        renderSubmissions();
       });
     });
 

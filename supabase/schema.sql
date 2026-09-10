@@ -319,10 +319,11 @@ create table if not exists public.guide_time_adjustments (
   primary key (user_id, guide_slug)
 );
 
--- Stamp who made the change and when, whatever the client sent. Runs as the
+-- Stamp who made the change and when, whatever the client sent. Shared by
+-- every admin-edited table with updated_by / updated_at columns. Runs as the
 -- definer (like is_admin) so the auth schema lookup never depends on the
 -- caller's grants.
-create or replace function public.guide_time_adjustments_stamp()
+create or replace function public.stamp_updated_by()
 returns trigger
 language plpgsql
 security definer
@@ -338,7 +339,9 @@ $$;
 drop trigger if exists guide_time_adjustments_stamp on public.guide_time_adjustments;
 create trigger guide_time_adjustments_stamp
   before insert or update on public.guide_time_adjustments
-  for each row execute function public.guide_time_adjustments_stamp();
+  for each row execute function public.stamp_updated_by();
+-- An earlier revision used a table-specific copy of the stamp function.
+drop function if exists public.guide_time_adjustments_stamp();
 
 alter table public.guide_time_adjustments enable row level security;
 
@@ -486,3 +489,38 @@ as $$
   group by t.guide_slug
   order by 4 desc;
 $$;
+
+-- ============================================================
+-- 11. Service hours per guide (what reading a guide is worth)
+-- ============================================================
+-- Set on the Guides tab of /admin/hours and applied to submissions from
+-- there. Readable by everyone (so the volunteer form can show it one day);
+-- only admins write.
+
+create table if not exists public.guide_hours (
+  guide_slug text primary key,
+  hours      numeric(4,1) not null check (hours > 0 and hours <= 40),
+  note       text,
+  updated_by uuid references public.profiles(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists guide_hours_stamp on public.guide_hours;
+create trigger guide_hours_stamp
+  before insert or update on public.guide_hours
+  for each row execute function public.stamp_updated_by();
+
+alter table public.guide_hours enable row level security;
+
+drop policy if exists "guide_hours read all"    on public.guide_hours;
+drop policy if exists "guide_hours admin write" on public.guide_hours;
+
+create policy "guide_hours read all"
+  on public.guide_hours for select
+  using (true);
+
+create policy "guide_hours admin write"
+  on public.guide_hours for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());

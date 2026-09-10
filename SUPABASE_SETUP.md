@@ -38,7 +38,7 @@ This creates:
 - `user_data` (key-value store for progress/SRS/quiz scores)
 - `requests` (guide request inbox)
 - `volunteer_signups` (read-a-guide-for-service-hours submissions)
-- `guide_sessions` (active reading time per signed-in reader per guide visit) and `guide_time_adjustments` (admin corrections made on the hours ledger), plus the `guide_time_by_guide` / `guide_time_by_reader` functions the admin pages call
+- `guide_sessions` (active reading time per signed-in reader per guide visit), `guide_time_adjustments` (admin corrections made on the hours ledger) and `guide_hours` (what each guide is worth, set on the ledger's Guides tab), plus the `guide_time_by_guide` / `guide_time_by_reader` functions the admin pages call
 - Row-Level Security policies on all of them
 
 **Already set up and just pulling a newer version of the repo?** Run the file again. It is idempotent, so re-running only adds what is missing (for example the `guide_sessions` table added in September 2026). Until you do, `/admin/reading-time` shows an error and the "Tracked" chips in the volunteer inbox stay hidden; everything else keeps working.
