@@ -1,6 +1,11 @@
 ---
 // SVG number line. marks: [{ at: number, label?: string, color?: string, type?: 'point'|'open' }]
 // intervals: [{ from: number, to: number, leftOpen?: boolean, rightOpen?: boolean, color?: string, label?: string }]
+//
+// Labels never overprint: mark and interval labels are packed into as many
+// rows above the axis as they need (lifted labels get a thin leader line), and
+// the figure grows to fit. Near-black colors are drawn in the page's ink color
+// so they stay visible in dark mode, and the accent red lightens there.
 interface Mark { at: number; label?: string; color?: string; type?: 'point' | 'open'; }
 interface Interval { from: number; to: number; leftOpen?: boolean; rightOpen?: boolean; color?: string; label?: string; }
 interface Props {
@@ -23,43 +28,106 @@ const ticks: number[] = [];
 for (let v = min; v <= max + 1e-9; v += step) ticks.push(Math.round(v * 1e6) / 1e6);
 
 const accent = '#b91c1c';
+
+// Colors this dark disappear on the dark-mode surface; render them as ink.
+const isInk = (c: string) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(c.trim());
+  if (!m) return false;
+  return Math.max(...[0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16))) < 0x60;
+};
+// The accent red is too dim on the dark surface, so it swaps to a lighter
+// red in dark mode; other colors are used as given.
+const isAccent = (c: string) => ['#b91c1c', '#dc2626'].includes(c.trim().toLowerCase());
+const paint = (c: string) =>
+  isInk(c)
+    ? { fill: 'currentColor', cls: 'text-ink-800 dark:text-ink-200' }
+    : isAccent(c)
+      ? { fill: 'currentColor', cls: 'text-accent-700 dark:text-accent-400' }
+      : { fill: c, cls: '' };
+
+// Greedy row packing: each label takes the lowest row where it clears the
+// label to its left by GAP px. Widths are estimated from the 12px bold font.
+const CHAR_W = 6.8;
+const GAP = 8;
+const ROW_H = 16;
+const pending = [
+  ...intervals.filter((iv) => iv.label).map((iv) => ({ at: (xOf(iv.from) + xOf(iv.to)) / 2, text: String(iv.label), color: iv.color ?? accent })),
+  ...marks.filter((m) => m.label).map((m) => ({ at: xOf(m.at), text: String(m.label), color: m.color ?? accent })),
+].sort((a, b) => a.at - b.at);
+const rowEnds: number[] = [];
+const labels = pending.map((it) => {
+  const w = it.text.length * CHAR_W;
+  const tx = Math.min(Math.max(it.at, w / 2 + 2), width - w / 2 - 2);
+  let row = rowEnds.findIndex((end) => end + GAP <= tx - w / 2);
+  if (row === -1) {
+    row = rowEnds.length;
+    rowEnds.push(-Infinity);
+  }
+  rowEnds[row] = tx + w / 2;
+  return { ...it, tx, row };
+});
+const rows = Math.max(1, rowEnds.length);
+const axisY = 32 + rows * ROW_H;
+const height = axisY + 30;
+const baseline = (row: number) => axisY - 20 - row * ROW_H;
 ---
 
-<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft">
+<figure class="not-prose my-6 surface rounded-2xl p-5 shadow-soft" data-numberline>
   {title && <figcaption class="mb-3 font-serif text-base font-semibold">{title}</figcaption>}
-  <svg viewBox={`0 0 ${width} 110`} class="w-full h-auto block">
-    <line x1={padding} y1="55" x2={width - padding} y2="55" stroke="currentColor" stroke-width="1.5" class="text-ink-700 dark:text-ink-300" />
-    <polygon points={`${padding-6},55 ${padding+2},50 ${padding+2},60`} class="fill-current text-ink-700 dark:text-ink-300" />
-    <polygon points={`${width-padding+6},55 ${width-padding-2},50 ${width-padding-2},60`} class="fill-current text-ink-700 dark:text-ink-300" />
+  <svg viewBox={`0 0 ${width} ${height}`} class="w-full h-auto block">
+    <line x1={padding} y1={axisY} x2={width - padding} y2={axisY} stroke="currentColor" stroke-width="1.5" class="text-ink-700 dark:text-ink-300" />
+    <polygon points={`${padding-6},${axisY} ${padding+2},${axisY-5} ${padding+2},${axisY+5}`} class="fill-current text-ink-700 dark:text-ink-300" />
+    <polygon points={`${width-padding+6},${axisY} ${width-padding-2},${axisY-5} ${width-padding-2},${axisY+5}`} class="fill-current text-ink-700 dark:text-ink-300" />
 
     {ticks.map((t) => (
       <g>
-        <line x1={xOf(t)} y1="50" x2={xOf(t)} y2="60" stroke="currentColor" stroke-width="1" class="text-ink-500 dark:text-ink-400" />
-        <text x={xOf(t)} y="76" text-anchor="middle" class="fill-current text-ink-500 dark:text-ink-400" font-size="11">{t}</text>
+        <line x1={xOf(t)} y1={axisY - 5} x2={xOf(t)} y2={axisY + 5} stroke="currentColor" stroke-width="1" class="text-ink-500 dark:text-ink-400" />
+        <text x={xOf(t)} y={axisY + 21} text-anchor="middle" class="fill-current text-ink-500 dark:text-ink-400" font-size="11">{t}</text>
       </g>
     ))}
 
     {intervals.map((iv) => {
-      const c = iv.color ?? accent;
+      const p = paint(iv.color ?? accent);
       const x1 = xOf(iv.from);
       const x2 = xOf(iv.to);
       return (
-        <g>
-          <line x1={x1} y1="55" x2={x2} y2="55" stroke={c} stroke-width="4" />
-          <circle cx={x1} cy="55" r="5" fill={iv.leftOpen ? 'white' : c} stroke={c} stroke-width="2" />
-          <circle cx={x2} cy="55" r="5" fill={iv.rightOpen ? 'white' : c} stroke={c} stroke-width="2" />
-          {iv.label && <text x={(x1 + x2) / 2} y="35" text-anchor="middle" fill={c} font-size="12" font-weight="600">{iv.label}</text>}
+        <g class={p.cls}>
+          <line x1={x1} y1={axisY} x2={x2} y2={axisY} stroke={p.fill} stroke-width="4" />
+          <circle cx={x1} cy={axisY} r="5" fill={iv.leftOpen ? 'white' : p.fill} stroke={p.fill} stroke-width="2" />
+          <circle cx={x2} cy={axisY} r="5" fill={iv.rightOpen ? 'white' : p.fill} stroke={p.fill} stroke-width="2" />
         </g>
       );
     })}
 
     {marks.map((m) => {
-      const c = m.color ?? accent;
+      const p = paint(m.color ?? accent);
       return (
-        <g>
-          <circle cx={xOf(m.at)} cy="55" r="6" fill={m.type === 'open' ? 'white' : c} stroke={c} stroke-width="2" />
-          {m.label && <text x={xOf(m.at)} y="32" text-anchor="middle" fill={c} font-size="12" font-weight="600">{m.label}</text>}
-        </g>
+        <circle cx={xOf(m.at)} cy={axisY} r="6" fill={m.type === 'open' ? 'white' : p.fill} stroke={p.fill} stroke-width="2" class={p.cls} />
+      );
+    })}
+
+    {labels.filter((l) => l.row > 0).map((l) => {
+      const p = paint(l.color);
+      return (
+        <line x1={l.at} y1={axisY - 8} x2={l.at} y2={baseline(l.row) + 3} stroke={p.fill} stroke-width="1" stroke-opacity="0.45" class={p.cls} />
+      );
+    })}
+
+    {labels.map((l) => {
+      const p = paint(l.color);
+      return (
+        <text
+          x={l.tx}
+          y={baseline(l.row)}
+          text-anchor="middle"
+          fill={p.fill}
+          font-size="12"
+          font-weight="600"
+          stroke-width="3"
+          stroke-linejoin="round"
+          style="paint-order: stroke"
+          class={`stroke-white dark:stroke-ink-900 ${p.cls}`}
+        >{l.text}</text>
       );
     })}
   </svg>

@@ -1,13 +1,31 @@
 ---
 // Auto-build a mind map from indented markdown using markmap-autoloader.
-// Pass markdown bullets via the `markdown` prop.
+// Pass markdown bullets via the `markdown` prop, or a `{ name, children }`
+// tree via `data` (converted to the same markdown).
+interface Node { name: string; children?: Node[]; }
 interface Props {
   title?: string;
-  markdown: string;
+  markdown?: string;
+  data?: Node;
   height?: number;
 }
-const { title, markdown, height = 480 } = Astro.props;
+const { title, markdown, data, height = 480 } = Astro.props;
 const id = 'mm-' + Math.random().toString(36).slice(2, 9);
+
+const treeToMarkdown = (root: Node): string => {
+  const lines = [`# ${root.name}`];
+  const walk = (kids: Node[] | undefined, depth: number) => {
+    for (const k of kids ?? []) {
+      lines.push(`${'  '.repeat(depth)}- ${k.name}`);
+      walk(k.children, depth + 1);
+    }
+  };
+  walk(root.children, 0);
+  return lines.join('\n');
+};
+// The source sits inside a <script type="text/template">, so only a closing
+// tag sequence could break out of it.
+const source = (markdown ?? (data ? treeToMarkdown(data) : '')).replace(/<\//g, '<\\/');
 ---
 
 <figure class="not-prose my-8 surface rounded-2xl shadow-soft overflow-hidden" id={id} data-mm>
@@ -15,7 +33,7 @@ const id = 'mm-' + Math.random().toString(36).slice(2, 9);
     <figcaption class="px-5 py-3 border-b border-ink-200 dark:border-ink-800 font-serif text-base font-semibold">{title}</figcaption>
   )}
   <div data-mm-host class="w-full bg-white dark:bg-ink-900" style={`height:${height}px`}>
-    <script type="text/template" data-mm-src set:html={markdown} />
+    <script type="text/template" data-mm-src set:html={source} />
     <svg data-mm-svg class="w-full h-full"></svg>
   </div>
 </figure>
@@ -57,3 +75,14 @@ const id = 'mm-' + Math.random().toString(36).slice(2, 9);
 
   mountWhenVisible('[data-mm]:not([data-mm-ready])', (roots) => roots.forEach(initOne));
 </script>
+
+<style is:global>
+  /* markmap draws its text with its own variables (dark ink by default).
+     Use markmap's dark palette whenever the site is in dark mode. */
+  .dark [data-mm] svg.markmap {
+    --markmap-code-bg: #1a1b26;
+    --markmap-code-color: #ddd;
+    --markmap-circle-open-bg: #444;
+    --markmap-text-color: #eee;
+  }
+</style>

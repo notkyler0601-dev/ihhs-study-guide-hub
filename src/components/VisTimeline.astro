@@ -16,7 +16,9 @@
 // classic scripts cannot resolve bare module specifiers like
 // 'vis-timeline/standalone' when calling `import()`. A regular module script
 // (Astro's default) is processed by Vite and gets proper module resolution.
-interface TimelineItem { id: string | number; content: string; start: string; end?: string; group?: string | number; }
+// type: "point" draws a compact dot with its label beside it (no connector line),
+// which keeps dense timelines readable; items with an end default to ranges.
+interface TimelineItem { id: string | number; content: string; start: string; end?: string; group?: string | number; type?: 'box' | 'point' | 'range' | 'background'; }
 interface TimelineGroup { id: string | number; content: string; }
 interface Props {
   items: TimelineItem[];

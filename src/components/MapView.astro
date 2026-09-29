@@ -11,6 +11,10 @@
 //       { lat: 48.8, lng: 2.35, label: "Paris", popup: "Captured June 14, 1940", year: "1940" }
 //     ]}
 //   />
+//
+// Each marker's `color` (hex or rgb) fills its dot. With `showLabels`, every
+// marker also gets an always-visible name tag (dark ink on white); nudge a
+// crowded tag with the marker's `labelDir`.
 
 interface Marker {
   lat: number;
@@ -19,6 +23,7 @@ interface Marker {
   popup?: string;
   year?: string;
   color?: string;
+  labelDir?: 'right' | 'left' | 'top' | 'bottom';
 }
 
 interface Props {
@@ -27,9 +32,10 @@ interface Props {
   zoom?: number;
   height?: string;
   title?: string;
+  showLabels?: boolean;
 }
 
-const { markers, center = [50, 10], zoom = 4, height = '420px', title } = Astro.props;
+const { markers, center = [50, 10], zoom = 4, height = '420px', title, showLabels = false } = Astro.props;
 const id = 'map-' + Math.random().toString(36).slice(2, 9);
 ---
 
@@ -42,6 +48,7 @@ const id = 'map-' + Math.random().toString(36).slice(2, 9);
     data-markers={JSON.stringify(markers)}
     data-center={JSON.stringify(center)}
     data-zoom={zoom}
+    data-labels={showLabels ? '1' : undefined}
   ></div>
 </figure>
 
@@ -73,6 +80,24 @@ const id = 'map-' + Math.random().toString(36).slice(2, 9);
     margin-top: -7px !important;
   }
   .dark .ihhs-marker { border-color: #18181b; }
+  .leaflet-tooltip.ihhs-map-label {
+    background: #ffffff;
+    color: #18181b;
+    border: 1px solid #d4d4d8;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .leaflet-tooltip.ihhs-map-label::before { display: none; }
+  .dark .leaflet-tooltip.ihhs-map-label {
+    background: #18181b;
+    color: #fafafa;
+    border-color: #3f3f46;
+  }
 </style>
 
 <script>
@@ -86,6 +111,15 @@ const id = 'map-' + Math.random().toString(36).slice(2, 9);
       const markers = JSON.parse(el.dataset.markers ?? '[]');
       const center = JSON.parse(el.dataset.center ?? '[0,0]');
       const zoom = parseInt(el.dataset.zoom ?? '3', 10);
+      const showLabels = el.dataset.labels === '1';
+      const safeColor = (c: unknown) =>
+        typeof c === 'string' && /^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(c.trim()) ? c.trim() : null;
+      const tagOffset: Record<string, [number, number]> = {
+        right: [8, 0],
+        left: [-8, 0],
+        top: [0, -8],
+        bottom: [0, 8],
+      };
 
       const map = L.map(el, { scrollWheelZoom: false }).setView(center, zoom);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -96,6 +130,18 @@ const id = 'map-' + Math.random().toString(36).slice(2, 9);
       markers.forEach((m: any) => {
         const icon = L.divIcon({ className: 'ihhs-marker', iconSize: [14, 14] });
         const marker = L.marker([m.lat, m.lng], { icon }).addTo(map);
+        const fill = safeColor(m.color);
+        const dot = marker.getElement();
+        if (fill && dot) dot.style.background = fill;
+        if (showLabels) {
+          const dir = tagOffset[m.labelDir] ? m.labelDir : 'right';
+          marker.bindTooltip(String(m.label ?? ''), {
+            permanent: true,
+            direction: dir,
+            offset: tagOffset[dir],
+            className: 'ihhs-map-label',
+          });
+        }
         const popupHtml = [
           `<b>${m.label}</b>`,
           m.year ? `<div style="font-size:11px;opacity:0.6;margin-top:2px;">${m.year}</div>` : '',

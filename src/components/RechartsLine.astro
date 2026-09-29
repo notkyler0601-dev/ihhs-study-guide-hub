@@ -10,6 +10,14 @@ interface Props {
 const { data, xKey, lines, height = 320 } = Astro.props;
 ---
 
-<div class="not-prose my-6 surface rounded-xl p-4">
+<div class="not-prose my-6 surface rounded-xl p-4 text-ink-800 dark:text-ink-100" data-recharts-ink>
   <RechartsLineReact client:visible data={data} xKey={xKey} lines={lines} height={height} />
 </div>
+
+<style is:global>
+  /* Legend labels in page ink, not the series color: the colored swatch
+     beside each label already carries identity. */
+  [data-recharts-ink] .recharts-legend-item-text { color: inherit !important; }
+  .dark [data-recharts-ink] .recharts-cartesian-grid line { stroke: #3f3f46; }
+</style>
+

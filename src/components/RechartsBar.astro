@@ -11,16 +11,39 @@
 //     xKey="plant"
 //     bars={[{ dataKey: 'efficiency', name: 'Relative efficiency' }]}
 //   />
+//
+// Optional: `showValues` prints each bar's value (add `valueSuffix`, e.g. "%"),
+// and `stacked` stacks the series. Stacking series with zeros is the way to
+// color bars by category: one series per category, 0 everywhere else.
 import RechartsBarReact from './react/RechartsBar.tsx';
 interface Props {
   data: Record<string, any>[];
   xKey: string;
-  bars: { dataKey: string; name?: string; color?: string }[];
+  bars: { dataKey?: string; key?: string; name?: string; color?: string }[];
   height?: number;
+  showValues?: boolean;
+  stacked?: boolean;
+  valueSuffix?: string;
 }
-const { data, xKey, bars, height = 320 } = Astro.props;
+const { data, xKey, bars, height = 320, showValues = false, stacked = false, valueSuffix = '' } = Astro.props;
 ---
 
-<div class="not-prose my-6 surface rounded-xl p-4">
-  <RechartsBarReact client:visible data={data} xKey={xKey} bars={bars} height={height} />
+<div class="not-prose my-6 surface rounded-xl p-4 text-ink-800 dark:text-ink-100" data-recharts-ink>
+  <RechartsBarReact
+    client:visible
+    data={data}
+    xKey={xKey}
+    bars={bars}
+    height={height}
+    showValues={showValues}
+    stacked={stacked}
+    valueSuffix={valueSuffix}
+  />
 </div>
+
+<style is:global>
+  /* Legend labels in page ink, not the series color: the colored swatch
+     beside each label already carries identity. */
+  [data-recharts-ink] .recharts-legend-item-text { color: inherit !important; }
+  .dark [data-recharts-ink] .recharts-cartesian-grid line { stroke: #3f3f46; }
+</style>

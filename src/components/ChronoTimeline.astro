@@ -7,8 +7,93 @@ interface Props { items: Item[]; mode?: 'VERTICAL' | 'HORIZONTAL' | 'VERTICAL_AL
 const { items, mode = 'VERTICAL_ALTERNATING', height = '600px' } = Astro.props;
 ---
 
-<div class="not-prose my-6 surface rounded-xl p-4 overflow-hidden relative isolate">
+<div class="ihhs-chrono not-prose my-6 surface rounded-xl p-4 overflow-hidden relative isolate">
   <div style={`height: ${height}; overflow-y: auto; overflow-x: hidden; position: relative;`}>
     <ChronoTimelineReact client:only="react" items={items} mode={mode} height={height} />
   </div>
 </div>
+
+<style is:global>
+  /* react-chrono 3.3.3 re-declares its default blue design tokens on an inner
+     element, which shadows the theme prop. Remap that blue ramp onto the site
+     red ramp. The hashed token names are tied to this react-chrono version;
+     re-derive them from node_modules/react-chrono/dist/style.css on upgrade. */
+  .ihhs-chrono ._4s8iei0 {
+    --_15akvq0c:#fef2f2;
+    --_15akvq0d:#fee2e2;
+    --_15akvq0e:#fecaca;
+    --_15akvq0f:#fca5a5;
+    --_15akvq0g:#f87171;
+    --_15akvq0h:#ef4444;
+    --_15akvq0i:#dc2626;
+    --_15akvq0j:#b91c1c;
+    --_15akvq0k:#991b1b;
+    --_15akvq0l:#7f1d1d;
+    --_15akvq02q:#dc2626;
+    --_15akvq02r:#b91c1c;
+    --_15akvq02s:#991b1b;
+    --_15akvq031:#dc2626;
+    --_15akvq035:#dc2626;
+    --_15akvq039:#ef4444;
+    --_15akvq03i:#dc2626;
+    --_15akvq059:linear-gradient(135deg,#ef444420,transparent 50%,#ef444410);
+    --_15akvq05w:#ef4444;
+    --_15akvq062:2px solid #ef4444;
+    --_15akvq063:#ef4444;
+    --_15akvq066:2px solid #ef4444;
+    --_15akvq06c:#ef4444;
+    --_15akvq06g:#dc2626;
+    --_15akvq02f:#dc2626;
+    --_15akvq02h:#b91c1c;
+    --_15akvq06m:#dc2626;
+    --_15akvq06q:#dc2626;
+    --_15akvq06s:#b91c1c;
+    --_15akvq06t:#dc2626;
+    --_15akvq06v:#b91c1c;
+  }
+  .ihhs-chrono ._4s8iei1 {
+    --_15akvq0c:#7f1d1d;
+    --_15akvq0d:#991b1b;
+    --_15akvq0e:#b91c1c;
+    --_15akvq0f:#dc2626;
+    --_15akvq0g:#ef4444;
+    --_15akvq0h:#f87171;
+    --_15akvq0i:#fca5a5;
+    --_15akvq0j:#fecaca;
+    --_15akvq0k:#fee2e2;
+    --_15akvq0l:#fef2f2;
+    --_15akvq02q:#f87171;
+    --_15akvq02r:#fca5a5;
+    --_15akvq02s:#fecaca;
+    --_15akvq031:#f87171;
+    --_15akvq035:#f87171;
+    --_15akvq039:#f87171;
+    --_15akvq03i:#f87171;
+    --_15akvq059:linear-gradient(135deg,#f8717120,transparent 50%,#f8717110);
+    --_15akvq05w:#f87171;
+    --_15akvq062:2px solid #f87171;
+    --_15akvq063:#f87171;
+    --_15akvq066:2px solid #f87171;
+    --_15akvq06c:#f87171;
+    --_15akvq06g:#ef4444;
+    --_15akvq02f:#f87171;
+    --_15akvq02h:#fca5a5;
+    --_15akvq06m:#f87171;
+    --_15akvq06q:#f87171;
+    --_15akvq06s:#fca5a5;
+    --_15akvq06t:#f87171;
+    --_15akvq06v:#fca5a5;
+  }
+  /* The active point pulses and focused points glow in hardcoded blue. */
+  @keyframes ihhs-chrono-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); transform: scale(1); }
+    70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); transform: scale(1.05); }
+    100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); transform: scale(1); }
+  }
+  .ihhs-chrono ._1ta47sas { animation-name: ihhs-chrono-pulse; }
+  .ihhs-chrono .iy9f2s2.active:not(.using-icon) { box-shadow: 0 0 12px rgba(185, 28, 28, 0.6); }
+  .ihhs-chrono .iy9f2s2.active.using-icon { box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.2); }
+  .ihhs-chrono ._1ta47sa15:focus-visible {
+    box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.3), 0 0 20px rgba(185, 28, 28, 0.2);
+  }
+</style>

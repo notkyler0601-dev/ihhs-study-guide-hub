@@ -1,19 +1,27 @@
 ---
 // Drag-to-order exercise. items are shuffled at render time;
 // answer is the correct ordering by item id.
+//
+// Items may also be plain strings, listed in the correct order: each string
+// becomes its own label, and when `answer` is omitted the listed order is the
+// answer (for object items too).
 interface Item { id: string; label: string; }
 interface Props {
   title?: string;
   prompt?: string;
-  items: Item[];
-  answer: string[];
+  items: (Item | string)[];
+  answer?: string[];
 }
 const { title = 'Order these', prompt, items, answer } = Astro.props;
 const id = 'sort-' + Math.random().toString(36).slice(2, 9);
-const shuffled = [...items].sort(() => Math.random() - 0.5);
+const normalized: Item[] = (items ?? []).map((it, i) =>
+  typeof it === 'string' ? { id: `i${i}`, label: it } : { id: String(it.id), label: String(it.label) }
+);
+const order = answer && answer.length ? answer : normalized.map((it) => it.id);
+const shuffled = [...normalized].sort(() => Math.random() - 0.5);
 ---
 
-<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-sort data-answer={JSON.stringify(answer)}>
+<section class="not-prose my-8 surface rounded-2xl shadow-soft p-5" id={id} data-sort data-answer={JSON.stringify(order)}>
   <header class="mb-3 flex items-center justify-between gap-3 flex-wrap">
     <span class="font-serif text-base font-semibold">{title}</span>
     <div class="flex items-center gap-2 text-xs">
